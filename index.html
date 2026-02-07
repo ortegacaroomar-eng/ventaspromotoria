@@ -7,141 +7,240 @@
     <link rel="manifest" href="manifest.json">
     <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f7f6; margin: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #001220; margin: 0; color: #333; }
         .header { background: #003566; color: white; padding: 15px; text-align: center; border-bottom: 4px solid #ffc300; }
         .container { max-width: 450px; margin: auto; background: white; padding: 20px; min-height: 100vh; }
-        input, select, button { width: 100%; padding: 14px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+        .card { background: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
+        label { font-size: 11px; font-weight: bold; color: #003566; text-transform: uppercase; display: block; margin-bottom: 2px; }
+        input, select, button { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; box-sizing: border-box; }
+        
         button { background: #003566; color: white; font-weight: bold; border: none; cursor: pointer; }
-        .btn-save { background: #28a745; margin-top: 10px; }
-        .btn-excel { background: #000; border: 2px solid #ffc300; margin-top: 25px; height: 60px; font-size: 18px; color: #fff; }
+        .btn-reg { background: #28a745; margin-top: 5px; }
+        .btn-rec { background: #6c757d; font-size: 13px; }
+        .btn-save { background: #28a745; font-size: 18px; margin-top: 10px; }
+        .btn-excel { background: #217346; margin-top: 20px; height: 55px; font-size: 16px; color: #fff; border: none; }
+        
+        /* ESTILO PARA BOTONES DE ENLACES EXTERNOS */
+        .btn-link { background: #007bff; font-size: 14px; margin-bottom: 8px; text-transform: uppercase; }
+        .btn-form { background: #673ab7; font-size: 14px; margin-bottom: 20px; text-transform: uppercase; }
+
         .hidden { display: none; }
-        .reloj { font-size: 30px; font-weight: bold; color: #003566; margin: 20px 0; text-align: center; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 11px; }
+        .reloj { font-size: 28px; font-weight: bold; color: #ffc300; text-align: center; margin: 10px 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 10px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        .tabs { display: flex; gap: 5px; margin-bottom: 15px; }
-        .tabs button { background: #e9ecef; color: #333; font-size: 12px; padding: 10px; }
-        .tabs button.active { background: #003566; color: white; }
-        .link-rec { display: block; margin-top: 15px; font-size: 13px; color: #003566; cursor: pointer; text-decoration: underline; }
+        th { background: #003566; color: white; }
+        .link-volver { color: #ffc300; font-size: 14px; cursor: pointer; text-decoration: underline; display: block; margin-top: 10px; }
     </style>
 </head>
 <body onload="inicio()">
 
-<div id="lSec" style="max-width:400px; margin:auto; padding:50px 20px; text-align:center;">
+<div id="lSec" style="max-width:400px; margin:auto; padding:40px 20px; text-align:center;">
     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Telcel_logo.svg/1200px-Telcel_logo.svg.png" width="160">
     <div id="rel" class="reloj">00:00:00</div>
-    <div class="tabs">
-        <button id="tabL" class="active" onclick="switchTab('L')">ENTRAR</button>
-        <button id="tabR" onclick="switchTab('R')">REGISTRO</button>
-    </div>
-    <div id="formLogin">
+    
+    <div id="divLogin">
         <input type="email" id="u" placeholder="Correo Electrónico">
         <input type="password" id="p" placeholder="Contraseña">
-        <button onclick="entrar()">ENTRAR AL PANEL</button>
-        <span class="link-rec" onclick="switchTab('F')">¿Olvidaste tu contraseña?</span>
+        <button onclick="entrar()">INGRESAR AL PANEL</button>
+        <hr style="border: 0.5px solid #333; margin: 20px 0;">
+        <button class="btn-reg" onclick="verSeccion('divReg')">NUEVO REGISTRO</button>
+        <button class="btn-rec" onclick="verSeccion('divRec')">RECUPERAR CONTRASEÑA</button>
     </div>
-    <div id="formReg" class="hidden">
-        <input type="email" id="regEmail" placeholder="Tu correo electrónico">
-        <input type="password" id="regPass" placeholder="Crea una contraseña">
-        <input type="text" id="regResp" placeholder="¿Cuál es tu color favorito?">
-        <button onclick="registrarUsuario()" style="background:#28a745;">CREAR CUENTA</button>
+
+    <div id="divReg" class="hidden">
+        <h3 style="color:white">CREAR CUENTA</h3>
+        <input type="email" id="regEmail" placeholder="Correo">
+        <input type="password" id="regPass" placeholder="Nueva Contraseña">
+        <input type="text" id="regResp" placeholder="¿Color favorito? (Seguridad)">
+        <button onclick="registrarUsuario()" style="background:#28a745;">FINALIZAR REGISTRO</button>
+        <span class="link-volver" onclick="verSeccion('divLogin')">Regresar al Inicio</span>
     </div>
-    <div id="formForgot" class="hidden">
-        <input type="email" id="fEmail" placeholder="Correo registrado">
-        <input type="text" id="fResp" placeholder="Respuesta de seguridad">
-        <button onclick="recuperar()" style="background:#ffc300; color:#000;">VER CONTRASEÑA</button>
-        <span class="link-rec" onclick="switchTab('L')">Regresar</span>
+
+    <div id="divRec" class="hidden">
+        <h3 style="color:white">RECUPERAR ACCESO</h3>
+        <input type="email" id="recEmail" placeholder="Tu correo registrado">
+        <input type="text" id="recResp" placeholder="¿Color favorito? (Respuesta)">
+        <button onclick="recuperar()" style="background:#ffc300; color:#000;">MOSTRAR CONTRASEÑA</button>
+        <span class="link-volver" onclick="verSeccion('divLogin')">Regresar al Inicio</span>
     </div>
 </div>
 
 <div id="mSec" class="hidden">
     <div class="header">
-        <h3 id="nombreUsuario" style="margin:0">SISTEMA 4029</h3>
-        <small id="txtMes" style="font-weight:bold;"></small>
+        <h3 style="margin:0">SISTEMA VENTAS 4029</h3>
+        <small style="color:#ffc300; font-weight:bold;">REPORTE DE COMISIONES</small>
     </div>
+    
     <div class="container">
+        <button class="btn-link" onclick="window.open('https://registro.telcel.com/vinculatulinea/#/', '_blank')">🔗 VINCULA TU LÍNEA (TELCEL)</button>
+        <button class="btn-form" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSfQMT1FUeOLNJUzB8DeGhKNTqiU_DS7wr7y2p_Ab7xgHHjYbw/viewform', '_blank')">📝 FORMULARIO GOOGLE</button>
+
         <form id="fReg">
-            <input type="text" id="iProm" placeholder="NOMBRE DEL PROMOTOR" required>
-            <select id="iTipo" onchange="verEq()" required>
-                <option value="" disabled selected>-- TIPO --</option>
-                <option value="AK">AK</option><option value="CHIP">CHIP</option>
-                <option value="PORTA">PORTA</option><option value="REN">REN</option>
+            <label>Renuevate/ Kit/Chip/Porta</label>
+            <select id="iTipo" onchange="menuInteractivo()" required>
+                <option value="" disabled selected>-- SELECCIONE PRODUCTO --</option>
+                <option value="KIT">KIT (EQUIPO)</option>
+                <option value="CHIP">CHIP</option>
+                <option value="PORTA">PORTA</option>
+                <option value="RENUEVATE">RENUEVATE</option>
             </select>
-            <input type="text" id="iTel" placeholder="TELÉFONO (10)" maxlength="10" required>
-            <input type="text" id="iIcc" placeholder="ICCID (19)" maxlength="19" required>
-            <div id="gEq">
-                <input type="text" id="iIme" placeholder="IMEI (15)" maxlength="15">
-                <input type="text" id="iMar" placeholder="MARCA"><input type="text" id="iMod" placeholder="MODELO">
+
+            <label>Num. Celular (10 dígitos)</label>
+            <input type="text" id="iTel" placeholder="0000000000" maxlength="10" required>
+            <label>ICCID (19 dígitos)</label>
+            <input type="text" id="iIcc" placeholder="8952..." maxlength="19" required>
+            
+            <div id="seccionEquipo" class="card hidden">
+                <label>IMEI (15 dígitos)</label>
+                <input type="text" id="iIme" placeholder="IMEI" maxlength="15">
+                <label>Marca</label>
+                <input type="text" id="iMar" placeholder="MARCA">
+                <label>Modelo</label>
+                <input type="text" id="iMod" placeholder="MODELO">
             </div>
-            <input type="date" id="iFec">
+
+            <div class="card">
+                <label># Tienda / Determinante</label>
+                <input type="text" id="iDet" placeholder="Ej. 5432">
+                <label>Cadena</label>
+                <input type="text" id="iCad" placeholder="COPPEL">
+                <label>Tienda</label>
+                <input type="text" id="iTie" placeholder="ECATEPEC">
+                <label>Promotor</label>
+                <input type="text" id="iProm" placeholder="TU NOMBRE" required>
+                <label>Fecha</label>
+                <input type="date" id="iFec">
+            </div>
+            
             <button type="submit" class="btn-save">💾 GUARDAR REGISTRO</button>
         </form>
-        <table id="tVistas"><thead><tr><th>TEL</th><th>PROMOTOR</th><th>-</th></tr></thead><tbody></tbody></table>
-        <button onclick="bajarExcel()" class="btn-excel">💾 DESCARGAR EXCEL</button>
-        <button onclick="salir()" style="margin-top:20px; background:#6c757d;">🚪 Cerrar Sesión</button>
+
+        <table id="tVistas">
+            <thead><tr><th>TELÉFONO</th><th>TIPO</th><th>-</th></tr></thead>
+            <tbody></tbody>
+        </table>
+
+        <button onclick="bajarExcel()" class="btn-excel">📥 DESCARGAR EXCEL</button>
+        <button onclick="salir()" style="margin-top:20px; background:#6c757d; font-size:11px; color:white;">CERRAR SESIÓN</button>
     </div>
 </div>
 
 <script>
 let uA = ""; 
+
 function inicio(){
-    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
     setInterval(()=>{document.getElementById('rel').innerText=new Date().toLocaleTimeString()},1000);
+    document.getElementById('iFec').value = new Date().toISOString().split('T')[0];
     const s = localStorage.getItem('ses_actual');
     if(s){ uA = s; mostrar(); }
 }
-function switchTab(t){
-    document.getElementById('formLogin').classList.toggle('hidden', t !== 'L');
-    document.getElementById('formReg').classList.toggle('hidden', t !== 'R');
-    document.getElementById('formForgot').classList.toggle('hidden', t !== 'F');
+
+function verSeccion(id){
+    document.getElementById('divLogin').classList.add('hidden');
+    document.getElementById('divReg').classList.add('hidden');
+    document.getElementById('divRec').classList.add('hidden');
+    document.getElementById(id).classList.remove('hidden');
 }
+
+function menuInteractivo(){
+    const t = document.getElementById('iTipo').value;
+    const s = document.getElementById('seccionEquipo');
+    s.classList.toggle('hidden', !(t === 'KIT' || t === 'RENUEVATE'));
+}
+
 function registrarUsuario(){
-    const correo = document.getElementById('regEmail').value.trim().toLowerCase();
-    const pass = document.getElementById('regPass').value.trim();
-    const resp = document.getElementById('regResp').value.trim().toUpperCase();
-    if(!correo || !pass || !resp) return alert("Completa los datos");
+    const c = document.getElementById('regEmail').value.trim().toLowerCase();
+    const p = document.getElementById('regPass').value.trim();
+    const r = document.getElementById('regResp').value.trim().toUpperCase();
+    if(!c || !p || !r) return alert("Llena todos los campos.");
     let db = JSON.parse(localStorage.getItem('usuarios_db') || "{}");
-    db[correo] = { p: pass, r: resp };
+    db[c] = { p: p, r: r };
     localStorage.setItem('usuarios_db', JSON.stringify(db));
-    alert("¡Registro exitoso!"); switchTab('L');
+    alert("¡Registro exitoso!");
+    verSeccion('divLogin');
 }
+
 function entrar(){
-    const correo = document.getElementById('u').value.trim().toLowerCase();
-    const pass = document.getElementById('p').value.trim();
+    const c = document.getElementById('u').value.trim().toLowerCase();
+    const p = document.getElementById('p').value.trim();
     let db = JSON.parse(localStorage.getItem('usuarios_db') || "{}");
-    if(db[correo] && db[correo].p === pass){
-        uA = correo; localStorage.setItem('ses_actual', uA); mostrar();
-    } else { alert("Datos incorrectos"); }
+    if(db[c] && db[c].p === p){ uA = c; localStorage.setItem('ses_actual', uA); mostrar(); }
+    else { alert("Correo o contraseña incorrectos."); }
 }
+
+function recuperar(){
+    const c = document.getElementById('recEmail').value.trim().toLowerCase();
+    const r = document.getElementById('recResp').value.trim().toUpperCase();
+    let db = JSON.parse(localStorage.getItem('usuarios_db') || "{}");
+    if(db[c] && db[c].r === r){ alert("Tu contraseña es: " + db[c].p); verSeccion('divLogin'); }
+    else { alert("Datos de recuperación incorrectos."); }
+}
+
 function mostrar(){
     document.getElementById('lSec').className='hidden';
     document.getElementById('mSec').className='';
-    document.getElementById('nombreUsuario').innerText = uA.split('@')[0].toUpperCase();
     pintarTabla();
 }
-function salir(){ localStorage.removeItem('ses_actual'); location.reload(); }
-function verEq(){
-    const t=document.getElementById('iTipo').value;
-    document.getElementById('gEq').style.display=(t==='CHIP'||t==='PORTA')?'none':'block';
-}
+
 function pintarTabla(){
-    const tbody=document.querySelector('#tVistas tbody'); tbody.innerHTML="";
-    const d=JSON.parse(localStorage.getItem("db_datos_"+uA)||"[]");
-    d.reverse().slice(0,5).forEach(x=>{
-        tbody.innerHTML+=`<tr><td>${x.t}</td><td>${x.pr}</td><td><button onclick="borrar(${x.id})" style="background:red;padding:2px">X</button></td></tr>`;
+    const tbody = document.querySelector('#tVistas tbody');
+    tbody.innerHTML = "";
+    const datos = JSON.parse(localStorage.getItem("db_datos_" + uA) || "[]");
+    datos.slice().reverse().slice(0, 5).forEach(x => {
+        tbody.innerHTML += `<tr><td>${x["NUM. CELULAR"]}</td><td>${x["Renuevate/ Kit/Chip/Porta"]}</td><td><button onclick="borrar(${x.id})" style="background:red; padding:2px; font-size:10px;">X</button></td></tr>`;
     });
 }
-document.getElementById('fReg').onsubmit=function(e){
-    e.preventDefault();
-    const d=JSON.parse(localStorage.getItem("db_datos_"+uA)||"[]");
-    d.push({pr: iProm.value.toUpperCase(), t:iTel.value, ic:iIcc.value, id:Date.now()});
-    localStorage.setItem("db_datos_"+uA,JSON.stringify(d));
-    alert("Guardado"); pintarTabla();
-};
-function bajarExcel(){
-    const d=JSON.parse(localStorage.getItem("db_datos_"+uA)||"[]");
-    const ws=XLSX.utils.json_to_sheet(d); const wb=XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb,ws,"Ventas"); XLSX.writeFile(wb,"Ventas.xlsx");
+
+function borrar(id){
+    let d = JSON.parse(localStorage.getItem("db_datos_" + uA) || "[]");
+    d = d.filter(i => i.id !== id);
+    localStorage.setItem("db_datos_" + uA, JSON.stringify(d));
+    pintarTabla();
 }
+
+document.getElementById('fReg').onsubmit = function(e){
+    e.preventDefault();
+    const d = JSON.parse(localStorage.getItem("db_datos_" + uA) || "[]");
+    d.push({
+        "NUM. CELULAR": iTel.value,
+        "IMEI": iIme.value || "N/A",
+        "ICCID": iIcc.value,
+        "Renuevate/ Kit/Chip/Porta": iTipo.value,
+        "#TIENDA / Determinante": iDet.value.toUpperCase(),
+        "SOLO NOMBRE DE LA CADENA": iCad.value.toUpperCase(),
+        "SOLO NOMBRE DE TIENDA SIN CADENA": iTie.value.toUpperCase(),
+        "NOMBRE COMPLETO PROMOTOR": iProm.value.toUpperCase(),
+        "FECHA DE ACTIVACION": iFec.value,
+        "MARCA": iMar.value.toUpperCase() || "N/A",
+        "MODELO": iMod.value.toUpperCase() || "N/A",
+        id: Date.now()
+    });
+    localStorage.setItem("db_datos_" + uA, JSON.stringify(d));
+    alert("Venta guardada.");
+    const p = iProm.value; const c = iCad.value; const t = iTie.value; const det = iDet.value;
+    this.reset();
+    iProm.value = p; iCad.value = c; iTie.value = t; iDet.value = det;
+    iFec.value = new Date().toISOString().split('T')[0];
+    menuInteractivo();
+    pintarTabla();
+};
+
+function bajarExcel(){
+    const d = JSON.parse(localStorage.getItem("db_datos_" + uA) || "[]");
+    if(d.length === 0) return alert("Sin datos.");
+    const excelData = d.map(({id, ...resto}) => resto);
+    const ws = XLSX.utils.json_to_sheet(excelData);
+    const wscols = [
+        {wch: 15}, {wch: 20}, {wch: 22}, {wch: 25}, {wch: 15}, 
+        {wch: 25}, {wch: 30}, {wch: 30}, {wch: 18}, {wch: 15}, {wch: 15}
+    ];
+    ws['!cols'] = wscols;
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Hoja1");
+    XLSX.writeFile(wb, "comiciones_Omar_Actualizado.xlsx");
+}
+
+function salir(){ localStorage.removeItem('ses_actual'); location.reload(); }
 </script>
 </body>
 </html>
