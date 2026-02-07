@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SISTEMA 4029 - PROMOTOR CORREGIDO</title>
+
+<script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
+
+<style>
+body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f7f6; margin: 0; }
+.header { background: #003566; color: white; padding: 15px; text-align: center; border-bottom: 4px solid #ffc300; }
+.container { max-width: 450px; margin: auto; background: white; padding: 20px; min-height: 100vh; }
+input, select, button { width: 100%; padding: 14px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+button { background: #003566; color: white; font-weight: bold; border: none; cursor: pointer; }
+.btn-save { background: #28a745; margin-top: 10px; }
+.btn-excel { background: #000; border: 2px solid #ffc300; margin-top: 25px; height: 60px; font-size: 18px; color: #fff; }
+.hidden { display: none; }
+.reloj { font-size: 30px; font-weight: bold; color: #003566; margin: 20px 0; text-align: center; }
+table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 11px; }
+th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+.tabs { display: flex; gap: 5px; margin-bottom: 15px; }
+.tabs button { background: #e9ecef; color: #333; font-size: 12px; padding: 10px; }
+.tabs button.active { background: #003566; color: white; }
+.link-rec { display: block; margin-top: 15px; font-size: 13px; color: #003566; cursor: pointer; text-decoration: underline; }
+</style>
+</head>
+
+<body onload="inicio()">
+
+<div id="lSec" style="max-width:400px; margin:auto; padding:50px 20px; text-align:center;">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Telcel_logo.svg/1200px-Telcel_logo.svg.png" width="160">
+    <div id="rel" class="reloj">00:00:00</div>
+
+    <div class="tabs">
+        <button id="tabL" class="active" onclick="switchTab('L')">ENTRAR</button>
+        <button id="tabR" onclick="switchTab('R')">REGISTRO</button>
+    </div>
+
+    <div id="formLogin">
+        <input type="email" id="u" placeholder="Correo ElectrÃ³nico">
+        <input type="password" id="p" placeholder="ContraseÃ±a">
+        <button onclick="entrar()">ENTRAR AL PANEL</button>
+        <span class="link-rec" onclick="switchTab('F')">Â¿Olvidaste tu contraseÃ±a?</span>
+    </div>
+
+    <div id="formReg" class="hidden">
+        <input type="email" id="regEmail" placeholder="Tu correo electrÃ³nico">
+        <input type="password" id="regPass" placeholder="Crea una contraseÃ±a">
+        <p style="font-size:12px; color:#666; margin:5px 0;">Pregunta de seguridad:</p>
+        <input type="text" id="regResp" placeholder="Â¿CuÃ¡l es tu color favorito?">
+        <button onclick="registrarUsuario()" style="background:#28a745;">CREAR CUENTA</button>
+    </div>
+
+    <div id="formForgot" class="hidden">
+        <h3>RECUPERAR</h3>
+        <input type="email" id="fEmail" placeholder="Correo registrado">
+        <input type="text" id="fResp" placeholder="Respuesta de seguridad">
+        <button onclick="recuperar()" style="background:#ffc300; color:#000;">VER CONTRASEÃ‘A</button>
+        <span class="link-rec" onclick="switchTab('L')">Regresar</span>
+    </div>
+</div>
+
+<div id="mSec" class="hidden">
+    <div class="header">
+        <h3 id="nombreUsuario" style="margin:0">SISTEMA 4029</h3>
+        <small id="txtMes" style="font-weight:bold;"></small>
+    </div>
+    <div class="container">
+        <form id="fReg">
+            <input type="text" id="iProm" placeholder="NOMBRE DEL PROMOTOR" required style="border: 2px solid #003566;">
+            <select id="iTipo" onchange="verEq()" required>
+                <option value="" disabled selected>-- TIPO --</option>
+                <option value="AK">AK</option><option value="CHIP">CHIP</option>
+                <option value="PORTA">PORTA</option><option value="REN">REN</option>
+            </select>
+            <input type="text" id="iTel" placeholder="TELÃ‰FONO (10)" maxlength="10" required>
+            <input type="text" id="iIcc" placeholder="ICCID (19)" maxlength="19" required>
+            <div id="gEq">
+                <input type="text" id="iIme" placeholder="IMEI (15)" maxlength="15">
+                <input type="text" id="iMar" placeholder="MARCA"><input type="text" id="iMod" placeholder="MODELO">
+            </div>
+            <input type="date" id="iFec">
+            <button type="submit" class="btn-save">ðŸ’¾ GUARDAR REGISTRO</button>
+        </form>
+        <table id="tVistas"><thead><tr><th>TEL</th><th>PROMOTOR</th><th>-</th></tr></thead><tbody></tbody></table>
+        <button onclick="bajarExcel()" class="btn-excel">ðŸ’¾ DESCARGAR EXCEL 1.5.5</button>
+        <button onclick="salir()" style="margin-top:40px; background:#6c757d; font-size:11px;">ðŸšª Cerrar SesiÃ³n</button>
+    </div>
+</div>
+
+<script>
+let uA = ""; 
+const mS = ["ENERO","FEBRERO","MARZO","ABRIL","MAYO","JUNIO","JULIO","AGOSTO","SEPTIEMBRE","OCTUBRE","NOVIEMBRE","DICIEMBRE"];
+
+function inicio(){
+    setInterval(()=>{document.getElementById('rel').innerText=new Date().toLocaleTimeString()},1000);
+    const ahora = new Date();
+    document.getElementById('txtMes').innerText = "FORMATO 1.5.5 - "+mS[ahora.getMonth()]+" "+ahora.getFullYear();
+    document.getElementById('iFec').value = ahora.toISOString().split('T')[0];
+    const s = localStorage.getItem('ses_actual');
+    if(s){ uA = s; mostrar(); }
+}
+
+function switchTab(t){
+    document.getElementById('formLogin').classList.toggle('hidden', t !== 'L');
+    document.getElementById('formReg').classList.toggle('hidden', t !== 'R');
+    document.getElementById('formForgot').classList.toggle('hidden', t !== 'F');
+    if(t !== 'F'){
+        document.getElementById('tabL').classList.toggle('active', t === 'L');
+        document.getElementById('tabR').classList.toggle('active', t === 'R');
+    }
+}
+
+function registrarUsuario(){
+    const correo = document.getElementById('regEmail').value.trim().toLowerCase();
+    const pass = document.getElementById('regPass').value.trim();
+    const resp = document.getElementById('regResp').value.trim().toUpperCase();
+    if(!correo || !pass || !resp) return alert("Completa los datos");
+    let db = JSON.parse(localStorage.getItem('usuarios_db') || "{}");
+    if(db[correo]) return alert("Ya existe este correo");
+    db[correo] = { p: pass, r: resp };
+    localStorage.setItem('usuarios_db', JSON.stringify(db));
+    alert("Â¡Registro exitoso!");
+    switchTab('L');
+}
+
+function entrar(){
+    const correo = document.getElementById('u').value.trim().toLowerCase();
+    const pass = document.getElementById('p').value.trim();
+    let db = JSON.parse(localStorage.getItem('usuarios_db') || "{}");
+    if(db[correo] && db[correo].p === pass){
+        uA = correo;
+        localStorage.setItem('ses_actual', uA);
+        mostrar();
+    } else { alert("Datos incorrectos"); }
+}
+
+function recuperar(){
+    const correo = document.getElementById('fEmail').value.trim().toLowerCase();
+    const resp = document.getElementById('fResp').value.trim().toUpperCase();
+    let db = JSON.parse(localStorage.getItem('usuarios_db') || "{}");
+    if(db[correo] && db[correo].r === resp){
+        alert("Tu contraseÃ±a es: " + db[correo].p);
+        switchTab('L');
+    } else { alert("No coincide la informaciÃ³n"); }
+}
+
+function mostrar(){
+    document.getElementById('lSec').className='hidden';
+    document.getElementById('mSec').className='';
+    document.getElementById('nombreUsuario').innerText = uA.split('@')[0].toUpperCase();
+    pintarTabla();
+}
+
+function salir(){ localStorage.removeItem('ses_actual'); location.reload(); }
+
+function verEq(){
+    const t=document.getElementById('iTipo').value;
+    document.getElementById('gEq').style.display=(t==='CHIP'||t==='PORTA')?'none':'block';
+}
+
+function pintarTabla(){
+    const tbody=document.querySelector('#tVistas tbody');
+    tbody.innerHTML="";
+    const d=JSON.parse(localStorage.getItem("db_datos_"+uA)||"[]");
+    d.reverse().slice(0,5).forEach(x=>{
+        tbody.innerHTML+=`<tr><td>${x.t}</td><td>${x.pr}</td><td><button onclick="borrar(${x.id})" style="background:red;color:white;border:none;padding:2px 5px;">X</button></td></tr>`;
+    });
+}
+
+function borrar(id){
+    let d=JSON.parse(localStorage.getItem("db_datos_"+uA)||"[]");
+    d=d.filter(x=>x.id!==id);
+    localStorage.setItem("db_datos_"+uA,JSON.stringify(d));
+    pintarTabla();
+}
+
+document.getElementById('fReg').onsubmit=function(e){
+    e.preventDefault();
+    const d=JSON.parse(localStorage.getItem("db_datos_"+uA)||"[]");
+    d.push({
+        pr: iProm.value.toUpperCase(), t:iTel.value, im:iIme.value, ic:iIcc.value, tp:iTipo.value,
+        f:iFec.value, ma:iMar.value.toUpperCase(), mo:iMod.value.toUpperCase(), id:Date.now()
+    });
+    localStorage.setItem("db_datos_"+uA,JSON.stringify(d));
+    const tempProm = iProm.value; 
+    this.reset();
+    iProm.value = tempProm; 
+    iFec.value=new Date().toISOString().split('T')[0];
+    pintarTabla();
+};
+
+function bajarExcel(){
+    const d=JSON.parse(localStorage.getItem("db_datos_"+uA)||"[]");
+    if(d.length===0) return alert("Sin datos");
+    
+    // ENCABEZADOS
+    const h=[[
+        "NUM. CELULAR","IMEI","ICCID","Renuevate/ Kit/Chip/Porta",
+        "#TIENDA / Determinante","SOLO NOMBRE DE LA CADENA",
+        "SOLO NOMBRE DE TIENDA SIN CADENA","NOMBRE COMPLETO PROMOTOR",
+        "FECHA DE ACTIVACION","MARCA","MODELO"
+    ]];
+
+    // DATOS CORREGIDOS
+    d.forEach(x=>{
+        const p=x.f.split('-');
+        h.push([
+            x.t,         // NUM CELULAR
+            x.im,        // IMEI
+            x.ic,        // ICCID
+            x.tp,        // TIPO
+            "4029",      // TIENDA
+            "BA",        // CADENA
+            "AV NACIONAL", // NOMBRE TIENDA
+            x.pr,        // <--- AQUÃ YA GUARDA EL NOMBRE DEL PROMOTOR
+            `${p[2]}/${p[1]}/${p[0]}`, // FECHA
+            x.ma,        // MARCA
+            x.mo         // MODELO
+        ]);
+    });
+
+    const wb=XLSX.utils.book_new();
+    const ws=XLSX.utils.aoa_to_sheet(h);
+    ws['!cols']=[{wch:18},{wch:22},{wch:25},{wch:25},{wch:22},{wch:25},{wch:35},{wch:30},{wch:22},{wch:15},{wch:15}];
+    XLSX.utils.book_append_sheet(wb,ws,"Ventas");
+    XLSX.writeFile(wb, `Reporte_4029_${uA.split('@')[0]}.xlsx`);
+}
+</script>
+</body>
+</html>
