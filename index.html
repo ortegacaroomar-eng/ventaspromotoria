@@ -3,136 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Telcel - Firebase 2026</title>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <title>Sistema Telcel 2026</title>
     <style>
         body { font-family: sans-serif; text-align: center; background-color: #f0f2f5; padding: 20px; }
-        .container { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
+        .container { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 380px; margin: auto; }
         input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         .btn-azul { background: #003366; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; }
         .btn-verde { background: #28a745; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; margin-top: 10px; font-weight: bold; }
         .hidden { display: none; }
-        label { display: block; text-align: left; font-size: 12px; font-weight: bold; color: #555; margin-top: 5px; }
+        label { display: block; text-align: left; font-size: 12px; font-weight: bold; color: #003366; margin-top: 8px; }
     </style>
 </head>
 <body>
 
     <div class="container" id="auth-box">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Telcel_logo.svg/1200px-Telcel_logo.svg.png" style="width: 140px; margin-bottom: 20px;">
-        
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Telcel_logo.svg/1200px-Telcel_logo.svg.png" style="width: 140px; margin-bottom: 10px;">
         <div id="login-form">
             <h2>Acceso</h2>
-            <input type="email" id="l-email" placeholder="Correo electrónico">
+            <input type="email" id="l-email" placeholder="Correo">
             <input type="password" id="l-pass" placeholder="Contraseña">
-            <button class="btn-azul" onclick="entrar()">ENTRAR AL SISTEMA</button>
+            <button class="btn-azul" onclick="entrar()">ENTRAR</button>
             <p onclick="recordar()" style="color: blue; font-size: 12px; cursor: pointer; margin-top: 10px;">¿Olvidaste tu contraseña?</p>
             <hr>
-            <button class="btn-verde" onclick="verRegistro()">REGISTRAR NUEVO PROMOTOR</button>
+            <button class="btn-verde" onclick="verReg()">NUEVO PROMOTOR</button>
         </div>
-
-        <div id="registro-form" class="hidden">
+        <div id="reg-form" class="hidden">
             <h3>Registro (02/02/2026)</h3>
             <input type="email" id="r-email" placeholder="Correo">
             <input type="password" id="r-pass" placeholder="Contraseña">
-            <button class="btn-verde" onclick="guardar()">GUARDAR EN LA NUBE</button>
-            <button onclick="verLogin()" style="margin-top:10px; border:none; background:none; cursor:pointer;">CANCELAR</button>
+            <button class="btn-verde" onclick="guardar()">REGISTRAR</button>
+            <button onclick="verLog()" style="margin-top:10px; border:none; background:none; cursor:pointer;">VOLVER</button>
         </div>
     </div>
 
     <div class="container hidden" id="app-box">
         <h3>Captura de Telefonía</h3>
         <p id="user-display" style="font-size: 13px; color: #666;"></p>
-        <p>Reporte Oficial: <strong>02/02/2026</strong></p>
+        <p>Fecha: <strong>02/02/2026</strong></p>
         <hr>
-        <label>NÚMERO (10 dígitos)</label>
-        <input type="number" id="num_cel" placeholder="55...">
-        <label>IMEI (15 dígitos)</label>
-        <input type="number" id="imei_val" placeholder="0123...">
-        <label>ICCID (Serie SIM)</label>
-        <input type="number" id="iccid_val" placeholder="8952...">
-        
+        <label>NÚMERO CELULAR</label>
+        <input type="number" id="n_cel" placeholder="10 dígitos">
+        <label>IMEI</label>
+        <input type="number" id="n_imei" placeholder="15 dígitos">
+        <label>ICCID</label>
+        <input type="number" id="n_iccid" placeholder="Serie SIM">
         <button class="btn-azul" onclick="registrarVenta()">GUARDAR VENTA</button>
-        <button onclick="location.reload()" style="margin-top:20px; border:none; color:red; cursor:pointer;">CERRAR SESIÓN</button>
+        <button onclick="location.reload()" style="margin-top:20px; border:none; color:red; cursor:pointer;">SALIR</button>
     </div>
 
     <script>
-        // === CONFIGURACIÓN DE FIREBASE (RELLENA CON TUS DATOS) ===
-        const firebaseConfig = {
-            apiKey: "PON_AQUI_TU_API_KEY",
-            authDomain: "TU_PROYECTO.firebaseapp.com",
-            databaseURL: "https://TU_PROYECTO.firebaseio.com",
-            projectId: "TU_PROYECTO_ID",
-            storageBucket: "TU_PROYECTO.appspot.com",
-            messagingSenderId: "TU_ID",
-            appId: "TU_APP_ID"
-        };
-        
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+        function verReg() { document.getElementById('login-form').classList.add('hidden'); document.getElementById('reg-form').classList.remove('hidden'); }
+        function verLog() { document.getElementById('reg-form').classList.add('hidden'); document.getElementById('login-form').classList.remove('hidden'); }
 
-        function verRegistro() { document.getElementById('login-form').classList.add('hidden'); document.getElementById('registro-form').classList.remove('hidden'); }
-        function verLogin() { document.getElementById('registro-form').classList.add('hidden'); document.getElementById('login-form').classList.remove('hidden'); }
-
-        // Guardar Promotor en Firebase
         function guardar() {
             const email = document.getElementById('r-email').value;
             const pass = document.getElementById('r-pass').value;
             if(email && pass) {
-                db.ref('promotores/' + email.replace(/\./g, ',')).set({
-                    password: pass,
-                    fecha: "02/02/2026"
-                }).then(() => {
-                    localStorage.setItem(email, JSON.stringify({p: pass, f: "02/02/2026"})); [cite: 2026-02-06]
-                    alert("Promotor guardado en Firebase");
-                    verLogin();
-                });
+                localStorage.setItem(email, JSON.stringify({p: pass, f: "02/02/2026"})); [cite: 2026-02-06]
+                alert("Registrado correctamente");
+                verLog();
             } else { alert("Llena los campos"); }
         }
 
-        // Entrar validando contra Firebase
         function entrar() {
             const email = document.getElementById('l-email').value;
             const pass = document.getElementById('l-pass').value;
-            db.ref('promotores/' + email.replace(/\./g, ',')).once('value').then((s) => {
-                if(s.exists() && s.val().password === pass) {
+            const datos = localStorage.getItem(email); [cite: 2026-02-06]
+            if(datos) {
+                const u = JSON.parse(datos);
+                if(u.p === pass) {
                     document.getElementById('auth-box').classList.add('hidden');
                     document.getElementById('app-box').classList.remove('hidden');
                     document.getElementById('user-display').innerText = "Vendedor: " + email;
-                } else { alert("Datos incorrectos o no registrado"); }
-            });
+                } else { alert("Clave incorrecta"); }
+            } else { alert("No registrado. Usa el botón verde."); }
         }
 
-        // Registrar Venta de Telefonía
         function registrarVenta() {
-            const num = document.getElementById('num_cel').value;
-            const imei = document.getElementById('imei_val').value;
-            const iccid = document.getElementById('iccid_val').value;
-            const email = document.getElementById('l-email').value || "desconocido";
-
-            if(num && imei && iccid) {
-                db.ref('ventas').push({
-                    promotor: email,
-                    numero: num,
-                    imei: imei,
-                    iccid: iccid,
-                    fecha: "02/02/2026"
-                }).then(() => {
-                    alert("Venta guardada en Firebase exitosamente.");
-                    document.getElementById('num_cel').value = "";
-                    document.getElementById('imei_val').value = "";
-                    document.getElementById('iccid_val').value = "";
-                });
-            } else { alert("Completa los datos de telefonía"); }
+            const n = document.getElementById('n_cel').value;
+            const i = document.getElementById('n_imei').value;
+            if(n && i) {
+                alert("Venta guardada localmente para reporte 2026");
+                document.getElementById('n_cel').value = "";
+                document.getElementById('n_imei').value = "";
+            } else { alert("Faltan datos"); }
         }
 
         function recordar() {
             const email = document.getElementById('l-email').value;
-            if(!email) return alert("Pon tu correo");
-            db.ref('promotores/' + email.replace(/\./g, ',')).once('value').then((s) => {
-                if(s.exists()) alert("Tu clave es: " + s.val().password);
-                else alert("No registrado");
-            });
+            const datos = localStorage.getItem(email);
+            if(datos) alert("Tu clave es: " + JSON.parse(datos).p);
+            else alert("Escribe el correo");
         }
     </script>
 </body>
