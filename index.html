@@ -26,7 +26,77 @@
         hr { margin: 20px 0; border: 0; border-top: 1px solid #eee; }
     </style>
 </head>
-<body>
+<body><div class="container" id="auth-container">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Telcel_logo.svg/1200px-Telcel_logo.svg.png" alt="Telcel" style="width: 180px; margin-bottom: 20px;">
+    
+    <div id="login-form">
+        <h2>Acceso Promotor</h2>
+        <input type="email" id="login-email" placeholder="Correo electrónico">
+        <input type="password" id="login-password" placeholder="Contraseña">
+        <button class="btn-azul" onclick="login()">ENTRAR</button>
+        <hr>
+        <button class="btn-verde" onclick="mostrarRegistro()">NUEVO REGISTRO (02/02/2026)</button>
+    </div>
+
+    <div id="registro-form" class="hidden">
+        <h2>Registro Oficial</h2>
+        <p>Fecha de Reporte: <strong>02/02/2026</strong></p>
+        <input type="email" id="reg-email" placeholder="Correo">
+        <input type="password" id="reg-password" placeholder="Contraseña">
+        <button class="btn-verde" onclick="registrar()">GUARDAR DATOS</button>
+        <button class="btn-gris" onclick="mostrarLogin()">REGRESAR</button>
+    </div>
+</div>
+
+<script>
+    // Cambiar entre formularios
+    function mostrarRegistro() {
+        document.getElementById('login-form').classList.add('hidden');
+        document.getElementById('registro-form').classList.remove('hidden');
+    }
+
+    function mostrarLogin() {
+        document.getElementById('registro-form').classList.add('hidden');
+        document.getElementById('login-form').classList.remove('hidden');
+    }
+
+    // Guardar usuario y fecha en Local Storage
+    function registrar() {
+        const email = document.getElementById('reg-email').value;
+        const pass = document.getElementById('reg-password').value;
+        const fechaValida = "02/02/2026"; // Fecha fija para evitar rebote de Telcel
+
+        if(email && pass) {
+            const usuarioDato = { password: pass, fecha: fechaValida };
+            localStorage.setItem(email, JSON.stringify(usuarioDato));
+            alert("Usuario registrado. Fecha de auditoría: " + fechaValida);
+            mostrarLogin();
+        } else {
+            alert("Por favor rellena todos los campos.");
+        }
+    }
+
+    // Validar el inicio de sesión
+    function login() {
+        const email = document.getElementById('login-email').value;
+        const pass = document.getElementById('login-password').value;
+        const registro = localStorage.getItem(email);
+
+        if (registro) {
+            const datos = JSON.parse(registro);
+            if (datos.password === pass) {
+                alert("Acceso concedido para el reporte del " + datos.fecha);
+                document.getElementById('auth-container').classList.add('hidden');
+                // IMPORTANTE: Aquí se desbloquea tu contenido original
+            } else {
+                alert("Contraseña incorrecta.");
+            }
+        } else {
+            alert("Este promotor no está registrado en el dispositivo.");
+        }
+    }
+</script>
+
 
     <div class="container" id="auth-container">
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Telcel_logo.svg/1200px-Telcel_logo.svg.png" alt="Telcel">
