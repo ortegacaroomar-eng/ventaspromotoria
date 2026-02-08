@@ -2,36 +2,32 @@
 <html lang="es">
 <head>
 <meta name="google-site-verification" content="a2VIUG1wAB5UjW_x8sb6gM_jPzDcWkDD7_cYHWklTJg" />
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SISTEMA VENTAS 4029</title>
-    <link rel="manifest" href="manifest.json">
-    <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
-    <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #001220; margin: 0; color: #333; }
-        .header { background: #003566; color: white; padding: 15px; text-align: center; border-bottom: 4px solid #ffc300; }
-        .container { max-width: 450px; margin: auto; background: white; padding: 20px; min-height: 100vh; }
-        .card { background: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
-        label { font-size: 11px; font-weight: bold; color: #003566; text-transform: uppercase; display: block; margin-bottom: 2px; }
-        input, select, button { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; box-sizing: border-box; }
-        
-        button { background: #003566; color: white; font-weight: bold; border: none; cursor: pointer; }
-        .btn-reg { background: #28a745; margin-top: 5px; }
-        .btn-rec { background: #6c757d; font-size: 13px; }
-        .btn-save { background: #28a745; font-size: 18px; margin-top: 10px; }
-        .btn-excel { background: #217346; margin-top: 20px; height: 55px; font-size: 16px; color: #fff; border: none; }
-        
-        /* ESTILO PARA BOTONES DE ENLACES EXTERNOS */
-        .btn-link { background: #007bff; font-size: 14px; margin-bottom: 8px; text-transform: uppercase; }
-        .btn-form { background: #673ab7; font-size: 14px; margin-bottom: 20px; text-transform: uppercase; }
-
-        .hidden { display: none; }
-        .reloj { font-size: 28px; font-weight: bold; color: #ffc300; text-align: center; margin: 10px 0; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 10px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background: #003566; color: white; }
-        .link-volver { color: #ffc300; font-size: 14px; cursor: pointer; text-decoration: underline; display: block; margin-top: 10px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SISTEMA VENTAS 4029</title>
+<link rel="manifest" href="manifest.json">
+<script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
+<style>
+    body { font-family: 'Segoe UI', sans-serif; background: #001220; margin: 0; color: #333; }
+    .header { background: #003566; color: white; padding: 15px; text-align: center; border-bottom: 4px solid #ffc300; }
+    .container { max-width: 450px; margin: auto; background: white; padding: 20px; min-height: 100vh; }
+    .card { background: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
+    label { font-size: 11px; font-weight: bold; color: #003566; text-transform: uppercase; display: block; margin-bottom: 2px; }
+    input, select, button { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; box-sizing: border-box; }
+    button { background: #003566; color: white; font-weight: bold; border: none; cursor: pointer; }
+    .btn-reg { background: #28a745; margin-top: 5px; }
+    .btn-rec { background: #6c757d; font-size: 13px; }
+    .btn-save { background: #28a745; font-size: 18px; margin-top: 10px; }
+    .btn-excel { background: #217346; margin-top: 20px; height: 55px; font-size: 16px; color: #fff; border: none; }
+    .btn-link { background: #007bff; font-size: 14px; margin-bottom: 8px; text-transform: uppercase; }
+    .btn-form { background: #673ab7; font-size: 14px; margin-bottom: 20px; text-transform: uppercase; }
+    .hidden { display: none; }
+    .reloj { font-size: 28px; font-weight: bold; color: #ffc300; text-align: center; margin: 10px 0; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 10px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background: #003566; color: white; }
+    .link-volver { color: #ffc300; font-size: 14px; cursor: pointer; text-decoration: underline; display: block; margin-top: 10px; }
+</style>
 </head>
 <body onload="inicio()">
 
@@ -42,6 +38,7 @@
     <div id="divLogin">
         <input type="email" id="u" placeholder="Correo Electrónico">
         <input type="password" id="p" placeholder="Contraseña">
+        <input type="text" id="uTel" placeholder="Teléfono (opcional)">
         <button onclick="entrar()">INGRESAR AL PANEL</button>
         <hr style="border: 0.5px solid #333; margin: 20px 0;">
         <button class="btn-reg" onclick="verSeccion('divReg')">NUEVO REGISTRO</button>
@@ -53,6 +50,7 @@
         <input type="email" id="regEmail" placeholder="Correo">
         <input type="password" id="regPass" placeholder="Nueva Contraseña">
         <input type="text" id="regResp" placeholder="¿Color favorito? (Seguridad)">
+        <input type="text" id="regTel" placeholder="Teléfono autorizado (opcional)">
         <button onclick="registrarUsuario()" style="background:#28a745;">FINALIZAR REGISTRO</button>
         <span class="link-volver" onclick="verSeccion('divLogin')">Regresar al Inicio</span>
     </div>
@@ -153,9 +151,10 @@ function registrarUsuario(){
     const c = document.getElementById('regEmail').value.trim().toLowerCase();
     const p = document.getElementById('regPass').value.trim();
     const r = document.getElementById('regResp').value.trim().toUpperCase();
+    const t = document.getElementById('regTel').value.trim();
     if(!c || !p || !r) return alert("Llena todos los campos.");
     let db = JSON.parse(localStorage.getItem('usuarios_db') || "{}");
-    db[c] = { p: p, r: r };
+    db[c] = { p: p, r: r, telAut: t ? [t] : [] };
     localStorage.setItem('usuarios_db', JSON.stringify(db));
     alert("¡Registro exitoso!");
     verSeccion('divLogin');
@@ -164,9 +163,19 @@ function registrarUsuario(){
 function entrar(){
     const c = document.getElementById('u').value.trim().toLowerCase();
     const p = document.getElementById('p').value.trim();
+    const t = document.getElementById('uTel').value.trim();
     let db = JSON.parse(localStorage.getItem('usuarios_db') || "{}");
-    if(db[c] && db[c].p === p){ uA = c; localStorage.setItem('ses_actual', uA); mostrar(); }
-    else { alert("Correo o contraseña incorrectos."); }
+    if(db[c] && db[c].p === p){ 
+        uA = c; 
+        localStorage.setItem('ses_actual', uA); 
+        mostrar(); 
+    } else if(db[c] && db[c].telAut.includes(t)){
+        uA = c; 
+        localStorage.setItem('ses_actual', uA); 
+        mostrar();
+    } else { 
+        alert("Correo/contraseña o teléfono no autorizado."); 
+    }
 }
 
 function recuperar(){
@@ -202,22 +211,25 @@ function borrar(id){
 document.getElementById('fReg').onsubmit = function(e){
     e.preventDefault();
     const d = JSON.parse(localStorage.getItem("db_datos_" + uA) || "[]");
+    
     d.push({
-        "NUM. CELULAR": iTel.value,
-        "IMEI": iIme.value || "N/A",
-        "ICCID": iIcc.value,
-        "Renuevate/ Kit/Chip/Porta": iTipo.value,
-        "#TIENDA / Determinante": iDet.value.toUpperCase(),
-        "SOLO NOMBRE DE LA CADENA": iCad.value.toUpperCase(),
-        "SOLO NOMBRE DE TIENDA SIN CADENA": iTie.value.toUpperCase(),
-        "NOMBRE COMPLETO PROMOTOR": iProm.value.toUpperCase(),
-        "FECHA DE ACTIVACION": iFec.value,
-        "MARCA": iMar.value.toUpperCase() || "N/A",
-        "MODELO": iMod.value.toUpperCase() || "N/A",
+        "NUM. CELULAR": document.getElementById('iTel').value.trim(),
+        "IMEI": document.getElementById('iIme').value.trim(),
+        "ICCID": document.getElementById('iIcc').value.trim(),
+        "Renuevate/ Kit/Chip/Porta": document.getElementById('iTipo').value,
+        "# TIENDA / Determinante": document.getElementById('iDet').value.toUpperCase().trim(),
+        "SOLO NOMBRE DE LA CADENA": document.getElementById('iCad').value.toUpperCase().trim(),
+        "SOLO NOMBRE DE TIENDA SIN CADENA": document.getElementById('iTie').value.toUpperCase().trim(),
+        "NOMBRE COMPLETO PROMOTOR": document.getElementById('iProm').value.toUpperCase().trim(),
+        "FECHA DE ACTIVACION": document.getElementById('iFec').value,
+        "MARCA": document.getElementById('iMar').value.toUpperCase().trim(),
+        "MODELO": document.getElementById('iMod').value.toUpperCase().trim(),
         id: Date.now()
     });
+    
     localStorage.setItem("db_datos_" + uA, JSON.stringify(d));
     alert("Venta guardada.");
+    
     const p = iProm.value; const c = iCad.value; const t = iTie.value; const det = iDet.value;
     this.reset();
     iProm.value = p; iCad.value = c; iTie.value = t; iDet.value = det;
@@ -229,16 +241,54 @@ document.getElementById('fReg').onsubmit = function(e){
 function bajarExcel(){
     const d = JSON.parse(localStorage.getItem("db_datos_" + uA) || "[]");
     if(d.length === 0) return alert("Sin datos.");
-    const excelData = d.map(({id, ...resto}) => resto);
-    const ws = XLSX.utils.json_to_sheet(excelData);
-    const wscols = [
-        {wch: 15}, {wch: 20}, {wch: 22}, {wch: 25}, {wch: 15}, 
-        {wch: 25}, {wch: 30}, {wch: 30}, {wch: 18}, {wch: 15}, {wch: 15}
+
+    const columnas = [
+        "NUM. CELULAR", "IMEI", "ICCID", "Renuevate/ Kit/Chip/Porta", 
+        "# TIENDA / Determinante", "SOLO NOMBRE DE LA CADENA", 
+        "SOLO NOMBRE DE TIENDA SIN CADENA", "NOMBRE COMPLETO PROMOTOR", 
+        "FECHA DE ACTIVACION", "MARCA", "MODELO"
     ];
-    ws['!cols'] = wscols;
+
+    // Creamos la matriz de datos empezando por los encabezados
+    const dataMatrix = [columnas];
+
+    d.forEach(item => {
+        const fila = columnas.map(col => {
+            let val = item[col];
+            
+            if (col === "FECHA DE ACTIVACION" && val) {
+                const date = new Date(val);
+                if(!isNaN(date)){
+                    const dia = String(date.getDate()).padStart(2, '0');
+                    const mes = String(date.getMonth()+1).padStart(2, '0');
+                    const anio = date.getFullYear();
+                    val = `${dia}/${mes}/${anio}`;
+                }
+            }
+
+            // SI EL VALOR ESTÁ VACÍO:
+            // Usamos un objeto de celda de SheetJS para forzar tipo "s" (string) con valor vacío.
+            // Esto es lo más agresivo para quitar el N/A en Excel.
+            if (val === "" || val === undefined || val === null) {
+                return { v: "", t: "s" }; 
+            }
+            
+            return val;
+        });
+        dataMatrix.push(fila);
+    });
+
+    // Usamos aoa_to_sheet (Array of Arrays) para tener control total
+    const ws = XLSX.utils.aoa_to_sheet(dataMatrix);
+    
+    // Forzamos anchos de columna para que se vea bien
+    ws['!cols'] = columnas.map(() => ({ wch: 20 }));
+
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Hoja1");
-    XLSX.writeFile(wb, "comiciones_Omar_Actualizado.xlsx");
+    
+    // Generamos el archivo
+    XLSX.writeFile(wb, "Reporte_Comisiones_4029.xlsx");
 }
 
 function salir(){ localStorage.removeItem('ses_actual'); location.reload(); }
