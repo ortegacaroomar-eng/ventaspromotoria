@@ -3,91 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acceso Telcel</title>
+    <title>Sistema Ventas</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        body { font-family: sans-serif; text-align: center; background-color: #f0f2f5; padding: 20px; }
-        .container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-width: 350px; margin: auto; }
-        input { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
-        button { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .azul { background: #003366; color: white; }
-        .verde { background: #28a745; color: white; }
-        .gris { background: #6c757d; color: white; }
+        body { font-family: sans-serif; text-align: center; background: #f4f7f6; padding: 20px; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 350px; margin: auto; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        .btn-azul { background: #003366; color: white; }
+        .btn-verde { background: #28a745; color: white; }
         .hidden { display: none; }
     </style>
 </head>
 <body>
-
-    <div class="container" id="auth-container">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Telcel_logo.svg/1200px-Telcel_logo.svg.png" style="width: 150px; margin-bottom: 20px;">
-        
-        <div id="login-form">
-            <h2>Acceso</h2>
-            <input type="email" id="l-email" placeholder="Correo">
-            <input type="password" id="l-pass" placeholder="Contraseña">
-            <button class="azul" onclick="entrar()">ENTRAR</button>
-            <p style="font-size: 12px; color: blue; cursor: pointer;" onclick="recordar()">¿Olvidaste tu contraseña?</p>
+    <div class="card" id="box-auth">
+        <h2 id="etiqueta" style="color:#003366;">Acceso Telcel</h2>
+        <div id="form-login">
+            <input type="email" id="email-l" placeholder="Correo">
+            <input type="password" id="pass-l" placeholder="Contraseña">
+            <button class="btn-azul" onclick="login()">ENTRAR</button>
+            <p onclick="recuperar()" style="color:blue; font-size:12px; cursor:pointer;">¿Olvidaste tu contraseña?</p>
             <hr>
-            <button class="verde" onclick="verRegistro()">NUEVO PROMOTOR</button>
+            <button class="btn-verde" onclick="mostrarR()">NUEVO PROMOTOR</button>
         </div>
-
-        <div id="registro-form" class="hidden">
-            <h2>Nuevo Registro</h2>
-            <p>Fecha: <strong>02/02/2026</strong></p>
-            <input type="email" id="r-email" placeholder="Correo">
-            <input type="password" id="r-pass" placeholder="Contraseña">
-            <button class="verde" onclick="guardar()">GUARDAR DATOS</button>
-            <button class="gris" onclick="verLogin()">VOLVER</button>
+        <div id="form-reg" class="hidden">
+            <p>Reporte para: <strong>02/02/2026</strong></p>
+            <input type="email" id="email-r" placeholder="Nuevo Correo">
+            <input type="password" id="pass-r" placeholder="Nueva Contraseña">
+            <button class="btn-verde" onclick="registrar()">REGISTRAR AHORA</button>
+            <button onclick="mostrarL()" style="background:#ccc;">VOLVER</button>
         </div>
     </div>
-
-    <div class="container hidden" id="app-container">
+    <div class="card hidden" id="box-app">
         <h2>Panel de Ventas</h2>
-        <p id="user-info"></p>
-        <p>Fecha Reporte: <strong>02/02/2026</strong></p>
-        <button class="gris" onclick="location.reload()">SALIR</button>
+        <p id="info-user"></p>
+        <p>Fecha Activa: 02/02/2026</p>
+        <button onclick="location.reload()" style="background:#666; color:white;">SALIR</button>
     </div>
-
     <script>
-        function verRegistro() {
-            document.getElementById('login-form').style.display = 'none';
-            document.getElementById('registro-form').style.display = 'block';
-        }
+        // RECUERDA PONER AQUÍ TU CONFIGURACIÓN DE FIREBASE
+        const firebaseConfig = {
+            apiKey: "TU_API_KEY",
+            authDomain: "TU_PROYECTO.firebaseapp.com",
+            databaseURL: "https://TU_PROYECTO.firebaseio.com",
+            projectId: "TU_PROYECTO",
+            storageBucket: "TU_PROYECTO.appspot.com",
+            messagingSenderId: "ID",
+            appId: "ID"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const base = firebase.database();
 
-        function verLogin() {
-            document.getElementById('registro-form').style.display = 'none';
-            document.getElementById('login-form').style.display = 'block';
-        }
+        function mostrarR() { document.getElementById('form-login').classList.add('hidden'); document.getElementById('form-reg').classList.remove('hidden'); }
+        function mostrarL() { document.getElementById('form-reg').classList.add('hidden'); document.getElementById('form-login').classList.remove('hidden'); }
 
-        function guardar() {
-            const email = document.getElementById('r-email').value;
-            const pass = document.getElementById('r-pass').value;
-            if(email && pass) {
-                localStorage.setItem(email, JSON.stringify({p: pass, f: "02/02/2026"})); [cite: 2026-02-06]
-                alert("Registrado correctamente");
-                verLogin();
+        function registrar() {
+            const e = document.getElementById('email-r').value;
+            const p = document.getElementById('pass-r').value;
+            if(e && p) {
+                base.ref('promotores/' + e.replace(/\./g, '_')).set({clave:p, fecha:"02/02/2026"}).then(() => {
+                    localStorage.setItem(e, p); [cite: 2026-02-06]
+                    alert("¡Guardado! Ya puedes entrar.");
+                    mostrarL();
+                });
             } else { alert("Llena los campos"); }
         }
 
-        function entrar() {
-            const email = document.getElementById('l-email').value;
-            const pass = document.getElementById('l-pass').value;
-            const datos = localStorage.getItem(email); [cite: 2026-02-06]
-            if(datos) {
-                const user = JSON.parse(datos);
-                if(user.p === pass) {
-                    document.getElementById('auth-container').classList.add('hidden');
-                    document.getElementById('app-container').classList.remove('hidden');
-                    document.getElementById('user-info').innerText = "Usuario: " + email;
-                } else { alert("Contraseña incorrecta"); }
-            } else { alert("Usuario no encontrado"); }
+        function login() {
+            const e = document.getElementById('email-l').value;
+            const p = document.getElementById('pass-l').value;
+            base.ref('promotores/' + e.replace(/\./g, '_')).once('value').then(s => {
+                if(s.exists() && s.val().clave === p) {
+                    document.getElementById('box-auth').classList.add('hidden');
+                    document.getElementById('box-app').classList.remove('hidden');
+                    document.getElementById('info-user').innerText = e;
+                } else { alert("Datos incorrectos o usuario no registrado"); }
+            });
         }
 
-        function recordar() {
-            const email = document.getElementById('l-email').value;
-            if(!email) { alert("Escribe tu correo primero"); return; }
-            const datos = localStorage.getItem(email);
-            if(datos) { alert("Tu clave es: " + JSON.parse(datos).p); }
-            else { alert("No registrado"); }
+        function recuperar() {
+            const e = document.getElementById('email-l').value;
+            if(!e) return alert("Escribe tu correo arriba");
+            base.ref('promotores/' + e.replace(/\./g, '_')).once('value').then(s => {
+                if(s.exists()) alert("Tu clave es: " + s.val().clave);
+                else alert("Correo no encontrado");
+            });
         }
     </script>
 </body>
