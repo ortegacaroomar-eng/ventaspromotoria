@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acceso Telcel Oficial</title>
+    <title>Sistema Telcel Oficial</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; background-color: #f0f2f5; padding: 20px; }
         .container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); max-width: 380px; margin: auto; }
+        .hidden { display: none; }
         input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .btn-azul { background: #003366; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; }
-        .btn-verde { background: #28a745; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; margin-top: 15px; font-weight: bold; font-size: 14px; }
+        .btn-azul { background: #003366; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; }
+        .btn-verde { background: #28a745; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; margin-top: 10px; font-weight: bold; }
         .btn-gris { background: #6c757d; color: white; border: none; padding: 10px; width: 100%; border-radius: 8px; cursor: pointer; margin-top: 10px; }
         .link-olvido { color: #003366; font-size: 13px; cursor: pointer; text-decoration: underline; display: block; margin-top: 10px; }
-        .hidden { display: none; }
         img { width: 180px; margin-bottom: 20px; }
     </style>
 </head>
@@ -26,17 +26,14 @@
             <input type="email" id="login-email" placeholder="Correo electrónico">
             <input type="password" id="login-password" placeholder="Contraseña">
             <button class="btn-azul" onclick="login()">ENTRAR AL SISTEMA</button>
-            
             <span class="link-olvido" onclick="recordarPassword()">¿Olvidaste tu contraseña?</span>
-            
             <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
-            <p style="font-size: 14px; color: #666;">¿Nuevo promotor?</p>
-            <button class="btn-verde" onclick="mostrarRegistro()">REGISTRAR NUEVA CUENTA</button>
+            <button class="btn-verde" onclick="mostrarRegistro()">REGISTRAR NUEVO PROMOTOR</button>
         </div>
 
         <div id="registro-form" class="hidden">
             <h2 style="color: #28a745;">Nuevo Registro</h2>
-            <p>Fecha de Reporte: <strong>02/02/2026</strong></p>
+            <p>Fecha Oficial: <strong>02/02/2026</strong></p>
             <input type="email" id="reg-email" placeholder="Correo electrónico">
             <input type="password" id="reg-password" placeholder="Crea una contraseña">
             <button class="btn-verde" onclick="registrar()">GUARDAR DATOS</button>
@@ -45,10 +42,10 @@
     </div>
 
     <div class="container hidden" id="app-container">
-        <h2>Panel de Ventas</h2>
+        <h2>Registro de Ventas</h2>
         <p id="user-display" style="font-weight: bold; color: #555;"></p>
         <hr>
-        <p>Estás trabajando con la fecha: <strong>02/02/2026</strong></p>
+        <p>Sistema Activo - Fecha: <strong>02/02/2026</strong></p>
         <button class="btn-gris" onclick="location.reload()">CERRAR SESIÓN</button>
     </div>
 
@@ -63,7 +60,6 @@
             document.getElementById('login-form').classList.remove('hidden');
         }
 
-        // Lógica de Registro con Local Storage [cite: 2026-02-06]
         function registrar() {
             const email = document.getElementById('reg-email').value;
             const pass = document.getElementById('reg-password').value;
@@ -72,14 +68,13 @@
             if(email && pass) {
                 const datos = { password: pass, fecha: fechaFija };
                 localStorage.setItem(email, JSON.stringify(datos)); [cite: 2026-02-06]
-                alert("¡Usuario guardado correctamente!");
+                alert("¡Usuario registrado con éxito!");
                 mostrarLogin();
             } else {
-                alert("Completa los campos.");
+                alert("Por favor completa los campos.");
             }
         }
 
-        // Lógica de Inicio de Sesión [cite: 2026-02-04]
         function login() {
             const email = document.getElementById('login-email').value;
             const pass = document.getElementById('login-password').value;
@@ -88,31 +83,27 @@
             if (guardado) {
                 const usuario = JSON.parse(guardado);
                 if (usuario.password === pass) {
+                    // Quitamos el login y mostramos la app
                     document.getElementById('auth-container').classList.add('hidden');
                     document.getElementById('app-container').classList.remove('hidden');
-                    document.getElementById('user-display').innerText = "Promotor: " + email;
+                    document.getElementById('user-display').innerText = "Bienvenido: " + email;
                 } else {
                     alert("Contraseña incorrecta.");
                 }
             } else {
-                alert("Este correo no está registrado.");
+                alert("Este correo no está registrado. Dale al botón verde de abajo.");
             }
         }
 
-        // FUNCIÓN PARA RECORDAR CONTRASEÑA [cite: 2026-02-06]
         function recordarPassword() {
             const email = document.getElementById('login-email').value;
-            if (!email) {
-                alert("Por favor, escribe primero tu correo en el recuadro.");
-                return;
-            }
-
-            const guardado = localStorage.getItem(email); [cite: 2026-02-06]
+            if (!email) { alert("Escribe tu correo primero."); return; }
+            const guardado = localStorage.getItem(email);
             if (guardado) {
                 const usuario = JSON.parse(guardado);
-                alert("Tu contraseña es: " + usuario.password + "\nFecha asignada: " + usuario.fecha);
+                alert("Tu clave es: " + usuario.password);
             } else {
-                alert("No encontramos ninguna cuenta con ese correo.");
+                alert("Correo no encontrado.");
             }
         }
     </script>
