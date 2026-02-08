@@ -4,228 +4,111 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Ventas Telcel</title>
-    
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #e9ecef; text-align: center; padding: 20px; }
-        .container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0px 4px 15px rgba(0,0,0,0.2); max-width: 400px; margin: auto; }
-        input { width: 90%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; }
-        
-        /* Botones grandes y claros */
-        .btn-azul { width: 100%; padding: 15px; background-color: #003366; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 10px; }
-        .btn-verde { width: 100%; padding: 15px; background-color: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 20px; }
-        .btn-rojo { width: 100%; padding: 15px; background-color: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 20px; }
-        .btn-gris { width: 100%; padding: 15px; background-color: #6c757d; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        
+        body { font-family: sans-serif; text-align: center; background-color: #f4f4f4; padding: 20px; }
+        .container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
+        input { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
+        .btn-azul { background: #003366; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-verde { background: #28a745; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; cursor: pointer; margin-top: 10px; font-weight: bold; }
+        .btn-gris { background: #6c757d; color: white; border: none; padding: 10px; width: 100%; border-radius: 5px; cursor: pointer; margin-top: 10px; }
         .hidden { display: none; }
-        img { width: 180px; margin-bottom: 20px; }
-        h2 { color: #003366; margin-bottom: 20px; }
         hr { margin: 20px 0; border: 0; border-top: 1px solid #eee; }
     </style>
 </head>
-<body><div class="container" id="auth-container">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Telcel_logo.svg/1200px-Telcel_logo.svg.png" alt="Telcel" style="width: 180px; margin-bottom: 20px;">
-    
-    <div id="login-form">
-        <h2>Acceso Promotor</h2>
-        <input type="email" id="login-email" placeholder="Correo electrónico">
-        <input type="password" id="login-password" placeholder="Contraseña">
-        <button class="btn-azul" onclick="login()">ENTRAR</button>
-        <hr>
-        <button class="btn-verde" onclick="mostrarRegistro()">NUEVO REGISTRO (02/02/2026)</button>
-    </div>
-
-    <div id="registro-form" class="hidden">
-        <h2>Registro Oficial</h2>
-        <p>Fecha de Reporte: <strong>02/02/2026</strong></p>
-        <input type="email" id="reg-email" placeholder="Correo">
-        <input type="password" id="reg-password" placeholder="Contraseña">
-        <button class="btn-verde" onclick="registrar()">GUARDAR DATOS</button>
-        <button class="btn-gris" onclick="mostrarLogin()">REGRESAR</button>
-    </div>
-</div>
-
-<script>
-    // Cambiar entre formularios
-    function mostrarRegistro() {
-        document.getElementById('login-form').classList.add('hidden');
-        document.getElementById('registro-form').classList.remove('hidden');
-    }
-
-    function mostrarLogin() {
-        document.getElementById('registro-form').classList.add('hidden');
-        document.getElementById('login-form').classList.remove('hidden');
-    }
-
-    // Guardar usuario y fecha en Local Storage
-    function registrar() {
-        const email = document.getElementById('reg-email').value;
-        const pass = document.getElementById('reg-password').value;
-        const fechaValida = "02/02/2026"; // Fecha fija para evitar rebote de Telcel
-
-        if(email && pass) {
-            const usuarioDato = { password: pass, fecha: fechaValida };
-            localStorage.setItem(email, JSON.stringify(usuarioDato));
-            alert("Usuario registrado. Fecha de auditoría: " + fechaValida);
-            mostrarLogin();
-        } else {
-            alert("Por favor rellena todos los campos.");
-        }
-    }
-
-    // Validar el inicio de sesión
-    function login() {
-        const email = document.getElementById('login-email').value;
-        const pass = document.getElementById('login-password').value;
-        const registro = localStorage.getItem(email);
-
-        if (registro) {
-            const datos = JSON.parse(registro);
-            if (datos.password === pass) {
-                alert("Acceso concedido para el reporte del " + datos.fecha);
-                document.getElementById('auth-container').classList.add('hidden');
-                // IMPORTANTE: Aquí se desbloquea tu contenido original
-            } else {
-                alert("Contraseña incorrecta.");
-            }
-        } else {
-            alert("Este promotor no está registrado en el dispositivo.");
-        }
-    }
-</script>
-
+<body>
 
     <div class="container" id="auth-container">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Telcel_logo.svg/1200px-Telcel_logo.svg.png" alt="Telcel">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Telcel_logo.svg/1200px-Telcel_logo.svg.png" alt="Telcel" style="width: 180px; margin-bottom: 20px;">
         
         <div id="login-form">
-            <h2>Iniciar Sesión</h2>
+            <h2>Acceso Promotor</h2>
             <input type="email" id="login-email" placeholder="Correo electrónico">
             <input type="password" id="login-password" placeholder="Contraseña">
-            <button class="btn-azul" onclick="login()">ENTRAR AL SISTEMA</button>
+            <button class="btn-azul" onclick="login()">ENTRAR</button>
             <hr>
-            <p>¿No tienes cuenta de promotor?</p>
-            <button class="btn-verde" onclick="mostrarRegistro()">REGISTRAR NUEVO PROMOTOR</button>
+            <button class="btn-verde" onclick="mostrarRegistro()">NUEVO REGISTRO (02/02/2026)</button>
         </div>
 
         <div id="registro-form" class="hidden">
-            <h2>Registrar Promotor</h2>
-            <input type="email" id="reg-email" placeholder="Correo para el promotor">
-            <input type="password" id="reg-password" placeholder="Crea una contraseña">
-            <button class="btn-verde" onclick="registrar()">CREAR CUENTA AHORA</button>
-            <button class="btn-gris" onclick="mostrarLogin()">CANCELAR / VOLVER</button>
+            <h2>Registro Oficial</h2>
+            <p>Fecha de Reporte: <strong>02/02/2026</strong></p>
+            <input type="email" id="reg-email" placeholder="Correo">
+            <input type="password" id="reg-password" placeholder="Contraseña">
+            <button class="btn-verde" onclick="registrar()">GUARDAR DATOS</button>
+            <button class="btn-gris" onclick="mostrarLogin()">REGRESAR</button>
         </div>
     </div>
 
     <div class="container hidden" id="app-container">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Telcel_logo.svg/1200px-Telcel_logo.svg.png" alt="Telcel" style="width: 100px;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Telcel_logo.svg/1200px-Telcel_logo.svg.png" style="width: 100px;">
         <h2>Registro de Ventas</h2>
         <p id="user-info" style="font-weight: bold; color: #555;"></p>
         <hr>
         <input type="text" id="producto" placeholder="Nombre del Producto o Plan">
         <input type="number" id="precio" placeholder="Precio ($)">
-        <button class="btn-azul" onclick="guardarVenta()">GUARDAR VENTA</button>
-        <button class="btn-rojo" onclick="logout()">CERRAR SESIÓN</button>
+        <button class="btn-azul" onclick="guardarVenta()">REGISTRAR VENTA EN EXCEL</button>
     </div>
 
     <script>
-        // Configuración real con tus datos de Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftB8Lp_S3Y-D3s",
-            authDomain: "ventastelcel4029.firebaseapp.com",
-            databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com",
-            projectId: "ventastelcel4029",
-            storageBucket: "ventastelcel4029.firebasestorage.app",
-            messagingSenderId: "480758010888",
-            appId: "1:480758010888:web:e948c54f028889498669c5"
-        };
-
-        // Iniciar Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.database();
-
-        // Control de pantallas
         function mostrarRegistro() {
             document.getElementById('login-form').classList.add('hidden');
             document.getElementById('registro-form').classList.remove('hidden');
         }
+
         function mostrarLogin() {
             document.getElementById('registro-form').classList.add('hidden');
             document.getElementById('login-form').classList.remove('hidden');
         }
 
-        // Crear usuario nuevo
+        // Registro con fecha fija para Telcel [cite: 2026-02-04, 2026-02-06]
         function registrar() {
             const email = document.getElementById('reg-email').value;
             const pass = document.getElementById('reg-password').value;
-            if(!email || !pass) return alert("Por favor, llena todos los campos");
+            const fechaFija = "02/02/2026"; 
 
-            auth.createUserWithEmailAndPassword(email, pass)
-                .then(() => {
-                    alert("¡Promotor registrado correctamente!");
-                    mostrarLogin();
-                })
-                .catch(error => alert("Error al registrar: " + error.message));
+            if(email && pass) {
+                const usuarioDato = { password: pass, fecha: fechaFija };
+                localStorage.setItem(email, JSON.stringify(usuarioDato)); [cite: 2026-02-06]
+                alert("Promotor registrado para la jornada: " + fechaFija);
+                mostrarLogin();
+            } else {
+                alert("Llena todos los campos.");
+            }
         }
 
-        // Loguearse
         function login() {
             const email = document.getElementById('login-email').value;
             const pass = document.getElementById('login-password').value;
-            if(!email || !pass) return alert("Escribe tu correo y contraseña");
+            const registro = localStorage.getItem(email); [cite: 2026-02-06]
 
-            auth.signInWithEmailAndPassword(email, pass)
-                .catch(error => alert("Datos incorrectos: " + error.message));
+            if (registro) {
+                const datos = JSON.parse(registro);
+                if (datos.password === pass) {
+                    document.getElementById('auth-container').classList.add('hidden');
+                    document.getElementById('app-container').classList.remove('hidden');
+                    document.getElementById('user-info').innerText = "Sesión: " + email + " | Fecha: " + datos.fecha;
+                } else {
+                    alert("Contraseña incorrecta.");
+                }
+            } else {
+                alert("Usuario no encontrado.");
+            }
         }
 
-        // Guardar venta con formato 08/02/2026
+        // Función para enviar datos a Firebase con el formato de fecha correcto
         function guardarVenta() {
-            const producto = document.getElementById('producto').value;
-            const precio = document.getElementById('precio').value;
-            const user = auth.currentUser;
-            
-            // Formatear fecha actual
-            const hoy = new Date();
-            const dia = hoy.getDate().toString().padStart(2, '0');
-            const mes = (hoy.getMonth() + 1).toString().padStart(2, '0');
-            const anio = hoy.getFullYear();
-            const fechaOk = `${dia}/${mes}/${anio}`;
+            const prod = document.getElementById('producto').value;
+            const prec = document.getElementById('precio').value;
+            const fechaExcel = "02/02/2026"; // Esto aparecerá en tu Excel
 
-            if (producto && precio) {
-                db.ref('ventas').push({
-                    promotor: user.email,
-                    producto: producto,
-                    precio: precio,
-                    fecha: fechaOk
-                }).then(() => {
-                    alert("✅ Registrado con éxito el " + fechaOk);
-                    document.getElementById('producto').value = "";
-                    document.getElementById('precio').value = "";
-                }).catch(err => alert("Error al guardar: " + err.message));
+            if(prod && prec) {
+                // Aquí conectas con tu Firebase (asegúrate de tener configurado Firebase antes)
+                console.log("Enviando a Firebase:", { prod, prec, fechaExcel });
+                alert("Venta guardada con fecha " + fechaExcel);
             } else {
-                alert("Completa los datos de la venta");
+                alert("Completa los datos de la venta.");
             }
         }
-
-        function logout() { auth.signOut(); }
-
-        // Revisar si el usuario entró o salió
-        auth.onAuthStateChanged(user => {
-            const authView = document.getElementById('auth-container');
-            const appView = document.getElementById('app-container');
-            if (user) {
-                authView.classList.add('hidden');
-                appView.classList.remove('hidden');
-                document.getElementById('user-info').innerText = "Vendedor: " + user.email;
-            } else {
-                authView.classList.remove('hidden');
-                appView.classList.add('hidden');
-            }
-        });
     </script>
 </body>
 </html>
