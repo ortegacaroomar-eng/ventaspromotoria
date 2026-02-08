@@ -3,50 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Ventas Telcel</title>
+    <title>Acceso Telcel Oficial</title>
     <style>
-        body { font-family: sans-serif; text-align: center; background-color: #f4f4f4; padding: 20px; }
-        .container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
-        input { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
-        .btn-azul { background: #003366; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .btn-verde { background: #28a745; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; cursor: pointer; margin-top: 10px; font-weight: bold; }
-        .btn-gris { background: #6c757d; color: white; border: none; padding: 10px; width: 100%; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #f0f2f5; padding: 20px; }
+        .container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); max-width: 380px; margin: auto; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .btn-azul { background: #003366; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; }
+        .btn-verde { background: #28a745; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; margin-top: 15px; font-weight: bold; font-size: 14px; }
+        .btn-gris { background: #6c757d; color: white; border: none; padding: 10px; width: 100%; border-radius: 8px; cursor: pointer; margin-top: 10px; }
+        .link-olvido { color: #003366; font-size: 13px; cursor: pointer; text-decoration: underline; display: block; margin-top: 10px; }
         .hidden { display: none; }
-        hr { margin: 20px 0; border: 0; border-top: 1px solid #eee; }
+        img { width: 180px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
     <div class="container" id="auth-container">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Telcel_logo.svg/1200px-Telcel_logo.svg.png" alt="Telcel" style="width: 180px; margin-bottom: 20px;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Telcel_logo.svg/1200px-Telcel_logo.svg.png" alt="Telcel">
         
         <div id="login-form">
-            <h2>Acceso Promotor</h2>
+            <h2 style="color: #003366;">Acceso Promotor</h2>
             <input type="email" id="login-email" placeholder="Correo electrónico">
             <input type="password" id="login-password" placeholder="Contraseña">
-            <button class="btn-azul" onclick="login()">ENTRAR</button>
-            <hr>
-            <button class="btn-verde" onclick="mostrarRegistro()">NUEVO REGISTRO (02/02/2026)</button>
+            <button class="btn-azul" onclick="login()">ENTRAR AL SISTEMA</button>
+            
+            <span class="link-olvido" onclick="recordarPassword()">¿Olvidaste tu contraseña?</span>
+            
+            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+            <p style="font-size: 14px; color: #666;">¿Nuevo promotor?</p>
+            <button class="btn-verde" onclick="mostrarRegistro()">REGISTRAR NUEVA CUENTA</button>
         </div>
 
         <div id="registro-form" class="hidden">
-            <h2>Registro Oficial</h2>
+            <h2 style="color: #28a745;">Nuevo Registro</h2>
             <p>Fecha de Reporte: <strong>02/02/2026</strong></p>
-            <input type="email" id="reg-email" placeholder="Correo">
-            <input type="password" id="reg-password" placeholder="Contraseña">
+            <input type="email" id="reg-email" placeholder="Correo electrónico">
+            <input type="password" id="reg-password" placeholder="Crea una contraseña">
             <button class="btn-verde" onclick="registrar()">GUARDAR DATOS</button>
-            <button class="btn-gris" onclick="mostrarLogin()">REGRESAR</button>
+            <button class="btn-gris" onclick="mostrarLogin()">CANCELAR</button>
         </div>
     </div>
 
     <div class="container hidden" id="app-container">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Telcel_logo.svg/1200px-Telcel_logo.svg.png" style="width: 100px;">
-        <h2>Registro de Ventas</h2>
-        <p id="user-info" style="font-weight: bold; color: #555;"></p>
+        <h2>Panel de Ventas</h2>
+        <p id="user-display" style="font-weight: bold; color: #555;"></p>
         <hr>
-        <input type="text" id="producto" placeholder="Nombre del Producto o Plan">
-        <input type="number" id="precio" placeholder="Precio ($)">
-        <button class="btn-azul" onclick="guardarVenta()">REGISTRAR VENTA EN EXCEL</button>
+        <p>Estás trabajando con la fecha: <strong>02/02/2026</strong></p>
+        <button class="btn-gris" onclick="location.reload()">CERRAR SESIÓN</button>
     </div>
 
     <script>
@@ -60,53 +63,56 @@
             document.getElementById('login-form').classList.remove('hidden');
         }
 
-        // Registro con fecha fija para Telcel [cite: 2026-02-04, 2026-02-06]
+        // Lógica de Registro con Local Storage [cite: 2026-02-06]
         function registrar() {
             const email = document.getElementById('reg-email').value;
             const pass = document.getElementById('reg-password').value;
-            const fechaFija = "02/02/2026"; 
+            const fechaFija = "02/02/2026"; //
 
             if(email && pass) {
-                const usuarioDato = { password: pass, fecha: fechaFija };
-                localStorage.setItem(email, JSON.stringify(usuarioDato)); [cite: 2026-02-06]
-                alert("Promotor registrado para la jornada: " + fechaFija);
+                const datos = { password: pass, fecha: fechaFija };
+                localStorage.setItem(email, JSON.stringify(datos)); [cite: 2026-02-06]
+                alert("¡Usuario guardado correctamente!");
                 mostrarLogin();
             } else {
-                alert("Llena todos los campos.");
+                alert("Completa los campos.");
             }
         }
 
+        // Lógica de Inicio de Sesión [cite: 2026-02-04]
         function login() {
             const email = document.getElementById('login-email').value;
             const pass = document.getElementById('login-password').value;
-            const registro = localStorage.getItem(email); [cite: 2026-02-06]
+            const guardado = localStorage.getItem(email); [cite: 2026-02-06]
 
-            if (registro) {
-                const datos = JSON.parse(registro);
-                if (datos.password === pass) {
+            if (guardado) {
+                const usuario = JSON.parse(guardado);
+                if (usuario.password === pass) {
                     document.getElementById('auth-container').classList.add('hidden');
                     document.getElementById('app-container').classList.remove('hidden');
-                    document.getElementById('user-info').innerText = "Sesión: " + email + " | Fecha: " + datos.fecha;
+                    document.getElementById('user-display').innerText = "Promotor: " + email;
                 } else {
                     alert("Contraseña incorrecta.");
                 }
             } else {
-                alert("Usuario no encontrado.");
+                alert("Este correo no está registrado.");
             }
         }
 
-        // Función para enviar datos a Firebase con el formato de fecha correcto
-        function guardarVenta() {
-            const prod = document.getElementById('producto').value;
-            const prec = document.getElementById('precio').value;
-            const fechaExcel = "02/02/2026"; // Esto aparecerá en tu Excel
+        // FUNCIÓN PARA RECORDAR CONTRASEÑA [cite: 2026-02-06]
+        function recordarPassword() {
+            const email = document.getElementById('login-email').value;
+            if (!email) {
+                alert("Por favor, escribe primero tu correo en el recuadro.");
+                return;
+            }
 
-            if(prod && prec) {
-                // Aquí conectas con tu Firebase (asegúrate de tener configurado Firebase antes)
-                console.log("Enviando a Firebase:", { prod, prec, fechaExcel });
-                alert("Venta guardada con fecha " + fechaExcel);
+            const guardado = localStorage.getItem(email); [cite: 2026-02-06]
+            if (guardado) {
+                const usuario = JSON.parse(guardado);
+                alert("Tu contraseña es: " + usuario.password + "\nFecha asignada: " + usuario.fecha);
             } else {
-                alert("Completa los datos de la venta.");
+                alert("No encontramos ninguna cuenta con ese correo.");
             }
         }
     </script>
