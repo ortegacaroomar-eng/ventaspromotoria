@@ -3,108 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Telcel Oficial</title>
+    <title>Acceso Telcel</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; background-color: #f0f2f5; padding: 20px; }
-        .container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); max-width: 380px; margin: auto; }
+        body { font-family: sans-serif; text-align: center; background-color: #f0f2f5; padding: 20px; }
+        .container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-width: 350px; margin: auto; }
+        input { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
+        button { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .azul { background: #003366; color: white; }
+        .verde { background: #28a745; color: white; }
+        .gris { background: #6c757d; color: white; }
         .hidden { display: none; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .btn-azul { background: #003366; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; }
-        .btn-verde { background: #28a745; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; margin-top: 10px; font-weight: bold; }
-        .btn-gris { background: #6c757d; color: white; border: none; padding: 10px; width: 100%; border-radius: 8px; cursor: pointer; margin-top: 10px; }
-        .link-olvido { color: #003366; font-size: 13px; cursor: pointer; text-decoration: underline; display: block; margin-top: 10px; }
-        img { width: 180px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
     <div class="container" id="auth-container">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Telcel_logo.svg/1200px-Telcel_logo.svg.png" alt="Telcel">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Telcel_logo.svg/1200px-Telcel_logo.svg.png" style="width: 150px; margin-bottom: 20px;">
         
         <div id="login-form">
-            <h2 style="color: #003366;">Acceso Promotor</h2>
-            <input type="email" id="login-email" placeholder="Correo electrónico">
-            <input type="password" id="login-password" placeholder="Contraseña">
-            <button class="btn-azul" onclick="login()">ENTRAR AL SISTEMA</button>
-            <span class="link-olvido" onclick="recordarPassword()">¿Olvidaste tu contraseña?</span>
-            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
-            <button class="btn-verde" onclick="mostrarRegistro()">REGISTRAR NUEVO PROMOTOR</button>
+            <h2>Acceso</h2>
+            <input type="email" id="l-email" placeholder="Correo">
+            <input type="password" id="l-pass" placeholder="Contraseña">
+            <button class="azul" onclick="entrar()">ENTRAR</button>
+            <p style="font-size: 12px; color: blue; cursor: pointer;" onclick="recordar()">¿Olvidaste tu contraseña?</p>
+            <hr>
+            <button class="verde" onclick="verRegistro()">NUEVO PROMOTOR</button>
         </div>
 
         <div id="registro-form" class="hidden">
-            <h2 style="color: #28a745;">Nuevo Registro</h2>
-            <p>Fecha Oficial: <strong>02/02/2026</strong></p>
-            <input type="email" id="reg-email" placeholder="Correo electrónico">
-            <input type="password" id="reg-password" placeholder="Crea una contraseña">
-            <button class="btn-verde" onclick="registrar()">GUARDAR DATOS</button>
-            <button class="btn-gris" onclick="mostrarLogin()">CANCELAR</button>
+            <h2>Nuevo Registro</h2>
+            <p>Fecha: <strong>02/02/2026</strong></p>
+            <input type="email" id="r-email" placeholder="Correo">
+            <input type="password" id="r-pass" placeholder="Contraseña">
+            <button class="verde" onclick="guardar()">GUARDAR DATOS</button>
+            <button class="gris" onclick="verLogin()">VOLVER</button>
         </div>
     </div>
 
     <div class="container hidden" id="app-container">
-        <h2>Registro de Ventas</h2>
-        <p id="user-display" style="font-weight: bold; color: #555;"></p>
-        <hr>
-        <p>Sistema Activo - Fecha: <strong>02/02/2026</strong></p>
-        <button class="btn-gris" onclick="location.reload()">CERRAR SESIÓN</button>
+        <h2>Panel de Ventas</h2>
+        <p id="user-info"></p>
+        <p>Fecha Reporte: <strong>02/02/2026</strong></p>
+        <button class="gris" onclick="location.reload()">SALIR</button>
     </div>
 
     <script>
-        function mostrarRegistro() {
-            document.getElementById('login-form').classList.add('hidden');
-            document.getElementById('registro-form').classList.remove('hidden');
+        function verRegistro() {
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('registro-form').style.display = 'block';
         }
 
-        function mostrarLogin() {
-            document.getElementById('registro-form').classList.add('hidden');
-            document.getElementById('login-form').classList.remove('hidden');
+        function verLogin() {
+            document.getElementById('registro-form').style.display = 'none';
+            document.getElementById('login-form').style.display = 'block';
         }
 
-        function registrar() {
-            const email = document.getElementById('reg-email').value;
-            const pass = document.getElementById('reg-password').value;
-            const fechaFija = "02/02/2026"; //
-
+        function guardar() {
+            const email = document.getElementById('r-email').value;
+            const pass = document.getElementById('r-pass').value;
             if(email && pass) {
-                const datos = { password: pass, fecha: fechaFija };
-                localStorage.setItem(email, JSON.stringify(datos)); [cite: 2026-02-06]
-                alert("¡Usuario registrado con éxito!");
-                mostrarLogin();
-            } else {
-                alert("Por favor completa los campos.");
-            }
+                localStorage.setItem(email, JSON.stringify({p: pass, f: "02/02/2026"})); [cite: 2026-02-06]
+                alert("Registrado correctamente");
+                verLogin();
+            } else { alert("Llena los campos"); }
         }
 
-        function login() {
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-password').value;
-            const guardado = localStorage.getItem(email); [cite: 2026-02-06]
-
-            if (guardado) {
-                const usuario = JSON.parse(guardado);
-                if (usuario.password === pass) {
-                    // Quitamos el login y mostramos la app
+        function entrar() {
+            const email = document.getElementById('l-email').value;
+            const pass = document.getElementById('l-pass').value;
+            const datos = localStorage.getItem(email); [cite: 2026-02-06]
+            if(datos) {
+                const user = JSON.parse(datos);
+                if(user.p === pass) {
                     document.getElementById('auth-container').classList.add('hidden');
                     document.getElementById('app-container').classList.remove('hidden');
-                    document.getElementById('user-display').innerText = "Bienvenido: " + email;
-                } else {
-                    alert("Contraseña incorrecta.");
-                }
-            } else {
-                alert("Este correo no está registrado. Dale al botón verde de abajo.");
-            }
+                    document.getElementById('user-info').innerText = "Usuario: " + email;
+                } else { alert("Contraseña incorrecta"); }
+            } else { alert("Usuario no encontrado"); }
         }
 
-        function recordarPassword() {
-            const email = document.getElementById('login-email').value;
-            if (!email) { alert("Escribe tu correo primero."); return; }
-            const guardado = localStorage.getItem(email);
-            if (guardado) {
-                const usuario = JSON.parse(guardado);
-                alert("Tu clave es: " + usuario.password);
-            } else {
-                alert("Correo no encontrado.");
-            }
+        function recordar() {
+            const email = document.getElementById('l-email').value;
+            if(!email) { alert("Escribe tu correo primero"); return; }
+            const datos = localStorage.getItem(email);
+            if(datos) { alert("Tu clave es: " + JSON.parse(datos).p); }
+            else { alert("No registrado"); }
         }
     </script>
 </body>
