@@ -1,297 +1,108 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta name="google-site-verification" content="a2VIUG1wAB5UjW_x8sb6gM_jPzDcWkDD7_cYHWklTJg" />
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SISTEMA VENTAS 4029</title>
-<link rel="manifest" href="manifest.json">
-<script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
-<style>
-    body { font-family: 'Segoe UI', sans-serif; background: #001220; margin: 0; color: #333; }
-    .header { background: #003566; color: white; padding: 15px; text-align: center; border-bottom: 4px solid #ffc300; }
-    .container { max-width: 450px; margin: auto; background: white; padding: 20px; min-height: 100vh; }
-    .card { background: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
-    label { font-size: 11px; font-weight: bold; color: #003566; text-transform: uppercase; display: block; margin-bottom: 2px; }
-    input, select, button { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; box-sizing: border-box; }
-    button { background: #003566; color: white; font-weight: bold; border: none; cursor: pointer; }
-    .btn-reg { background: #28a745; margin-top: 5px; }
-    .btn-rec { background: #6c757d; font-size: 13px; }
-    .btn-save { background: #28a745; font-size: 18px; margin-top: 10px; }
-    .btn-excel { background: #217346; margin-top: 20px; height: 55px; font-size: 16px; color: #fff; border: none; }
-    .btn-link { background: #007bff; font-size: 14px; margin-bottom: 8px; text-transform: uppercase; }
-    .btn-form { background: #673ab7; font-size: 14px; margin-bottom: 20px; text-transform: uppercase; }
-    .hidden { display: none; }
-    .reloj { font-size: 28px; font-weight: bold; color: #ffc300; text-align: center; margin: 10px 0; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 10px; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-    th { background: #003566; color: white; }
-    .link-volver { color: #ffc300; font-size: 14px; cursor: pointer; text-decoration: underline; display: block; margin-top: 10px; }
-</style>
-</head>
-<body onload="inicio()">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Ventas Telcel 4029</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-<div id="lSec" style="max-width:400px; margin:auto; padding:40px 20px; text-align:center;">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Telcel_logo.svg/1200px-Telcel_logo.svg.png" width="160">
-    <div id="rel" class="reloj">00:00:00</div>
-    
-    <div id="divLogin">
-        <input type="email" id="u" placeholder="Correo Electrónico">
-        <input type="password" id="p" placeholder="Contraseña">
-        <input type="text" id="uTel" placeholder="Teléfono (opcional)">
-        <button onclick="entrar()">INGRESAR AL PANEL</button>
-        <hr style="border: 0.5px solid #333; margin: 20px 0;">
-        <button class="btn-reg" onclick="verSeccion('divReg')">NUEVO REGISTRO</button>
-        <button class="btn-rec" onclick="verSeccion('divRec')">RECUPERAR CONTRASEÑA</button>
-    </div>
+        // Tus credenciales reales verificadas
+        const firebaseConfig = {
+            apiKey: "AIzaSyD4UK_j8UxMe0CtrtXlYftBo_wCLE7psMc",
+            authDomain: "ventastelcel4029.firebaseapp.com",
+            projectId: "ventastelcel4029",
+            storageBucket: "ventastelcel4029.firebasestorage.app",
+            messagingSenderId: "480758010888",
+            appId: "1:480758010888:web:e948c54f0217536aa9adbd"
+        };
 
-    <div id="divReg" class="hidden">
-        <h3 style="color:white">CREAR CUENTA</h3>
-        <input type="email" id="regEmail" placeholder="Correo">
-        <input type="password" id="regPass" placeholder="Nueva Contraseña">
-        <input type="text" id="regResp" placeholder="¿Color favorito? (Seguridad)">
-        <input type="text" id="regTel" placeholder="Teléfono autorizado (opcional)">
-        <button onclick="registrarUsuario()" style="background:#28a745;">FINALIZAR REGISTRO</button>
-        <span class="link-volver" onclick="verSeccion('divLogin')">Regresar al Inicio</span>
-    </div>
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
 
-    <div id="divRec" class="hidden">
-        <h3 style="color:white">RECUPERAR ACCESO</h3>
-        <input type="email" id="recEmail" placeholder="Tu correo registrado">
-        <input type="text" id="recResp" placeholder="¿Color favorito? (Respuesta)">
-        <button onclick="recuperar()" style="background:#ffc300; color:#000;">MOSTRAR CONTRASEÑA</button>
-        <span class="link-volver" onclick="verSeccion('divLogin')">Regresar al Inicio</span>
-    </div>
-</div>
-
-<div id="mSec" class="hidden">
-    <div class="header">
-        <h3 style="margin:0">SISTEMA VENTAS 4029</h3>
-        <small style="color:#ffc300; font-weight:bold;">REPORTE DE COMISIONES</small>
-    </div>
-    
-    <div class="container">
-        <button class="btn-link" onclick="window.open('https://registro.telcel.com/vinculatulinea/#/', '_blank')">🔗 VINCULA TU LÍNEA (TELCEL)</button>
-        <button class="btn-form" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSfQMT1FUeOLNJUzB8DeGhKNTqiU_DS7wr7y2p_Ab7xgHHjYbw/viewform', '_blank')">📝 FORMULARIO GOOGLE</button>
-
-        <form id="fReg">
-            <label>Renuevate/ Kit/Chip/Porta</label>
-            <select id="iTipo" onchange="menuInteractivo()" required>
-                <option value="" disabled selected>-- SELECCIONE PRODUCTO --</option>
-                <option value="KIT">KIT (EQUIPO)</option>
-                <option value="CHIP">CHIP</option>
-                <option value="PORTA">PORTA</option>
-                <option value="RENUEVATE">RENUEVATE</option>
-            </select>
-
-            <label>Num. Celular (10 dígitos)</label>
-            <input type="text" id="iTel" placeholder="0000000000" maxlength="10" required>
-            <label>ICCID (19 dígitos)</label>
-            <input type="text" id="iIcc" placeholder="8952..." maxlength="19" required>
-            
-            <div id="seccionEquipo" class="card hidden">
-                <label>IMEI (15 dígitos)</label>
-                <input type="text" id="iIme" placeholder="IMEI" maxlength="15">
-                <label>Marca</label>
-                <input type="text" id="iMar" placeholder="MARCA">
-                <label>Modelo</label>
-                <input type="text" id="iMod" placeholder="MODELO">
-            </div>
-
-            <div class="card">
-                <label># Tienda / Determinante</label>
-                <input type="text" id="iDet" placeholder="Ej. 5432">
-                <label>Cadena</label>
-                <input type="text" id="iCad" placeholder="COPPEL">
-                <label>Tienda</label>
-                <input type="text" id="iTie" placeholder="ECATEPEC">
-                <label>Promotor</label>
-                <input type="text" id="iProm" placeholder="TU NOMBRE" required>
-                <label>Fecha</label>
-                <input type="date" id="iFec">
-            </div>
-            
-            <button type="submit" class="btn-save">💾 GUARDAR REGISTRO</button>
-        </form>
-
-        <table id="tVistas">
-            <thead><tr><th>TELÉFONO</th><th>TIPO</th><th>-</th></tr></thead>
-            <tbody></tbody>
-        </table>
-
-        <button onclick="bajarExcel()" class="btn-excel">📥 DESCARGAR EXCEL</button>
-        <button onclick="salir()" style="margin-top:20px; background:#6c757d; font-size:11px; color:white;">CERRAR SESIÓN</button>
-    </div>
-</div>
-
-<script>
-let uA = ""; 
-
-function inicio(){
-    setInterval(()=>{document.getElementById('rel').innerText=new Date().toLocaleTimeString()},1000);
-    document.getElementById('iFec').value = new Date().toISOString().split('T')[0];
-    const s = localStorage.getItem('ses_actual');
-    if(s){ uA = s; mostrar(); }
-}
-
-function verSeccion(id){
-    document.getElementById('divLogin').classList.add('hidden');
-    document.getElementById('divReg').classList.add('hidden');
-    document.getElementById('divRec').classList.add('hidden');
-    document.getElementById(id).classList.remove('hidden');
-}
-
-function menuInteractivo(){
-    const t = document.getElementById('iTipo').value;
-    const s = document.getElementById('seccionEquipo');
-    s.classList.toggle('hidden', !(t === 'KIT' || t === 'RENUEVATE'));
-}
-
-function registrarUsuario(){
-    const c = document.getElementById('regEmail').value.trim().toLowerCase();
-    const p = document.getElementById('regPass').value.trim();
-    const r = document.getElementById('regResp').value.trim().toUpperCase();
-    const t = document.getElementById('regTel').value.trim();
-    if(!c || !p || !r) return alert("Llena todos los campos.");
-    let db = JSON.parse(localStorage.getItem('usuarios_db') || "{}");
-    db[c] = { p: p, r: r, telAut: t ? [t] : [] };
-    localStorage.setItem('usuarios_db', JSON.stringify(db));
-    alert("¡Registro exitoso!");
-    verSeccion('divLogin');
-}
-
-function entrar(){
-    const c = document.getElementById('u').value.trim().toLowerCase();
-    const p = document.getElementById('p').value.trim();
-    const t = document.getElementById('uTel').value.trim();
-    let db = JSON.parse(localStorage.getItem('usuarios_db') || "{}");
-    if(db[c] && db[c].p === p){ 
-        uA = c; 
-        localStorage.setItem('ses_actual', uA); 
-        mostrar(); 
-    } else if(db[c] && db[c].telAut.includes(t)){
-        uA = c; 
-        localStorage.setItem('ses_actual', uA); 
-        mostrar();
-    } else { 
-        alert("Correo/contraseña o teléfono no autorizado."); 
-    }
-}
-
-function recuperar(){
-    const c = document.getElementById('recEmail').value.trim().toLowerCase();
-    const r = document.getElementById('recResp').value.trim().toUpperCase();
-    let db = JSON.parse(localStorage.getItem('usuarios_db') || "{}");
-    if(db[c] && db[c].r === r){ alert("Tu contraseña es: " + db[c].p); verSeccion('divLogin'); }
-    else { alert("Datos de recuperación incorrectos."); }
-}
-
-function mostrar(){
-    document.getElementById('lSec').className='hidden';
-    document.getElementById('mSec').className='';
-    pintarTabla();
-}
-
-function pintarTabla(){
-    const tbody = document.querySelector('#tVistas tbody');
-    tbody.innerHTML = "";
-    const datos = JSON.parse(localStorage.getItem("db_datos_" + uA) || "[]");
-    datos.slice().reverse().slice(0, 5).forEach(x => {
-        tbody.innerHTML += `<tr><td>${x["NUM. CELULAR"]}</td><td>${x["Renuevate/ Kit/Chip/Porta"]}</td><td><button onclick="borrar(${x.id})" style="background:red; padding:2px; font-size:10px;">X</button></td></tr>`;
-    });
-}
-
-function borrar(id){
-    let d = JSON.parse(localStorage.getItem("db_datos_" + uA) || "[]");
-    d = d.filter(i => i.id !== id);
-    localStorage.setItem("db_datos_" + uA, JSON.stringify(d));
-    pintarTabla();
-}
-
-document.getElementById('fReg').onsubmit = function(e){
-    e.preventDefault();
-    const d = JSON.parse(localStorage.getItem("db_datos_" + uA) || "[]");
-    
-    d.push({
-        "NUM. CELULAR": document.getElementById('iTel').value.trim(),
-        "IMEI": document.getElementById('iIme').value.trim(),
-        "ICCID": document.getElementById('iIcc').value.trim(),
-        "Renuevate/ Kit/Chip/Porta": document.getElementById('iTipo').value,
-        "# TIENDA / Determinante": document.getElementById('iDet').value.toUpperCase().trim(),
-        "SOLO NOMBRE DE LA CADENA": document.getElementById('iCad').value.toUpperCase().trim(),
-        "SOLO NOMBRE DE TIENDA SIN CADENA": document.getElementById('iTie').value.toUpperCase().trim(),
-        "NOMBRE COMPLETO PROMOTOR": document.getElementById('iProm').value.toUpperCase().trim(),
-        "FECHA DE ACTIVACION": document.getElementById('iFec').value,
-        "MARCA": document.getElementById('iMar').value.toUpperCase().trim(),
-        "MODELO": document.getElementById('iMod').value.toUpperCase().trim(),
-        id: Date.now()
-    });
-    
-    localStorage.setItem("db_datos_" + uA, JSON.stringify(d));
-    alert("Venta guardada.");
-    
-    const p = iProm.value; const c = iCad.value; const t = iTie.value; const det = iDet.value;
-    this.reset();
-    iProm.value = p; iCad.value = c; iTie.value = t; iDet.value = det;
-    iFec.value = new Date().toISOString().split('T')[0];
-    menuInteractivo();
-    pintarTabla();
-};
-
-function bajarExcel(){
-    const d = JSON.parse(localStorage.getItem("db_datos_" + uA) || "[]");
-    if(d.length === 0) return alert("Sin datos.");
-
-    const columnas = [
-        "NUM. CELULAR", "IMEI", "ICCID", "Renuevate/ Kit/Chip/Porta", 
-        "# TIENDA / Determinante", "SOLO NOMBRE DE LA CADENA", 
-        "SOLO NOMBRE DE TIENDA SIN CADENA", "NOMBRE COMPLETO PROMOTOR", 
-        "FECHA DE ACTIVACION", "MARCA", "MODELO"
-    ];
-
-    // Creamos la matriz de datos empezando por los encabezados
-    const dataMatrix = [columnas];
-
-    d.forEach(item => {
-        const fila = columnas.map(col => {
-            let val = item[col];
-            
-            if (col === "FECHA DE ACTIVACION" && val) {
-                const date = new Date(val);
-                if(!isNaN(date)){
-                    const dia = String(date.getDate()).padStart(2, '0');
-                    const mes = String(date.getMonth()+1).padStart(2, '0');
-                    const anio = date.getFullYear();
-                    val = `${dia}/${mes}/${anio}`;
-                }
+        // --- LÓGICA DE LOGIN ---
+        window.login = async () => {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('pass').value;
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+                alert("Bienvenido");
+            } catch (error) {
+                alert("Error: " + error.message);
             }
+        };
 
-            // SI EL VALOR ESTÁ VACÍO:
-            // Usamos un objeto de celda de SheetJS para forzar tipo "s" (string) con valor vacío.
-            // Esto es lo más agresivo para quitar el N/A en Excel.
-            if (val === "" || val === undefined || val === null) {
-                return { v: "", t: "s" }; 
+        window.logout = () => signOut(auth);
+
+        onAuthStateChanged(auth, (user) => {
+            const loginDiv = document.getElementById('login-section');
+            const appDiv = document.getElementById('app-section');
+            if (user) {
+                loginDiv.classList.add('hidden');
+                appDiv.classList.remove('hidden');
+            } else {
+                loginDiv.classList.remove('hidden');
+                appDiv.classList.add('hidden');
             }
-            
-            return val;
         });
-        dataMatrix.push(fila);
-    });
 
-    // Usamos aoa_to_sheet (Array of Arrays) para tener control total
-    const ws = XLSX.utils.aoa_to_sheet(dataMatrix);
-    
-    // Forzamos anchos de columna para que se vea bien
-    ws['!cols'] = columnas.map(() => ({ wch: 20 }));
+        // --- LÓGICA DE VENTAS CON LOCAL STORAGE ---
+        window.guardarVenta = () => {
+            const producto = document.getElementById('producto').value;
+            const precio = document.getElementById('precio').value;
+            
+            const nuevaVenta = {
+                producto,
+                precio,
+                fecha: new Date().toLocaleString(),
+                usuario: auth.currentUser.email
+            };
 
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Hoja1");
-    
-    // Generamos el archivo
-    XLSX.writeFile(wb, "Reporte_Comisiones_4029.xlsx");
-}
+            // 1. Guardar en Local Storage (Memoria del teléfono)
+            let ventasLocales = JSON.parse(localStorage.getItem('ventas_cache')) || [];
+            ventasLocales.push(nuevaVenta);
+            localStorage.setItem('ventas_cache', JSON.stringify(ventasLocales));
 
-function salir(){ localStorage.removeItem('ses_actual'); location.reload(); }
-</script>
+            // 2. Intentar subir a Firebase (Nube)
+            const ventasRef = ref(db, 'ventas');
+            push(ventasRef, nuevaVenta)
+                .then(() => alert("Venta guardada en la nube y localmente"))
+                .catch((err) => {
+                    console.log("Error de conexión, guardado solo localmente");
+                    alert("Sin internet: Venta guardada en el dispositivo");
+                });
+            
+            document.getElementById('form-venta').reset();
+        };
+    </script>
+</head>
+<body class="bg-gray-100 p-4">
+
+    <div id="login-section" class="max-w-md mx-auto bg-white p-6 rounded shadow-lg mt-10">
+        <h2 class="text-2xl font-bold mb-4 text-blue-600">Entrar al Sistema</h2>
+        <input type="email" id="email" placeholder="Correo" class="w-full p-2 border mb-2 rounded">
+        <input type="password" id="pass" placeholder="Contraseña" class="w-full p-2 border mb-4 rounded">
+        <button onclick="login()" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-700">Ingresar</button>
+    </div>
+
+    <div id="app-section" class="hidden max-w-2xl mx-auto bg-white p-6 rounded shadow-lg">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold text-blue-800">Ventas Telcel</h2>
+            <button onclick="logout()" class="text-red-500 text-sm">Cerrar Sesión</button>
+        </div>
+
+        <form id="form-venta" class="space-y-4">
+            <input type="text" id="producto" placeholder="Modelo del Equipo / Chip" class="w-full p-2 border rounded" required>
+            <input type="number" id="precio" placeholder="Precio $" class="w-full p-2 border rounded" required>
+            <button type="button" onclick="guardarVenta()" class="w-full bg-green-500 text-white p-3 rounded font-bold hover:bg-green-600">
+                REGISTRAR VENTA
+            </button>
+        </form>
+    </div>
+
 </body>
 </html>
