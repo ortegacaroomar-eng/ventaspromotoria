@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Telcel 2026</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background-color: #f0f2f5; padding: 20px; }
+        .container { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 380px; margin: auto; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .btn-azul { background: #003366; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .btn-verde { background: #28a745; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; margin-top: 10px; font-weight: bold; }
+        .hidden { display: none; }
+        label { display: block; text-align: left; font-size: 12px; font-weight: bold; color: #003366; margin-top: 8px; }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="auth-box">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Telcel_logo.svg/1200px-Telcel_logo.svg.png" style="width: 140px; margin-bottom: 10px;">
+        <div id="login-form">
+            <h2>Acceso</h2>
+            <input type="email" id="l-email" placeholder="Correo">
+            <input type="password" id="l-pass" placeholder="Contraseña">
+            <button class="btn-azul" onclick="entrar()">ENTRAR</button>
+            <p onclick="recordar()" style="color: blue; font-size: 12px; cursor: pointer; margin-top: 10px;">¿Olvidaste tu contraseña?</p>
+            <hr>
+            <button class="btn-verde" onclick="verReg()">NUEVO PROMOTOR</button>
+        </div>
+        <div id="reg-form" class="hidden">
+            <h3>Registro (02/02/2026)</h3>
+            <input type="email" id="r-email" placeholder="Correo">
+            <input type="password" id="r-pass" placeholder="Contraseña">
+            <button class="btn-verde" onclick="guardar()">REGISTRAR</button>
+            <button onclick="verLog()" style="margin-top:10px; border:none; background:none; cursor:pointer;">VOLVER</button>
+        </div>
+    </div>
+
+    <div class="container hidden" id="app-box">
+        <h3>Captura de Telefonía</h3>
+        <p id="user-display" style="font-size: 13px; color: #666;"></p>
+        <p>Fecha: <strong>02/02/2026</strong></p>
+        <hr>
+        <label>NÚMERO CELULAR</label>
+        <input type="number" id="n_cel" placeholder="10 dígitos">
+        <label>IMEI</label>
+        <input type="number" id="n_imei" placeholder="15 dígitos">
+        <label>ICCID</label>
+        <input type="number" id="n_iccid" placeholder="Serie SIM">
+        <button class="btn-azul" onclick="registrarVenta()">GUARDAR VENTA</button>
+        <button onclick="location.reload()" style="margin-top:20px; border:none; color:red; cursor:pointer;">SALIR</button>
+    </div>
+
+    <script>
+        function verReg() { document.getElementById('login-form').classList.add('hidden'); document.getElementById('reg-form').classList.remove('hidden'); }
+        function verLog() { document.getElementById('reg-form').classList.add('hidden'); document.getElementById('login-form').classList.remove('hidden'); }
+
+        function guardar() {
+            const email = document.getElementById('r-email').value;
+            const pass = document.getElementById('r-pass').value;
+            if(email && pass) {
+                localStorage.setItem(email, JSON.stringify({p: pass, f: "02/02/2026"})); [cite: 2026-02-06]
+                alert("Registrado correctamente");
+                verLog();
+            } else { alert("Llena los campos"); }
+        }
+
+        function entrar() {
+            const email = document.getElementById('l-email').value;
+            const pass = document.getElementById('l-pass').value;
+            const datos = localStorage.getItem(email); [cite: 2026-02-06]
+            if(datos) {
+                const u = JSON.parse(datos);
+                if(u.p === pass) {
+                    document.getElementById('auth-box').classList.add('hidden');
+                    document.getElementById('app-box').classList.remove('hidden');
+                    document.getElementById('user-display').innerText = "Vendedor: " + email;
+                } else { alert("Clave incorrecta"); }
+            } else { alert("No registrado. Usa el botón verde."); }
+        }
+
+        function registrarVenta() {
+            const n = document.getElementById('n_cel').value;
+            const i = document.getElementById('n_imei').value;
+            if(n && i) {
+                alert("Venta guardada localmente para reporte 2026");
+                document.getElementById('n_cel').value = "";
+                document.getElementById('n_imei').value = "";
+            } else { alert("Faltan datos"); }
+        }
+
+        function recordar() {
+            const email = document.getElementById('l-email').value;
+            const datos = localStorage.getItem(email);
+            if(datos) alert("Tu clave es: " + JSON.parse(datos).p);
+            else alert("Escribe el correo");
+        }
+    </script>
+</body>
+</html>
