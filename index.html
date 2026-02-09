@@ -3,12 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SISTEMA VENTAS 4029 - MULTIUSER</title>
-    
+    <title>SISTEMA VENTAS 4029 - OFICIAL</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #001220; margin: 0; color: #333; }
         .header { background: #003566; color: white; padding: 15px; text-align: center; border-bottom: 4px solid #ffc300; }
@@ -16,126 +14,83 @@
         .card { background: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
         label { font-size: 11px; font-weight: bold; color: #003566; text-transform: uppercase; display: block; margin-bottom: 2px; }
         input, select, button { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; box-sizing: border-box; }
-        
         button { background: #003566; color: white; font-weight: bold; border: none; cursor: pointer; }
         .btn-reg { background: #28a745; margin-top: 5px; }
         .btn-save { background: #28a745; font-size: 18px; margin-top: 10px; }
         .btn-excel { background: #217346; margin-top: 20px; height: 55px; font-size: 16px; color: #fff; }
-        
         .hidden { display: none; }
         .reloj { font-size: 28px; font-weight: bold; color: #ffc300; text-align: center; margin: 10px 0; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 10px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         th { background: #003566; color: white; }
-        .link-volver { color: #ffc300; font-size: 14px; cursor: pointer; text-decoration: underline; display: block; margin-top: 10px; }
-        .cloud-tag { font-size: 10px; color: #28a745; text-align: center; font-weight: bold; }
     </style>
 </head>
 <body onload="inicio()">
 
-<div id="setupSec" class="container" style="padding-top:50px; text-align:center;">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Telcel_logo.svg/1200px-Telcel_logo.svg.png" width="140">
-    <div class="card" style="margin-top:20px;">
-        <h3 style="color:#003566">CONFIGURAR CLOUD</h3>
-        <input type="text" id="fKey" placeholder="API Key de Firebase">
-        <input type="text" id="fUrl" placeholder="Database URL (https://...)">
-        <button onclick="conectar(false)">VINCULAR SISTEMA</button>
-    </div>
-</div>
-
-<div id="lSec" class="hidden" style="max-width:400px; margin:auto; padding:40px 20px; text-align:center;">
+<div id="lSec" style="max-width:400px; margin:auto; padding:40px 20px; text-align:center;">
     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Telcel_logo.svg/1200px-Telcel_logo.svg.png" width="160">
     <div id="rel" class="reloj">00:00:00</div>
-    
     <div id="divLogin">
-        <input type="email" id="u" placeholder="Correo Electrónico">
+        <input type="email" id="u" placeholder="Correo">
         <input type="password" id="p" placeholder="Contraseña">
-        <button onclick="entrar()">INGRESAR AL PANEL</button>
+        <button onclick="entrar()">ENTRAR AL PANEL</button>
         <hr style="border: 0.5px solid #333; margin: 20px 0;">
-        <button class="btn-reg" onclick="verSeccion('divReg')">REGISTRAR NUEVO PROMOTOR</button>
+        <button class="btn-reg" onclick="verSeccion('divReg')">NUEVO PROMOTOR</button>
     </div>
-
     <div id="divReg" class="hidden">
-        <h3 style="color:white">CREAR CUENTA PROMOTOR</h3>
-        <input type="email" id="regEmail" placeholder="Correo Institucional/Personal">
-        <input type="password" id="regPass" placeholder="Contraseña">
-        <input type="text" id="regResp" placeholder="¿Color favorito? (Seguridad)">
-        <button onclick="registrarUsuario()" style="background:#28a745;">GUARDAR EN NUBE</button>
-        <span class="link-volver" onclick="verSeccion('divLogin')">Regresar</span>
+        <h3 style="color:white">CREAR CUENTA</h3>
+        <input type="email" id="regEmail" placeholder="Correo">
+        <input type="password" id="regPass" placeholder="Nueva Contraseña">
+        <button onclick="registrarUsuario()" style="background:#28a745;">FINALIZAR REGISTRO</button>
+        <p onclick="verSeccion('divLogin')" style="color:#ffc300; cursor:pointer;">Volver</p>
     </div>
 </div>
 
 <div id="mSec" class="hidden">
-    <div class="header">
-        <h3 style="margin:0">SISTEMA VENTAS 4029</h3>
-        <div class="cloud-tag">● NUBE SINCRONIZADA</div>
-    </div>
-    
+    <div class="header"><h3>SISTEMA VENTAS 4029</h3><small style="color:#ffc300;">CONEXIÓN NUBE ACTIVA</small></div>
     <div class="container">
         <form id="fReg">
-            <label>Tipo de Trámite</label>
+            <label>Trámite</label>
             <select id="iTipo" onchange="menuInteractivo()" required>
-                <option value="" disabled selected>-- SELECCIONE --</option>
-                <option value="KIT">KIT (EQUIPO)</option>
-                <option value="CHIP">CHIP</option>
-                <option value="PORTA">PORTA</option>
-                <option value="RENUEVATE">RENUEVATE</option>
+                <option value="KIT">KIT (EQUIPO)</option><option value="CHIP">CHIP</option>
+                <option value="PORTA">PORTA</option><option value="RENUEVATE">RENUEVATE</option>
             </select>
-
-            <label>Num. Celular (10 dígitos)</label>
-            <input type="text" id="iTel" placeholder="0000000000" maxlength="10" required>
-            <label>ICCID / Serie SIM</label>
-            <input type="text" id="iIcc" placeholder="8952..." maxlength="19" required>
-            
+            <label>Celular (10 dígitos)</label>
+            <input type="text" id="iTel" maxlength="10" required>
+            <label>ICCID (19 dígitos)</label>
+            <input type="text" id="iIcc" maxlength="19" required>
             <div id="seccionEquipo" class="card hidden">
-                <label>IMEI (15 dígitos)</label>
-                <input type="text" id="iIme" placeholder="IMEI" maxlength="15">
-                <label>Marca / Modelo</label>
-                <input type="text" id="iMod" placeholder="EJ. MOTOROLA G54">
+                <label>IMEI (15 dígitos)</label><input type="text" id="iIme" maxlength="15">
+                <label>Modelo</label><input type="text" id="iMod">
             </div>
-
             <div class="card">
-                <label>Nombre Promotor</label>
-                <input type="text" id="iProm" placeholder="TU NOMBRE" required>
-                <label>Fecha de Operación</label>
-                <input type="date" id="iFec">
+                <label>Promotor</label><input type="text" id="iProm" required>
+                <label>Fecha</label><input type="date" id="iFec">
             </div>
-            
-            <button type="submit" class="btn-save">💾 GUARDAR Y SUBIR</button>
+            <button type="submit" class="btn-save">💾 GUARDAR VENTA</button>
         </form>
-
-        <table id="tVistas">
-            <thead><tr><th>TELÉFONO</th><th>TIPO</th><th>-</th></tr></thead>
-            <tbody></tbody>
-        </table>
-
-        <button onclick="bajarExcel()" class="btn-excel">📥 DESCARGAR MI REPORTE (EXCEL)</button>
-        <button onclick="salir()" style="margin-top:20px; background:#6c757d; font-size:11px; color:white;">CERRAR SESIÓN</button>
+        <table id="tVistas"><thead><tr><th>TELÉFONO</th><th>TIPO</th><th>-</th></tr></thead><tbody></tbody></table>
+        <button onclick="bajarExcel()" class="btn-excel">📥 DESCARGAR EXCEL</button>
+        <button onclick="salir()" style="margin-top:20px; background:#6c757d; color:white;">SALIR</button>
     </div>
 </div>
 
 <script>
+// --- CONFIGURACIÓN: PEGA TUS DATOS AQUÍ ---
+const firebaseConfig = {
+    apiKey: "TU_API_KEY_AQUÍ",
+    databaseURL: "TU_URL_DE_DATABASE_AQUÍ"
+};
+// -----------------------------------------
+
 let uA = ""; 
 let db;
 
 function inicio(){
     setInterval(()=>{document.getElementById('rel').innerText=new Date().toLocaleTimeString()},1000);
     document.getElementById('iFec').value = new Date().toISOString().split('T')[0];
-    if(localStorage.getItem('f_k')){ conectar(true); }
-}
-
-function conectar(auto){
-    const k = auto ? localStorage.getItem('f_k') : document.getElementById('fKey').value;
-    const u = auto ? localStorage.getItem('f_u') : document.getElementById('fUrl').value;
-    if(!k || !u) return;
-
-    if(!firebase.apps.length) firebase.initializeApp({apiKey: k, databaseURL: u, projectId: "ventas-4029"});
+    if (firebase.apps.length === 0) firebase.initializeApp(firebaseConfig);
     db = firebase.database();
-    
-    localStorage.setItem('f_k', k); localStorage.setItem('f_u', u);
-    document.getElementById('setupSec').className='hidden';
-    document.getElementById('lSec').className='';
-
     const s = localStorage.getItem('ses_actual');
     if(s){ uA = s; mostrar(); }
 }
@@ -143,25 +98,18 @@ function conectar(auto){
 function registrarUsuario(){
     const c = document.getElementById('regEmail').value.trim().toLowerCase();
     const p = document.getElementById('regPass').value.trim();
-    const r = document.getElementById('regResp').value.trim().toUpperCase();
-    if(!c || !p) return alert("Faltan datos.");
-    
+    if(!c || !p) return alert("Llena los campos.");
     const key = btoa(c).replace(/=/g,"");
-    db.ref('usuarios/' + key).set({ p, r }).then(() => {
-        alert("Promotor registrado exitosamente.");
-        verSeccion('divLogin');
-    });
+    db.ref('usuarios/' + key).set({ p }).then(() => { alert("Registrado."); verSeccion('divLogin'); });
 }
 
 function entrar(){
     const c = document.getElementById('u').value.trim().toLowerCase();
     const p = document.getElementById('p').value.trim();
     const key = btoa(c).replace(/=/g,"");
-
     db.ref('usuarios/' + key).once('value').then((s) => {
-        if(s.exists() && s.val().p === p){
-            uA = c; localStorage.setItem('ses_actual', uA); mostrar();
-        } else { alert("Usuario o contraseña incorrectos."); }
+        if(s.exists() && s.val().p === p){ uA = c; localStorage.setItem('ses_actual', uA); mostrar(); }
+        else { alert("Datos incorrectos."); }
     });
 }
 
@@ -174,48 +122,38 @@ function mostrar(){
 document.getElementById('fReg').onsubmit = function(e){
     e.preventDefault();
     const key = btoa(uA).replace(/=/g,"");
-    const v = {
+    db.ref('ventas/' + key).push({
         tel: iTel.value, imei: iIme.value || "N/A", iccid: iIcc.value,
         tipo: iTipo.value, prom: iProm.value.toUpperCase(),
-        fec: iFec.value, mod: iMod.value.toUpperCase() || "N/A",
-        ts: Date.now()
-    };
-    db.ref('ventas/' + key).push(v).then(() => {
-        alert("Venta sincronizada.");
-        this.reset(); iFec.value = new Date().toISOString().split('T')[0];
-        menuInteractivo();
-    });
+        fec: iFec.value, mod: iMod.value.toUpperCase() || "N/A"
+    }).then(() => { alert("Guardado."); this.reset(); pintarTabla(); });
 };
 
 function pintarTabla(){
     const key = btoa(uA).replace(/=/g,"");
-    db.ref('ventas/' + key).on('value', (s) => {
+    db.ref('ventas/' + key).limitToLast(5).on('value', (s) => {
         const tbody = document.querySelector('#tVistas tbody');
         tbody.innerHTML = "";
-        const data = s.val();
-        if(data){
-            Object.keys(data).reverse().slice(0, 5).forEach(k => {
-                const x = data[k];
-                tbody.innerHTML += `<tr><td>${x.tel}</td><td>${x.tipo}</td><td><button onclick="borrar('${k}')" style="background:red; padding:2px;">X</button></td></tr>`;
-            });
-        }
+        s.forEach(child => {
+            const x = child.val();
+            tbody.innerHTML += `<tr><td>${x.tel}</td><td>${x.tipo}</td><td><button onclick="borrar('${child.key}')" style="background:red;">X</button></td></tr>`;
+        });
     });
 }
 
-function borrar(k){
+function borrar(id){
     const key = btoa(uA).replace(/=/g,"");
-    if(confirm("¿Eliminar registro de la nube?")) db.ref('ventas/'+key+'/'+k).remove();
+    if(confirm("¿Eliminar?")) db.ref('ventas/'+key+'/'+id).remove();
 }
 
 function bajarExcel(){
     const key = btoa(uA).replace(/=/g,"");
     db.ref('ventas/' + key).once('value').then((s) => {
         const d = Object.values(s.val() || {});
-        if(d.length === 0) return alert("No hay datos para exportar.");
         const ws = XLSX.utils.json_to_sheet(d);
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "MisVentas");
-        XLSX.writeFile(wb, `Reporte_${uA}_4029.xlsx`);
+        XLSX.utils.book_append_sheet(wb, ws, "Ventas");
+        XLSX.writeFile(wb, "Reporte_Ventas.xlsx");
     });
 }
 
