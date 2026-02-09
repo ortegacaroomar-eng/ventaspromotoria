@@ -3,127 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telcel - Panel de Control 2026</title>
+    <title>Sistema Telcel Local</title>
     <style>
-        :root { --azul: #003366; --verde: #28a745; --gris: #f8f9fa; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #003366 0%, #005599 100%); min-height: 100vh; margin: 0; display: flex; align-items: center; justify-content: center; }
-        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); width: 90%; max-width: 400px; text-align: center; }
-        .logo { width: 150px; margin-bottom: 10px; }
-        h2 { color: var(--azul); margin-bottom: 25px; font-weight: 600; }
-        .input-group { text-align: left; margin-bottom: 15px; }
-        label { display: block; font-size: 12px; font-weight: bold; color: #666; margin-bottom: 5px; margin-left: 5px; }
-        input { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 14px; transition: 0.3s; }
-        input:focus { border-color: var(--azul); outline: none; box-shadow: 0 0 8px rgba(0,51,102,0.2); }
-        button { width: 100%; padding: 14px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; margin-top: 10px; }
-        .btn-azul { background: var(--azul); color: white; }
-        .btn-azul:hover { background: #002244; transform: translateY(-2px); }
-        .btn-verde { background: var(--verde); color: white; }
-        .btn-verde:hover { background: #218838; transform: translateY(-2px); }
-        .btn-link { background: none; color: var(--azul); font-size: 13px; text-decoration: underline; margin-top: 15px; }
+        body { font-family: sans-serif; text-align: center; background-color: #f0f2f5; padding: 10px; }
+        .container { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .btn-azul { background: #003366; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .btn-verde { background: #28a745; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; }
         .hidden { display: none; }
-        .footer-text { font-size: 12px; color: #888; margin-top: 20px; }
-        hr { border: 0; border-top: 1px solid #eee; margin: 25px 0; }
+        .tabla-scroll { overflow-x: auto; margin-top: 20px; }
+        table { width: 100%; font-size: 11px; border-collapse: collapse; background: #fff; }
+        th, td { border: 1px solid #eee; padding: 10px; text-align: left; }
+        th { background: #f8f9fa; color: #333; }
     </style>
 </head>
 <body>
 
-    <div class="card" id="auth-section">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Telcel_logo.svg/1200px-Telcel_logo.svg.png" class="logo">
-        
+    <div class="container" id="auth-box">
+        <h2 style="color: #003366;">Acceso Telcel</h2>
         <div id="login-form">
-            <h2>Bienvenido</h2>
             <input type="email" id="l-email" placeholder="Correo electrónico">
             <input type="password" id="l-pass" placeholder="Contraseña">
-            <button class="btn-azul" onclick="entrar()">INICIAR SESIÓN</button>
-            <button class="btn-link" onclick="recordar()">¿Olvidaste tu contraseña?</button>
-            <hr>
-            <button class="btn-verde" onclick="toggleViews()">NUEVO REGISTRO</button>
+            <button class="btn-azul" onclick="entrar()">ENTRAR AL SISTEMA</button>
+            <p onclick="recordar()" style="color: blue; font-size: 12px; cursor: pointer; margin-top: 10px;">¿Olvidaste tu contraseña?</p>
+            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+            <button class="btn-verde" onclick="verRegistro()">REGISTRAR NUEVO PROMOTOR</button>
         </div>
 
-        <div id="reg-form" class="hidden">
-            <h2>Registro Promotor</h2>
-            <p style="font-size: 13px; color: #666;">Jornada: 02/02/2026</p>
+        <div id="registro-form" class="hidden">
+            <h3>Nuevo Registro (02/02/2026)</h3>
             <input type="email" id="r-email" placeholder="Correo">
             <input type="password" id="r-pass" placeholder="Contraseña">
-            <button class="btn-verde" onclick="guardar()">CONFIRMAR REGISTRO</button>
-            <button class="btn-link" onclick="toggleViews()">VOLVER AL ACCESO</button>
+            <button class="btn-verde" onclick="guardarUser()">CREAR MI CUENTA</button>
+            <button onclick="verLogin()" style="margin-top:10px; border:none; background:none; color:#666; cursor:pointer;">VOLVER</button>
         </div>
     </div>
 
-    <div class="card hidden" id="app-section">
-        <h2 style="margin-bottom: 5px;">Captura de Ventas</h2>
-        <p id="user-info" style="font-size: 13px; color: var(--azul); margin-bottom: 20px;"></p>
+    <div class="container hidden" id="app-box">
+        <h3 style="color: #003366;">Ventas del Día</h3>
+        <p id="user-display" style="font-size: 13px; color: #666;"></p>
+        <p>Jornada: <strong>02/02/2026</strong></p>
+        <hr>
         
-        <div class="input-group">
-            <label>NÚMERO TELCEL</label>
-            <input type="number" id="v-num" placeholder="Ej. 5512345678">
-        </div>
-        <div class="input-group">
-            <label>IMEI EQUIPO (15 dígitos)</label>
-            <input type="number" id="v-imei" placeholder="IMEI del dispositivo">
-        </div>
-        <div class="input-group">
-            <label>ICCID (Serie SIM)</label>
-            <input type="number" id="v-iccid" placeholder="Número de serie SIM">
+        <input type="text" id="v-cliente" placeholder="Nombre del Cliente">
+        <select id="v-plan">
+            <option value="">Tipo de Movimiento</option>
+            <option value="Amigo Kit">Amigo Kit</option>
+            <option value="Plan Renta">Plan Renta</option>
+            <option value="Portabilidad">Portabilidad</option>
+            <option value="Renovación">Renovación</option>
+        </select>
+        <input type="text" id="v-imei" placeholder="IMEI o Número">
+        <input type="number" id="v-precio" placeholder="Precio $">
+        
+        <button class="btn-verde" onclick="registrarVenta()">GUARDAR VENTA LOCALMENTE</button>
+        
+        <div class="tabla-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Plan</th>
+                        <th>IMEI</th>
+                        <th>$</th>
+                    </tr>
+                </thead>
+                <tbody id="lista-ventas"></tbody>
+            </table>
         </div>
 
-        <button class="btn-azul" onclick="registrarVenta()">GUARDAR VENTA</button>
-        <button class="btn-link" style="color: red; text-decoration: none;" onclick="location.reload()">CERRAR SESIÓN</button>
-        
-        <p class="footer-text">Reporte oficial generado el 02/02/2026</p>
+        <button onclick="location.reload()" style="margin-top:20px; color:red; border:none; background:none; cursor:pointer; font-size:12px;">CERRAR SESIÓN</button>
     </div>
 
     <script>
-        // Cambio de vistas
-        function toggleViews() {
-            document.getElementById('login-form').classList.toggle('hidden');
-            document.getElementById('reg-form').classList.toggle('hidden');
-        }
+        function verRegistro() { document.getElementById('login-form').classList.add('hidden'); document.getElementById('registro-form').classList.remove('hidden'); }
+        function verLogin() { document.getElementById('registro-form').classList.add('hidden'); document.getElementById('login-form').classList.remove('hidden'); }
 
-        // Lógica de Registro con Local Storage [cite: 2026-02-06]
-        function guardar() {
+        // Guardar Promotor en Local Storage [cite: 2026-02-06]
+        function guardarUser() {
             const email = document.getElementById('r-email').value;
             const pass = document.getElementById('r-pass').value;
             if(email && pass) {
-                localStorage.setItem(email, JSON.stringify({p: pass, f: "02/02/2026"}));
-                alert("Promotor registrado con éxito");
-                toggleViews();
+                localStorage.setItem('user_' + email, JSON.stringify({p: pass, f: "02/02/2026"}));
+                alert("Cuenta creada. Ya puedes entrar.");
+                verLogin();
             } else { alert("Completa los datos de registro"); }
         }
 
-        // Inicio de Sesión [cite: 2026-02-04]
         function entrar() {
             const email = document.getElementById('l-email').value;
             const pass = document.getElementById('l-pass').value;
-            const datos = localStorage.getItem(email);
-            if(datos) {
-                const u = JSON.parse(datos);
-                if(u.p === pass) {
-                    document.getElementById('auth-section').classList.add('hidden');
-                    document.getElementById('app-section').classList.remove('hidden');
-                    document.getElementById('user-info').innerText = "Promotor: " + email;
-                } else { alert("Contraseña incorrecta"); }
-            } else { alert("Usuario no encontrado. Regístrate primero."); }
+            const datos = localStorage.getItem('user_' + email); [cite: 2026-02-06]
+            
+            if(datos && JSON.parse(datos).p === pass) {
+                document.getElementById('auth-box').classList.add('hidden');
+                document.getElementById('app-box').classList.remove('hidden');
+                document.getElementById('user-display').innerText = "Promotor: " + email;
+                cargarVentas(email);
+            } else { alert("Correo o contraseña incorrectos"); }
         }
 
-        // Registro de telefonía para el Excel
+        // Guardar Ventas en Local Storage [cite: 2026-02-06]
         function registrarVenta() {
-            const num = document.getElementById('v-num').value;
+            const email = document.getElementById('l-email').value || document.getElementById('user-display').innerText.replace("Promotor: ", "");
+            const cliente = document.getElementById('v-cliente').value;
+            const plan = document.getElementById('v-plan').value;
             const imei = document.getElementById('v-imei').value;
-            if(num && imei) {
-                alert("Venta guardada para el reporte de comisiones 2026.\nFecha: 02/02/2026");
-                document.getElementById('v-num').value = "";
+            const precio = document.getElementById('v-precio').value;
+
+            if(cliente && plan && imei && precio) {
+                const nuevaVenta = { cliente, plan, imei, precio };
+                // Usamos una clave única por cada promotor para sus ventas
+                let ventas = JSON.parse(localStorage.getItem('ventas_' + email) || "[]"); [cite: 2026-02-06]
+                ventas.push(nuevaVenta);
+                localStorage.setItem('ventas_' + email, JSON.stringify(ventas));
+                
+                alert("Venta guardada en la memoria del teléfono");
+                cargarVentas(email);
+                
+                // Limpiar campos para la siguiente venta
+                document.getElementById('v-cliente').value = "";
                 document.getElementById('v-imei').value = "";
-                document.getElementById('v-iccid').value = "";
-            } else { alert("Faltan datos obligatorios (Número/IMEI)"); }
+                document.getElementById('v-precio').value = "";
+            } else { alert("Faltan datos de la venta"); }
+        }
+
+        function cargarVentas(email) {
+            const lista = document.getElementById('lista-ventas');
+            lista.innerHTML = "";
+            let ventas = JSON.parse(localStorage.getItem('ventas_' + email) || "[]"); [cite: 2026-02-06]
+            ventas.forEach(v => {
+                lista.innerHTML += `<tr><td>${v.cliente}</td><td>${v.plan}</td><td>${v.imei}</td><td>$${v.precio}</td></tr>`;
+            });
         }
 
         function recordar() {
             const email = document.getElementById('l-email').value;
-            const datos = localStorage.getItem(email);
-            if(datos) alert("Tu contraseña es: " + JSON.parse(datos).p);
-            else alert("Escribe tu correo primero");
+            if(!email) { alert("Escribe tu correo primero"); return; }
+            const datos = localStorage.getItem('user_' + email);
+            if(datos) { alert("Tu clave es: " + JSON.parse(datos).p); }
+            else { alert("Usuario no encontrado"); }
         }
     </script>
 </body>
 </html>
+
