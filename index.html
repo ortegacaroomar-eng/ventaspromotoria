@@ -3,148 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Telcel Local</title>
+    <title>Sistema Telcel 02/02/2026</title>
     <style>
-        body { font-family: sans-serif; text-align: center; background-color: #f0f2f5; padding: 10px; }
-        .container { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        body { font-family: sans-serif; text-align: center; background: #f4f7f6; padding: 15px; }
+        .box { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 380px; margin: auto; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
         .btn-azul { background: #003366; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .btn-verde { background: #28a745; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .btn-verde { background: #28a745; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
         .hidden { display: none; }
-        .tabla-scroll { overflow-x: auto; margin-top: 20px; }
-        table { width: 100%; font-size: 11px; border-collapse: collapse; background: #fff; }
-        th, td { border: 1px solid #eee; padding: 10px; text-align: left; }
-        th { background: #f8f9fa; color: #333; }
+        table { width: 100%; margin-top: 20px; border-collapse: collapse; font-size: 12px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
     </style>
 </head>
 <body>
 
-    <div class="container" id="auth-box">
-        <h2 style="color: #003366;">Acceso Telcel</h2>
-        <div id="login-form">
-            <input type="email" id="l-email" placeholder="Correo electrónico">
-            <input type="password" id="l-pass" placeholder="Contraseña">
-            <button class="btn-azul" onclick="entrar()">ENTRAR AL SISTEMA</button>
-            <p onclick="recordar()" style="color: blue; font-size: 12px; cursor: pointer; margin-top: 10px;">¿Olvidaste tu contraseña?</p>
-            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
-            <button class="btn-verde" onclick="verRegistro()">REGISTRAR NUEVO PROMOTOR</button>
+    <div class="box" id="auth-panel">
+        <h2 style="color:#003366;">Acceso Oficial</h2>
+        <div id="login-ui">
+            <input type="email" id="l-user" placeholder="Correo">
+            <input type="password" id="l-key" placeholder="Contraseña">
+            <button class="btn-azul" onclick="acceder()">ENTRAR</button>
+            <p onclick="verReg()" style="color:blue; font-size:12px; cursor:pointer; margin-top:15px;">¿No tienes cuenta? Regístrate aquí</p>
         </div>
 
-        <div id="registro-form" class="hidden">
-            <h3>Nuevo Registro (02/02/2026)</h3>
-            <input type="email" id="r-email" placeholder="Correo">
-            <input type="password" id="r-pass" placeholder="Contraseña">
-            <button class="btn-verde" onclick="guardarUser()">CREAR MI CUENTA</button>
-            <button onclick="verLogin()" style="margin-top:10px; border:none; background:none; color:#666; cursor:pointer;">VOLVER</button>
+        <div id="reg-ui" class="hidden">
+            <h3>Nuevo Promotor</h3>
+            <p>Fecha: 02/02/2026</p>
+            <input type="email" id="r-user" placeholder="Correo">
+            <input type="password" id="r-key" placeholder="Contraseña">
+            <button class="btn-verde" onclick="registrar()">CREAR CUENTA LOCAL</button>
+            <button onclick="verLog()" style="margin-top:10px; border:none; background:none; color:grey;">VOLVER</button>
         </div>
     </div>
 
-    <div class="container hidden" id="app-box">
-        <h3 style="color: #003366;">Ventas del Día</h3>
-        <p id="user-display" style="font-size: 13px; color: #666;"></p>
+    <div class="box hidden" id="app-panel">
+        <h3 id="nom-promotor"></h3>
         <p>Jornada: <strong>02/02/2026</strong></p>
         <hr>
+        <input type="text" id="v-cli" placeholder="Cliente">
+        <input type="text" id="v-imei" placeholder="IMEI">
+        <input type="number" id="v-costo" placeholder="Precio">
+        <button class="btn-verde" onclick="nuevaVenta()">GUARDAR VENTA</button>
         
-        <input type="text" id="v-cliente" placeholder="Nombre del Cliente">
-        <select id="v-plan">
-            <option value="">Tipo de Movimiento</option>
-            <option value="Amigo Kit">Amigo Kit</option>
-            <option value="Plan Renta">Plan Renta</option>
-            <option value="Portabilidad">Portabilidad</option>
-            <option value="Renovación">Renovación</option>
-        </select>
-        <input type="text" id="v-imei" placeholder="IMEI o Número">
-        <input type="number" id="v-precio" placeholder="Precio $">
-        
-        <button class="btn-verde" onclick="registrarVenta()">GUARDAR VENTA LOCALMENTE</button>
-        
-        <div class="tabla-scroll">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Cliente</th>
-                        <th>Plan</th>
-                        <th>IMEI</th>
-                        <th>$</th>
-                    </tr>
-                </thead>
-                <tbody id="lista-ventas"></tbody>
-            </table>
-        </div>
-
-        <button onclick="location.reload()" style="margin-top:20px; color:red; border:none; background:none; cursor:pointer; font-size:12px;">CERRAR SESIÓN</button>
+        <table>
+            <thead><tr><th>Cliente</th><th>IMEI</th><th>$</th></tr></thead>
+            <tbody id="v-lista"></tbody>
+        </table>
+        <button onclick="location.reload()" style="margin-top:20px; color:red; border:none; background:none;">CERRAR SESIÓN</button>
     </div>
 
     <script>
-        function verRegistro() { document.getElementById('login-form').classList.add('hidden'); document.getElementById('registro-form').classList.remove('hidden'); }
-        function verLogin() { document.getElementById('registro-form').classList.add('hidden'); document.getElementById('login-form').classList.remove('hidden'); }
+        function verReg() { document.getElementById('login-ui').classList.add('hidden'); document.getElementById('reg-ui').classList.remove('hidden'); }
+        function verLog() { document.getElementById('reg-ui').classList.add('hidden'); document.getElementById('login-ui').classList.remove('hidden'); }
 
-        // Guardar Promotor en Local Storage [cite: 2026-02-06]
-        function guardarUser() {
-            const email = document.getElementById('r-email').value;
-            const pass = document.getElementById('r-pass').value;
-            if(email && pass) {
-                localStorage.setItem('user_' + email, JSON.stringify({p: pass, f: "02/02/2026"}));
-                alert("Cuenta creada. Ya puedes entrar.");
-                verLogin();
-            } else { alert("Completa los datos de registro"); }
+        function registrar() {
+            const u = document.getElementById('r-user').value;
+            const p = document.getElementById('r-key').value;
+            if(u && p) {
+                localStorage.setItem('u_'+u, p); [cite: 2026-02-06]
+                alert("Registrado con éxito para el 02/02/2026");
+                verLog();
+            } else { alert("Llena los campos"); }
         }
 
-        function entrar() {
-            const email = document.getElementById('l-email').value;
-            const pass = document.getElementById('l-pass').value;
-            const datos = localStorage.getItem('user_' + email); [cite: 2026-02-06]
-            
-            if(datos && JSON.parse(datos).p === pass) {
-                document.getElementById('auth-box').classList.add('hidden');
-                document.getElementById('app-box').classList.remove('hidden');
-                document.getElementById('user-display').innerText = "Promotor: " + email;
-                cargarVentas(email);
-            } else { alert("Correo o contraseña incorrectos"); }
+        function acceder() {
+            const u = document.getElementById('l-user').value;
+            const p = document.getElementById('l-key').value;
+            if(localStorage.getItem('u_'+u) === p) {
+                document.getElementById('auth-panel').classList.add('hidden');
+                document.getElementById('app-panel').classList.remove('hidden');
+                document.getElementById('nom-promotor').innerText = "Promotor: " + u;
+                renderVentas(u);
+            } else { alert("Datos incorrectos o usuario no registrado"); }
         }
 
-        // Guardar Ventas en Local Storage [cite: 2026-02-06]
-        function registrarVenta() {
-            const email = document.getElementById('l-email').value || document.getElementById('user-display').innerText.replace("Promotor: ", "");
-            const cliente = document.getElementById('v-cliente').value;
-            const plan = document.getElementById('v-plan').value;
-            const imei = document.getElementById('v-imei').value;
-            const precio = document.getElementById('v-precio').value;
-
-            if(cliente && plan && imei && precio) {
-                const nuevaVenta = { cliente, plan, imei, precio };
-                // Usamos una clave única por cada promotor para sus ventas
-                let ventas = JSON.parse(localStorage.getItem('ventas_' + email) || "[]"); [cite: 2026-02-06]
-                ventas.push(nuevaVenta);
-                localStorage.setItem('ventas_' + email, JSON.stringify(ventas));
-                
-                alert("Venta guardada en la memoria del teléfono");
-                cargarVentas(email);
-                
-                // Limpiar campos para la siguiente venta
-                document.getElementById('v-cliente').value = "";
-                document.getElementById('v-imei').value = "";
-                document.getElementById('v-precio').value = "";
-            } else { alert("Faltan datos de la venta"); }
+        function nuevaVenta() {
+            const u = document.getElementById('l-user').value || document.getElementById('nom-promotor').innerText.split(": ")[1];
+            const c = document.getElementById('v-cli').value;
+            const i = document.getElementById('v-imei').value;
+            const pr = document.getElementById('v-costo').value;
+            if(c && i && pr) {
+                let v = JSON.parse(localStorage.getItem('v_'+u) || "[]");
+                v.push({c, i, pr});
+                localStorage.setItem('v_'+u, JSON.stringify(v)); [cite: 2026-02-06]
+                renderVentas(u);
+                document.getElementById('v-cli').value=""; document.getElementById('v-imei').value=""; document.getElementById('v-costo').value="";
+            } else { alert("Faltan datos"); }
         }
 
-        function cargarVentas(email) {
-            const lista = document.getElementById('lista-ventas');
-            lista.innerHTML = "";
-            let ventas = JSON.parse(localStorage.getItem('ventas_' + email) || "[]"); [cite: 2026-02-06]
-            ventas.forEach(v => {
-                lista.innerHTML += `<tr><td>${v.cliente}</td><td>${v.plan}</td><td>${v.imei}</td><td>$${v.precio}</td></tr>`;
+        function renderVentas(u) {
+            const t = document.getElementById('v-lista'); t.innerHTML = "";
+            JSON.parse(localStorage.getItem('v_'+u) || "[]").forEach(x => {
+                t.innerHTML += `<tr><td>${x.c}</td><td>${x.i}</td><td>$${x.pr}</td></tr>`;
             });
-        }
-
-        function recordar() {
-            const email = document.getElementById('l-email').value;
-            if(!email) { alert("Escribe tu correo primero"); return; }
-            const datos = localStorage.getItem('user_' + email);
-            if(datos) { alert("Tu clave es: " + JSON.parse(datos).p); }
-            else { alert("Usuario no encontrado"); }
         }
     </script>
 </body>
 </html>
-
