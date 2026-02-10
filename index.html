@@ -25,8 +25,28 @@ button{background:#003566;color:#fff;font-weight:bold;border:none}
 .btn-excel{background:#217346;height:55px;font-size:16px}
 .hidden{display:none}
 .reloj{font-size:28px;font-weight:bold;color:#ffc300;text-align:center;margin:10px 0}
-table{width:100%;border-collapse:collapse;font-size:10px}
-th,td{border:1px solid #ddd;padding:8px}
+
+/* TABLA */
+.tabla-scroll{
+  overflow-x:auto;
+  width:100%;
+  margin-top:15px;
+  border:1px solid #ddd;
+  border-radius:8px;
+}
+
+table{
+  border-collapse:collapse;
+  min-width:500px;
+  font-size:10px;
+}
+
+th,td{
+  border:1px solid #ddd;
+  padding:8px;
+  white-space:nowrap;
+}
+
 th{background:#003566;color:#fff}
 </style>
 </head>
@@ -96,12 +116,18 @@ th{background:#003566;color:#fff}
 <button class="btn-save">GUARDAR VENTA</button>
 </form>
 
+<div class="tabla-scroll">
 <table id="tVistas">
 <thead>
-<tr><th>TEL</th><th>TIPO</th><th>-</th></tr>
+<tr>
+  <th>TEL</th>
+  <th>TIPO</th>
+  <th>-</th>
+</tr>
 </thead>
 <tbody></tbody>
 </table>
+</div>
 
 <button class="btn-excel" onclick="bajarExcel()">DESCARGAR EXCEL</button>
 <button onclick="salir()" style="background:#6c757d;margin-top:20px">SALIR</button>
@@ -109,7 +135,6 @@ th{background:#003566;color:#fff}
 </div>
 
 <script>
-/* 🔥 CONFIGURACIÓN FIREBASE (YA LISTA) */
 const firebaseConfig = {
   apiKey: "AIzaSyD4UK_j8UxMwOCtrtXIYftB",
   databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com"
@@ -121,28 +146,28 @@ function inicio(){
   setInterval(()=>rel.innerText=new Date().toLocaleTimeString(),1000);
   iFec.value=new Date().toISOString().split('T')[0];
   if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-  db = firebase.database();
-  const s = localStorage.getItem('ses_actual');
-  if(s){ uA=s; mostrar(); }
+  db=firebase.database();
+  const s=localStorage.getItem('ses_actual');
+  if(s){uA=s;mostrar();}
 }
 
 function registrarUsuario(){
-  const c = regEmail.value.trim().toLowerCase();
-  const p = regPass.value.trim();
-  if(!c || !p) return alert("Campos vacíos");
-  db.ref('usuarios/'+btoa(c)).set({p}).then(()=>alert("Registrado"));
+  const c=regEmail.value.trim().toLowerCase();
+  const p2=regPass.value.trim();
+  if(!c||!p2) return alert("Campos vacíos");
+  db.ref('usuarios/'+btoa(c)).set({p:p2}).then(()=>alert("Registrado"));
   verSeccion('divLogin');
 }
 
 function entrar(){
-  const c = u.value.trim().toLowerCase();
-  const p2 = p.value.trim();
+  const c=u.value.trim().toLowerCase();
+  const p2=p.value.trim();
   db.ref('usuarios/'+btoa(c)).once('value').then(s=>{
-    if(s.exists() && s.val().p===p2){
+    if(s.exists()&&s.val().p===p2){
       uA=c;
       localStorage.setItem('ses_actual',uA);
       mostrar();
-    } else alert("Datos incorrectos");
+    }else alert("Datos incorrectos");
   });
 }
 
@@ -152,7 +177,7 @@ function mostrar(){
   pintarTabla();
 }
 
-fReg.onsubmit = e =>{
+fReg.onsubmit=e=>{
   e.preventDefault();
   const venta={
     tel:iTel.value,
