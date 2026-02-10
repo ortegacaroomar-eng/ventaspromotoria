@@ -4,9 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SISTEMA VENTAS 4029 - OFICIAL</title>
-    <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
+
+    <!-- SheetJS para crear Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script> <!-- [web:50][web:51] -->
+
+    <!-- Firebase v8 -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script> <!-- [web:58] -->
+
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #001220; margin: 0; color: #333; }
         .header { background: #003566; color: white; padding: 15px; text-align: center; border-bottom: 4px solid #ffc300; }
@@ -27,9 +32,11 @@
 </head>
 <body onload="inicio()">
 
+<!-- SECCIÓN LOGIN / REGISTRO -->
 <div id="lSec" style="max-width:400px; margin:auto; padding:40px 20px; text-align:center;">
     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Telcel_logo.svg/1200px-Telcel_logo.svg.png" width="160">
     <div id="rel" class="reloj">00:00:00</div>
+
     <div id="divLogin">
         <input type="email" id="u" placeholder="Correo">
         <input type="password" id="p" placeholder="Contraseña">
@@ -37,6 +44,7 @@
         <hr style="border: 0.5px solid #333; margin: 20px 0;">
         <button class="btn-reg" onclick="verSeccion('divReg')">NUEVO PROMOTOR</button>
     </div>
+
     <div id="divReg" class="hidden">
         <h3 style="color:white">CREAR CUENTA</h3>
         <input type="email" id="regEmail" placeholder="Correo">
@@ -46,89 +54,154 @@
     </div>
 </div>
 
+<!-- SECCIÓN PRINCIPAL DEL SISTEMA -->
 <div id="mSec" class="hidden">
-    <div class="header"><h3>SISTEMA VENTAS 4029</h3><small style="color:#ffc300;">CONEXIÓN NUBE ACTIVA</small></div>
+    <div class="header">
+        <h3>SISTEMA VENTAS 4029</h3>
+        <small style="color:#ffc300;">CONEXIÓN NUBE ACTIVA</small>
+    </div>
+
     <div class="container">
         <form id="fReg">
             <label>Trámite</label>
             <select id="iTipo" onchange="menuInteractivo()" required>
-                <option value="KIT">KIT (EQUIPO)</option><option value="CHIP">CHIP</option>
-                <option value="PORTA">PORTA</option><option value="RENUEVATE">RENUEVATE</option>
+                <option value="KIT">KIT (EQUIPO)</option>
+                <option value="CHIP">CHIP</option>
+                <option value="PORTA">PORTA</option>
+                <option value="RENUEVATE">RENUEVATE</option>
             </select>
+
             <label>Celular (10 dígitos)</label>
             <input type="text" id="iTel" maxlength="10" required>
+
             <label>ICCID (19 dígitos)</label>
             <input type="text" id="iIcc" maxlength="19" required>
+
             <div id="seccionEquipo" class="card hidden">
-                <label>IMEI (15 dígitos)</label><input type="text" id="iIme" maxlength="15">
-                <label>Modelo</label><input type="text" id="iMod">
+                <label>IMEI (15 dígitos)</label>
+                <input type="text" id="iIme" maxlength="15">
+                <label>Modelo</label>
+                <input type="text" id="iMod">
             </div>
+
             <div class="card">
-                <label>Promotor</label><input type="text" id="iProm" required>
-                <label>Fecha</label><input type="date" id="iFec">
+                <label>Promotor</label>
+                <input type="text" id="iProm" required>
+                <label>Fecha</label>
+                <input type="date" id="iFec">
             </div>
+
             <button type="submit" class="btn-save">💾 GUARDAR VENTA</button>
         </form>
-        <table id="tVistas"><thead><tr><th>TELÉFONO</th><th>TIPO</th><th>-</th></tr></thead><tbody></tbody></table>
+
+        <table id="tVistas">
+            <thead>
+                <tr><th>TELÉFONO</th><th>TIPO</th><th>-</th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
         <button onclick="bajarExcel()" class="btn-excel">📥 DESCARGAR EXCEL</button>
         <button onclick="salir()" style="margin-top:20px; background:#6c757d; color:white;">SALIR</button>
     </div>
 </div>
 
 <script>
-// --- CONFIGURACIÓN: PEGA TUS DATOS AQUÍ ---
+/* ==== CONFIGURACIÓN FIREBASE (CAMBIA ESTOS DATOS) ==== */
 const firebaseConfig = {
     apiKey: "TU_API_KEY_AQUÍ",
     databaseURL: "TU_URL_DE_DATABASE_AQUÍ"
 };
-// -----------------------------------------
+/* ===================================================== */
 
-let uA = ""; 
+let uA = "";  // usuario actual (correo)
 let db;
 
 function inicio(){
-    setInterval(()=>{document.getElementById('rel').innerText=new Date().toLocaleTimeString()},1000);
+    // Reloj
+    setInterval(() => {
+        document.getElementById('rel').innerText = new Date().toLocaleTimeString();
+    }, 1000);
+
+    // Fecha de hoy
     document.getElementById('iFec').value = new Date().toISOString().split('T')[0];
+
+    // Inicializar Firebase
     if (firebase.apps.length === 0) firebase.initializeApp(firebaseConfig);
     db = firebase.database();
+
+    // Sesión guardada
     const s = localStorage.getItem('ses_actual');
-    if(s){ uA = s; mostrar(); }
+    if (s){ uA = s; mostrar(); }
 }
 
+/* Registro de usuario */
 function registrarUsuario(){
     const c = document.getElementById('regEmail').value.trim().toLowerCase();
     const p = document.getElementById('regPass').value.trim();
     if(!c || !p) return alert("Llena los campos.");
-    const key = btoa(c).replace(/=/g,"");
-    db.ref('usuarios/' + key).set({ p }).then(() => { alert("Registrado."); verSeccion('divLogin'); });
-}
 
-function entrar(){
-    const c = document.getElementById('u').value.trim().toLowerCase();
-    const p = document.getElementById('p').value.trim();
     const key = btoa(c).replace(/=/g,"");
-    db.ref('usuarios/' + key).once('value').then((s) => {
-        if(s.exists() && s.val().p === p){ uA = c; localStorage.setItem('ses_actual', uA); mostrar(); }
-        else { alert("Datos incorrectos."); }
+    db.ref('usuarios/' + key).set({ p }).then(() => {
+        alert("Registrado.");
+        verSeccion('divLogin');
     });
 }
 
+/* Login */
+function entrar(){
+    const c = document.getElementById('u').value.trim().toLowerCase();
+    const p = document.getElementById('p').value.trim();
+    if(!c || !p) return alert("Ingresa correo y contraseña.");
+
+    const key = btoa(c).replace(/=/g,"");
+    db.ref('usuarios/' + key).once('value').then((s) => {
+        if(s.exists() && s.val().p === p){
+            uA = c;
+            localStorage.setItem('ses_actual', uA);
+            mostrar();
+        } else {
+            alert("Datos incorrectos.");
+        }
+    });
+}
+
+/* Mostrar panel principal */
 function mostrar(){
-    document.getElementById('lSec').className='hidden';
-    document.getElementById('mSec').className='';
+    document.getElementById('lSec').className = 'hidden';
+    document.getElementById('mSec').className = '';
     pintarTabla();
 }
 
+/* Guardar venta */
 document.getElementById('fReg').onsubmit = function(e){
     e.preventDefault();
+
+    if(!iTel.value || !iIcc.value || !iProm.value){
+        return alert("Completa los campos obligatorios.");
+    }
+
     const key = btoa(uA).replace(/=/g,"");
+
     db.ref('ventas/' + key).push({
-        tel: iTel.value, imei: iIme.value || "N/A", iccid: iIcc.value,
-        tipo: iTipo.value, prom: iProm.value.toUpperCase(),
-        fec: iFec.value, mod: iMod.value.toUpperCase() || "N/A"
-    }).then(() => { alert("Guardado."); this.reset(); pintarTabla(); });
+        tel: iTel.value,
+        imei: iIme.value || "N/A",
+        iccid: iIcc.value,
+        tipo: iTipo.value,
+        prom: iProm.value.toUpperCase(),
+        fec: iFec.value,
+        mod: iMod.value.toUpperCase() || "N/A"
+    }).then(() => {
+        alert("Venta guardada.");
+        this.reset();
+        document.getElementById('seccionEquipo').classList.add('hidden');
+        // volver a poner fecha de hoy
+        document.getElementById('iFec').value = new Date().toISOString().split('T')[0];
+        pintarTabla();
+    });
 };
 
+/* Tabla de últimas ventas */
 function pintarTabla(){
     const key = btoa(uA).replace(/=/g,"");
     db.ref('ventas/' + key).limitToLast(5).on('value', (s) => {
@@ -136,39 +209,66 @@ function pintarTabla(){
         tbody.innerHTML = "";
         s.forEach(child => {
             const x = child.val();
-            tbody.innerHTML += `<tr><td>${x.tel}</td><td>${x.tipo}</td><td><button onclick="borrar('${child.key}')" style="background:red;">X</button></td></tr>`;
+            tbody.innerHTML += `
+                <tr>
+                    <td>${x.tel}</td>
+                    <td>${x.tipo}</td>
+                    <td><button onclick="borrar('${child.key}')" style="background:red; color:white; border:none; padding:4px 8px; border-radius:4px;">X</button></td>
+                </tr>`;
         });
     });
 }
 
+/* Borrar venta */
 function borrar(id){
     const key = btoa(uA).replace(/=/g,"");
-    if(confirm("¿Eliminar?")) db.ref('ventas/'+key+'/'+id).remove();
+    if(confirm("¿Eliminar esta venta?")){
+        db.ref('ventas/'+key+'/'+id).remove();
+    }
 }
 
+/* Descargar Excel con formato sencillo (sin comisiones) */
 function bajarExcel(){
     const key = btoa(uA).replace(/=/g,"");
     db.ref('ventas/' + key).once('value').then((s) => {
-        const d = Object.values(s.val() || {});
-        const ws = XLSX.utils.json_to_sheet(d);
+        const ventas = Object.values(s.val() || {});
+
+        const datosExcel = ventas.map(v => ({
+            "FECHA": v.fec || "",
+            "NUM CELULAR": v.tel || "",
+            "ICCID": v.iccid || "",
+            "IMEI": v.imei || "",
+            "MODELO": v.mod || "",
+            "TIPO TRÁMITE": v.tipo || "",
+            "PROMOTOR": v.prom || ""
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(datosExcel);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Ventas");
-        XLSX.writeFile(wb, "Reporte_Ventas.xlsx");
+        XLSX.writeFile(wb, "Ventas_Telcel_4029.xlsx");
     });
 }
 
+/* Mostrar / ocultar sección equipo según trámite */
 function menuInteractivo(){
     const t = document.getElementById('iTipo').value;
-    document.getElementById('seccionEquipo').classList.toggle('hidden', !(t === 'KIT' || t === 'RENUEVATE'));
+    document.getElementById('seccionEquipo')
+        .classList.toggle('hidden', !(t === 'KIT' || t === 'RENUEVATE'));
 }
 
+/* Cambiar entre login y registro */
 function verSeccion(id){
     document.getElementById('divLogin').classList.add('hidden');
     document.getElementById('divReg').classList.add('hidden');
     document.getElementById(id).classList.remove('hidden');
 }
 
-function salir(){ localStorage.clear(); location.reload(); }
+/* Cerrar sesión */
+function salir(){
+    localStorage.clear();
+    location.reload();
+}
 </script>
 </body>
 </html>
