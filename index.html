@@ -1,343 +1,221 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SISTEMA VENTAS 4029 - TELCEL</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SISTEMA VENTAS 4029 - OFICIAL</title>
 
-    <!-- SheetJS para Excel -->
-    <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
+<!-- SheetJS -->
+<script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
 
-    <!-- Firebase v8 -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<!-- Firebase v8 -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
-    <style>
-        * { box-sizing: border-box; }
-        body { 
-            font-family: 'Segoe UI', sans-serif; 
-            background: linear-gradient(135deg, #001220 0%, #003566 100%); 
-            margin: 0; 
-            color: #333; 
-            min-height: 100vh;
-        }
-        .header { 
-            background: #003566; 
-            color: white; 
-            padding: 15px; 
-            text-align: center; 
-            border-bottom: 4px solid #ffc300; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-        }
-        .container { 
-            max-width: 450px; 
-            margin: auto; 
-            background: white; 
-            padding: 20px; 
-            border-radius: 15px 15px 0 0;
-            box-shadow: 0 -10px 30px rgba(0,0,0,0.2);
-        }
-        .card { 
-            background: #f8f9fa; 
-            border: 1px solid #dee2e6; 
-            padding: 15px; 
-            border-radius: 12px; 
-            margin-bottom: 15px; 
-        }
-        label { 
-            font-size: 11px; 
-            font-weight: bold; 
-            color: #003566; 
-            text-transform: uppercase; 
-            display: block; 
-            margin-bottom: 2px; 
-        }
-        input, select, button { 
-            width: 100%; 
-            padding: 12px; 
-            margin-bottom: 12px; 
-            border: 1px solid #ccc; 
-            border-radius: 8px; 
-            font-size: 15px; 
-        }
-        button { 
-            background: #003566; 
-            color: white; 
-            font-weight: bold; 
-            border: none; 
-            cursor: pointer; 
-            transition: all 0.2s; 
-        }
-        button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,53,102,0.4); }
-        .btn-reg { background: #28a745; margin-top: 5px; }
-        .btn-save { background: #28a745; font-size: 18px; margin-top: 10px; }
-        .btn-excel { background: #217346; margin-top: 20px; height: 55px; font-size: 16px; }
-        .hidden { display: none; }
-        .reloj { font-size: 28px; font-weight: bold; color: #ffc300; text-align: center; margin: 10px 0; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 10px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background: #003566; color: white; }
-        #lSec { 
-            max-width: 400px; 
-            margin: auto; 
-            padding: 40px 20px; 
-            text-align: center; 
-            color: white;
-        }
-        .status { 
-            background: #28a745; 
-            color: white; 
-            padding: 10px; 
-            border-radius: 25px; 
-            font-size: 12px; 
-            margin-top: 10px;
-        }
-    </style>
+<style>
+body{font-family:'Segoe UI',sans-serif;background:#001220;margin:0}
+.header{background:#003566;color:#fff;padding:15px;text-align:center;border-bottom:4px solid #ffc300}
+.container{max-width:450px;margin:auto;background:#fff;padding:20px;min-height:100vh}
+.card{background:#f8f9fa;border:1px solid #dee2e6;padding:15px;border-radius:12px;margin-bottom:15px}
+label{font-size:11px;font-weight:bold;color:#003566;text-transform:uppercase}
+input,select,button{width:100%;padding:12px;margin-bottom:12px;border:1px solid #ccc;border-radius:8px;font-size:15px}
+button{background:#003566;color:#fff;font-weight:bold;border:none}
+.btn-reg{background:#28a745}
+.btn-save{background:#28a745;font-size:18px}
+.btn-excel{background:#217346;height:55px;font-size:16px}
+.hidden{display:none}
+.reloj{font-size:28px;font-weight:bold;color:#ffc300;text-align:center;margin:10px 0}
+table{width:100%;border-collapse:collapse;font-size:10px}
+th,td{border:1px solid #ddd;padding:8px}
+th{background:#003566;color:#fff}
+</style>
 </head>
+
 <body onload="inicio()">
 
-<!-- LOGIN / REGISTRO -->
-<div id="lSec">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Telcel_logo.svg/1200px-Telcel_logo.svg.png" width="160" style="margin-bottom: 20px;">
-    <div id="rel" class="reloj">00:00:00</div>
+<!-- LOGIN -->
+<div id="lSec" style="max-width:400px;margin:auto;padding:40px 20px;text-align:center;">
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Telcel_logo.svg/1200px-Telcel_logo.svg.png" width="160">
+<div id="rel" class="reloj">00:00:00</div>
 
-    <div id="divLogin">
-        <input type="email" id="u" placeholder="Correo electrónico">
-        <input type="password" id="p" placeholder="Contraseña">
-        <button onclick="entrar()">🚀 ENTRAR AL PANEL</button>
-        <hr style="border: 0.5px solid #ffc300; margin: 20px 0;">
-        <button class="btn-reg" onclick="verSeccion('divReg')">➕ NUEVO PROMOTOR</button>
-    </div>
-
-    <div id="divReg" class="hidden">
-        <h3>CREAR CUENTA PROMOTOR</h3>
-        <input type="email" id="regEmail" placeholder="Correo electrónico">
-        <input type="password" id="regPass" placeholder="Nueva contraseña">
-        <button onclick="registrarUsuario()" style="background:#28a745;">✅ FINALIZAR REGISTRO</button>
-        <p onclick="verSeccion('divLogin')" style="color:#ffc300; cursor:pointer; margin-top: 15px;">← Volver al login</p>
-    </div>
+<div id="divLogin">
+<input type="email" id="u" placeholder="Correo">
+<input type="password" id="p" placeholder="Contraseña">
+<button onclick="entrar()">ENTRAR</button>
+<hr>
+<button class="btn-reg" onclick="verSeccion('divReg')">NUEVO PROMOTOR</button>
 </div>
 
-<!-- PANEL PRINCIPAL -->
+<div id="divReg" class="hidden">
+<h3 style="color:white">CREAR CUENTA</h3>
+<input type="email" id="regEmail" placeholder="Correo">
+<input type="password" id="regPass" placeholder="Contraseña">
+<button class="btn-reg" onclick="registrarUsuario()">REGISTRAR</button>
+<p onclick="verSeccion('divLogin')" style="color:#ffc300;cursor:pointer">Volver</p>
+</div>
+</div>
+
+<!-- PANEL -->
 <div id="mSec" class="hidden">
-    <div class="header">
-        <h3>📱 SISTEMA VENTAS 4029</h3>
-        <small style="color:#ffc300;">CONEXIÓN NUBE ACTIVA ✓</small>
-        <div class="status">Sesión: <span id="userDisplay"></span></div>
-    </div>
+<div class="header">
+<h3>SISTEMA VENTAS 4029</h3>
+<small style="color:#ffc300">NUBE ACTIVA</small>
+</div>
 
-    <div class="container">
-        <form id="fReg">
-            <label>📋 Tipo de trámite</label>
-            <select id="iTipo" onchange="menuInteractivo()" required>
-                <option value="KIT">📦 KIT (EQUIPO)</option>
-                <option value="CHIP">💳 CHIP</option>
-                <option value="PORTA">🔄 PORTABILIDAD</option>
-                <option value="RENUEVATE">🔄 RENUEVATE</option>
-            </select>
+<div class="container">
+<form id="fReg">
 
-            <label>📱 Número celular (10 dígitos)</label>
-            <input type="tel" id="iTel" maxlength="10" required>
+<label>Trámite</label>
+<select id="iTipo" onchange="menuInteractivo()" required>
+<option value="KIT">KIT</option>
+<option value="CHIP">CHIP</option>
+<option value="PORTA">PORTA</option>
+<option value="RENUEVATE">RENUEVATE</option>
+</select>
 
-            <label>🎫 ICCID (19 dígitos)</label>
-            <input type="text" id="iIcc" maxlength="19" required>
+<label>Celular</label>
+<input type="text" id="iTel" maxlength="10" required>
 
-            <div id="seccionEquipo" class="card hidden">
-                <label>🔧 IMEI (15 dígitos)</label>
-                <input type="text" id="iIme" maxlength="15">
-                <label>📱 Modelo</label>
-                <input type="text" id="iMod">
-            </div>
+<label>ICCID</label>
+<input type="text" id="iIcc" maxlength="19" required>
 
-            <div class="card">
-                <label>👤 Promotor</label>
-                <input type="text" id="iProm" required>
-                <label>📅 Fecha</label>
-                <input type="date" id="iFec">
-            </div>
+<div id="seccionEquipo" class="card hidden">
+<label>IMEI</label>
+<input type="text" id="iIme" maxlength="15">
+<label>Modelo</label>
+<input type="text" id="iMod">
+</div>
 
-            <button type="submit" class="btn-save">💾 GUARDAR VENTA</button>
-        </form>
+<div class="card">
+<label>Promotor</label>
+<input type="text" id="iProm" required>
+<label>Fecha</label>
+<input type="date" id="iFec">
+</div>
 
-        <h4 style="color:#003566; text-align:center; margin:20px 0 10px 0;">📊 Últimas 5 ventas</h4>
-        <table id="tVistas">
-            <thead>
-                <tr>
-                    <th>CELULAR</th>
-                    <th>TIPO</th>
-                    <th>PROMOTOR</th>
-                    <th>🗑️</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+<button class="btn-save">GUARDAR VENTA</button>
+</form>
 
-        <button onclick="bajarExcel()" class="btn-excel">📥 DESCARGAR EXCEL</button>
-        <button onclick="salir()" style="margin-top:20px; background:#6c757d;">🚪 SALIR</button>
-    </div>
+<table id="tVistas">
+<thead>
+<tr><th>TEL</th><th>TIPO</th><th>-</th></tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<button class="btn-excel" onclick="bajarExcel()">DESCARGAR EXCEL</button>
+<button onclick="salir()" style="background:#6c757d;margin-top:20px">SALIR</button>
+</div>
 </div>
 
 <script>
-/* 🔥 CONFIGURACIÓN FIREBASE - YA LISTA PARA USAR 🔥 */
 const firebaseConfig = {
-  apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
-  authDomain: "ventastelcel4029.firebaseapp.com",
-  databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com",
-  projectId: "ventastelcel4029",
-  storageBucket: "ventastelcel4029.firebasestorage.app",
-  messagingSenderId: "480758010888",
-  appId: "1:480758010888:web:e948c54f0217536aa9adbd"
+apiKey: "TU_API_KEY",
+databaseURL: "TU_DATABASE_URL"
 };
 
-let uA = "";
-let db;
+let uA="",db;
 
-/* Inicializar sistema */
 function inicio(){
-    setInterval(() => {
-        document.getElementById('rel').innerText = new Date().toLocaleTimeString();
-    }, 1000);
-
-    document.getElementById('iFec').value = new Date().toISOString().split('T')[0];
-
-    if (firebase.apps.length === 0) firebase.initializeApp(firebaseConfig);
-    db = firebase.database();
-
-    const s = localStorage.getItem('ses_actual');
-    if (s){ uA = s; mostrar(); }
+setInterval(()=>rel.innerText=new Date().toLocaleTimeString(),1000);
+iFec.value=new Date().toISOString().split('T')[0];
+if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+db=firebase.database();
+const s=localStorage.getItem('ses_actual');
+if(s){uA=s;mostrar();}
 }
 
-/* Registro */
 function registrarUsuario(){
-    const c = document.getElementById('regEmail').value.trim().toLowerCase();
-    const p = document.getElementById('regPass').value.trim();
-    if(!c || !p) return alert("Llena todos los campos.");
-
-    const key = btoa(c).replace(/=/g,"");
-    db.ref('usuarios/' + key).set({ p }).then(() => {
-        alert("✅ Promotor registrado correctamente.");
-        verSeccion('divLogin');
-        document.getElementById('regEmail').value = '';
-        document.getElementById('regPass').value = '';
-    }).catch(() => alert("Error al registrar."));
+const c=regEmail.value.trim().toLowerCase();
+const p=regPass.value.trim();
+if(!c||!p) return alert("Campos vacíos");
+db.ref('usuarios/'+btoa(c)).set({p}).then(()=>alert("Registrado"));
+verSeccion('divLogin');
 }
 
-/* Login */
 function entrar(){
-    const c = document.getElementById('u').value.trim().toLowerCase();
-    const p = document.getElementById('p').value.trim();
-    if(!c || !p) return alert("Ingresa correo y contraseña.");
-
-    const key = btoa(c).replace(/=/g,"");
-    db.ref('usuarios/' + key).once('value').then((s) => {
-        if(s.exists() && s.val().p === p){
-            uA = c;
-            localStorage.setItem('ses_actual', uA);
-            mostrar();
-        } else {
-            alert("❌ Usuario o contraseña incorrectos.");
-        }
-    });
+const c=u.value.trim().toLowerCase();
+const p=pw=p.value.trim();
+db.ref('usuarios/'+btoa(c)).once('value').then(s=>{
+if(s.exists()&&s.val().p===p){
+uA=c;localStorage.setItem('ses_actual',uA);mostrar();
+}else alert("Datos incorrectos");
+});
 }
 
-/* Panel principal */
 function mostrar(){
-    document.getElementById('lSec').className = 'hidden';
-    document.getElementById('mSec').className = '';
-    document.getElementById('userDisplay').innerText = uA;
-    pintarTabla();
+lSec.className='hidden';
+mSec.className='';
+pintarTabla();
 }
 
-/* Guardar venta */
-document.getElementById('fReg').onsubmit = function(e){
-    e.preventDefault();
-
-    if(!document.getElementById('iTel').value || !document.getElementById('iIcc').value || !document.getElementById('iProm').value){
-        return alert("Completa los campos obligatorios.");
-    }
-
-    const key = btoa(uA).replace(/=/g,"");
-
-    db.ref('ventas/' + key).push({
-        tel: document.getElementById('iTel').value,
-        imei: document.getElementById('iIme').value || "N/A",
-        iccid: document.getElementById('iIcc').value,
-        tipo: document.getElementById('iTipo').value,
-        prom: document.getElementById('iProm').value.toUpperCase(),
-        fec: document.getElementById('iFec').value,
-        mod: document.getElementById('iMod').value.toUpperCase() || "N/A"
-    }).then(() => {
-        alert("✅ Venta guardada en la nube.");
-        this.reset();
-        document.getElementById('seccionEquipo').classList.add('hidden');
-        document.getElementById('iFec').value = new Date().toISOString().split('T')[0];
-        pintarTabla();
-    });
+fReg.onsubmit=e=>{
+e.preventDefault();
+const key=btoa(uA);
+const venta={
+tel:iTel.value,
+iccid:iIcc.value,
+tipo:iTipo.value,
+prom:iProm.value.toUpperCase(),
+fec:iFec.value
+};
+if(iTipo.value==='KIT'||iTipo.value==='RENUEVATE'){
+if(iIme.value.trim()) venta.imei=iIme.value;
+if(iMod.value.trim()) venta.mod=iMod.value.toUpperCase();
+}
+db.ref('ventas/'+key).push(venta).then(()=>{
+alert("Venta guardada");
+fReg.reset();
+iFec.value=new Date().toISOString().split('T')[0];
+menuInteractivo();
+pintarTabla();
+});
 };
 
-/* Tabla ventas */
 function pintarTabla(){
-    const key = btoa(uA).replace(/=/g,"");
-    db.ref('ventas/' + key).limitToLast(5).on('value', (s) => {
-        const tbody = document.querySelector('#tVistas tbody');
-        tbody.innerHTML = "";
-        s.forEach(child => {
-            const x = child.val();
-            tbody.innerHTML += `
-                <tr>
-                    <td>${x.tel}</td>
-                    <td>${x.tipo}</td>
-                    <td>${x.prom}</td>
-                    <td><button onclick="borrar('${child.key}')" style="background:red; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">🗑️</button></td>
-                </tr>`;
-        });
-    });
+db.ref('ventas/'+btoa(uA)).limitToLast(5).once('value',s=>{
+const tb=document.querySelector('#tVistas tbody');
+tb.innerHTML="";
+s.forEach(c=>{
+tb.innerHTML+=`<tr>
+<td>${c.val().tel}</td>
+<td>${c.val().tipo}</td>
+<td><button onclick="borrar('${c.key}')" style="background:red;color:white">X</button></td>
+</tr>`;
+});
+});
 }
 
 function borrar(id){
-    const key = btoa(uA).replace(/=/g,"");
-    if(confirm("¿Eliminar esta venta?")){
-        db.ref('ventas/'+key+'/'+id).remove();
-    }
+if(confirm("Eliminar venta"))
+db.ref('ventas/'+btoa(uA)+'/'+id).remove().then(pintarTabla);
 }
 
-/* Descargar Excel */
 function bajarExcel(){
-    const key = btoa(uA).replace(/=/g,"");
-    db.ref('ventas/' + key).once('value').then((s) => {
-        const ventas = Object.values(s.val() || {});
-
-        const datosExcel = ventas.map(v => ({
-            "FECHA": v.fec || "",
-            "NUM CELULAR": v.tel || "",
-            "ICCID": v.iccid || "",
-            "IMEI": v.imei || "",
-            "MODELO": v.mod || "",
-            "TIPO TRÁMITE": v.tipo || "",
-            "PROMOTOR": v.prom || ""
-        }));
-
-        const ws = XLSX.utils.json_to_sheet(datosExcel);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Ventas Telcel");
-        XLSX.writeFile(wb, "Ventas_Telcel_4029.xlsx");
-    });
+db.ref('ventas/'+btoa(uA)).once('value',s=>{
+const data=Object.values(s.val()||{});
+const ws=XLSX.utils.json_to_sheet(data);
+const wb=XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(wb,ws,"Ventas");
+XLSX.writeFile(wb,"Ventas_4029.xlsx");
+});
 }
 
 function menuInteractivo(){
-    const t = document.getElementById('iTipo').value;
-    document.getElementById('seccionEquipo').classList.toggle('hidden', !(t === 'KIT' || t === 'RENUEVATE'));
+const eq=iTipo.value==='KIT'||iTipo.value==='RENUEVATE';
+seccionEquipo.classList.toggle('hidden',!eq);
+iIme.required=eq;
 }
 
 function verSeccion(id){
-    document.getElementById('divLogin').classList.add('hidden');
-    document.getElementById('divReg').classList.add('hidden');
-    document.getElementById(id).classList.remove('hidden');
+divLogin.classList.add('hidden');
+divReg.classList.add('hidden');
+document.getElementById(id).classList.remove('hidden');
 }
 
 function salir(){
-    localStorage.clear();
-    location.reload();
+localStorage.clear();
+location.reload();
 }
 </script>
 </body>
