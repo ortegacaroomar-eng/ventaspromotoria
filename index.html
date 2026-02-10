@@ -109,114 +109,118 @@ th{background:#003566;color:#fff}
 </div>
 
 <script>
+/* 🔥 CONFIGURACIÓN FIREBASE (YA LISTA) */
 const firebaseConfig = {
-apiKey: "TU_API_KEY",
-databaseURL: "TU_DATABASE_URL"
+  apiKey: "AIzaSyD4UK_j8UxMwOCtrtXIYftB",
+  databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com"
 };
 
-let uA="",db;
+let uA="", db;
 
 function inicio(){
-setInterval(()=>rel.innerText=new Date().toLocaleTimeString(),1000);
-iFec.value=new Date().toISOString().split('T')[0];
-if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-db=firebase.database();
-const s=localStorage.getItem('ses_actual');
-if(s){uA=s;mostrar();}
+  setInterval(()=>rel.innerText=new Date().toLocaleTimeString(),1000);
+  iFec.value=new Date().toISOString().split('T')[0];
+  if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  db = firebase.database();
+  const s = localStorage.getItem('ses_actual');
+  if(s){ uA=s; mostrar(); }
 }
 
 function registrarUsuario(){
-const c=regEmail.value.trim().toLowerCase();
-const p=regPass.value.trim();
-if(!c||!p) return alert("Campos vacíos");
-db.ref('usuarios/'+btoa(c)).set({p}).then(()=>alert("Registrado"));
-verSeccion('divLogin');
+  const c = regEmail.value.trim().toLowerCase();
+  const p = regPass.value.trim();
+  if(!c || !p) return alert("Campos vacíos");
+  db.ref('usuarios/'+btoa(c)).set({p}).then(()=>alert("Registrado"));
+  verSeccion('divLogin');
 }
 
 function entrar(){
-const c=u.value.trim().toLowerCase();
-const p=pw=p.value.trim();
-db.ref('usuarios/'+btoa(c)).once('value').then(s=>{
-if(s.exists()&&s.val().p===p){
-uA=c;localStorage.setItem('ses_actual',uA);mostrar();
-}else alert("Datos incorrectos");
-});
+  const c = u.value.trim().toLowerCase();
+  const p2 = p.value.trim();
+  db.ref('usuarios/'+btoa(c)).once('value').then(s=>{
+    if(s.exists() && s.val().p===p2){
+      uA=c;
+      localStorage.setItem('ses_actual',uA);
+      mostrar();
+    } else alert("Datos incorrectos");
+  });
 }
 
 function mostrar(){
-lSec.className='hidden';
-mSec.className='';
-pintarTabla();
+  lSec.className='hidden';
+  mSec.className='';
+  pintarTabla();
 }
 
-fReg.onsubmit=e=>{
-e.preventDefault();
-const key=btoa(uA);
-const venta={
-tel:iTel.value,
-iccid:iIcc.value,
-tipo:iTipo.value,
-prom:iProm.value.toUpperCase(),
-fec:iFec.value
-};
-if(iTipo.value==='KIT'||iTipo.value==='RENUEVATE'){
-if(iIme.value.trim()) venta.imei=iIme.value;
-if(iMod.value.trim()) venta.mod=iMod.value.toUpperCase();
-}
-db.ref('ventas/'+key).push(venta).then(()=>{
-alert("Venta guardada");
-fReg.reset();
-iFec.value=new Date().toISOString().split('T')[0];
-menuInteractivo();
-pintarTabla();
-});
+fReg.onsubmit = e =>{
+  e.preventDefault();
+  const venta={
+    tel:iTel.value,
+    iccid:iIcc.value,
+    tipo:iTipo.value,
+    prom:iProm.value.toUpperCase(),
+    fec:iFec.value
+  };
+  if(iTipo.value==='KIT'||iTipo.value==='RENUEVATE'){
+    if(iIme.value) venta.imei=iIme.value;
+    if(iMod.value) venta.mod=iMod.value.toUpperCase();
+  }
+  db.ref('ventas/'+btoa(uA)).push(venta).then(()=>{
+    alert("Venta guardada");
+    fReg.reset();
+    iFec.value=new Date().toISOString().split('T')[0];
+    menuInteractivo();
+    pintarTabla();
+  });
 };
 
 function pintarTabla(){
-db.ref('ventas/'+btoa(uA)).limitToLast(5).once('value',s=>{
-const tb=document.querySelector('#tVistas tbody');
-tb.innerHTML="";
-s.forEach(c=>{
-tb.innerHTML+=`<tr>
-<td>${c.val().tel}</td>
-<td>${c.val().tipo}</td>
-<td><button onclick="borrar('${c.key}')" style="background:red;color:white">X</button></td>
-</tr>`;
-});
-});
+  db.ref('ventas/'+btoa(uA)).limitToLast(5).once('value',s=>{
+    const tb=document.querySelector('#tVistas tbody');
+    tb.innerHTML="";
+    s.forEach(c=>{
+      tb.innerHTML+=`
+      <tr>
+        <td>${c.val().tel}</td>
+        <td>${c.val().tipo}</td>
+        <td><button onclick="borrar('${c.key}')" style="background:red;color:white">X</button></td>
+      </tr>`;
+    });
+  });
 }
 
 function borrar(id){
-if(confirm("Eliminar venta"))
-db.ref('ventas/'+btoa(uA)+'/'+id).remove().then(pintarTabla);
+  if(confirm("Eliminar venta"))
+    db.ref('ventas/'+btoa(uA)+'/'+id).remove().then(pintarTabla);
 }
 
 function bajarExcel(){
-db.ref('ventas/'+btoa(uA)).once('value',s=>{
-const data=Object.values(s.val()||{});
-const ws=XLSX.utils.json_to_sheet(data);
-const wb=XLSX.utils.book_new();
-XLSX.utils.book_append_sheet(wb,ws,"Ventas");
-XLSX.writeFile(wb,"Ventas_4029.xlsx");
-});
+  db.ref('ventas/'+btoa(uA)).once('value',s=>{
+    const data=Object.values(s.val()||{});
+    const ws=XLSX.utils.json_to_sheet(data);
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,"Ventas");
+    XLSX.writeFile(wb,"Ventas_4029.xlsx");
+  });
 }
 
 function menuInteractivo(){
-const eq=iTipo.value==='KIT'||iTipo.value==='RENUEVATE';
-seccionEquipo.classList.toggle('hidden',!eq);
-iIme.required=eq;
+  const eq=iTipo.value==='KIT'||iTipo.value==='RENUEVATE';
+  seccionEquipo.classList.toggle('hidden',!eq);
+  iIme.required=eq;
 }
 
 function verSeccion(id){
-divLogin.classList.add('hidden');
-divReg.classList.add('hidden');
-document.getElementById(id).classList.remove('hidden');
+  divLogin.classList.add('hidden');
+  divReg.classList.add('hidden');
+  document.getElementById(id).classList.remove('hidden');
 }
 
 function salir(){
-localStorage.clear();
-location.reload();
+  localStorage.clear();
+  location.reload();
 }
 </script>
+
 </body>
 </html>
