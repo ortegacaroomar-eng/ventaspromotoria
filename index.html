@@ -209,14 +209,13 @@ function borrar(id){
   if(confirm("Eliminar venta")) db.ref('ventas/'+btoa(uA)+'/'+id).remove().then(pintarTabla);
 }
 
-// FUNCIÓN DE EXCEL FINAL - FECHA CON DIAGONALES Y ANCHOS AMPLIOS
+// FUNCIÓN DE EXCEL CORREGIDA: Bordes reales y fecha DD/MM/AAAA
 function bajarExcel(){
   db.ref('ventas/'+btoa(uA)).once('value',s=>{
     const rawData=Object.values(s.val()||{});
     const dataFormateada = rawData.map(v => {
-      // Ajuste de fecha a DD/MM/AAAA
+      // Ajuste de fecha con diagonales
       const f = v.fec ? v.fec.split('-').reverse().join('/') : ""; 
-      
       return {
         "NUM. CELULAR": v.tel,
         "IMEI": v.imei || "",
@@ -234,9 +233,9 @@ function bajarExcel(){
 
     const ws = XLSX.utils.json_to_sheet(dataFormateada);
     
-    // Anchos corregidos para que NO se vea amontonado
+    // Anchos amplios para evitar amontonamiento en móvil
     ws['!cols'] = [
-      {wch: 22}, {wch: 25}, {wch: 32}, {wch: 28}, {wch: 25}, 
+      {wch: 25}, {wch: 25}, {wch: 32}, {wch: 28}, {wch: 25}, 
       {wch: 28}, {wch: 40}, {wch: 35}, {wch: 25}, {wch: 20}, {wch: 20}
     ];
 
