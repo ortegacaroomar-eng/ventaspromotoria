@@ -209,7 +209,7 @@ function borrar(id){
   if(confirm("Eliminar venta")) db.ref('ventas/'+btoa(uA)+'/'+id).remove().then(pintarTabla);
 }
 
-// FUNCIÓN DE EXCEL CON ANCHOS AMPLIADOS PARA CELULAR
+// FUNCIÓN DE EXCEL FINAL - ANCHO EXTRA PARA CELULAR
 function bajarExcel(){
   db.ref('ventas/'+btoa(uA)).once('value',s=>{
     const rawData=Object.values(s.val()||{});
@@ -229,25 +229,25 @@ function bajarExcel(){
 
     const ws=XLSX.utils.json_to_sheet(dataFormateada);
     
-    // ANCHOS AJUSTADOS SEGÚN TU CAPTURA DE PANTALLA
+    // ANCHOS FORZADOS (Muy amplios para evitar amontonamiento en móvil)
     const wscols = [
-      {wch: 18}, // NUM. CELULAR
-      {wch: 22}, // IMEI
-      {wch: 28}, // ICCID
-      {wch: 25}, // Renuevate/Kit...
-      {wch: 22}, // #TIENDA / Determinante
-      {wch: 25}, // SOLO NOMBRE DE LA CADENA
-      {wch: 35}, // SOLO NOMBRE DE TIENDA SIN CADENA
-      {wch: 30}, // NOMBRE COMPLETO PROMOTOR
-      {wch: 22}, // FECHA DE ACTIVACION
-      {wch: 18}, // MARCA
-      {wch: 18}  // MODELO
+      {wch: 22}, // NUM. CELULAR
+      {wch: 25}, // IMEI
+      {wch: 32}, // ICCID
+      {wch: 28}, // Renuevate/Kit/Chip/Porta
+      {wch: 25}, // #TIENDA / Determinante
+      {wch: 28}, // SOLO NOMBRE DE LA CADENA
+      {wch: 40}, // SOLO NOMBRE DE TIENDA SIN CADENA
+      {wch: 35}, // NOMBRE COMPLETO PROMOTOR
+      {wch: 25}, // FECHA DE ACTIVACION
+      {wch: 20}, // MARCA
+      {wch: 20}  // MODELO
     ];
     ws['!cols'] = wscols;
 
     const wb=XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb,ws,"Ventas");
-    XLSX.writeFile(wb,"Reporte_Ventas_Ancho_OK.xlsx");
+    XLSX.writeFile(wb,"Reporte_Ventas_Final.xlsx");
   });
 }
 
