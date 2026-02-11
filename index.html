@@ -209,51 +209,46 @@ function borrar(id){
   if(confirm("Eliminar venta")) db.ref('ventas/'+btoa(uA)+'/'+id).remove().then(pintarTabla);
 }
 
-// FUNCIÓN DE EXCEL FINAL - ANCHO EXTRA PARA CELULAR
+// FUNCIÓN DE EXCEL FINAL - FECHA CON DIAGONALES Y ANCHOS AMPLIOS
 function bajarExcel(){
   db.ref('ventas/'+btoa(uA)).once('value',s=>{
     const rawData=Object.values(s.val()||{});
-    const dataFormateada = rawData.map(v => ({
-      "NUM. CELULAR": v.tel,
-      "IMEI": v.imei || "",
-      "ICCID": v.iccid,
-      "Renuevate/Kit/Chip/Porta": v.tipo,
-      "#TIENDA / Determinante": v.tiendaNum,
-      "SOLO NOMBRE DE LA CADENA": v.cadena,
-      "SOLO NOMBRE DE TIENDA SIN CADENA": v.tiendaNom,
-      "NOMBRE COMPLETO PROMOTOR": v.prom,
-      "FECHA DE ACTIVACION": v.fec,
-      "MARCA": v.marca || "",
-      "MODELO": v.mod || ""
-    }));
+    const dataFormateada = rawData.map(v => {
+      // Ajuste de fecha a DD/MM/AAAA
+      const f = v.fec ? v.fec.split('-').reverse().join('/') : ""; 
+      
+      return {
+        "NUM. CELULAR": v.tel,
+        "IMEI": v.imei || "",
+        "ICCID": v.iccid,
+        "Renuevate/Kit/Chip/Porta": v.tipo,
+        "#TIENDA / Determinante": v.tiendaNum,
+        "SOLO NOMBRE DE LA CADENA": v.cadena,
+        "SOLO NOMBRE DE TIENDA SIN CADENA": v.tiendaNom,
+        "NOMBRE COMPLETO PROMOTOR": v.prom,
+        "FECHA DE ACTIVACION": f,
+        "MARCA": v.marca || "",
+        "MODELO": v.mod || ""
+      };
+    });
 
-    const ws=XLSX.utils.json_to_sheet(dataFormateada);
+    const ws = XLSX.utils.json_to_sheet(dataFormateada);
     
-    // ANCHOS FORZADOS (Muy amplios para evitar amontonamiento en móvil)
-    const wscols = [
-      {wch: 22}, // NUM. CELULAR
-      {wch: 25}, // IMEI
-      {wch: 32}, // ICCID
-      {wch: 28}, // Renuevate/Kit/Chip/Porta
-      {wch: 25}, // #TIENDA / Determinante
-      {wch: 28}, // SOLO NOMBRE DE LA CADENA
-      {wch: 40}, // SOLO NOMBRE DE TIENDA SIN CADENA
-      {wch: 35}, // NOMBRE COMPLETO PROMOTOR
-      {wch: 25}, // FECHA DE ACTIVACION
-      {wch: 20}, // MARCA
-      {wch: 20}  // MODELO
+    // Anchos corregidos para que NO se vea amontonado
+    ws['!cols'] = [
+      {wch: 22}, {wch: 25}, {wch: 32}, {wch: 28}, {wch: 25}, 
+      {wch: 28}, {wch: 40}, {wch: 35}, {wch: 25}, {wch: 20}, {wch: 20}
     ];
-    ws['!cols'] = wscols;
 
-    const wb=XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb,ws,"Ventas");
-    XLSX.writeFile(wb,"Reporte_Ventas_Final.xlsx");
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Ventas");
+    XLSX.writeFile(wb, "Reporte_Ventas_Final.xlsx");
   });
 }
 
 function menuInteractivo(){
-  const eq=iTipo.value==='KIT'||iTipo.value==='RENUEVATE';
-  seccionEquipo.classList.toggle('hidden',!eq);
+  const eq = iTipo.value === 'KIT' || iTipo.value === 'RENUEVATE';
+  seccionEquipo.classList.toggle('hidden', !eq);
 }
 
 function verSeccion(id){
