@@ -22,10 +22,11 @@ button{background:#003566;color:#fff;font-weight:bold;border:none}
 .btn-excel{background:#217346;height:55px;font-size:16px}
 .hidden{display:none}
 .reloj{font-size:28px;font-weight:bold;color:#ffc300;text-align:center;margin:10px 0}
-.tabla-scroll{ overflow-x:auto; width:100%; margin-top:15px; border:1px solid #ddd; border-radius:8px; }
-table{ border-collapse:collapse; width:100%; font-size:10px; }
-th,td{ border:1px solid #ddd; padding:8px; text-align:center; white-space:nowrap; }
-th{background:#003566;color:#fff}
+/* Ajuste para que la tabla no se amontone en el celular */
+.tabla-scroll{ overflow-x:auto; width:100%; margin-top:15px; border:1px solid #ddd; border-radius:8px; background: white;}
+table{ border-collapse:collapse; min-width:600px; font-size:10px; width: 100%;}
+th,td{ border:1px solid #ddd; padding:10px; text-align:center; white-space:nowrap; }
+th{background:#003566;color:#fff; text-transform: uppercase;}
 </style>
 </head>
 
@@ -106,25 +107,25 @@ th{background:#003566;color:#fff}
 <button type="submit" class="btn-save">GUARDAR VENTA</button>
 </form>
 
-<h4 style="color:#003566;margin:10px 0 5px 0">REGISTROS RECIENTES</h4>
+<h4 style="color:#003566; margin: 15px 0 5px 0;">REGISTROS GUARDADOS</h4>
 <div class="tabla-scroll">
 <table id="tVistas">
 <thead>
 <tr>
-  <th>CELULAR</th>
+  <th>TELÉFONO</th>
   <th>TIPO</th>
   <th>FECHA</th>
   <th>IMEI</th>
   <th>MARCA</th>
   <th>MODELO</th>
-  <th>-</th>
+  <th>ACCIÓN</th>
 </tr>
 </thead>
 <tbody></tbody>
 </table>
 </div>
 
-<button class="btn-excel" onclick="bajarExcel()" style="margin-top:15px">DESCARGAR EXCEL</button>
+<button class="btn-excel" onclick="bajarExcel()" style="margin-top:20px">DESCARGAR EXCEL</button>
 <button onclick="salir()" style="background:#6c757d;margin-top:10px">SALIR</button>
 </div>
 </div>
@@ -203,23 +204,24 @@ function pintarTabla(){
     tb.innerHTML="";
     s.forEach(c=>{
       const v = c.val();
-      // Formato de fecha DD/MM/AAAA para la vista local
-      const fechaVista = v.fec ? v.fec.split('-').reverse().join('/') : "";
+      // Formato de fecha con diagonales para la tabla de la app
+      const fEx = v.fec ? v.fec.split('-').reverse().join('/') : "";
+      
       tb.innerHTML+=`<tr>
         <td>${v.tel}</td>
         <td>${v.tipo}</td>
-        <td>${fechaVista}</td>
+        <td>${fEx}</td>
         <td>${v.imei || '-'}</td>
         <td>${v.marca || '-'}</td>
         <td>${v.mod || '-'}</td>
-        <td><button onclick="borrar('${c.key}')" style="background:red;padding:4px;margin:0">X</button></td>
+        <td><button onclick="borrar('${c.key}')" style="background:red; padding:5px; margin:0; font-size:9px">BORRAR</button></td>
       </tr>`;
     });
   });
 }
 
 function borrar(id){
-  if(confirm("Eliminar venta")) db.ref('ventas/'+btoa(uA)+'/'+id).remove().then(pintarTabla);
+  if(confirm("Eliminar registro?")) db.ref('ventas/'+btoa(uA)+'/'+id).remove().then(pintarTabla);
 }
 
 function bajarExcel(){
