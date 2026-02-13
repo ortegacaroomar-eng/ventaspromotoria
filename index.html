@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>SISTEMA VENTAS - OFICIAL</title>
 
-<script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
@@ -20,15 +20,13 @@ button{background:#003566; color:#fff; font-weight:bold; border:none; cursor:poi
 .btn-reg{background:#28a745}
 .btn-save{background:#28a745; font-size:18px}
 .btn-excel{background:#217346; height:55px; font-size:16px}
+.btn-link{background:#007bff; margin-top:5px; font-size:14px}
 .hidden{display:none}
 .reloj{font-size:28px; font-weight:bold; color:#ffc300; text-align:center; margin:10px 0}
 .tabla-scroll{overflow-x:auto; width:100%; margin-top:15px; border-radius:8px; background: white;}
 table{border-collapse:collapse; min-width:600px; font-size:10px; width: 100%;}
 th, td{border:1px solid #ddd; padding:10px; text-align:center; white-space:nowrap;}
 th{background:#003566; color:#fff; text-transform: uppercase;}
-
-/* Estilo para los nuevos botones */
-.btn-link{background:#007bff; margin-top:5px; font-size:14px}
 </style>
 </head>
 
@@ -208,7 +206,8 @@ function borrar(id){
 
 function bajarExcel(){
     db.ref('ventas/'+btoa(uA)).once('value', s=>{
-        const rawData=Object.values(s.val()||{});
+        const val = s.val() || {};
+        const rawData=Object.values(val);
         const dataFormateada=rawData.map(v=>{
             const f=v.fec?v.fec.split('-').reverse().join('/'):"";
             return {
