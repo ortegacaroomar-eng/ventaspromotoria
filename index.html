@@ -1,234 +1,242 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SISTEMA VENTAS - OFICIAL</title>
-    <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<!DOCTYPE html>  <html lang="es">  
+<head>  
+<meta charset="UTF-8">  
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">  
+<title>SISTEMA VENTAS - OFICIAL</title>  <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>  <style>  
+body{font-family:'Segoe UI',sans-serif;background:#001220;margin:0}  
+.header{background:#003566;color:#fff;padding:15px;text-align:center;border-bottom:4px solid #ffc300}  
+.container{max-width:450px;margin:auto;background:#fff;padding:20px;min-height:100vh}  
+.card{background:#f8f9fa;border:1px solid #dee2e6;padding:15px;border-radius:12px;margin-bottom:15px}  
+label{font-size:11px;font-weight:bold;color:#003566;text-transform:uppercase}  
+input,select,button{width:100%;padding:12px;margin-bottom:12px;border:1px solid #ccc;border-radius:8px;font-size:15px}  
+button{background:#003566;color:#fff;font-weight:bold;border:none}  
+.btn-reg{background:#28a745}  
+.btn-save{background:#28a745;font-size:18px}  
+.btn-excel{background:#217346;height:55px;font-size:16px}  
+.hidden{display:none}  
+.reloj{font-size:28px;font-weight:bold;color:#ffc300;text-align:center;margin:10px 0}  
+/* Ajuste para que la tabla no se amontone en el celular */  
+.tabla-scroll{ overflow-x:auto; width:100%; margin-top:15px; border:1px solid #ddd; border-radius:8px; background: white;}  
+table{ border-collapse:collapse; min-width:600px; font-size:10px; width: 100%;}  
+th,td{ border:1px solid #ddd; padding:10px; text-align:center; white-space:nowrap; }  
+th{background:#003566;color:#fff; text-transform: uppercase;}  
+</style>  </head>  <body onload="inicio()">  <div id="lSec" style="max-width:400px;margin:auto;padding:40px 20px;text-align:center;">  
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Telcel_logo.svg/1200px-Telcel_logo.svg.png" width="160">  
+<div id="rel" class="reloj">00:00:00</div>  <div id="divLogin">  
+<input type="email" id="u" placeholder="Correo">  
+<input type="password" id="p" placeholder="Contraseña">  
+<button onclick="entrar()">ENTRAR</button>  
+<hr>  
+<button class="btn-reg" onclick="verSeccion('divReg')">NUEVO PROMOTOR</button>  
+</div>  <div id="divReg" class="hidden">  
+<h3 style="color:white">CREAR CUENTA</h3>  
+<input type="email" id="regEmail" placeholder="Correo">  
+<input type="password" id="regPass" placeholder="Contraseña">  
+<button class="btn-reg" onclick="registrarUsuario()">REGISTRAR</button>  
+<p onclick="verSeccion('divLogin')" style="color:#ffc300;cursor:pointer">Volver</p>  
+</div>  
+</div>  <div id="mSec" class="hidden">  
+<div class="header">  
+<h3>SISTEMA DE VENTAS</h3>  
+<small style="color:#ffc300">NUBE ACTIVA</small>  
+</div>  <div class="container">  
+<form id="fReg">  <label>Trámite</label>
+<select id="iTipo" onchange="menuInteractivo()" required>
 
-    <style>
-        body{font-family: 'Segoe UI', sans-serif; background:#f0f2f5; margin:0;}
-        .header{background:#003566; color:#fff; padding:15px; text-align:center; border-bottom:4px solid #ffc300}
-        .container{max-width:450px; margin:auto; background:#fff; padding:20px; min-height:100vh}
-        .card{background:#f8f9fa; border:1px solid #dee2e6; padding:15px; border-radius:12px; margin-bottom:15px}
-        label{font-size:11px; font-weight:bold; color:#003566; text-transform:uppercase}
-        input, select, button{width:100%; padding:12px; margin-bottom:12px; border:1px solid #ccc; border-radius:8px; font-size:15px; box-sizing: border-box;}
-        button{background:#003566; color:#fff; font-weight:bold; border:none; cursor:pointer}
-        .btn-reg{background:#28a745}
-        .btn-save{background:#28a745; font-size:18px}
-        .btn-excel{background:#217346; height:55px; font-size:16px}
-        .hidden{display:none}
-        .reloj{font-size:28px; font-weight:bold; color:#ffc300; text-align:center; margin:10px 0}
-        .tabla-scroll{overflow-x:auto; width:100%; margin-top:15px; border-radius:8px; background: white;}
-        table{border-collapse:collapse; min-width:600px; font-size:10px; width: 100%;}
-        th, td{border:1px solid #ddd; padding:10px; text-align:center; white-space:nowrap;}
-        th{background:#003566; color:#fff; text-transform: uppercase;}
-    </style>
-</head>
+<option value="KIT">KIT</option>  
+<option value="CHIP">CHIP</option>  
+<option value="PORTA">PORTA</option>  
+<option value="RENUEVATE">RENUEVATE</option>  
+</select>  <label>Celular</label>
+<input type="text" id="iTel" maxlength="10" required>
 
-<body onload="inicio()">
-    <div id="lSec" style="max-width:400px; margin:auto; padding:40px 20px; text-align:center;">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Telcel_logo.svg/1200px-Telcel_logo.svg.png" width="160">
-        <div id="rel" class="reloj">00:00:00</div>
-        <div id="divLogin">
-            <input type="email" id="u" placeholder="Correo">
-            <input type="password" id="p" placeholder="Contraseña">
-            <button onclick="entrar()">ENTRAR</button>
-            <hr>
-            <button class="btn-reg" onclick="verSeccion('divReg')">NUEVO PROMOTOR</button>
-        </div>
-        <div id="divReg" class="hidden">
-            <h3 style="color:white;background:#003566;padding:10px;border-radius:8px;">CREAR CUENTA</h3>
-            <input type="email" id="regEmail" placeholder="Correo">
-            <input type="password" id="regPass" placeholder="Contraseña">
-            <button class="btn-reg" onclick="registrarUsuario()">REGISTRAR</button>
-            <p onclick="verSeccion('divLogin')" style="color:#ffc300; cursor:pointer;">Volver</p>
-        </div>
-    </div>
+<label>ICCID</label>
+<input type="text" id="iIcc" maxlength="19" required>
 
-    <div id="mSec" class="hidden">
-        <div class="header">
-            <h3>SISTEMA DE VENTAS</h3>
-            <small style="color:#ffc300">NUBE ACTIVA</small>
-        </div>
-        <div class="container">
-            <form id="fReg">
-                <label>Trámite</label>
-                <select id="itipo" onchange="menuInteractivo()" required>
-                    <option value="KIT">KIT</option>
-                    <option value="CHIP">CHIP</option>
-                    <option value="PORTA">PORTA</option>
-                    <option value="RENUEVATE">RENUEVATE</option>
-                </select>
-                <label>Celular</label>
-                <input type="text" id="itel" maxlength="10" required>
-                <label>ICCID</label>
-                <input type="text" id="iicc" maxlength="19" required>
-                <div id="seccionEquipo" class="card hidden">
-                    <label>Marca del Equipo</label>
-                    <input type="text" id="iMarca" placeholder="Ej: XIAOMI">
-                    <label>IMEI</label>
-                    <input type="text" id="iime" maxlength="15">
-                    <label>Modelo</label>
-                    <input type="text" id="iMod">
-                </div>
-                <div class="card">
-                    <label>Nombre de la Cadena</label>
-                    <input type="text" id="icadena" required>
-                    <label>Nombre de Tienda / Sucursal</label>
-                    <input type="text" id="itiendaNombre" required>
-                    <label># Tienda / Determinante</label>
-                    <input type="text" id="itiendaNum" required>
-                </div>
-                <label>Promotor</label>
-                <input type="text" id="iProm" required>
-                <label>Fecha</label>
-                <input type="date" id="iFec" required>
-                <button type="submit" class="btn-save">GUARDAR VENTA</button>
-            </form>
+<div id="seccionEquipo" class="card hidden">  
+<label>Marca del Equipo</label>  
+<input type="text" id="iMarca" placeholder="Ej: XIAOMI">  <label>IMEI</label>
+<input type="text" id="iIme" maxlength="15">
 
-            <h4 style="color:#003566; margin: 15px 0 5px 0;">REGISTROS GUARDADOS</h4>
-            <div class="tabla-scroll">
-                <table id="tVistas">
-                    <thead>
-                        <tr>
-                            <th>TELÉFONO</th><th>TIPO</th><th>FECHA</th><th>IMEI</th><th>MARCA</th><th>MODELO</th><th>ACCIÓN</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
+<label>Modelo</label>
+<input type="text" id="iMod">
 
-            <button class="btn-excel" onclick="bajarExcel()" style="margin-top:20px;">DESCARGAR EXCEL</button>
-            <button onclick="salir()" style="background:#6c757d; margin-top:10px;">SALIR</button>
-        </div>
-    </div>
+</div>  <div class="card">  
+<label>Nombre de la Cadena</label>  
+<input type="text" id="iCadena" required>  <label>Nombre de Tienda / Sucursal</label>
+<input type="text" id="iTiendaNombre" required>
 
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyD4Uk_j8uXMwOctrtXIYftb",
-            databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com"
-        };
-        let uA="", db;
+<label># Tienda / Determinante</label>
+<input type="text" id="iTiendaNum" required>
 
-        function inicio(){
-            setInterval(()=>rel.innerText=new Date().toLocaleTimeString(),1000);
-            iFec.value=new Date().toISOString().split('T')[0];
-            if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-            db=firebase.database();
-            const s=localStorage.getItem('ses_actual');
-            if(s){uA=s; mostrar();}
-        }
+<label>Promotor</label>
+<input type="text" id="iProm" required>
 
-        function verSeccion(id){
-            divLogin.classList.add('hidden');
-            divReg.classList.add('hidden');
-            document.getElementById(id).classList.remove('hidden');
-        }
+<label>Fecha</label>
+<input type="date" id="iFec">
 
-        function registrarUsuario(){
-            const c=regEmail.value.trim().toLowerCase();
-            const p2=regPass.value.trim();
-            if(!c||!p2) return alert("Campos vacios");
-            db.ref('usuarios/'+btoa(c)).set({p:p2}).then(()=>{
-                alert("Registrado");
-                verSeccion('divLogin');
-            });
-        }
+</div>  <button type="submit" class="btn-save">GUARDAR VENTA</button>
 
-        function entrar(){
-            const c=u.value.trim().toLowerCase();
-            const p2=p.value.trim();
-            db.ref('usuarios/'+btoa(c)).once('value').then(s=>{
-                if(s.exists()&&s.val().p==p2){
-                    uA=c;
-                    localStorage.setItem('ses_actual', uA);
-                    mostrar();
-                } else alert("Datos incorrectos");
-            });
-        }
+</form>  <h4 style="color:#003566; margin: 15px 0 5px 0;">REGISTROS GUARDADOS</h4>  
+<div class="tabla-scroll">  
+<table id="tVistas">  
+<thead>  
+<tr>  
+  <th>TELÉFONO</th>  
+  <th>TIPO</th>  
+  <th>FECHA</th>  
+  <th>IMEI</th>  
+  <th>MARCA</th>  
+  <th>MODELO</th>  
+  <th>ACCIÓN</th>  
+</tr>  
+</thead>  
+<tbody></tbody>  
+</table>  
+</div>  <button class="btn-excel" onclick="bajarExcel()" style="margin-top:20px">DESCARGAR EXCEL</button>
+<button onclick="salir()" style="background:#6c757d;margin-top:10px">SALIR</button>
 
-        function salir(){
-            localStorage.removeItem('ses_actual');
-            location.reload();
-        }
-
-        function mostrar(){
-            lSec.className='hidden';
-            mSec.className='';
-            pintarTabla();
-        }
-
-        fReg.onsubmit=e=>{
-            e.preventDefault();
-            const venta={
-                tel:itel.value, iccid:iicc.value, tipo:itipo.value,
-                cadena:icadena.value.toUpperCase(), tiendaNom:itiendaNombre.value.toUpperCase(),
-                tiendaNum:itiendaNum.value, prom:iProm.value.toUpperCase(), fec:iFec.value,
-                marca:iMarca.value.toUpperCase() || "", imei:iime.value || "", mod:iMod.value.toUpperCase() || ""
-            };
-            db.ref('ventas/'+btoa(uA)).push(venta).then(()=>{
-                alert("Venta guardada");
-                fReg.reset();
-                iFec.value=new Date().toISOString().split('T')[0];
-                menuInteractivo();
-                pintarTabla();
-            });
-        };
-
-        function pintarTabla(){
-            db.ref('ventas/'+btoa(uA)).limitToLast(10).once('value',s=>{
-                const tb=document.querySelector('#tVistas tbody');
-                tb.innerHTML="";
-                s.forEach(c=>{
-                    const v=c.val();
-                    const f=v.fec?v.fec.split('-').reverse().join('/'):'-';
-                    tb.innerHTML+=`<tr>
-                        <td>${v.tel}</td><td>${v.tipo}</td><td>${f}</td>
-                        <td>${v.imei||'-'}</td><td>${v.marca||'-'}</td><td>${v.mod||'-'}</td>
-                        <td><button onclick="borrar('${c.key}')" style="background:red; padding:5px; margin:0; font-size:9px">BORRAR</button></td>
-                    </tr>`;
-                });
-            });
-        }
-
-        function borrar(id){
-            if(confirm("Eliminar registro?")) db.ref('ventas/'+btoa(uA)+'/'+id).remove().then(pintarTabla);
-        }
-
-        function bajarExcel(){
-            db.ref('ventas/'+btoa(uA)).once('value', s=>{
-                const rawData=Object.values(s.val()||{});
-                const dataFormateada=rawData.map(v=>{
-                    const f=v.fec?v.fec.split('-').reverse().join('/'):"";
-                    return {
-                        "NUM. CELULAR": v.tel,
-                        "IMEI": v.imei || "",
-                        "ICCID": v.iccid,
-                        "Renuevate/Kit/Chip/Porta": v.tipo,
-                        "#TIENDA / Determinante": v.tiendaNum,
-                        "SOLO NOMBRE DE LA CADENA": v.cadena,
-                        "SOLO NOMBRE DE TIENDA SIN CADENA": v.tiendaNom,
-                        "NOMBRE COMPLETO PROMOTOR": v.prom,
-                        "FECHA DE ACTIVACION": f,
-                        "MARCA": v.marca || "",
-                        "MODELO": v.mod || ""
-                    };
-                });
-                const ws=XLSX.utils.json_to_sheet(dataFormateada);
-                ws['!cols']=[{wch:22},{wch:25},{wch:32},{wch:28},{wch:25},{wch:28},{wch:40},{wch:35},{wch:25},{wch:20},{wch:20}];
-                const wb=XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb,ws,"Ventas");
-                XLSX.utils.writeFile(wb,"Reporte_Ventas_Final.xlsx");
-            });
-        }
-
-        function menuInteractivo(){
-            const eq=itipo.value=='KIT'||itipo.value=='RENUEVATE';
-            seccionEquipo.classList.toggle('hidden',!eq);
-        }
-    </script>
-</body>
-</html>
+</div>  
+</div>  <script>  
+const firebaseConfig = {  
+  apiKey: "AIzaSyD4UK_j8UxMwOCtrtXIYftB",  
+  databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com"  
+};  
+  
+let uA="", db;  
+  
+function inicio(){  
+  setInterval(()=>rel.innerText=new Date().toLocaleTimeString(),1000);  
+  iFec.value=new Date().toISOString().split('T')[0];  
+  if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);  
+  db=firebase.database();  
+  const s=localStorage.getItem('ses_actual');  
+  if(s){uA=s;mostrar();}  
+}  
+  
+function registrarUsuario(){  
+  const c=regEmail.value.trim().toLowerCase();  
+  const p2=regPass.value.trim();  
+  if(!c||!p2) return alert("Campos vacíos");  
+  db.ref('usuarios/'+btoa(c)).set({p:p2}).then(()=>alert("Registrado"));  
+  verSeccion('divLogin');  
+}  
+  
+function entrar(){  
+  const c=u.value.trim().toLowerCase();  
+  const p2=p.value.trim();  
+  db.ref('usuarios/'+btoa(c)).once('value').then(s=>{  
+    if(s.exists()&&s.val().p===p2){  
+      uA=c;  
+      localStorage.setItem('ses_actual',uA);  
+      mostrar();  
+    }else alert("Datos incorrectos");  
+  });  
+}  
+  
+function mostrar(){  
+  lSec.className='hidden';  
+  mSec.className='';  
+  pintarTabla();  
+}  
+  
+fReg.onsubmit=e=>{  
+  e.preventDefault();  
+  const venta={  
+    tel:iTel.value,  
+    iccid:iIcc.value,  
+    tipo:iTipo.value,  
+    cadena:iCadena.value.toUpperCase(),  
+    tiendaNom:iTiendaNombre.value.toUpperCase(),  
+    tiendaNum:iTiendaNum.value,  
+    prom:iProm.value.toUpperCase(),  
+    fec:iFec.value,  
+    marca: iMarca.value.toUpperCase() || "",  
+    imei: iIme.value || "",  
+    mod: iMod.value.toUpperCase() || ""  
+  };  
+  
+  db.ref('ventas/'+btoa(uA)).push(venta).then(()=>{  
+    alert("Venta guardada");  
+    fReg.reset();  
+    iFec.value=new Date().toISOString().split('T')[0];  
+    menuInteractivo();  
+    pintarTabla();  
+  });  
+};  
+  
+function pintarTabla(){  
+  db.ref('ventas/'+btoa(uA)).limitToLast(10).once('value',s=>{  
+    const tb=document.querySelector('#tVistas tbody');  
+    tb.innerHTML="";  
+    s.forEach(c=>{  
+      const v = c.val();  
+      // Formato de fecha con diagonales para la tabla de la app  
+      const fEx = v.fec ? v.fec.split('-').reverse().join('/') : "";  
+        
+      tb.innerHTML+=`<tr>  
+        <td>${v.tel}</td>  
+        <td>${v.tipo}</td>  
+        <td>${fEx}</td>  
+        <td>${v.imei || '-'}</td>  
+        <td>${v.marca || '-'}</td>  
+        <td>${v.mod || '-'}</td>  
+        <td><button onclick="borrar('${c.key}')" style="background:red; padding:5px; margin:0; font-size:9px">BORRAR</button></td>  
+      </tr>`;  
+    });  
+  });  
+}  
+  
+function borrar(id){  
+  if(confirm("Eliminar registro?")) db.ref('ventas/'+btoa(uA)+'/'+id).remove().then(pintarTabla);  
+}  
+  
+function bajarExcel(){  
+  db.ref('ventas/'+btoa(uA)).once('value',s=>{  
+    const rawData=Object.values(s.val()||{});  
+    const dataFormateada = rawData.map(v => {  
+      const f = v.fec ? v.fec.split('-').reverse().join('/') : "";   
+      return {  
+        "NUM. CELULAR": v.tel,  
+        "IMEI": v.imei || "",  
+        "ICCID": v.iccid,  
+        "Renuevate/Kit/Chip/Porta": v.tipo,  
+        "#TIENDA / Determinante": v.tiendaNum,  
+        "SOLO NOMBRE DE LA CADENA": v.cadena,  
+        "SOLO NOMBRE DE TIENDA SIN CADENA": v.tiendaNom,  
+        "NOMBRE COMPLETO PROMOTOR": v.prom,  
+        "FECHA DE ACTIVACION": f,  
+        "MARCA": v.marca || "",  
+        "MODELO": v.mod || ""  
+      };  
+    });  
+  
+    const ws = XLSX.utils.json_to_sheet(dataFormateada);  
+    ws['!cols'] = [  
+      {wch: 22}, {wch: 25}, {wch: 32}, {wch: 28}, {wch: 25},   
+      {wch: 28}, {wch: 40}, {wch: 35}, {wch: 25}, {wch: 20}, {wch: 20}  
+    ];  
+  
+    const wb = XLSX.utils.book_new();  
+    XLSX.utils.book_append_sheet(wb, ws, "Ventas");  
+    XLSX.writeFile(wb, "Reporte_Ventas_Final.xlsx");  
+  });  
+}  
+  
+function menuInteractivo(){  
+  const eq = iTipo.value === 'KIT' || iTipo.value === 'RENUEVATE';  
+  seccionEquipo.classList.toggle('hidden', !eq);  
+}  
+  
+function verSeccion(id){  
+  divLogin.classList.add('hidden');  
+  divReg.classList.add('hidden');  
+  document.getElementById(id).classList.remove('hidden');  
+}  
+  
+function salir(){  
+  localStorage.clear();  
+  location.reload();  
+}  
+</script>  </body>  
+</html>  
