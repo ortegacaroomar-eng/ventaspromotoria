@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>SISTEMA VENTAS - OFICIAL</title>
+
 <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -19,13 +20,15 @@ button{background:#003566; color:#fff; font-weight:bold; border:none; cursor:poi
 .btn-reg{background:#28a745}
 .btn-save{background:#28a745; font-size:18px}
 .btn-excel{background:#217346; height:55px; font-size:16px}
-.btn-link{background:#007bff; margin-top:5px; font-size:14px}
 .hidden{display:none}
 .reloj{font-size:28px; font-weight:bold; color:#ffc300; text-align:center; margin:10px 0}
 .tabla-scroll{overflow-x:auto; width:100%; margin-top:15px; border-radius:8px; background: white;}
 table{border-collapse:collapse; min-width:600px; font-size:10px; width: 100%;}
 th, td{border:1px solid #ddd; padding:10px; text-align:center; white-space:nowrap;}
 th{background:#003566; color:#fff; text-transform: uppercase;}
+
+/* Estilo para los nuevos botones */
+.btn-link{background:#007bff; margin-top:5px; font-size:14px}
 </style>
 </head>
 
@@ -41,7 +44,7 @@ th{background:#003566; color:#fff; text-transform: uppercase;}
 <button class="btn-reg" onclick="verSeccion('divReg')">NUEVO PROMOTOR</button>
 </div>
 <div id="divReg" class="hidden">
-<h3>CREAR CUENTA</h3>
+<h3 style="color:white;background:#003566;padding:10px;border-radius:8px;">CREAR CUENTA</h3>
 <input type="email" id="regEmail" placeholder="Correo">
 <input type="password" id="regPass" placeholder="Contraseña">
 <button class="btn-reg" onclick="registrarUsuario()">REGISTRAR</button>
@@ -67,7 +70,7 @@ th{background:#003566; color:#fff; text-transform: uppercase;}
 <input type="text" id="itel" maxlength="10" required>
 <label>ICCID</label>
 <input type="text" id="iicc" maxlength="19" required>
-<div id="seccionEquipo" class="card">
+<div id="seccionEquipo" class="card hidden">
 <label>Marca del Equipo</label>
 <input type="text" id="iMarca" placeholder="Ej: XIAOMI">
 <label>IMEI</label>
@@ -104,7 +107,7 @@ th{background:#003566; color:#fff; text-transform: uppercase;}
 
 <button class="btn-excel" onclick="bajarExcel()" style="margin-top:20px;">DESCARGAR EXCEL</button>
 
-<button class="btn-link" onclick="window.open('https://registro.telcel.com/vinculatulinea/#/', '_blank')">VINCULAR LÍNEA</button>
+<button class="btn-link" onclick="window.open('https://registro.telcel.com/vinculatulinea/#/', '_blank')">VINCULAR TU LINEA</button>
 <button class="btn-link" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSfQMT1FUeOLNJUzB8DeGhKNTqiU_DS7wr7y2p_Ab7xgHHjYbw/viewform', '_blank')">GOOGLE FORM</button>
 
 <button onclick="salir()" style="background:#6c757d; margin-top:10px;">SALIR</button>
@@ -203,7 +206,6 @@ function borrar(id){
     if(confirm("Eliminar registro?")) db.ref('ventas/'+btoa(uA)+'/'+id).remove().then(pintarTabla);
 }
 
-// TU FUNCIÓN ORIGINAL SIN NINGUNA MODIFICACIÓN
 function bajarExcel(){
     db.ref('ventas/'+btoa(uA)).once('value', s=>{
         const rawData=Object.values(s.val()||{});
