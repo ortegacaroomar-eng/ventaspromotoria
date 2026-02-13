@@ -22,7 +22,6 @@ button{background:#003566;color:#fff;font-weight:bold;border:none}
 .btn-excel{background:#217346;height:55px;font-size:16px}
 .hidden{display:none}
 .reloj{font-size:28px;font-weight:bold;color:#ffc300;text-align:center;margin:10px 0}
-/* Ajuste para que la tabla no se amontone en el celular */
 .tabla-scroll{ overflow-x:auto; width:100%; margin-top:15px; border:1px solid #ddd; border-radius:8px; background: white;}
 table{ border-collapse:collapse; min-width:600px; font-size:10px; width: 100%;}
 th,td{ border:1px solid #ddd; padding:10px; text-align:center; white-space:nowrap; }
@@ -78,11 +77,9 @@ th{background:#003566;color:#fff; text-transform: uppercase;}
 
 <div id="seccionEquipo" class="card hidden">
 <label>Marca del Equipo</label>
-<input type="text" id="iMarca" placeholder="Ej: XIAOMI">
-
+<input type="text" id="iMarca">
 <label>IMEI</label>
 <input type="text" id="iIme" maxlength="15">
-
 <label>Modelo</label>
 <input type="text" id="iMod">
 </div>
@@ -90,16 +87,12 @@ th{background:#003566;color:#fff; text-transform: uppercase;}
 <div class="card">
 <label>Nombre de la Cadena</label>
 <input type="text" id="iCadena" required>
-
 <label>Nombre de Tienda / Sucursal</label>
 <input type="text" id="iTiendaNombre" required>
-
 <label># Tienda / Determinante</label>
 <input type="text" id="iTiendaNum" required>
-
 <label>Promotor</label>
 <input type="text" id="iProm" required>
-
 <label>Fecha</label>
 <input type="date" id="iFec">
 </div>
@@ -112,13 +105,13 @@ th{background:#003566;color:#fff; text-transform: uppercase;}
 <table id="tVistas">
 <thead>
 <tr>
-  <th>TELÉFONO</th>
-  <th>TIPO</th>
-  <th>FECHA</th>
-  <th>IMEI</th>
-  <th>MARCA</th>
-  <th>MODELO</th>
-  <th>ACCIÓN</th>
+<th>TELÉFONO</th>
+<th>TIPO</th>
+<th>FECHA</th>
+<th>IMEI</th>
+<th>MARCA</th>
+<th>MODELO</th>
+<th>ACCIÓN</th>
 </tr>
 </thead>
 <tbody></tbody>
@@ -132,144 +125,152 @@ th{background:#003566;color:#fff; text-transform: uppercase;}
 
 <script>
 const firebaseConfig = {
-  apiKey: "AIzaSyD4UK_j8UxMwOCtrtXIYftB",
-  databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com"
+apiKey: "AIzaSyD4UK",
+databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com"
 };
 
 let uA="", db;
 
 function inicio(){
-  setInterval(()=>rel.innerText=new Date().toLocaleTimeString(),1000);
-  iFec.value=new Date().toISOString().split('T')[0];
-  if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-  db=firebase.database();
-  const s=localStorage.getItem('ses_actual');
-  if(s){uA=s;mostrar();}
+setInterval(()=>rel.innerText=new Date().toLocaleTimeString(),1000);
+iFec.value=new Date().toISOString().split('T')[0];
+if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+db=firebase.database();
+const s=localStorage.getItem('ses_actual');
+if(s){uA=s;mostrar();}
 }
 
 function registrarUsuario(){
-  const c=regEmail.value.trim().toLowerCase();
-  const p2=regPass.value.trim();
-  if(!c||!p2) return alert("Campos vacíos");
-  db.ref('usuarios/'+btoa(c)).set({p:p2}).then(()=>alert("Registrado"));
-  verSeccion('divLogin');
+const c=regEmail.value.trim().toLowerCase();
+const p2=regPass.value.trim();
+if(!c||!p2) return alert("Campos vacíos");
+db.ref('usuarios/'+btoa(c)).set({p:p2}).then(()=>alert("Registrado"));
+verSeccion('divLogin');
 }
 
 function entrar(){
-  const c=u.value.trim().toLowerCase();
-  const p2=p.value.trim();
-  db.ref('usuarios/'+btoa(c)).once('value').then(s=>{
-    if(s.exists()&&s.val().p===p2){
-      uA=c;
-      localStorage.setItem('ses_actual',uA);
-      mostrar();
-    }else alert("Datos incorrectos");
-  });
+const c=u.value.trim().toLowerCase();
+const p2=p.value.trim();
+db.ref('usuarios/'+btoa(c)).once('value').then(s=>{
+if(s.exists()&&s.val().p===p2){
+uA=c;
+localStorage.setItem('ses_actual',uA);
+mostrar();
+}else alert("Datos incorrectos");
+});
 }
 
 function mostrar(){
-  lSec.className='hidden';
-  mSec.className='';
-  pintarTabla();
+lSec.className='hidden';
+mSec.className='';
+pintarTabla();
 }
 
 fReg.onsubmit=e=>{
-  e.preventDefault();
-  const venta={
-    tel:iTel.value,
-    iccid:iIcc.value,
-    tipo:iTipo.value,
-    cadena:iCadena.value.toUpperCase(),
-    tiendaNom:iTiendaNombre.value.toUpperCase(),
-    tiendaNum:iTiendaNum.value,
-    prom:iProm.value.toUpperCase(),
-    fec:iFec.value,
-    marca: iMarca.value.toUpperCase() || "",
-    imei: iIme.value || "",
-    mod: iMod.value.toUpperCase() || ""
-  };
+e.preventDefault();
+const venta={
+tel:iTel.value,
+iccid:iIcc.value,
+tipo:iTipo.value,
+cadena:iCadena.value.toUpperCase(),
+tiendaNom:iTiendaNombre.value.toUpperCase(),
+tiendaNum:iTiendaNum.value,
+prom:iProm.value.toUpperCase(),
+fec:iFec.value,
+marca:iMarca.value.toUpperCase()||"",
+imei:iIme.value||"",
+mod:iMod.value.toUpperCase()||""
+};
 
-  db.ref('ventas/'+btoa(uA)).push(venta).then(()=>{
-    alert("Venta guardada");
-    fReg.reset();
-    iFec.value=new Date().toISOString().split('T')[0];
-    menuInteractivo();
-    pintarTabla();
-  });
+db.ref('ventas/'+btoa(uA)).push(venta).then(()=>{
+alert("Venta guardada");
+fReg.reset();
+iFec.value=new Date().toISOString().split('T')[0];
+menuInteractivo();
+pintarTabla();
+});
 };
 
 function pintarTabla(){
-  db.ref('ventas/'+btoa(uA)).limitToLast(10).once('value',s=>{
-    const tb=document.querySelector('#tVistas tbody');
-    tb.innerHTML="";
-    s.forEach(c=>{
-      const v = c.val();
-      // Formato de fecha con diagonales para la tabla de la app
-      const fEx = v.fec ? v.fec.split('-').reverse().join('/') : "";
-      
-      tb.innerHTML+=`<tr>
-        <td>${v.tel}</td>
-        <td>${v.tipo}</td>
-        <td>${fEx}</td>
-        <td>${v.imei || '-'}</td>
-        <td>${v.marca || '-'}</td>
-        <td>${v.mod || '-'}</td>
-        <td><button onclick="borrar('${c.key}')" style="background:red; padding:5px; margin:0; font-size:9px">BORRAR</button></td>
-      </tr>`;
-    });
-  });
+db.ref('ventas/'+btoa(uA)).limitToLast(10).once('value',s=>{
+const tb=document.querySelector('#tVistas tbody');
+tb.innerHTML="";
+s.forEach(c=>{
+const v=c.val();
+const fEx=v.fec?v.fec.split('-').reverse().join('/'):"";
+tb.innerHTML+=`<tr>
+<td>${v.tel}</td>
+<td>${v.tipo}</td>
+<td>${fEx}</td>
+<td>${v.imei||'-'}</td>
+<td>${v.marca||'-'}</td>
+<td>${v.mod||'-'}</td>
+<td><button onclick="borrar('${c.key}')" style="background:red">BORRAR</button></td>
+</tr>`;
+});
+});
 }
 
 function borrar(id){
-  if(confirm("Eliminar registro?")) db.ref('ventas/'+btoa(uA)+'/'+id).remove().then(pintarTabla);
+if(confirm("Eliminar registro?"))
+db.ref('ventas/'+btoa(uA)+'/'+id).remove().then(pintarTabla);
 }
 
+/* 🔥 DESCARGA EXCEL FUNCIONAL EN APK */
 function bajarExcel(){
-  db.ref('ventas/'+btoa(uA)).once('value',s=>{
-    const rawData=Object.values(s.val()||{});
-    const dataFormateada = rawData.map(v => {
-      const f = v.fec ? v.fec.split('-').reverse().join('/') : ""; 
-      return {
-        "NUM. CELULAR": v.tel,
-        "IMEI": v.imei || "",
-        "ICCID": v.iccid,
-        "Renuevate/Kit/Chip/Porta": v.tipo,
-        "#TIENDA / Determinante": v.tiendaNum,
-        "SOLO NOMBRE DE LA CADENA": v.cadena,
-        "SOLO NOMBRE DE TIENDA SIN CADENA": v.tiendaNom,
-        "NOMBRE COMPLETO PROMOTOR": v.prom,
-        "FECHA DE ACTIVACION": f,
-        "MARCA": v.marca || "",
-        "MODELO": v.mod || ""
-      };
-    });
+db.ref('ventas/'+btoa(uA)).once('value',s=>{
 
-    const ws = XLSX.utils.json_to_sheet(dataFormateada);
-    ws['!cols'] = [
-      {wch: 22}, {wch: 25}, {wch: 32}, {wch: 28}, {wch: 25}, 
-      {wch: 28}, {wch: 40}, {wch: 35}, {wch: 25}, {wch: 20}, {wch: 20}
-    ];
+const rawData=Object.values(s.val()||{});
+const dataFormateada=rawData.map(v=>{
+const f=v.fec?v.fec.split('-').reverse().join('/'):"";
+return{
+"NUM. CELULAR":v.tel,
+"IMEI":v.imei||"",
+"ICCID":v.iccid,
+"TIPO":v.tipo,
+"TIENDA":v.tiendaNum,
+"CADENA":v.cadena,
+"TIENDA NOMBRE":v.tiendaNom,
+"PROMOTOR":v.prom,
+"FECHA":f,
+"MARCA":v.marca||"",
+"MODELO":v.mod||""
+};
+});
 
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Ventas");
-    XLSX.writeFile(wb, "Reporte_Ventas_Final.xlsx");
-  });
+const ws=XLSX.utils.json_to_sheet(dataFormateada);
+const wb=XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(wb,ws,"Ventas");
+
+const excelBuffer=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+const blob=new Blob([excelBuffer],{
+type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+});
+
+const link=document.createElement("a");
+link.href=URL.createObjectURL(blob);
+link.download="Reporte_Ventas_Final.xlsx";
+link.target="_blank";
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
+});
 }
 
 function menuInteractivo(){
-  const eq = iTipo.value === 'KIT' || iTipo.value === 'RENUEVATE';
-  seccionEquipo.classList.toggle('hidden', !eq);
+const eq=iTipo.value==='KIT'||iTipo.value==='RENUEVATE';
+seccionEquipo.classList.toggle('hidden',!eq);
 }
 
 function verSeccion(id){
-  divLogin.classList.add('hidden');
-  divReg.classList.add('hidden');
-  document.getElementById(id).classList.remove('hidden');
+divLogin.classList.add('hidden');
+divReg.classList.add('hidden');
+document.getElementById(id).classList.remove('hidden');
 }
 
 function salir(){
-  localStorage.clear();
-  location.reload();
+localStorage.clear();
+location.reload();
 }
 </script>
 </body>
