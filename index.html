@@ -1,203 +1,385 @@
-<!DOCTYPE html><html lang="es">
+<!DOCTYPE html>
+<html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Registro de Ventas Celulares</title><!-- Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script><!-- SheetJS --><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><!-- Firebase (compat para simplicidad) --><script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script><style>
+<title>Sistema Ventas Telcel Pro</title>
+
+<script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+
+/* ===== FONDO ===== */
 body{
-  background: linear-gradient(135deg,#0f172a,#020617);
+margin:0;
+font-family:'Segoe UI',system-ui;
+background:linear-gradient(135deg,#001d3d,#003566,#000814);
+min-height:100vh;
+color:white;
 }
-</style></head><body class="text-white min-h-screen p-6"><div class="max-w-7xl mx-auto"><!-- HEADER --><div class="bg-slate-900/80 backdrop-blur rounded-2xl p-6 shadow-2xl border border-slate-700 flex justify-between items-center">
-<div>
-<h1 class="text-3xl font-bold mb-2">📱 Registro de Ventas</h1>
-<p class="text-slate-400">Sistema profesional de control</p>
-</div><button onclick="cerrarSesion()" class="bg-red-500 hover:bg-red-600 px-5 py-2 rounded-xl font-semibold shadow-lg">
-Cerrar sesión
-</button>
-</div><!-- FORM --><div class="mt-6 bg-slate-900/80 backdrop-blur rounded-2xl p-6 shadow-2xl border border-slate-700">
-<h2 class="text-xl font-semibold mb-4">Nueva venta</h2><div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-<input id="tel" placeholder="Teléfono" class="input">
-<input id="imei" placeholder="IMEI" class="input">
-<input id="iccid" placeholder="ICCID" class="input"><input id="tipo" placeholder="Tipo" class="input">
-<input id="tiendaNum" placeholder="No. tienda" class="input">
-<input id="cadena" placeholder="Cadena" class="input"><input id="tiendaNom" placeholder="Nombre tienda" class="input">
-<input id="prom" placeholder="Promotor" class="input">
-<input id="fec" type="date" class="input"><input id="marca" placeholder="Marca" class="input">
-<input id="mod" placeholder="Modelo" class="input">
-</div><button onclick="guardar()" class="mt-6 bg-emerald-500 hover:bg-emerald-600 px-6 py-3 rounded-xl font-semibold shadow-lg">
-Guardar venta
-</button><button onclick="bajarExcel()" class="mt-6 ml-3 bg-blue-500 hover:bg-blue-600 px-6 py-3 rounded-xl font-semibold shadow-lg">
-Exportar Excel original
-</button></div><!-- TABLA --><div class="mt-6 bg-slate-900/80 backdrop-blur rounded-2xl p-6 shadow-2xl border border-slate-700">
-<h2 class="text-xl font-semibold mb-4">Historial</h2>
-<div class="overflow-auto">
-<table class="w-full text-sm">
-<thead class="bg-slate-800">
+
+/* ===== APP ===== */
+.app{
+max-width:480px;
+margin:auto;
+padding:20px;
+}
+
+/* ===== GLASS CARD ===== */
+.card{
+background:rgba(255,255,255,.08);
+backdrop-filter:blur(12px);
+border-radius:18px;
+padding:18px;
+margin-bottom:16px;
+box-shadow:0 10px 25px rgba(0,0,0,.3);
+}
+
+/* ===== HEADER ===== */
+.header{
+text-align:center;
+font-size:22px;
+font-weight:bold;
+color:#ffc300;
+margin-bottom:20px;
+}
+
+/* ===== INPUT ===== */
+label{
+font-size:11px;
+font-weight:600;
+color:#ffc300;
+}
+
+input,select{
+width:100%;
+padding:12px;
+margin-top:4px;
+margin-bottom:12px;
+border-radius:10px;
+border:none;
+background:rgba(255,255,255,.12);
+color:white;
+}
+
+input:focus,select:focus{
+outline:none;
+box-shadow:0 0 0 2px #ffc300;
+}
+
+/* ===== BOTONES ===== */
+button{
+width:100%;
+padding:14px;
+border:none;
+border-radius:12px;
+font-weight:bold;
+cursor:pointer;
+transition:.2s;
+}
+
+.btn-main{
+background:#ffc300;
+color:#003566;
+}
+
+.btn-main:hover{
+transform:scale(1.04);
+}
+
+.btn-excel{
+background:#1f7a3f;
+color:white;
+}
+
+/* ===== STATS ===== */
+.stats{
+display:flex;
+justify-content:space-between;
+gap:10px;
+}
+
+.stat{
+flex:1;
+text-align:center;
+background:rgba(255,255,255,.08);
+padding:10px;
+border-radius:12px;
+}
+
+.stat strong{
+display:block;
+font-size:22px;
+color:#ffc300;
+}
+
+/* ===== TABLA ===== */
+.tableBox{
+overflow:auto;
+max-height:260px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+font-size:12px;
+}
+
+th{
+background:#ffc300;
+color:#003566;
+padding:6px;
+}
+
+td{
+padding:5px;
+border-bottom:1px solid rgba(255,255,255,.1);
+text-align:center;
+}
+
+/* ===== LOGIN ===== */
+.login{
+max-width:350px;
+margin:120px auto;
+background:white;
+color:black;
+padding:30px;
+border-radius:18px;
+text-align:center;
+}
+
+.hidden{display:none}
+
+/* ===== TOAST ===== */
+.toast{
+position:fixed;
+bottom:20px;
+left:50%;
+transform:translateX(-50%);
+background:#00c853;
+color:white;
+padding:12px 20px;
+border-radius:10px;
+display:none;
+}
+
+</style>
+</head>
+
+<body onload="inicio()">
+
+<!-- LOGIN -->
+<div id="loginBox" class="login">
+<h2>Acceso Sistema</h2>
+<input id="u" placeholder="Correo">
+<input id="p" type="password" placeholder="Contraseña">
+<button onclick="entrar()">Entrar</button>
+</div>
+
+<!-- APP -->
+<div id="appBox" class="app hidden">
+
+<div class="header">
+<i class="fa-solid fa-signal"></i> Sistema Ventas Telcel
+</div>
+
+<!-- STATS -->
+<div class="stats">
+<div class="stat"><strong id="sTotal">0</strong>Total</div>
+<div class="stat"><strong id="sHoy">0</strong>Hoy</div>
+<div class="stat"><strong id="sKit">0</strong>KIT</div>
+</div>
+
+<form id="fReg">
+
+<div class="card">
+<label>NUM CELULAR</label>
+<input id="iTel" required>
+
+<label>ICCID</label>
+<input id="iIcc" required>
+
+<label>TIPO</label>
+<select id="iTipo" required>
+<option value="">Seleccionar</option>
+<option>KIT</option>
+<option>CHIP</option>
+<option>PORTA</option>
+<option>RENUEVATE</option>
+</select>
+</div>
+
+<div class="card">
+<label>IMEI</label>
+<input id="iIme">
+<label>MARCA</label>
+<input id="iMarca">
+<label>MODELO</label>
+<input id="iMod">
+</div>
+
+<div class="card">
+<label>TIENDA</label>
+<input id="iTiendaNum" required>
+<label>CADENA</label>
+<input id="iCadena" required>
+<label>NOMBRE TIENDA</label>
+<input id="iTiendaNombre" required>
+<label>PROMOTOR</label>
+<input id="iProm" required>
+<label>FECHA</label>
+<input type="date" id="iFec" required>
+</div>
+
+<button class="btn-main">Guardar Venta</button>
+
+</form>
+
+<div class="card tableBox">
+<table id="tVistas">
+<thead>
 <tr>
-<th class="th">Tel</th>
-<th class="th">IMEI</th>
-<th class="th">ICCID</th>
-<th class="th">Tipo</th>
-<th class="th">Tienda</th>
-<th class="th">Cadena</th>
-<th class="th">Nombre</th>
-<th class="th">Prom</th>
-<th class="th">Fecha</th>
-<th class="th">Marca</th>
-<th class="th">Modelo</th>
+<th>Tel</th>
+<th>Tipo</th>
+<th>Tienda</th>
+<th>X</th>
 </tr>
 </thead>
-<tbody id="tabla"></tbody>
+<tbody></tbody>
 </table>
 </div>
-</div></div><style>
-.input{
-  background:#020617;
-  border:1px solid #334155;
-  padding:10px;
-  border-radius:10px;
-}
-.th{
-  padding:10px;
-  text-align:left;
-}
-.td{
-  padding:8px;
-  border-top:1px solid #1e293b;
-}
-</style><script>
 
-// ==============================
-// CONFIG FIREBASE (PEGA LA TUYA)
-// ==============================
-const firebaseConfig = {
-  apiKey: "",
-  authDomain: "",
-  databaseURL: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: ""
-};
+<button class="btn-excel" onclick="bajarExcel()">
+<i class="fa-solid fa-file-excel"></i> Exportar Excel
+</button>
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+</div>
 
-// usuario simple
-const uA = "usuario_demo";
+<div id="toast" class="toast">Guardado</div>
 
-
-// ==============================
-// CERRAR SESION
-// ==============================
-function cerrarSesion(){
-
-if(confirm("¿Seguro que quieres cerrar sesión?")){
-
-localStorage.clear();
-sessionStorage.clear();
-
-alert("Sesión cerrada correctamente");
-location.reload();
-
+<script>
+const firebaseConfig={
+apiKey:"AIzaSy",
+databaseURL:"https://ventastelcel4029-default-rtdb.firebaseio.com"
 }
 
+let uA="",db
+
+function inicio(){
+firebase.initializeApp(firebaseConfig)
+db=firebase.database()
+iFec.value=new Date().toISOString().split('T')[0]
 }
 
-
-// ==============================
-// GUARDAR
-// ==============================
-function guardar(){
-
-const data = {
- tel: tel.value,
- imei: imei.value,
- iccid: iccid.value,
- tipo: tipo.value,
- tiendaNum: tiendaNum.value,
- cadena: cadena.value,
- tiendaNom: tiendaNom.value,
- prom: prom.value,
- fec: fec.value,
- marca: marca.value,
- mod: mod.value
-};
-
-const id = Date.now();
-db.ref('ventas/'+btoa(uA)+'/'+id).set(data);
-
-alert("Guardado correctamente");
-
+function entrar(){
+uA=u.value
+loginBox.classList.add("hidden")
+appBox.classList.remove("hidden")
+pintarTabla()
+stats()
 }
 
+function toast(t){
+const el=document.getElementById("toast")
+el.innerText=t
+el.style.display="block"
+setTimeout(()=>el.style.display="none",2000)
+}
 
-// ==============================
-// CARGAR TABLA
-// ==============================
-db.ref('ventas/'+btoa(uA)).on('value',snap=>{
+fReg.onsubmit=e=>{
+e.preventDefault()
 
-const datos = snap.val() || {};
-tabla.innerHTML="";
+const v={
+tel:iTel.value,
+iccid:iIcc.value,
+tipo:iTipo.value,
+tiendaNum:iTiendaNum.value,
+cadena:iCadena.value,
+tiendaNom:iTiendaNombre.value,
+prom:iProm.value,
+fec:iFec.value,
+imei:iIme.value,
+marca:iMarca.value,
+mod:iMod.value
+}
 
-Object.values(datos).forEach(v=>{
+db.ref('ventas/'+btoa(uA)).push(v).then(()=>{
+fReg.reset()
+iFec.value=new Date().toISOString().split('T')[0]
+pintarTabla()
+stats()
+toast("Venta guardada ✔")
+})
+}
 
-const tr=document.createElement('tr');
-tr.innerHTML=`
-<td class="td">${v.tel||""}</td>
-<td class="td">${v.imei||""}</td>
-<td class="td">${v.iccid||""}</td>
-<td class="td">${v.tipo||""}</td>
-<td class="td">${v.tiendaNum||""}</td>
-<td class="td">${v.cadena||""}</td>
-<td class="td">${v.tiendaNom||""}</td>
-<td class="td">${v.prom||""}</td>
-<td class="td">${v.fec||""}</td>
-<td class="td">${v.marca||""}</td>
-<td class="td">${v.mod||""}</td>
-`;
+function pintarTabla(){
+db.ref('ventas/'+btoa(uA)).once('value',s=>{
+const tb=document.querySelector('#tVistas tbody')
+tb.innerHTML=""
+s.forEach(c=>{
+const v=c.val()
+tb.innerHTML+=`
+<tr>
+<td>${v.tel}</td>
+<td>${v.tipo}</td>
+<td>${v.tiendaNum}</td>
+<td><button onclick="borrar('${c.key}')">X</button></td>
+</tr>`
+})
+})
+}
 
-tabla.appendChild(tr);
+function borrar(id){
+db.ref('ventas/'+btoa(uA)+'/'+id).remove().then(()=>{
+pintarTabla()
+stats()
+})
+}
 
-});
+function stats(){
+db.ref('ventas/'+btoa(uA)).once('value',s=>{
+let total=0,hoy=0,kit=0
+const h=new Date().toISOString().split('T')[0]
+s.forEach(c=>{
+const v=c.val()
+total++
+if(v.fec==h)hoy++
+if(v.tipo=="KIT")kit++
+})
+sTotal.innerText=total
+sHoy.innerText=hoy
+sKit.innerText=kit
+})
+}
 
-});
-
-
-// ==============================
-// EXPORTAR EXCEL PLANTILLA REAL
-// ==============================
+/* EXPORTAR PLANTILLA EXACTA */
 async function bajarExcel(){
-
-const res = await fetch("omarcitoo2026.xlsx");
-const buffer = await res.arrayBuffer();
-
-const wb = XLSX.read(buffer,{type:"array"});
-const hoja = wb.SheetNames[0];
-const ws = wb.Sheets[hoja];
-
-const snap = await db.ref('ventas/'+btoa(uA)).once('value');
-const datos = Object.values(snap.val()||{});
-
-let fila=2;
-
-datos.forEach(v=>{
-ws["A"+fila]={t:"s",v:v.tel};
-ws["B"+fila]={t:"s",v:v.imei};
-ws["C"+fila]={t:"s",v:v.iccid};
-ws["D"+fila]={t:"s",v:v.tipo};
-ws["E"+fila]={t:"s",v:v.tiendaNum};
-ws["F"+fila]={t:"s",v:v.cadena};
-ws["G"+fila]={t:"s",v:v.tiendaNom};
-ws["H"+fila]={t:"s",v:v.prom};
-ws["I"+fila]={t:"s",v:v.fec};
-ws["J"+fila]={t:"s",v:v.marca};
-ws["K"+fila]={t:"s",v:v.mod};
-fila++;
-});
-
-XLSX.writeFile(wb,"Reporte_Ventas.xlsx");
-
+const res=await fetch("omarcitoo2026.xlsx")
+const buffer=await res.arrayBuffer()
+const wb=XLSX.read(buffer,{type:"array"})
+const ws=wb.Sheets[wb.SheetNames[0]]
+const snap=await db.ref('ventas/'+btoa(uA)).once('value')
+let fila=2
+Object.values(snap.val()||{}).forEach(v=>{
+ws["A"+fila]={t:"s",v:v.tel}
+ws["B"+fila]={t:"s",v:v.imei}
+ws["C"+fila]={t:"s",v:v.iccid}
+ws["D"+fila]={t:"s",v:v.tipo}
+ws["E"+fila]={t:"s",v:v.tiendaNum}
+ws["F"+fila]={t:"s",v:v.cadena}
+ws["G"+fila]={t:"s",v:v.tiendaNom}
+ws["H"+fila]={t:"s",v:v.prom}
+ws["I"+fila]={t:"s",v:v.fec}
+ws["J"+fila]={t:"s",v:v.marca}
+ws["K"+fila]={t:"s",v:v.mod}
+fila++
+})
+XLSX.writeFile(wb,"Reporte_Ventas_Telcel.xlsx")
 }
+</script>
 
-</script></body>
+</body>
 </html>
