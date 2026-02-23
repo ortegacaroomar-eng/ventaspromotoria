@@ -5,58 +5,174 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sistema Ventas Telcel Pro</title>
 
-<script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
-body{margin:0;font-family:Segoe UI;background:#001d3d;color:white}
-.app{max-width:480px;margin:auto;padding:20px}
-.card{background:rgba(255,255,255,.08);padding:15px;border-radius:12px;margin-bottom:12px}
-button{width:100%;padding:12px;border:none;border-radius:8px;font-weight:bold}
-.btn-main{background:#ffc300;color:#003566}
-.btn-excel{background:#1f7a3f;color:white}
+
+/* ===== FONDO ===== */
+body{
+margin:0;
+font-family:'Segoe UI',system-ui;
+background:linear-gradient(135deg,#001d3d,#003566,#000814);
+min-height:100vh;
+color:white;
+}
+
+/* ===== APP ===== */
+.app{
+max-width:480px;
+margin:auto;
+padding:20px;
+}
+
+/* ===== GLASS CARD ===== */
+.card{
+background:rgba(255,255,255,.08);
+backdrop-filter:blur(12px);
+border-radius:18px;
+padding:18px;
+margin-bottom:16px;
+box-shadow:0 10px 25px rgba(0,0,0,.3);
+}
+
+/* ===== HEADER ===== */
+.header{
+text-align:center;
+font-size:22px;
+font-weight:bold;
+color:#ffc300;
+margin-bottom:20px;
+}
+
+/* ===== INPUT ===== */
+label{
+font-size:11px;
+font-weight:600;
+color:#ffc300;
+}
+
+input,select{
+width:100%;
+padding:12px;
+margin-top:4px;
+margin-bottom:12px;
+border-radius:10px;
+border:none;
+background:rgba(255,255,255,.12);
+color:white;
+}
+
+/* ===== BOTONES ===== */
+button{
+width:100%;
+padding:14px;
+border:none;
+border-radius:12px;
+font-weight:bold;
+cursor:pointer;
+transition:.2s;
+}
+
+.btn-main{
+background:#ffc300;
+color:#003566;
+}
+
+.btn-excel{
+background:#1f7a3f;
+color:white;
+}
+
+/* ===== LOGIN ===== */
+.login{
+max-width:350px;
+margin:120px auto;
+background:white;
+color:black;
+padding:30px;
+border-radius:18px;
+text-align:center;
+}
+
 .hidden{display:none}
+
 </style>
 </head>
 
 <body onload="inicio()">
 
-<div id="loginBox" class="app">
+<!-- LOGIN -->
+<div id="loginBox" class="login">
+<h2>Acceso Sistema</h2>
 <input id="u" placeholder="Correo">
 <input id="p" type="password" placeholder="Contraseña">
 <button onclick="entrar()">Entrar</button>
 </div>
 
+<!-- APP -->
 <div id="appBox" class="app hidden">
 
-<form id="fReg" class="card">
-<input id="iTel" placeholder="NUM CELULAR" required>
-<input id="iIcc" placeholder="ICCID" required>
+<div class="header">
+<i class="fa-solid fa-signal"></i> Sistema Ventas Telcel
+</div>
+
+<form id="fReg">
+
+<div class="card">
+<label>NUM CELULAR</label>
+<input id="iTel" required>
+
+<label>ICCID</label>
+<input id="iIcc" required>
+
+<label>TIPO</label>
 <select id="iTipo" required>
-<option value="">Tipo</option>
+<option value="">Seleccionar</option>
 <option>KIT</option>
 <option>CHIP</option>
 <option>PORTA</option>
 <option>RENUEVATE</option>
 </select>
-<input id="iIme" placeholder="IMEI">
-<input id="iMarca" placeholder="MARCA">
-<input id="iMod" placeholder="MODELO">
-<input id="iTiendaNum" placeholder="TIENDA" required>
-<input id="iCadena" placeholder="CADENA" required>
-<input id="iTiendaNombre" placeholder="NOMBRE TIENDA" required>
-<input id="iProm" placeholder="PROMOTOR" required>
+</div>
+
+<div class="card">
+<label>IMEI</label>
+<input id="iIme">
+<label>MARCA</label>
+<input id="iMarca">
+<label>MODELO</label>
+<input id="iMod">
+</div>
+
+<div class="card">
+<label>TIENDA</label>
+<input id="iTiendaNum" required>
+<label>CADENA</label>
+<input id="iCadena" required>
+<label>NOMBRE TIENDA</label>
+<input id="iTiendaNombre" required>
+<label>PROMOTOR</label>
+<input id="iProm" required>
+<label>FECHA</label>
 <input type="date" id="iFec" required>
+</div>
+
 <button class="btn-main">Guardar Venta</button>
+
 </form>
 
-<button class="btn-excel" onclick="bajarExcel()">EXPORTAR EXCEL</button>
-<button onclick="salir()">CERRAR SESION</button>
+<button class="btn-excel" onclick="descargarPlantilla()">
+<i class="fa-solid fa-file-excel"></i> Descargar formato Excel
+</button>
+
+<button onclick="salir()">Cerrar sesión</button>
 
 </div>
 
 <script>
+
 const firebaseConfig={
 apiKey:"AIzaSy",
 databaseURL:"https://ventastelcel4029-default-rtdb.firebaseio.com"
@@ -92,9 +208,9 @@ cadena:iCadena.value,
 tiendaNom:iTiendaNombre.value,
 prom:iProm.value,
 fec:iFec.value,
-imei:iIme.value||"",
-marca:iMarca.value||"",
-mod:iMod.value||""
+imei:iIme.value,
+marca:iMarca.value,
+mod:iMod.value
 }
 
 db.ref('ventas/'+btoa(uA)).push(v).then(()=>{
@@ -104,50 +220,17 @@ alert("Venta guardada")
 })
 }
 
-/* ================================
-   PLANTILLA EXCEL INTERNA REAL
-   ================================ */
+/* =======================================
+   DESCARGAR EXCEL ORIGINAL SIN MODIFICAR
+   ======================================= */
 
-const PLANTILLA_BASE64 = `
-UEsDBBQABgAIAAAAIQD...
-(IMPORTANTE: aquí va toda la cadena base64 EXACTA — no la cortes)
-...AAAA==
-`.replace(/\s/g,'')
-
-function base64ToArrayBuffer(base64){
-const binary=atob(base64)
-const len=binary.length
-const bytes=new Uint8Array(len)
-for(let i=0;i<len;i++) bytes[i]=binary.charCodeAt(i)
-return bytes.buffer
+function descargarPlantilla(){
+const link=document.createElement("a")
+link.href="omarcitoo2026.xlsx"
+link.download="Formato_Registro_Telcel.xlsx"
+link.click()
 }
 
-async function bajarExcel(){
-
-const buffer = base64ToArrayBuffer(PLANTILLA_BASE64)
-const wb = XLSX.read(buffer,{type:"array"})
-const ws = wb.Sheets[wb.SheetNames[0]]
-
-const snap=await db.ref('ventas/'+btoa(uA)).once('value')
-
-let fila=2
-Object.values(snap.val()||{}).forEach(v=>{
-ws["A"+fila]={t:"s",v:v.tel}
-ws["B"+fila]={t:"s",v:v.imei}
-ws["C"+fila]={t:"s",v:v.iccid}
-ws["D"+fila]={t:"s",v:v.tipo}
-ws["E"+fila]={t:"s",v:v.tiendaNum}
-ws["F"+fila]={t:"s",v:v.cadena}
-ws["G"+fila]={t:"s",v:v.tiendaNom}
-ws["H"+fila]={t:"s",v:v.prom}
-ws["I"+fila]={t:"s",v:v.fec}
-ws["J"+fila]={t:"s",v:v.marca}
-ws["K"+fila]={t:"s",v:v.mod}
-fila++
-})
-
-XLSX.writeFile(wb,"Reporte_Ventas_Telcel.xlsx")
-}
 </script>
 
 </body>
