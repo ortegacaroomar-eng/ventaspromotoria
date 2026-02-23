@@ -6,9 +6,13 @@
 body{
   background: linear-gradient(135deg,#0f172a,#020617);
 }
-</style></head><body class="text-white min-h-screen p-6"><div class="max-w-7xl mx-auto"><!-- HEADER --><div class="bg-slate-900/80 backdrop-blur rounded-2xl p-6 shadow-2xl border border-slate-700">
+</style></head><body class="text-white min-h-screen p-6"><div class="max-w-7xl mx-auto"><!-- HEADER --><div class="bg-slate-900/80 backdrop-blur rounded-2xl p-6 shadow-2xl border border-slate-700 flex justify-between items-center">
+<div>
 <h1 class="text-3xl font-bold mb-2">📱 Registro de Ventas</h1>
 <p class="text-slate-400">Sistema profesional de control</p>
+</div><button onclick="cerrarSesion()" class="bg-red-500 hover:bg-red-600 px-5 py-2 rounded-xl font-semibold shadow-lg">
+Cerrar sesión
+</button>
 </div><!-- FORM --><div class="mt-6 bg-slate-900/80 backdrop-blur rounded-2xl p-6 shadow-2xl border border-slate-700">
 <h2 class="text-xl font-semibold mb-4">Nueva venta</h2><div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 <input id="tel" placeholder="Teléfono" class="input">
@@ -80,6 +84,24 @@ const db = firebase.database();
 
 // usuario simple
 const uA = "usuario_demo";
+
+
+// ==============================
+// CERRAR SESION
+// ==============================
+function cerrarSesion(){
+
+if(confirm("¿Seguro que quieres cerrar sesión?")){
+
+localStorage.clear();
+sessionStorage.clear();
+
+alert("Sesión cerrada correctamente");
+location.reload();
+
+}
+
+}
 
 
 // ==============================
