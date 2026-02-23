@@ -24,7 +24,7 @@ button:active { transform: scale(0.98); }
 .hidden { display: none; }
 .reloj { font-size: 28px; font-weight: bold; color: #ffc300; text-align: center; margin: 10px 0; }
 .tabla-scroll { overflow-x: auto; width: 100%; margin-top: 15px; border: 1px solid #ddd; border-radius: 8px; background: white; }
-table { border-collapse: collapse; min-width: 800px; font-size: 10px; width: 100%; }
+table { border-collapse: collapse; min-width: 900px; font-size: 10px; width: 100%; }
 th, td { border: 1px solid #ddd; padding: 8px; text-align: center; white-space: nowrap; }
 th { background: #003566; color: #fff; text-transform: uppercase; font-size: 9px; }
 tr:nth-child(even) { background: #f8f9fa; }
@@ -140,9 +140,14 @@ tr:nth-child(even) { background: #f8f9fa; }
         <thead>
           <tr>
             <th>NUM. CELULAR</th>
-            <th>TIPO</th>
-            <th>FECHA ACT.</th>
             <th>IMEI</th>
+            <th>ICCID</th>
+            <th>Renuevate/Kit/Chip/Porta</th>
+            <th>#TIENDA/Determinante</th>
+            <th>SOLO NOMBRE DE LA CADENA</th>
+            <th>SOLO NOMBRE DE TIENDA SIN CADENA</th>
+            <th>NOMBRE COMPLETO PROMOTOR</th>
+            <th>FECHA DE ACTIVACION</th>
             <th>MARCA</th>
             <th>MODELO</th>
             <th>ACCION</th>
@@ -244,9 +249,14 @@ function pintarTabla() {
       const fEx = v.fec ? v.fec.split('-').reverse().join('/') : "";
       tb.innerHTML += `<tr>
         <td>${v.tel}</td>
-        <td>${v.tipo}</td>
-        <td>${fEx}</td>
         <td>${v.imei || '-'}</td>
+        <td>${v.iccid}</td>
+        <td>${v.tipo}</td>
+        <td>${v.tiendaNum}</td>
+        <td>${v.cadena}</td>
+        <td>${v.tiendaNom}</td>
+        <td>${v.prom}</td>
+        <td>${fEx}</td>
         <td>${v.marca || '-'}</td>
         <td>${v.mod || '-'}</td>
         <td><button class="btn-delete" onclick="borrar('${item.key}')">X</button></td>
@@ -291,7 +301,7 @@ function bajarExcel() {
         "NUM. CELULAR": v.tel,
         "IMEI": v.imei || "",
         "ICCID": v.iccid,
-        "Renuevate/ Kit/Chip/Porta": v.tipo,
+        "Renuevate/Kit/Chip/Porta": v.tipo,
         "#TIENDA / Determinante": v.tiendaNum,
         "SOLO NOMBRE DE LA CADENA": v.cadena,
         "SOLO NOMBRE DE TIENDA SIN CADENA": v.tiendaNom,
@@ -304,9 +314,9 @@ function bajarExcel() {
 
     const ws = XLSX.utils.json_to_sheet(dataFormateada);
     ws['!cols'] = [
-      { wch: 18 }, { wch: 18 }, { wch: 22 }, { wch: 25 },
+      { wch: 16 }, { wch: 18 }, { wch: 22 }, { wch: 26 },
       { wch: 22 }, { wch: 28 }, { wch: 32 }, { wch: 30 },
-      { wch: 18 }, { wch: 18 }, { wch: 22 }
+      { wch: 20 }, { wch: 16 }, { wch: 20 }
     ];
 
     const wb = XLSX.utils.book_new();
