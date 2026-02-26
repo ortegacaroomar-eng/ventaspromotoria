@@ -17,13 +17,15 @@
         input, select { width:100%; padding:12px; margin-top:4px; margin-bottom:12px; border-radius:10px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; }
         button { width:100%; padding:14px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; transition:.2s; margin-bottom: 10px; }
         .btn-main { background:#ffc300; color:#003566; }
-        .btn-excel { background:#1f7a3f; color:white; }
-        .btn-sync { background:#00a8e8; color:white; font-size: 12px; padding: 8px; }
+        .btn-excel { background:#1f7a3f; color:white; margin-top:10px; }
         .login { max-width:350px; margin:80px auto; background:white; color:black; padding:30px; border-radius:18px; text-align:center; }
         .hidden { display:none; }
+        
+        /* ESTILOS DE LA LISTA DETALLADA */
         .venta-item { background: rgba(255,255,255,0.07); padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 5px solid #ffc300; font-size: 11px; position: relative; }
-        .status-icon { position: absolute; top: 15px; right: 15px; font-size: 16px; }
-        .dato b { color: #ffc300; display: block; font-size: 9px; margin-top: 5px;}
+        .status-icon { position: absolute; top: 15px; right: 15px; font-size: 14px; }
+        .grid-datos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; }
+        .dato b { color: #ffc300; display: block; font-size: 9px; text-transform: uppercase; }
     </style>
 </head>
 <body onload="inicio()">
@@ -41,7 +43,7 @@
         
         <form id="fReg">
             <div class="card">
-                <label>FECHA DE ACTIVACION (26/02/2026)</label>
+                <label>FECHA DE ACTIVACION</label>
                 <input id="iFec" required>
                 <label>NUM. CELULAR</label>
                 <input id="iTel" type="tel" required>
@@ -67,15 +69,12 @@
             <button type="submit" class="btn-main">GUARDAR VENTA</button>
         </form>
 
-        <button class="btn-sync" onclick="sincronizarPendientes()">
-            <i class="fa-solid fa-rotate"></i> Sincronizar con Nube
-        </button>
-
         <button class="btn-excel" onclick="exportarExcel()">
-            <i class="fa-solid fa-file-excel"></i> DESCARGAR EXCEL
+            <i class="fa-solid fa-file-excel"></i> DESCARGAR EXCEL (.xlsx)
         </button>
 
-        <div id="listaLocal" style="margin-top:20px"></div>
+        <div class="header" style="font-size: 16px; margin-top: 20px;">LISTA DE VENTAS LOCALES</div>
+        <div id="listaLocal"></div>
     </div>
 
 <script>
@@ -88,9 +87,6 @@
         const hoy = new Date();
         iFec.value = hoy.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
         cargarVentasLocales();
-        
-        // Intentar sincronizar al abrir si hay red
-        if(navigator.onLine) sincronizarPendientes();
     }
 
     function toggleRegistro() {
@@ -109,7 +105,7 @@
     fReg.onsubmit = e => {
         e.preventDefault();
         const v = {
-            id: Date.now(), // ID único para control local
+            id: Date.now(),
             sincronizado: false,
             "NUM. CELULAR": iTel.value,
             "IMEI": iIme.value,
@@ -124,30 +120,25 @@
             "MODELO": iMod.value
         };
 
-        // 1. Guardar localmente primero (Trabajo sin internet)
+        // Guardar Local
         let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
         local.unshift(v);
         localStorage.setItem("ventas_save", JSON.stringify(local));
 
-        // 2. Intentar subir a Firebase
-        intentarSubir(v);
+        // Subir a Firebase (si hay red)
+        if(navigator.onLine) {
+            db.ref('ventas/' + btoa(uA)).push(v).then(() => {
+                marcarSincronizado(v.id);
+            });
+        }
 
         fReg.reset();
         iFec.value = new Date().toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
         cargarVentasLocales();
+        alert("¡Venta Guardada Localmente!");
     }
 
-    function intentarSubir(venta) {
-        if(!navigator.onLine) return;
-
-        db.ref('ventas/' + btoa(uA)).push(venta)
-        .then(() => {
-            marcarComoSincronizado(venta.id);
-        })
-        .catch(e => console.log("Pendiente de red..."));
-    }
-
-    function marcarComoSincronizado(id) {
+    function marcarSincronizado(id) {
         let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
         let item = local.find(x => x.id === id);
         if(item) {
@@ -157,27 +148,29 @@
         }
     }
 
-    function sincronizarPendientes() {
-        let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
-        let pendientes = local.filter(x => !x.sincronizado);
-        
-        if(pendientes.length === 0) return console.log("Todo al día");
-        
-        pendientes.forEach(v => intentarSubir(v));
-    }
-
     function cargarVentasLocales() {
         const div = document.getElementById("listaLocal");
         let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
+        
+        if(local.length === 0) {
+            div.innerHTML = "<p style='text-align:center; opacity:0.5;'>No hay registros.</p>";
+            return;
+        }
+
         div.innerHTML = local.map(v => `
             <div class="venta-item">
-                <div class="status-icon">
-                    ${v.sincronizado ? '☁️' : '⏳'}
+                <div class="status-icon">${v.sincronizado ? '☁️' : '⏳'}</div>
+                <div style="color:#ffc300; font-weight:bold; font-size:14px;">${v["NUM. CELULAR"]}</div>
+                <div style="opacity:0.8; margin-bottom:5px;">Fecha: ${v["FECHA DE ACTIVACION"]}</div>
+                
+                <div class="grid-datos">
+                    <div class="dato"><b>ICCID</b>${v.ICCID}</div>
+                    <div class="dato"><b>IMEI</b>${v.IMEI || '-'}</div>
+                    <div class="dato"><b>TIPO</b>${v["Renuevate / Kit / Chip / Porta"]}</div>
+                    <div class="dato"><b>MARCA/MOD</b>${v.MARCA} ${v.MODELO}</div>
+                    <div class="dato"><b>TIENDA</b>${v["SOLO NOMBRE DE TIENDA SIN CADENA"]}</div>
+                    <div class="dato"><b>DETERM.</b>${v["# TIENDA / Determinante"]}</div>
                 </div>
-                <div style="color:#ffc300; font-weight:bold;">${v["NUM. CELULAR"]}</div>
-                <div class="dato"><b>ICCID:</b> ${v.ICCID}</div>
-                <div class="dato"><b>ESTADO:</b> ${v.sincronizado ? 'Sincronizado' : 'Solo Local'}</div>
-                <div class="dato"><b>TIENDA:</b> ${v["SOLO NOMBRE DE TIENDA SIN CADENA"]}</div>
             </div>
         `).join("");
     }
@@ -186,10 +179,8 @@
         let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
         if(local.length === 0) return alert("No hay datos");
 
-        // Limpiamos los campos internos antes de exportar
-        const datosParaExcel = local.map(({id, sincronizado, ...resto}) => resto);
-
-        const ws = XLSX.utils.json_to_sheet(datosParaExcel, {
+        const paraExcel = local.map(({id, sincronizado, ...resto}) => resto);
+        const ws = XLSX.utils.json_to_sheet(paraExcel, {
             header: [
                 "NUM. CELULAR", "IMEI", "ICCID", "Renuevate / Kit / Chip / Porta",
                 "# TIENDA / Determinante", "SOLO NOMBRE DE LA CADENA", 
@@ -198,9 +189,7 @@
             ]
         });
 
-        const wscols = [{wch:15}, {wch:20}, {wch:25}, {wch:25}, {wch:15}, {wch:25}, {wch:30}, {wch:30}, {wch:15}, {wch:15}, {wch:15}];
-        ws['!cols'] = wscols;
-
+        ws['!cols'] = [{wch:15}, {wch:20}, {wch:25}, {wch:25}, {wch:15}, {wch:25}, {wch:30}, {wch:30}, {wch:15}, {wch:15}, {wch:15}];
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Registro");
         XLSX.writeFile(wb, "comisiones_2026_teledata.xlsx");
