@@ -6,6 +6,7 @@
     <title>Sistema Ventas Telcel Pro</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         body { margin:0; font-family:'Segoe UI',system-ui; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; }
@@ -20,13 +21,9 @@
         .btn-excel { background:#1f7a3f; color:white; }
         .login { max-width:350px; margin:80px auto; background:white; color:black; padding:30px; border-radius:18px; text-align:center; }
         .hidden { display:none; }
-        
-        /* ESTILOS DE LA LISTA DETALLADA */
         .lista-ventas { margin-top: 20px; }
-        .venta-item { background: rgba(255,255,255,0.07); padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 5px solid #ffc300; font-size: 12px; line-height: 1.6; }
-        .venta-item b { color: #ffc300; text-transform: uppercase; font-size: 10px; }
+        .venta-item { background: rgba(255,255,255,0.07); padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 5px solid #ffc300; font-size: 12px; }
         .grid-datos { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 5px; }
-        .dato-linea { border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 2px; }
     </style>
 </head>
 <body onload="inicio()">
@@ -67,13 +64,16 @@
                 <label>NOMBRE TIENDA</label><input id="iTiendaNombre" required>
                 <label>PROMOTOR</label><input id="iProm" required>
             </div>
-            <button class="btn-main">Guardar Venta</button>
+            <button type="submit" class="btn-main">Guardar Venta</button>
         </form>
 
-        <div class="header" style="font-size: 18px; margin-top: 30px;">Historial Local Detallado</div>
+        <button class="btn-excel" onclick="exportarExcel()">
+            <i class="fa-solid fa-file-excel"></i> Descargar Ventas (.xlsx)
+        </button>
+
+        <div class="header" style="font-size: 18px; margin-top: 30px;">Historial Local</div>
         <div id="listaLocal" class="lista-ventas"></div>
 
-        <button class="btn-excel" onclick="descargarPlantilla()"><i class="fa-solid fa-file-excel"></i> Descargar formato Excel</button>
         <button onclick="salir()" style="background: #d62828; color: white;">Cerrar sesión</button>
     </div>
 
@@ -85,7 +85,6 @@
         firebase.initializeApp(firebaseConfig);
         db = firebase.database();
         const hoy = new Date();
-        // Formato DD/MM/YYYY
         iFec.value = hoy.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
         cargarVentasLocales();
     }
@@ -94,13 +93,11 @@
         modoRegistro = !modoRegistro;
         tituloAuth.innerText = modoRegistro ? "Registro Nuevo" : "Acceso Sistema";
         btnAccion.innerText = modoRegistro ? "Registrar y Entrar" : "Entrar";
-        btnToggle.innerText = modoRegistro ? "Volver a Login" : "Nuevo Usuario";
     }
 
     function entrar() {
-        if (!u.value || !p.value) return alert("Completa los datos");
         uA = u.value;
-        if (modoRegistro) localStorage.setItem("user_" + uA, p.value);
+        if(modoRegistro) localStorage.setItem("user_" + uA, p.value);
         loginBox.classList.add("hidden");
         appBox.classList.remove("hidden");
     }
@@ -110,62 +107,55 @@
     fReg.onsubmit = e => {
         e.preventDefault();
         const v = {
-            tel: iTel.value, iccid: iIcc.value, tipo: iTipo.value,
-            imei: iIme.value, marca: iMarca.value, mod: iMod.value,
-            tiendaNum: iTiendaNum.value, cadena: iCadena.value,
-            tiendaNom: iTiendaNombre.value, prom: iProm.value,
-            fec: iFec.value
+            FECHA: iFec.value,
+            TELEFONO: iTel.value,
+            ICCID: iIcc.value,
+            TIPO: iTipo.value,
+            IMEI: iIme.value,
+            MARCA: iMarca.value,
+            MODELO: iMod.value,
+            TIENDA_NUM: iTiendaNum.value,
+            CADENA: iCadena.value,
+            TIENDA_NOM: iTiendaNombre.value,
+            PROMOTOR: iProm.value
         };
 
         db.ref('ventas/' + btoa(uA)).push(v);
-
         let localVentas = JSON.parse(localStorage.getItem("misVentas") || "[]");
         localVentas.unshift(v); 
         localStorage.setItem("misVentas", JSON.stringify(localVentas));
 
         fReg.reset();
-        const hoy = new Date();
-        iFec.value = hoy.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
-        
+        iFec.value = new Date().toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
         cargarVentasLocales();
-        alert("Venta guardada con éxito");
+        alert("Venta guardada");
     }
 
     function cargarVentasLocales() {
         const contenedor = document.getElementById("listaLocal");
         let localVentas = JSON.parse(localStorage.getItem("misVentas") || "[]");
-        
-        if (localVentas.length === 0) {
-            contenedor.innerHTML = "<p style='text-align:center; opacity:0.5;'>Sin registros aún.</p>";
-            return;
-        }
-
         contenedor.innerHTML = localVentas.map(v => `
             <div class="venta-item">
-                <div style="border-bottom: 1px solid #ffc300; margin-bottom: 8px; padding-bottom: 5px;">
-                    <span style="font-size: 14px; color: #ffc300; font-weight: bold;">${v.tel}</span> 
-                    <span style="float: right; opacity: 0.8;">${v.fec}</span>
-                </div>
+                <b>${v.TELEFONO}</b> | ${v.FECHA}<br>
                 <div class="grid-datos">
-                    <div class="dato-linea"><b>Tipo:</b> ${v.tipo}</div>
-                    <div class="dato-linea"><b>ICCID:</b> ${v.iccid}</div>
-                    <div class="dato-linea"><b>IMEI:</b> ${v.imei || '-'}</div>
-                    <div class="dato-linea"><b>Marca:</b> ${v.marca || '-'}</div>
-                    <div class="dato-linea"><b>Modelo:</b> ${v.mod || '-'}</div>
-                    <div class="dato-linea"><b>Cadena:</b> ${v.cadena}</div>
-                    <div class="dato-linea"><b>Tienda #:</b> ${v.tiendaNum}</div>
-                    <div class="dato-linea"><b>Nombre:</b> ${v.tiendaNom}</div>
+                    <span>ICCID: ${v.ICCID}</span><span>Tipo: ${v.TIPO}</span>
+                    <span>IMEI: ${v.IMEI}</span><span>Tienda: ${v.TIENDA_NOM}</span>
                 </div>
-                <div style="margin-top: 5px;"><b>Promotor:</b> ${v.prom}</div>
             </div>
         `).join("");
     }
 
-    function descargarPlantilla() {
-        const link = document.createElement("a");
-        link.href = "omarcitoo2026.xlsx";
-        link.download = "Formato_Registro_Telcel.xlsx";
-        link.click();
+    // ESTA FUNCIÓN CREA EL EXCEL REAL DESCARGABLE
+    function exportarExcel() {
+        let localVentas = JSON.parse(localStorage.getItem("misVentas") || "[]");
+        if(localVentas.length === 0) return alert("No hay datos para descargar");
+
+        const hoja = XLSX.utils.json_to_sheet(localVentas);
+        const libro = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(libro, hoja, "Ventas");
+        
+        // Descarga el archivo con la fecha de hoy
+        XLSX.writeFile(libro, `Ventas_Telcel_${iFec.value.replace(/\//g, '-')}.xlsx`);
     }
 </script>
 </body>
