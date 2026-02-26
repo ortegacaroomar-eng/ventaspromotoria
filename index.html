@@ -21,10 +21,12 @@
         .login { max-width:350px; margin:80px auto; background:white; color:black; padding:30px; border-radius:18px; text-align:center; }
         .hidden { display:none; }
         
-        /* ESTILOS DE LA LISTA */
+        /* ESTILOS DE LA LISTA DETALLADA */
         .lista-ventas { margin-top: 20px; }
-        .venta-item { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; margin-bottom: 8px; font-size: 13px; border-left: 4px solid #ffc300; }
-        .venta-item b { color: #ffc300; }
+        .venta-item { background: rgba(255,255,255,0.07); padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 5px solid #ffc300; font-size: 12px; line-height: 1.6; }
+        .venta-item b { color: #ffc300; text-transform: uppercase; font-size: 10px; }
+        .grid-datos { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 5px; }
+        .dato-linea { border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 2px; }
     </style>
 </head>
 <body onload="inicio()">
@@ -43,7 +45,7 @@
         <form id="fReg">
             <div class="card">
                 <label>FECHA (DD/MM/YYYY)</label>
-                <input id="iFec" placeholder="02/02/2026" required>
+                <input id="iFec" placeholder="26/02/2026" required>
                 <label>NUM CELULAR</label>
                 <input id="iTel" required>
                 <label>ICCID</label>
@@ -55,15 +57,21 @@
                 </select>
             </div>
             <div class="card">
-                <label>TIENDA</label><input id="iTiendaNombre" required>
+                <label>IMEI</label><input id="iIme">
+                <label>MARCA</label><input id="iMarca">
+                <label>MODELO</label><input id="iMod">
+            </div>
+            <div class="card">
+                <label>TIENDA #</label><input id="iTiendaNum" required>
+                <label>CADENA</label><input id="iCadena" required>
+                <label>NOMBRE TIENDA</label><input id="iTiendaNombre" required>
                 <label>PROMOTOR</label><input id="iProm" required>
             </div>
             <button class="btn-main">Guardar Venta</button>
         </form>
 
-        <div class="header" style="font-size: 18px; margin-top: 30px;">Ventas Guardadas Localmente</div>
-        <div id="listaLocal" class="lista-ventas">
-            </div>
+        <div class="header" style="font-size: 18px; margin-top: 30px;">Historial Local Detallado</div>
+        <div id="listaLocal" class="lista-ventas"></div>
 
         <button class="btn-excel" onclick="descargarPlantilla()"><i class="fa-solid fa-file-excel"></i> Descargar formato Excel</button>
         <button onclick="salir()" style="background: #d62828; color: white;">Cerrar sesión</button>
@@ -77,8 +85,9 @@
         firebase.initializeApp(firebaseConfig);
         db = firebase.database();
         const hoy = new Date();
+        // Formato DD/MM/YYYY
         iFec.value = hoy.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
-        cargarVentasLocales(); // Carga la lista al iniciar
+        cargarVentasLocales();
     }
 
     function toggleRegistro() {
@@ -102,25 +111,24 @@
         e.preventDefault();
         const v = {
             tel: iTel.value, iccid: iIcc.value, tipo: iTipo.value,
+            imei: iIme.value, marca: iMarca.value, mod: iMod.value,
+            tiendaNum: iTiendaNum.value, cadena: iCadena.value,
             tiendaNom: iTiendaNombre.value, prom: iProm.value,
             fec: iFec.value
         };
 
-        // 1. Guardar en Firebase
         db.ref('ventas/' + btoa(uA)).push(v);
 
-        // 2. Guardar en LocalStorage y Actualizar Lista
         let localVentas = JSON.parse(localStorage.getItem("misVentas") || "[]");
-        localVentas.unshift(v); // Añade al inicio de la lista
+        localVentas.unshift(v); 
         localStorage.setItem("misVentas", JSON.stringify(localVentas));
 
-        // Limpiar y resetear
         fReg.reset();
         const hoy = new Date();
         iFec.value = hoy.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
         
-        cargarVentasLocales(); // Actualiza la vista de la lista
-        alert("Venta guardada correctamente");
+        cargarVentasLocales();
+        alert("Venta guardada con éxito");
     }
 
     function cargarVentasLocales() {
@@ -128,14 +136,27 @@
         let localVentas = JSON.parse(localStorage.getItem("misVentas") || "[]");
         
         if (localVentas.length === 0) {
-            contenedor.innerHTML = "<p style='text-align:center; opacity:0.5;'>No hay ventas guardadas.</p>";
+            contenedor.innerHTML = "<p style='text-align:center; opacity:0.5;'>Sin registros aún.</p>";
             return;
         }
 
         contenedor.innerHTML = localVentas.map(v => `
             <div class="venta-item">
-                <b>${v.fec}</b> - ${v.tel} (${v.tipo})<br>
-                <small>Tienda: ${v.tiendaNom} | Prom: ${v.prom}</small>
+                <div style="border-bottom: 1px solid #ffc300; margin-bottom: 8px; padding-bottom: 5px;">
+                    <span style="font-size: 14px; color: #ffc300; font-weight: bold;">${v.tel}</span> 
+                    <span style="float: right; opacity: 0.8;">${v.fec}</span>
+                </div>
+                <div class="grid-datos">
+                    <div class="dato-linea"><b>Tipo:</b> ${v.tipo}</div>
+                    <div class="dato-linea"><b>ICCID:</b> ${v.iccid}</div>
+                    <div class="dato-linea"><b>IMEI:</b> ${v.imei || '-'}</div>
+                    <div class="dato-linea"><b>Marca:</b> ${v.marca || '-'}</div>
+                    <div class="dato-linea"><b>Modelo:</b> ${v.mod || '-'}</div>
+                    <div class="dato-linea"><b>Cadena:</b> ${v.cadena}</div>
+                    <div class="dato-linea"><b>Tienda #:</b> ${v.tiendaNum}</div>
+                    <div class="dato-linea"><b>Nombre:</b> ${v.tiendaNom}</div>
+                </div>
+                <div style="margin-top: 5px;"><b>Promotor:</b> ${v.prom}</div>
             </div>
         `).join("");
     }
