@@ -19,8 +19,11 @@
         .btn-main { background:#ffc300; color:#003566; }
         .btn-excel { background:#1f7a3f; color:white; }
         .login { max-width:350px; margin:80px auto; background:white; color:black; padding:30px; border-radius:18px; text-align:center; }
-        .hidden { display:none !important; }
+        .hidden { display:none; }
+        
+        /* ESTILOS DE LA LISTA */
         .venta-item { background: rgba(255,255,255,0.07); padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 5px solid #ffc300; font-size: 11px; position: relative; }
+        .status-icon { position: absolute; top: 15px; right: 45px; font-size: 14px; }
         .btn-del { position: absolute; top: 12px; right: 12px; color: #ff4d4d; cursor: pointer; font-size: 18px; padding: 5px; }
         .grid-datos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; }
         .dato b { color: #ffc300; display: block; font-size: 9px; text-transform: uppercase; }
@@ -41,43 +44,37 @@
         
         <form id="fReg">
             <div class="card">
-                <label>PRODUCTO</label>
-                <select id="iTipo" required onchange="ajustarCampos()">
-                    <option value="">Seleccionar</option>
-                    <option value="KIT">KIT</option>
-                    <option value="CHIP">CHIP</option>
-                    <option value="PORTA">PORTA</option>
-                    <option value="RENUEVATE">RENUEVATE</option>
-                </select>
-
                 <label>FECHA DE ACTIVACION</label>
                 <input id="iFec" required>
                 <label>NUM. CELULAR</label>
                 <input id="iTel" type="tel" required>
                 <label>ICCID</label>
                 <input id="iIcc" required>
+                <label>TIPO (Kit/Chip/Porta)</label>
+                <select id="iTipo" required>
+                    <option value="">Seleccionar</option>
+                    <option>KIT</option><option>CHIP</option><option>PORTA</option><option>RENUEVATE</option>
+                </select>
             </div>
-
-            <div id="seccionEquipo" class="card">
+            <div class="card">
                 <label>IMEI</label><input id="iIme">
                 <label>MARCA</label><input id="iMarca">
                 <label>MODELO</label><input id="iMod">
             </div>
-
             <div class="card">
                 <label># TIENDA / Determinante</label><input id="iTiendaNum" required>
-                <label>CADENA</label><input id="iCadena" required>
-                <label>TIENDA</label><input id="iTiendaNombre" required>
-                <label>PROMOTOR</label><input id="iProm" required>
+                <label>SOLO NOMBRE DE LA CADENA</label><input id="iCadena" required>
+                <label>SOLO NOMBRE DE TIENDA</label><input id="iTiendaNombre" required>
+                <label>NOMBRE COMPLETO PROMOTOR</label><input id="iProm" required>
             </div>
-
             <button type="submit" class="btn-main">GUARDAR VENTA</button>
         </form>
 
         <button class="btn-excel" onclick="exportarExcel()">
-            <i class="fa-solid fa-file-excel"></i> DESCARGAR EXCEL
+            <i class="fa-solid fa-file-excel"></i> DESCARGAR EXCEL (.xlsx)
         </button>
 
+        <div class="header" style="font-size: 16px; margin-top: 20px;">VENTAS REGISTRADAS</div>
         <div id="listaLocal"></div>
     </div>
 
@@ -93,16 +90,6 @@
         cargarVentasLocales();
     }
 
-    function ajustarCampos() {
-        const t = iTipo.value;
-        // Si es CHIP o PORTA, ocultamos IMEI, Marca y Modelo
-        if(t === "CHIP" || t === "PORTA") {
-            seccionEquipo.classList.add("hidden");
-        } else {
-            seccionEquipo.classList.remove("hidden");
-        }
-    }
-
     function toggleRegistro() {
         modoReg = !modoReg;
         tituloAuth.innerText = modoReg ? "Crear Usuario" : "Acceso Sistema";
@@ -110,6 +97,7 @@
 
     function entrar() {
         uA = u.value;
+        if(!uA) return alert("Ingresa un correo");
         if(modoReg) localStorage.setItem("u_"+uA, p.value);
         loginBox.classList.add("hidden");
         appBox.classList.remove("hidden");
@@ -119,8 +107,9 @@
         e.preventDefault();
         const v = {
             id: Date.now(),
+            sincronizado: false,
             "NUM. CELULAR": iTel.value,
-            "IMEI": iIme.value || "-",
+            "IMEI": iIme.value,
             "ICCID": iIcc.value,
             "Renuevate / Kit / Chip / Porta": iTipo.value,
             "# TIENDA / Determinante": iTiendaNum.value,
@@ -128,27 +117,40 @@
             "SOLO NOMBRE DE TIENDA SIN CADENA": iTiendaNombre.value,
             "NOMBRE COMPLETO PROMOTOR": iProm.value,
             "FECHA DE ACTIVACION": iFec.value,
-            "MARCA": iMarca.value || "-",
-            "MODELO": iMod.value || "-"
+            "MARCA": iMarca.value,
+            "MODELO": iMod.value
         };
 
         let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
         local.unshift(v);
         localStorage.setItem("ventas_save", JSON.stringify(local));
 
-        if(navigator.onLine) db.ref('ventas/' + btoa(uA)).push(v);
+        if(navigator.onLine) {
+            db.ref('ventas/' + btoa(uA)).push(v).then(() => {
+                marcarSincronizado(v.id);
+            });
+        }
 
         fReg.reset();
-        ajustarCampos();
         iFec.value = new Date().toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
         cargarVentasLocales();
-        alert("Guardado");
     }
 
     function eliminarVenta(id) {
-        if(confirm("¿Eliminar?")) {
+        if(confirm("¿Seguro que quieres eliminar esta venta de la lista?")) {
             let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
-            localStorage.setItem("ventas_save", JSON.stringify(local.filter(v => v.id !== id)));
+            let nuevoLocal = local.filter(v => v.id !== id);
+            localStorage.setItem("ventas_save", JSON.stringify(nuevoLocal));
+            cargarVentasLocales();
+        }
+    }
+
+    function marcarSincronizado(id) {
+        let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
+        let item = local.find(x => x.id === id);
+        if(item) {
+            item.sincronizado = true;
+            localStorage.setItem("ventas_save", JSON.stringify(local));
             cargarVentasLocales();
         }
     }
@@ -156,14 +158,26 @@
     function cargarVentasLocales() {
         const div = document.getElementById("listaLocal");
         let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
+        
+        if(local.length === 0) {
+            div.innerHTML = "<p style='text-align:center; opacity:0.5;'>No hay registros.</p>";
+            return;
+        }
+
         div.innerHTML = local.map(v => `
             <div class="venta-item">
+                <div class="status-icon">${v.sincronizado ? '☁️' : '⏳'}</div>
                 <div class="btn-del" onclick="eliminarVenta(${v.id})"><i class="fa-solid fa-trash-can"></i></div>
-                <div style="color:#ffc300; font-weight:bold;">${v["NUM. CELULAR"]}</div>
-                <div style="font-size:10px; opacity:0.7">${v["Renuevate / Kit / Chip / Porta"]} | ${v["FECHA DE ACTIVACION"]}</div>
+                <div style="color:#ffc300; font-weight:bold; font-size:14px;">${v["NUM. CELULAR"]}</div>
+                <div style="opacity:0.8; margin-bottom:5px;">${v["FECHA DE ACTIVACION"]}</div>
+                
                 <div class="grid-datos">
                     <div class="dato"><b>ICCID</b>${v.ICCID}</div>
+                    <div class="dato"><b>IMEI</b>${v.IMEI || '-'}</div>
+                    <div class="dato"><b>TIPO</b>${v["Renuevate / Kit / Chip / Porta"]}</div>
                     <div class="dato"><b>TIENDA</b>${v["SOLO NOMBRE DE TIENDA SIN CADENA"]}</div>
+                    <div class="dato"><b>MARCA</b>${v.MARCA || '-'}</div>
+                    <div class="dato"><b>MODELO</b>${v.MODELO || '-'}</div>
                 </div>
             </div>
         `).join("");
@@ -171,10 +185,18 @@
 
     function exportarExcel() {
         let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
-        const paraExcel = local.map(({id, ...resto}) => resto);
+        if(local.length === 0) return alert("No hay datos");
+
+        const paraExcel = local.map(({id, sincronizado, ...resto}) => resto);
         const ws = XLSX.utils.json_to_sheet(paraExcel, {
-            header: ["NUM. CELULAR", "IMEI", "ICCID", "Renuevate / Kit / Chip / Porta", "# TIENDA / Determinante", "SOLO NOMBRE DE LA CADENA", "SOLO NOMBRE DE TIENDA SIN CADENA", "NOMBRE COMPLETO PROMOTOR", "FECHA DE ACTIVACION", "MARCA", "MODELO"]
+            header: [
+                "NUM. CELULAR", "IMEI", "ICCID", "Renuevate / Kit / Chip / Porta",
+                "# TIENDA / Determinante", "SOLO NOMBRE DE LA CADENA", 
+                "SOLO NOMBRE DE TIENDA SIN CADENA", "NOMBRE COMPLETO PROMOTOR", 
+                "FECHA DE ACTIVACION", "MARCA", "MODELO"
+            ]
         });
+
         ws['!cols'] = [{wch:15}, {wch:20}, {wch:25}, {wch:25}, {wch:15}, {wch:25}, {wch:30}, {wch:30}, {wch:15}, {wch:15}, {wch:15}];
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Registro");
