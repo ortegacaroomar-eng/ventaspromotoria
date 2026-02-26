@@ -10,7 +10,7 @@
     <style>
         body { margin:0; font-family:'Segoe UI',system-ui; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; }
         .app { max-width:480px; margin:auto; padding:20px; }
-        .card { background:rgba(255,255,255,.08); backdrop-filter:blur(12px); border-radius:18px; padding:18px; margin-bottom:16px; box-shadow:0 10px 25px rgba(0,0,0,.3); }
+        .card { background:rgba(255,255,255,.08); backdrop-filter:blur(12px); border-radius:18px; padding:18px; margin-bottom:16px; box-shadow:0 10px 25px rgba(0,0,0,.3); border: 1px solid rgba(255,255,255,0.1); }
         .header { text-align:center; font-size:22px; font-weight:bold; color:#ffc300; margin-bottom:20px; }
         label { font-size:11px; font-weight:600; color:#ffc300; }
         input, select { width:100%; padding:12px; margin-top:4px; margin-bottom:12px; border-radius:10px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; }
@@ -20,6 +20,11 @@
         .btn-excel { background:#1f7a3f; color:white; }
         .login { max-width:350px; margin:80px auto; background:white; color:black; padding:30px; border-radius:18px; text-align:center; }
         .hidden { display:none; }
+        
+        /* ESTILOS DE LA LISTA */
+        .lista-ventas { margin-top: 20px; }
+        .venta-item { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; margin-bottom: 8px; font-size: 13px; border-left: 4px solid #ffc300; }
+        .venta-item b { color: #ffc300; }
     </style>
 </head>
 <body onload="inicio()">
@@ -34,6 +39,7 @@
 
     <div id="appBox" class="app hidden">
         <div class="header"><i class="fa-solid fa-signal"></i> Sistema Ventas Telcel</div>
+        
         <form id="fReg">
             <div class="card">
                 <label>FECHA (DD/MM/YYYY)</label>
@@ -49,20 +55,18 @@
                 </select>
             </div>
             <div class="card">
-                <label>IMEI</label><input id="iIme">
-                <label>MARCA</label><input id="iMarca">
-                <label>MODELO</label><input id="iMod">
-            </div>
-            <div class="card">
-                <label>TIENDA</label><input id="iTiendaNum" required>
-                <label>CADENA</label><input id="iCadena" required>
-                <label>NOMBRE TIENDA</label><input id="iTiendaNombre" required>
+                <label>TIENDA</label><input id="iTiendaNombre" required>
                 <label>PROMOTOR</label><input id="iProm" required>
             </div>
             <button class="btn-main">Guardar Venta</button>
         </form>
+
+        <div class="header" style="font-size: 18px; margin-top: 30px;">Ventas Guardadas Localmente</div>
+        <div id="listaLocal" class="lista-ventas">
+            </div>
+
         <button class="btn-excel" onclick="descargarPlantilla()"><i class="fa-solid fa-file-excel"></i> Descargar formato Excel</button>
-        <button onclick="salir()">Cerrar sesión</button>
+        <button onclick="salir()" style="background: #d62828; color: white;">Cerrar sesión</button>
     </div>
 
 <script>
@@ -72,9 +76,9 @@
     function inicio() {
         firebase.initializeApp(firebaseConfig);
         db = firebase.database();
-        // Formato solicitado: DD/MM/YYYY
         const hoy = new Date();
         iFec.value = hoy.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        cargarVentasLocales(); // Carga la lista al iniciar
     }
 
     function toggleRegistro() {
@@ -87,13 +91,7 @@
     function entrar() {
         if (!u.value || !p.value) return alert("Completa los datos");
         uA = u.value;
-        
-        // Si es registro, guardamos en localStorage del navegador
-        if (modoRegistro) {
-            localStorage.setItem("user_" + uA, p.value);
-            alert("Usuario registrado localmente");
-        }
-        
+        if (modoRegistro) localStorage.setItem("user_" + uA, p.value);
         loginBox.classList.add("hidden");
         appBox.classList.remove("hidden");
     }
@@ -104,23 +102,42 @@
         e.preventDefault();
         const v = {
             tel: iTel.value, iccid: iIcc.value, tipo: iTipo.value,
-            tiendaNum: iTiendaNum.value, cadena: iCadena.value,
             tiendaNom: iTiendaNombre.value, prom: iProm.value,
-            fec: iFec.value, imei: iIme.value, marca: iMarca.value, mod: iMod.value
+            fec: iFec.value
         };
 
         // 1. Guardar en Firebase
         db.ref('ventas/' + btoa(uA)).push(v);
 
-        // 2. Guardar Localmente (Copia de seguridad en el navegador)
+        // 2. Guardar en LocalStorage y Actualizar Lista
         let localVentas = JSON.parse(localStorage.getItem("misVentas") || "[]");
-        localVentas.push(v);
+        localVentas.unshift(v); // Añade al inicio de la lista
         localStorage.setItem("misVentas", JSON.stringify(localVentas));
 
+        // Limpiar y resetear
         fReg.reset();
         const hoy = new Date();
         iFec.value = hoy.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
-        alert("Venta guardada en la nube y localmente");
+        
+        cargarVentasLocales(); // Actualiza la vista de la lista
+        alert("Venta guardada correctamente");
+    }
+
+    function cargarVentasLocales() {
+        const contenedor = document.getElementById("listaLocal");
+        let localVentas = JSON.parse(localStorage.getItem("misVentas") || "[]");
+        
+        if (localVentas.length === 0) {
+            contenedor.innerHTML = "<p style='text-align:center; opacity:0.5;'>No hay ventas guardadas.</p>";
+            return;
+        }
+
+        contenedor.innerHTML = localVentas.map(v => `
+            <div class="venta-item">
+                <b>${v.fec}</b> - ${v.tel} (${v.tipo})<br>
+                <small>Tienda: ${v.tiendaNom} | Prom: ${v.prom}</small>
+            </div>
+        `).join("");
     }
 
     function descargarPlantilla() {
