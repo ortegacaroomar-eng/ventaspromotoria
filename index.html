@@ -10,8 +10,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
-
-/* ===== FONDO ===== */
 body{
 margin:0;
 font-family:'Segoe UI',system-ui;
@@ -20,14 +18,12 @@ min-height:100vh;
 color:white;
 }
 
-/* ===== APP ===== */
 .app{
 max-width:480px;
 margin:auto;
 padding:20px;
 }
 
-/* ===== GLASS CARD ===== */
 .card{
 background:rgba(255,255,255,.08);
 backdrop-filter:blur(12px);
@@ -37,7 +33,6 @@ margin-bottom:16px;
 box-shadow:0 10px 25px rgba(0,0,0,.3);
 }
 
-/* ===== HEADER ===== */
 .header{
 text-align:center;
 font-size:22px;
@@ -46,7 +41,6 @@ color:#ffc300;
 margin-bottom:20px;
 }
 
-/* ===== INPUT ===== */
 label{
 font-size:11px;
 font-weight:600;
@@ -64,7 +58,6 @@ background:rgba(255,255,255,.12);
 color:white;
 }
 
-/* ===== BOTONES ===== */
 button{
 width:100%;
 padding:14px;
@@ -72,7 +65,7 @@ border:none;
 border-radius:12px;
 font-weight:bold;
 cursor:pointer;
-transition:.2s;
+margin-bottom:10px;
 }
 
 .btn-main{
@@ -85,7 +78,11 @@ background:#1f7a3f;
 color:white;
 }
 
-/* ===== LOGIN ===== */
+.btn-register{
+background:#003566;
+color:#ffc300;
+}
+
 .login{
 max-width:350px;
 margin:120px auto;
@@ -97,7 +94,6 @@ text-align:center;
 }
 
 .hidden{display:none}
-
 </style>
 </head>
 
@@ -109,6 +105,7 @@ text-align:center;
 <input id="u" placeholder="Correo">
 <input id="p" type="password" placeholder="Contraseña">
 <button onclick="entrar()">Entrar</button>
+<button class="btn-register" onclick="registrar()">Registrar nuevo usuario</button>
 </div>
 
 <!-- APP -->
@@ -188,8 +185,26 @@ iFec.value=new Date().toISOString().split('T')[0]
 
 function entrar(){
 uA=u.value
+if(!uA || !p.value){
+alert("Ingresa correo y contraseña")
+return
+}
 loginBox.classList.add("hidden")
 appBox.classList.remove("hidden")
+}
+
+function registrar(){
+if(!u.value || !p.value){
+alert("Escribe correo y contraseña para registrarte")
+return
+}
+
+db.ref("usuarios/"+btoa(u.value)).set({
+correo:u.value,
+pass:p.value
+}).then(()=>{
+alert("Usuario registrado correctamente")
+})
 }
 
 function salir(){
@@ -219,10 +234,6 @@ iFec.value=new Date().toISOString().split('T')[0]
 alert("Venta guardada")
 })
 }
-
-/* =======================================
-   DESCARGAR EXCEL ORIGINAL SIN MODIFICAR
-   ======================================= */
 
 function descargarPlantilla(){
 const link=document.createElement("a")
