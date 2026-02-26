@@ -7,8 +7,6 @@
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
@@ -39,7 +37,11 @@ color:#ffc300;
 margin-bottom:20px;
 }
 
-label{font-size:11px;font-weight:600;color:#ffc300;}
+label{
+font-size:11px;
+font-weight:600;
+color:#ffc300;
+}
 
 input,select{
 width:100%;
@@ -82,14 +84,16 @@ text-align:center;
 
 <body onload="inicio()">
 
+<!-- LOGIN -->
 <div id="loginBox" class="login">
 <h2>Acceso Sistema</h2>
 <input id="u" placeholder="Correo">
 <input id="p" type="password" placeholder="Contraseña">
 <button onclick="entrar()">Entrar</button>
-<button class="btn-register" onclick="registrar()">Registrar nuevo usuario</button>
+<button class="btn-register" onclick="registrarUsuario()">Registrar nuevo usuario</button>
 </div>
 
+<!-- APP -->
 <div id="appBox" class="app hidden">
 
 <div class="header">
@@ -136,11 +140,10 @@ text-align:center;
 </div>
 
 <button class="btn-main">Guardar Venta</button>
-
 </form>
 
-<button class="btn-excel" onclick="descargarExcel()">
-<i class="fa-solid fa-file-excel"></i> Descargar Excel
+<button class="btn-excel" onclick="descargarPlantilla()">
+<i class="fa-solid fa-file-excel"></i> Descargar formato Excel
 </button>
 
 <button onclick="salir()">Cerrar sesión</button>
@@ -172,16 +175,17 @@ loginBox.classList.add("hidden")
 appBox.classList.remove("hidden")
 }
 
-function registrar(){
+function registrarUsuario(){
 if(!u.value || !p.value){
 alert("Escribe correo y contraseña")
 return
 }
+
 db.ref("usuarios/"+btoa(u.value)).set({
 correo:u.value,
-pass:p.value
+password:p.value
 }).then(()=>{
-alert("Usuario registrado")
+alert("Usuario registrado correctamente")
 })
 }
 
@@ -206,45 +210,24 @@ marca:iMarca.value,
 mod:iMod.value
 }
 
-// Guardar en Firebase
+// 🔥 Guardar en Firebase
 db.ref('ventas/'+btoa(uA)).push(v)
 
-// Guardar copia local
-let ventasLocal=JSON.parse(localStorage.getItem("ventasLocal"))||[]
+// 🔥 Guardar COMPLETO en almacenamiento local
+let ventasLocal = JSON.parse(localStorage.getItem("ventasLocal")) || []
 ventasLocal.push(v)
-localStorage.setItem("ventasLocal",JSON.stringify(ventasLocal))
+localStorage.setItem("ventasLocal", JSON.stringify(ventasLocal))
 
 fReg.reset()
 iFec.value=new Date().toISOString().split('T')[0]
 alert("Venta guardada correctamente")
 }
 
-function descargarExcel(){
-
-db.ref('ventas/'+btoa(uA)).once("value").then(snapshot=>{
-
-let datos=[]
-snapshot.forEach(child=>{
-datos.push(child.val())
-})
-
-if(datos.length===0){
-datos=JSON.parse(localStorage.getItem("ventasLocal"))||[]
-}
-
-if(datos.length===0){
-alert("No hay ventas registradas")
-return
-}
-
-const ws=XLSX.utils.json_to_sheet(datos)
-const wb=XLSX.utils.book_new()
-XLSX.utils.book_append_sheet(wb,ws,"Ventas")
-
-XLSX.writeFile(wb,"Ventas_Telcel.xlsx")
-
-})
-
+function descargarPlantilla(){
+const link=document.createElement("a")
+link.href="omarcitoo2026.xlsx"
+link.download="Formato_Registro_Telcel.xlsx"
+link.click()
 }
 
 </script>
