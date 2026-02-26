@@ -7,6 +7,8 @@
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
@@ -18,11 +20,7 @@ min-height:100vh;
 color:white;
 }
 
-.app{
-max-width:480px;
-margin:auto;
-padding:20px;
-}
+.app{max-width:480px;margin:auto;padding:20px;}
 
 .card{
 background:rgba(255,255,255,.08);
@@ -41,11 +39,7 @@ color:#ffc300;
 margin-bottom:20px;
 }
 
-label{
-font-size:11px;
-font-weight:600;
-color:#ffc300;
-}
+label{font-size:11px;font-weight:600;color:#ffc300;}
 
 input,select{
 width:100%;
@@ -68,20 +62,9 @@ cursor:pointer;
 margin-bottom:10px;
 }
 
-.btn-main{
-background:#ffc300;
-color:#003566;
-}
-
-.btn-excel{
-background:#1f7a3f;
-color:white;
-}
-
-.btn-register{
-background:#003566;
-color:#ffc300;
-}
+.btn-main{background:#ffc300;color:#003566;}
+.btn-excel{background:#1f7a3f;color:white;}
+.btn-register{background:#003566;color:#ffc300;}
 
 .login{
 max-width:350px;
@@ -99,7 +82,6 @@ text-align:center;
 
 <body onload="inicio()">
 
-<!-- LOGIN -->
 <div id="loginBox" class="login">
 <h2>Acceso Sistema</h2>
 <input id="u" placeholder="Correo">
@@ -108,7 +90,6 @@ text-align:center;
 <button class="btn-register" onclick="registrar()">Registrar nuevo usuario</button>
 </div>
 
-<!-- APP -->
 <div id="appBox" class="app hidden">
 
 <div class="header">
@@ -120,10 +101,8 @@ text-align:center;
 <div class="card">
 <label>NUM CELULAR</label>
 <input id="iTel" required>
-
 <label>ICCID</label>
 <input id="iIcc" required>
-
 <label>TIPO</label>
 <select id="iTipo" required>
 <option value="">Seleccionar</option>
@@ -160,8 +139,8 @@ text-align:center;
 
 </form>
 
-<button class="btn-excel" onclick="descargarPlantilla()">
-<i class="fa-solid fa-file-excel"></i> Descargar formato Excel
+<button class="btn-excel" onclick="descargarExcel()">
+<i class="fa-solid fa-file-excel"></i> Descargar Excel
 </button>
 
 <button onclick="salir()">Cerrar sesión</button>
@@ -195,15 +174,14 @@ appBox.classList.remove("hidden")
 
 function registrar(){
 if(!u.value || !p.value){
-alert("Escribe correo y contraseña para registrarte")
+alert("Escribe correo y contraseña")
 return
 }
-
 db.ref("usuarios/"+btoa(u.value)).set({
 correo:u.value,
 pass:p.value
 }).then(()=>{
-alert("Usuario registrado correctamente")
+alert("Usuario registrado")
 })
 }
 
@@ -228,18 +206,45 @@ marca:iMarca.value,
 mod:iMod.value
 }
 
-db.ref('ventas/'+btoa(uA)).push(v).then(()=>{
+// Guardar en Firebase
+db.ref('ventas/'+btoa(uA)).push(v)
+
+// Guardar copia local
+let ventasLocal=JSON.parse(localStorage.getItem("ventasLocal"))||[]
+ventasLocal.push(v)
+localStorage.setItem("ventasLocal",JSON.stringify(ventasLocal))
+
 fReg.reset()
 iFec.value=new Date().toISOString().split('T')[0]
-alert("Venta guardada")
-})
+alert("Venta guardada correctamente")
 }
 
-function descargarPlantilla(){
-const link=document.createElement("a")
-link.href="omarcitoo2026.xlsx"
-link.download="Formato_Registro_Telcel.xlsx"
-link.click()
+function descargarExcel(){
+
+db.ref('ventas/'+btoa(uA)).once("value").then(snapshot=>{
+
+let datos=[]
+snapshot.forEach(child=>{
+datos.push(child.val())
+})
+
+if(datos.length===0){
+datos=JSON.parse(localStorage.getItem("ventasLocal"))||[]
+}
+
+if(datos.length===0){
+alert("No hay ventas registradas")
+return
+}
+
+const ws=XLSX.utils.json_to_sheet(datos)
+const wb=XLSX.utils.book_new()
+XLSX.utils.book_append_sheet(wb,ws,"Ventas")
+
+XLSX.writeFile(wb,"Ventas_Telcel.xlsx")
+
+})
+
 }
 
 </script>
