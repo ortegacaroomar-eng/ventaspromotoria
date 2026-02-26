@@ -17,13 +17,14 @@
         input, select { width:100%; padding:12px; margin-top:4px; margin-bottom:12px; border-radius:10px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; }
         button { width:100%; padding:14px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; transition:.2s; margin-bottom: 10px; }
         .btn-main { background:#ffc300; color:#003566; }
-        .btn-excel { background:#1f7a3f; color:white; margin-top:10px; }
+        .btn-excel { background:#1f7a3f; color:white; }
         .login { max-width:350px; margin:80px auto; background:white; color:black; padding:30px; border-radius:18px; text-align:center; }
         .hidden { display:none; }
         
-        /* ESTILOS DE LA LISTA DETALLADA */
+        /* ESTILOS DE LA LISTA */
         .venta-item { background: rgba(255,255,255,0.07); padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 5px solid #ffc300; font-size: 11px; position: relative; }
-        .status-icon { position: absolute; top: 15px; right: 15px; font-size: 14px; }
+        .status-icon { position: absolute; top: 15px; right: 45px; font-size: 14px; }
+        .btn-del { position: absolute; top: 12px; right: 12px; color: #ff4d4d; cursor: pointer; font-size: 18px; padding: 5px; }
         .grid-datos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; }
         .dato b { color: #ffc300; display: block; font-size: 9px; text-transform: uppercase; }
     </style>
@@ -73,7 +74,7 @@
             <i class="fa-solid fa-file-excel"></i> DESCARGAR EXCEL (.xlsx)
         </button>
 
-        <div class="header" style="font-size: 16px; margin-top: 20px;">LISTA DE VENTAS LOCALES</div>
+        <div class="header" style="font-size: 16px; margin-top: 20px;">VENTAS REGISTRADAS</div>
         <div id="listaLocal"></div>
     </div>
 
@@ -120,12 +121,10 @@
             "MODELO": iMod.value
         };
 
-        // Guardar Local
         let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
         local.unshift(v);
         localStorage.setItem("ventas_save", JSON.stringify(local));
 
-        // Subir a Firebase (si hay red)
         if(navigator.onLine) {
             db.ref('ventas/' + btoa(uA)).push(v).then(() => {
                 marcarSincronizado(v.id);
@@ -135,7 +134,15 @@
         fReg.reset();
         iFec.value = new Date().toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
         cargarVentasLocales();
-        alert("¡Venta Guardada Localmente!");
+    }
+
+    function eliminarVenta(id) {
+        if(confirm("¿Seguro que quieres eliminar esta venta de la lista?")) {
+            let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
+            let nuevoLocal = local.filter(v => v.id !== id);
+            localStorage.setItem("ventas_save", JSON.stringify(nuevoLocal));
+            cargarVentasLocales();
+        }
     }
 
     function marcarSincronizado(id) {
@@ -160,16 +167,17 @@
         div.innerHTML = local.map(v => `
             <div class="venta-item">
                 <div class="status-icon">${v.sincronizado ? '☁️' : '⏳'}</div>
+                <div class="btn-del" onclick="eliminarVenta(${v.id})"><i class="fa-solid fa-trash-can"></i></div>
                 <div style="color:#ffc300; font-weight:bold; font-size:14px;">${v["NUM. CELULAR"]}</div>
-                <div style="opacity:0.8; margin-bottom:5px;">Fecha: ${v["FECHA DE ACTIVACION"]}</div>
+                <div style="opacity:0.8; margin-bottom:5px;">${v["FECHA DE ACTIVACION"]}</div>
                 
                 <div class="grid-datos">
                     <div class="dato"><b>ICCID</b>${v.ICCID}</div>
                     <div class="dato"><b>IMEI</b>${v.IMEI || '-'}</div>
                     <div class="dato"><b>TIPO</b>${v["Renuevate / Kit / Chip / Porta"]}</div>
-                    <div class="dato"><b>MARCA/MOD</b>${v.MARCA} ${v.MODELO}</div>
                     <div class="dato"><b>TIENDA</b>${v["SOLO NOMBRE DE TIENDA SIN CADENA"]}</div>
-                    <div class="dato"><b>DETERM.</b>${v["# TIENDA / Determinante"]}</div>
+                    <div class="dato"><b>MARCA</b>${v.MARCA || '-'}</div>
+                    <div class="dato"><b>MODELO</b>${v.MODELO || '-'}</div>
                 </div>
             </div>
         `).join("");
