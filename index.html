@@ -25,12 +25,12 @@
         .login { max-width:350px; margin:100px auto; background:white; color:black; padding:30px; border-radius:18px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5); }
         .hidden { display:none !important; }
         
-        /* Historial Detallado */
+        /* Historial Local */
         .venta-item { background:rgba(255,255,255,0.07); padding:15px; border-radius:12px; margin-bottom:15px; border-left:5px solid #ffc300; font-size:11px; position:relative; }
         .status-icon { position:absolute; top:15px; right:45px; font-size:14px; }
         .btn-del { position:absolute; top:12px; right:12px; color:#ff4d4d; cursor:pointer; font-size:18px; padding:5px; }
-        .grid-detalle { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; border-top:1px solid rgba(255,255,255,0.1); padding-top:8px; }
-        .dato-item b { color:#ffc300; display:block; font-size:9px; text-transform:uppercase; }
+        .dato-linea { margin-top: 5px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 5px; }
+        .dato-linea b { color: #ffc300; margin-right: 5px; }
 
         /* Chat */
         #chatBox { position:fixed; bottom:90px; right:20px; width:320px; height:420px; background:#0b141a; border-radius:18px; display:flex; flex-direction:column; overflow:hidden; z-index:1000; border:1px solid rgba(255,255,255,0.1); }
@@ -91,7 +91,7 @@
         </form>
 
         <button class="btn-excel" onclick="exportarExcel()"><i class="fa-solid fa-file-excel"></i> DESCARGAR EXCEL</button>
-        <div class="header" style="font-size:16px;margin-top:25px;">Historial Local Detallado</div>
+        <div class="header" style="font-size:16px;margin-top:25px;">Historial Local</div>
         <div id="listaLocal"></div>
     </div>
 
@@ -134,12 +134,12 @@
         }
 
         function registrarNuevo(){
-            uA = u.value.trim();
-            let pass = p.value.trim();
-            if(!uA || !pass) return alert("Escribe el usuario y contraseña que quieres registrar");
-            if(localStorage.getItem("user_" + uA)) return alert("Este usuario ya existe");
-            localStorage.setItem("user_" + uA, pass);
-            alert("Usuario registrado con éxito. Ahora puedes entrar.");
+            let userReg = u.value.trim();
+            let passReg = p.value.trim();
+            if(!userReg || !passReg) return alert("Escribe el usuario y contraseña que quieres registrar");
+            if(localStorage.getItem("user_" + userReg)) return alert("Este usuario ya existe");
+            localStorage.setItem("user_" + userReg, passReg);
+            alert("Usuario registrado con éxito.");
         }
 
         function mostrarApp(){ loginBox.classList.add("hidden"); appBox.classList.remove("hidden"); cargarVentasLocales(); }
@@ -153,8 +153,6 @@
         fReg.onsubmit = e => {
             e.preventDefault();
             const v = {
-                id: Date.now(),
-                sincronizado: false,
                 "NUM. CELULAR": iTel.value,
                 "IMEI": iIme.value || "-",
                 "ICCID": iIcc.value,
@@ -165,7 +163,9 @@
                 "NOMBRE COMPLETO PROMOTOR": iProm.value,
                 "FECHA DE ACTIVACION": iFec.value,
                 "MARCA": iMarca.value || "-",
-                "MODELO": iMod.value || "-"
+                "MODELO": iMod.value || "-",
+                id: Date.now(),
+                sincronizado: false
             };
             let ld = JSON.parse(localStorage.getItem("ventas_save") || "[]");
             ld.unshift(v);
@@ -182,16 +182,13 @@
             const div = document.getElementById("listaLocal");
             let ld = JSON.parse(localStorage.getItem("ventas_save") || "[]");
             div.innerHTML = ld.map(v => `
-            <div class="venta-item" style="border-left: 5px solid ${v.sincronizado ? '#1f7a3f' : '#ffc300'};">
+            <div class="venta-item">
                 <div class="status-icon">${v.sincronizado ? '☁️' : '⏳'}</div>
                 <div class="btn-del" onclick="eliminarVenta(${v.id})"><i class="fa-solid fa-trash-can"></i></div>
-                <div style="color:#ffc300; font-weight:bold; font-size:14px;">${v["NUM. CELULAR"]}</div>
-                <div class="grid-detalle">
-                    <div class="dato-item"><b>ICCID</b><span>${v["ICCID"]}</span></div>
-                    <div class="dato-item"><b>IMEI</b><span>${v["IMEI"]}</span></div>
-                    <div class="dato-item"><b>MARCA</b><span>${v["MARCA"]}</span></div>
-                    <div class="dato-item"><b>TIENDA</b><span>${v["SOLO NOMBRE DE TIENDA SIN CADENA"]}</span></div>
-                </div>
+                <div style="color:#ffc300; font-weight:bold;">${v["NUM. CELULAR"]}</div>
+                <div class="dato-linea"><b>ICCID:</b> ${v["ICCID"]}</div>
+                <div class="dato-linea"><b>TIPO:</b> ${v["Renuevate / Kit / Chip / Porta"]}</div>
+                <div class="dato-linea"><b>FECHA:</b> ${v["FECHA DE ACTIVACION"]}</div>
             </div>`).join("");
         }
 
@@ -208,22 +205,23 @@
         }
 
         function exportarExcel(){
-            let ld = JSON.parse(localStorage.getItem("ventas_save") || "[]").map(({id, sincronizado, ...resto}) => resto);
-            const ws = XLSX.utils.json_to_sheet(ld);
+            let ld = JSON.parse(localStorage.getItem("ventas_save") || "[]");
+            if(ld.length===0) return alert("No hay datos");
+            // Limpiar datos para que el Excel sea idéntico al original
+            const dataPura = ld.map(({id, sincronizado, ...resto}) => resto);
+            const ws = XLSX.utils.json_to_sheet(dataPura);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Ventas");
-            XLSX.writeFile(wb, "Reporte_Ventas.xlsx");
+            XLSX.writeFile(wb, "Reporte_Ventas_Limpio.xlsx");
         }
 
         function toggleChat(){ chatBox.classList.toggle("hidden"); chatMensajes.scrollTop = chatMensajes.scrollHeight; }
-        
         function enviarMensaje(){
             let t = chatInput.value.trim();
             if(!t || !uA) return;
             db.ref("chat_general").push({ usuario: uA, mensaje: t, hora: Date.now() });
             chatInput.value = "";
         }
-
         function escucharChat(){
             chatMensajes.innerHTML = "";
             db.ref("chat_general").limitToLast(40).on("child_added", snap => {
