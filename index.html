@@ -10,206 +10,221 @@
 
 <style>
 body{
-    font-family: Arial;
-    background:#f4f6f9;
-    padding:20px;
+font-family: Arial;
+background:#0f172a;
+color:white;
+padding:20px;
 }
 
-input, button{
-    padding:8px;
-    margin:5px 0;
-    width:100%;
+input,select,button{
+padding:8px;
+margin:5px 0;
+border-radius:5px;
+border:none;
 }
 
 button{
-    background:#0057ff;
-    color:white;
-    border:none;
-    cursor:pointer;
-}
-
-button:hover{
-    opacity:0.8;
+background:#0a84ff;
+color:white;
+cursor:pointer;
 }
 
 table{
-    margin-top:20px;
-    border-collapse: collapse;
-    width:100%;
-    background:white;
+width:100%;
+margin-top:20px;
+border-collapse:collapse;
 }
 
-th, td{
-    border:1px solid #ddd;
-    padding:8px;
-    text-align:center;
+th,td{
+border:1px solid #333;
+padding:8px;
+text-align:center;
 }
 
 th{
-    background:#0057ff;
-    color:white;
+background:#1e293b;
+}
+
+.deleteBtn{
+background:red;
 }
 </style>
 </head>
-
 <body>
 
-<h2>Registrar Venta</h2>
+<h2>Sistema Ventas Telcel Pro</h2>
 
-<input type="date" id="fecha">
-<input type="text" id="promotor" placeholder="Nombre del promotor">
+<input type="text" id="nombre" placeholder="Nombre Cliente">
+<input type="text" id="numero" placeholder="Número">
+<input type="text" id="plan" placeholder="Plan">
+<input type="text" id="equipo" placeholder="Equipo">
+<input type="text" id="pago" placeholder="Pago">
 <input type="text" id="ak" placeholder="AK">
-<input type="text" id="folio" placeholder="Folio">
-<input type="text" id="producto" placeholder="Producto">
-<input type="number" id="monto" placeholder="Monto">
 
 <button onclick="guardarVenta()">Guardar Venta</button>
 
-<h2>Ventas Registradas</h2>
+<h3>Ventas Registradas</h3>
 
-<table id="tablaVentas">
+<table>
 <thead>
 <tr>
-<th>Fecha</th>
-<th>Promotor</th>
+<th>Nombre</th>
+<th>Número</th>
+<th>Plan</th>
+<th>Equipo</th>
+<th>Pago</th>
 <th>AK</th>
-<th>Folio</th>
-<th>Producto</th>
-<th>Monto</th>
-<th>Acción</th>
+<th>Eliminar</th>
 </tr>
 </thead>
-<tbody>
-</tbody>
+<tbody id="tablaVentas"></tbody>
 </table>
+
+<!-- BOTÓN CHAT -->
+<button onclick="toggleChat()" style="
+position:fixed;
+bottom:20px;
+right:20px;
+background:#0a84ff;
+color:white;
+border:none;
+padding:12px;
+border-radius:50%;
+font-size:18px;
+">
+💬
+</button>
+
+<!-- CHAT -->
+<div id="chatBox" style="
+display:none;
+position:fixed;
+bottom:80px;
+right:20px;
+width:300px;
+height:400px;
+background:#1e293b;
+border-radius:10px;
+overflow:hidden;
+flex-direction:column;
+">
+
+<div style="background:#0a84ff;padding:10px;text-align:center;">
+Chat Promotores 🟢
+</div>
+
+<div id="mensajes" style="
+flex:1;
+overflow-y:auto;
+padding:10px;
+font-size:14px;
+"></div>
+
+<div style="display:flex;">
+<input type="text" id="mensajeInput" style="flex:1;border:none;padding:8px;">
+<button onclick="enviarMensaje()">Enviar</button>
+</div>
+
+</div>
 
 <script>
 
-// 🔥 CONFIGURA TU FIREBASE AQUÍ
+// 🔥 VENTAS LOCAL
+let ventas = JSON.parse(localStorage.getItem("ventas")) || [];
+
+function guardarVenta(){
+
+let venta = {
+nombre: document.getElementById("nombre").value,
+numero: document.getElementById("numero").value,
+plan: document.getElementById("plan").value,
+equipo: document.getElementById("equipo").value,
+pago: document.getElementById("pago").value,
+ak: document.getElementById("ak").value
+};
+
+ventas.push(venta);
+localStorage.setItem("ventas", JSON.stringify(ventas));
+mostrarVentas();
+limpiar();
+}
+
+function mostrarVentas(){
+let tabla = document.getElementById("tablaVentas");
+tabla.innerHTML = "";
+
+ventas.forEach((v,i)=>{
+tabla.innerHTML += `
+<tr>
+<td>${v.nombre}</td>
+<td>${v.numero}</td>
+<td>${v.plan}</td>
+<td>${v.equipo}</td>
+<td>${v.pago}</td>
+<td>${v.ak}</td>
+<td><button class="deleteBtn" onclick="eliminarVenta(${i})">X</button></td>
+</tr>
+`;
+});
+}
+
+function eliminarVenta(i){
+ventas.splice(i,1);
+localStorage.setItem("ventas", JSON.stringify(ventas));
+mostrarVentas();
+}
+
+function limpiar(){
+document.getElementById("nombre").value="";
+document.getElementById("numero").value="";
+document.getElementById("plan").value="";
+document.getElementById("equipo").value="";
+document.getElementById("pago").value="";
+document.getElementById("ak").value="";
+}
+
+mostrarVentas();
+
+
+// 🔥 FIREBASE CONFIG
 var firebaseConfig = {
-    apiKey: "TU_API_KEY",
-    authDomain: "TU_DOMINIO",
-    databaseURL: "TU_DATABASE_URL",
-    projectId: "TU_PROJECT_ID",
-    storageBucket: "TU_BUCKET",
-    messagingSenderId: "TU_SENDER_ID",
-    appId: "TU_APP_ID"
+apiKey: "TU_CONFIG_AQUI",
+authDomain: "TU_CONFIG_AQUI",
+databaseURL: "TU_CONFIG_AQUI",
+projectId: "TU_CONFIG_AQUI",
+storageBucket: "TU_CONFIG_AQUI",
+messagingSenderId: "TU_CONFIG_AQUI",
+appId: "TU_CONFIG_AQUI"
 };
 
 firebase.initializeApp(firebaseConfig);
 var database = firebase.database();
 
-// ===============================
-// GUARDADO LOCAL
-// ===============================
-
-function guardarVentaLocal(venta){
-    let ventas = JSON.parse(localStorage.getItem("ventasLocales")) || [];
-    ventas.push(venta);
-    localStorage.setItem("ventasLocales", JSON.stringify(ventas));
+// 🔥 CHAT
+function toggleChat(){
+let chat = document.getElementById("chatBox");
+chat.style.display = chat.style.display === "none" ? "flex" : "none";
 }
 
-function obtenerVentasLocales(){
-    return JSON.parse(localStorage.getItem("ventasLocales")) || [];
+function enviarMensaje(){
+let texto = document.getElementById("mensajeInput").value;
+if(texto==="") return;
+
+database.ref("chat").push({
+mensaje:texto,
+hora: Date.now()
+});
+
+document.getElementById("mensajeInput").value="";
 }
 
-// ===============================
-// MOSTRAR EN TABLA
-// ===============================
+database.ref("chat").on("child_added", function(snapshot){
+let data = snapshot.val();
+let mensajes = document.getElementById("mensajes");
 
-function mostrarVentaEnTabla(venta, index){
-
-    let tabla = document.querySelector("#tablaVentas tbody");
-
-    let fila = `
-        <tr>
-            <td>${venta.fecha}</td>
-            <td>${venta.promotor}</td>
-            <td>${venta.ak}</td>
-            <td>${venta.folio}</td>
-            <td>${venta.producto}</td>
-            <td>${venta.monto}</td>
-            <td>
-                <button onclick="eliminarVenta(${index})">Eliminar</button>
-            </td>
-        </tr>
-    `;
-
-    tabla.innerHTML += fila;
-}
-
-// ===============================
-// ELIMINAR VENTA LOCAL
-// ===============================
-
-function eliminarVenta(index){
-
-    let ventas = obtenerVentasLocales();
-
-    ventas.splice(index, 1);
-
-    localStorage.setItem("ventasLocales", JSON.stringify(ventas));
-
-    recargarTabla();
-}
-
-// ===============================
-// RECARGAR TABLA
-// ===============================
-
-function recargarTabla(){
-
-    document.querySelector("#tablaVentas tbody").innerHTML = "";
-
-    let ventas = obtenerVentasLocales();
-
-    ventas.forEach((venta, index)=>{
-        mostrarVentaEnTabla(venta, index);
-    });
-}
-
-// ===============================
-// GUARDAR VENTA
-// ===============================
-
-function guardarVenta(){
-
-    let datosVenta = {
-        fecha: document.getElementById("fecha").value,
-        promotor: document.getElementById("promotor").value,
-        ak: document.getElementById("ak").value,
-        folio: document.getElementById("folio").value,
-        producto: document.getElementById("producto").value,
-        monto: document.getElementById("monto").value
-    };
-
-    if(!datosVenta.promotor || !datosVenta.ak){
-        alert("Completa los datos obligatorios");
-        return;
-    }
-
-    // 🔥 Guarda en Firebase
-    database.ref("ventas").push(datosVenta);
-
-    // 🔥 Guarda local
-    guardarVentaLocal(datosVenta);
-
-    // 🔥 Recargar tabla
-    recargarTabla();
-
-    // Limpiar campos
-    document.querySelectorAll("input").forEach(input => input.value = "");
-
-    alert("Venta guardada correctamente");
-}
-
-// ===============================
-// CARGAR VENTAS AL ABRIR
-// ===============================
-
-window.onload = function(){
-    recargarTabla();
-};
+mensajes.innerHTML += `<div>${data.mensaje}</div>`;
+mensajes.scrollTop = mensajes.scrollHeight;
+});
 
 </script>
 
