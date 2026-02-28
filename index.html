@@ -105,7 +105,7 @@ firebase.initializeApp(firebaseConfig);
 var database = firebase.database();
 
 // ===============================
-// GUARDAR VENTAS (Firebase + Local)
+// GUARDAR VENTA (Firebase + Local)
 // ===============================
 
 function guardarVenta(){
@@ -129,7 +129,7 @@ function guardarVenta(){
     // 🔥 Guardar en Firebase
     database.ref("ventas").push(venta);
 
-    // 🔥 Guardar en LocalStorage
+    // 🔥 Guardar en LocalStorage (respaldo)
     var ventasLocales = JSON.parse(localStorage.getItem("ventas")) || [];
     ventasLocales.push(venta);
     localStorage.setItem("ventas", JSON.stringify(ventasLocales));
@@ -140,7 +140,10 @@ function guardarVenta(){
     document.getElementById("monto").value="";
 }
 
-// Mostrar ventas locales
+// ===============================
+// MOSTRAR VENTAS LOCALES
+// ===============================
+
 function mostrarVentas(){
     var lista = document.getElementById("listaVentas");
     lista.innerHTML="";
