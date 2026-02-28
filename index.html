@@ -17,10 +17,10 @@
         .header { text-align:center; font-size:18px; font-weight:bold; color:#ffc300; margin-bottom:20px; text-transform: uppercase; }
         label { font-size:10px; font-weight:600; color:#ffc300; display: block; margin-bottom: 4px; text-transform: uppercase; }
         
-        /* Estilo para los inputs de la App (Fondo oscuro, texto blanco) */
+        /* Inputs Generales */
         input, select { width:100%; padding:12px; margin-bottom:12px; border-radius:10px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing:border-box; outline: none; font-size: 14px; }
         
-        /* CORRECCIÓN: Estilo específico para los inputs del LOGIN (Texto negro) */
+        /* Login visible (Texto Negro) */
         .login input { background: #f0f0f0 !important; color: #000 !important; border: 1px solid #ccc !important; }
         
         button { width:100%; padding:14px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; transition:.2s; }
@@ -35,16 +35,19 @@
         .venta-item { background:rgba(255,255,255,0.07); padding:15px; border-radius:12px; margin-bottom:15px; border-left:5px solid #ffc300; font-size:11px; position:relative; }
         .status-icon { position:absolute; top:15px; right:45px; font-size:14px; }
         .btn-del { position:absolute; top:12px; right:12px; color:#ff4d4d; cursor:pointer; font-size:18px; padding:5px; }
+        
         .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; }
         .info-grid div b { color: #ffc300; display: block; font-size: 8px; text-transform: uppercase; }
         .info-grid div span { color: #fff; font-size: 11px; }
 
+        /* Estilos Chat Corregidos */
         #chatBox { position:fixed; bottom:90px; right:20px; width:320px; height:400px; background:#0b141a; border-radius:18px; display:flex; flex-direction:column; overflow:hidden; z-index:1000; border:1px solid rgba(255,255,255,0.1); }
         #chatMensajes { flex:1; overflow-y:auto; padding:15px; display:flex; flex-direction:column; gap:10px; }
-        .msg-bubble { max-width: 80%; padding: 8px 12px; border-radius: 12px; font-size: 13px; }
-        .msg-name { display: block; font-size: 10px; font-weight: bold; color: #ffc300; margin-bottom: 2px; }
-        .msg-mio { align-self: flex-end; background: #ffc300; color: #003566; }
-        .msg-otro { align-self: flex-start; background: #202c33; color: white; }
+        .msg-bubble { max-width: 80%; padding: 8px 12px; border-radius: 12px; font-size: 13px; margin-bottom: 2px; }
+        .msg-name { display: block; font-size: 10px; font-weight: bold; color: #ffc300; margin-bottom: 2px; text-transform: uppercase; }
+        .msg-mio { align-self: flex-end; background: #056162; color: white; border-bottom-right-radius: 2px; }
+        .msg-mio .msg-name { color: #00e676; text-align: right; }
+        .msg-otro { align-self: flex-start; background: #202c33; color: white; border-bottom-left-radius: 2px; }
     </style>
 </head>
 
@@ -52,7 +55,7 @@
 
     <div id="loginBox" class="login">
         <h2 style="margin-bottom:20px; color:#003566;">Acceso Teledata</h2>
-        <input id="u" placeholder="Usuario">
+        <input id="u" placeholder="Usuario Promotor">
         <input id="p" type="password" placeholder="Contraseña">
         <button class="btn-main" onclick="entrar()">ENTRAR</button>
         <button class="btn-reg" onclick="registrarNuevo()">REGISTRAR USUARIO NUEVO</button>
@@ -102,10 +105,10 @@
     </button>
 
     <div id="chatBox" class="hidden">
-        <div style="background:#ffc300;color:#003566;padding:12px;font-weight:bold;text-align:center;">Chat de Ventas</div>
+        <div style="background:#ffc300;color:#003566;padding:12px;font-weight:bold;text-align:center;">Chat Grupal</div>
         <div id="chatMensajes"></div>
         <div style="display:flex;background:#1e2a30;padding:8px;gap:5px;">
-            <input id="chatInput" placeholder="Escribe..." style="flex:1;margin:0;padding:10px; color:white;">
+            <input id="chatInput" placeholder="Mensaje..." style="flex:1;margin:0;padding:10px; color:white; background:rgba(255,255,255,0.1);">
             <button onclick="enviarMensaje()" style="width:auto;margin:0;background:#ffc300;padding:0 15px;"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
@@ -135,8 +138,8 @@
         function registrarNuevo(){
             if(u.value && p.value){
                 localStorage.setItem("user_" + u.value.trim(), p.value.trim());
-                alert("¡Usuario registrado! Ya puedes entrar.");
-            } else { alert("Escribe un usuario y contraseña"); }
+                alert("Promotor registrado. Ya puedes entrar.");
+            } else { alert("Ingresa usuario y contraseña"); }
         }
 
         function mostrarApp(){ loginBox.classList.add("hidden"); appBox.classList.remove("hidden"); cargarVentasLocales(); }
@@ -185,7 +188,7 @@
         }
 
         function eliminarVenta(id){
-            if(!confirm("¿Borrar este registro?")) return;
+            if(!confirm("¿Borrar registro?")) return;
             let ld = JSON.parse(localStorage.getItem("ventas_save") || "[]").filter(x => x.id !== id);
             localStorage.setItem("ventas_save", JSON.stringify(ld));
             cargarVentasLocales();
@@ -203,22 +206,27 @@
             XLSX.writeFile(wb, "comisiones_2026.xlsx");
         }
 
+        // --- LÓGICA DE CHAT CORREGIDA ---
         function toggleChat(){ chatBox.classList.toggle("hidden"); chatMensajes.scrollTop = chatMensajes.scrollHeight; }
+        
         function enviarMensaje(){
             let t = chatInput.value.trim();
             if(!t || !uA) return;
             db.ref("chat_general").push({ usuario: uA, mensaje: t, hora: Date.now() });
             chatInput.value = "";
         }
+
         function escucharChat(){
-            chatMensajes.innerHTML = "";
-            db.ref("chat_general").limitToLast(40).on("child_added", snap => {
-                let d = snap.val();
-                let esMio = d.usuario === uA;
-                let div = document.createElement("div");
-                div.className = `msg-bubble ${esMio ? 'msg-mio' : 'msg-otro'}`;
-                div.innerHTML = `<span class="msg-name">${esMio ? 'Tú ('+d.usuario+')' : d.usuario}</span>${d.mensaje}`;
-                chatMensajes.appendChild(div);
+            db.ref("chat_general").limitToLast(40).on("value", snap => {
+                chatMensajes.innerHTML = "";
+                snap.forEach(child => {
+                    let d = child.val();
+                    let esMio = d.usuario === uA;
+                    let div = document.createElement("div");
+                    div.className = `msg-bubble ${esMio ? 'msg-mio' : 'msg-otro'}`;
+                    div.innerHTML = `<span class="msg-name">${d.usuario}</span>${d.mensaje}`;
+                    chatMensajes.appendChild(div);
+                });
                 chatMensajes.scrollTop = chatMensajes.scrollHeight;
             });
         }
