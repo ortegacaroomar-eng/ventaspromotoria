@@ -29,6 +29,13 @@ button { width:100%; padding:14px; border:none; border-radius:12px; font-weight:
 .btn-del { position:absolute; top:12px; right:12px; color:#ff4d4d; cursor:pointer; font-size:18px; padding:5px; }
 .grid-datos { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; border-top:1px solid rgba(255,255,255,0.1); padding-top:8px; }
 .dato b { color:#ffc300; display:block; font-size:9px; text-transform:uppercase; }
+
+/* Estilos específicos para burbujas de chat */
+.msg-container { display: flex; flex-direction: column; gap: 8px; }
+.msg-bubble { padding: 8px 12px; border-radius: 12px; font-size: 13px; max-width: 85%; word-wrap: break-word; position: relative; }
+.msg-mio { align-self: flex-end; background: #ffc300; color: #003566; border-bottom-right-radius: 2px; }
+.msg-otro { align-self: flex-start; background: #262d31; color: white; border-bottom-left-radius: 2px; border: 1px solid rgba(255,255,255,0.1); }
+.msg-user { font-size: 10px; font-weight: bold; margin-bottom: 2px; display: block; }
 </style>
 </head>
 
@@ -55,7 +62,7 @@ button { width:100%; padding:14px; border:none; border-radius:12px; font-weight:
             <option value="PORTA">PORTA</option>
             <option value="RENUEVATE">RENUEVATE</option>
         </select>
-        <label>FECHA DE ACTIVACION</label>
+        <label>FECHA DE ACTIVACION (DD/MM/YYYY)</label>
         <input id="iFec" required>
         <label>NUM. CELULAR</label>
         <input id="iTel" type="tel" required maxlength="10">
@@ -84,37 +91,50 @@ button { width:100%; padding:14px; border:none; border-radius:12px; font-weight:
     <i class="fa-solid fa-comments"></i>
 </button>
 
-<div id="chatBox" class="hidden" style="position:fixed;bottom:90px;right:20px;width:320px;height:420px;background:#0b141a;border-radius:18px;display:flex;flex-direction:column;overflow:hidden;z-index:1000;border:1px solid rgba(255,255,255,0.1);box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-    <div style="background:#ffc300;color:#003566;padding:12px;font-weight:bold;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.2);">Chat Promotores</div>
-    <div id="chatMensajes" style="flex:1;overflow-y:auto;padding:15px;display:flex;flex-direction:column;gap:10px;"></div>
-    <div style="display:flex;background:#1e2a30;padding:8px;">
-        <input id="chatInput" placeholder="Escribe aquí..." style="flex:1;padding:10px;border:none;background:#2a3942;color:white;outline:none;border-radius:8px;margin-right:5px;">
-        <button onclick="enviarMensaje()" style="background:#ffc300;color:#003566;border:none;padding:10px 15px;font-weight:bold;border-radius:8px;width:auto;">Enviar</button>
+<div id="chatBox" class="hidden" style="position:fixed;bottom:90px;right:20px;width:320px;height:420px;background:#0d1117;border-radius:18px;display:flex;flex-direction:column;overflow:hidden;z-index:1000;border:1px solid rgba(255,255,255,0.15);box-shadow: 0 15px 35px rgba(0,0,0,0.6);">
+    <div style="background:#ffc300;color:#003566;padding:12px;font-weight:bold;text-align:center;">Chat Promotores</div>
+    <div id="chatMensajes" class="msg-container" style="flex:1;overflow-y:auto;padding:15px;background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2));">
+        </div>
+    <div style="display:flex;background:#161b22;padding:10px;gap:8px;border-top: 1px solid rgba(255,255,255,0.05);">
+        <input id="chatInput" placeholder="Escribe un mensaje..." style="flex:1;padding:10px;border:none;background:#0d1117;color:white;outline:none;border-radius:10px;margin:0;">
+        <button onclick="enviarMensaje()" style="background:#ffc300;color:#003566;border:none;padding:10px 15px;font-weight:bold;border-radius:10px;width:auto;margin:0;">
+            <i class="fa-solid fa-paper-plane"></i>
+        </button>
     </div>
 </div>
 
 <script>
+// Configuración Firebase
 const firebaseConfig = { apiKey:"AIzaSy", databaseURL:"https://ventastelcel4029-default-rtdb.firebaseio.com" };
 let uA="", db, modoReg=false;
 
 function inicio(){
     if(!firebase.apps.length){ firebase.initializeApp(firebaseConfig); }
-    db=firebase.database();
-    // Formato de fecha DD/MM/YYYY
+    db = firebase.database();
+    
+    // Fecha en formato DD/MM/YYYY
     let hoy = new Date();
     iFec.value = `${String(hoy.getDate()).padStart(2,'0')}/${String(hoy.getMonth()+1).padStart(2,'0')}/${hoy.getFullYear()}`;
     
-    const sesion=localStorage.getItem("sesion_activa");
-    if(sesion){ uA=sesion; mostrarApp(); escucharChat(); }
+    const sesion = localStorage.getItem("sesion_activa");
+    if(sesion){ 
+        uA = sesion; 
+        mostrarApp(); 
+        escucharChat(); 
+    }
 }
 
 function entrar(){
-    uA=u.value.trim();
-    let pass=p.value.trim();
-    if(!uA||!pass) return alert("Faltan datos");
-    if(modoReg){ localStorage.setItem("user_"+uA,pass); alert("Registrado correctamente"); }
-    else if(localStorage.getItem("user_"+uA)!==pass) return alert("Error de acceso");
-    localStorage.setItem("sesion_activa",uA);
+    uA = u.value.trim();
+    let pass = p.value.trim();
+    if(!uA || !pass) return alert("Ingresa datos");
+    if(modoReg){ 
+        localStorage.setItem("user_"+uA, pass); 
+        alert("Usuario registrado"); 
+    } else {
+        if(localStorage.getItem("user_"+uA) !== pass) return alert("Contraseña incorrecta");
+    }
+    localStorage.setItem("sesion_activa", uA);
     mostrarApp();
     escucharChat();
 }
@@ -125,58 +145,93 @@ function mostrarApp(){
     cargarVentasLocales();
 }
 
-function toggleChat(){ chatBox.classList.toggle("hidden"); chatMensajes.scrollTop = chatMensajes.scrollHeight; }
+function toggleChat(){ 
+    chatBox.classList.toggle("hidden"); 
+    setTimeout(() => { chatMensajes.scrollTop = chatMensajes.scrollHeight; }, 100);
+}
 
+// Lógica de Envío de Mensajes
 function enviarMensaje(){
     let txt = chatInput.value.trim();
     if(!txt || !uA) return;
-    db.ref("chat_general").push({ usuario: uA, mensaje: txt, hora: Date.now() });
-    chatInput.value="";
+    
+    db.ref("chat_general").push({
+        usuario: uA,
+        mensaje: txt,
+        fecha: Date.now()
+    }).then(() => {
+        chatInput.value = "";
+    }).catch(err => alert("Error al enviar: " + err.message));
 }
 
+// Lógica de Recepción de Mensajes (Escucha activa)
 function escucharChat(){
-    db.ref("chat_general").limitToLast(30).on("child_added", snap => {
+    // Limpiamos por si acaso
+    chatMensajes.innerHTML = "";
+    
+    db.ref("chat_general").limitToLast(40).on("child_added", snap => {
         let data = snap.val();
         let esMio = (data.usuario === uA);
+        
         let div = document.createElement("div");
-        div.style.alignSelf = esMio ? "flex-end" : "flex-start";
-        div.style.maxWidth = "80%";
+        div.className = `msg-bubble ${esMio ? 'msg-mio' : 'msg-otro'}`;
+        
         div.innerHTML = `
-            <div style="font-size:10px; color:#ffc300; margin-bottom:2px; text-align:${esMio?'right':'left'}">${esMio?'Tú':data.usuario}</div>
-            <div style="background:${esMio?'#ffc300':'#202c33'}; color:${esMio?'#003566':'white'}; padding:8px 12px; border-radius:12px; font-size:13px; word-wrap:break-word; box-shadow:0 1px 2px rgba(0,0,0,0.2);">
-                ${data.mensaje}
-            </div>
+            <span class="msg-user" style="color:${esMio ? '#003566' : '#ffc300'}">${esMio ? 'Tú' : data.usuario}</span>
+            ${data.mensaje}
         `;
+        
         chatMensajes.appendChild(div);
         chatMensajes.scrollTop = chatMensajes.scrollHeight;
     });
 }
 
-// Funciones de sistema (Ventas y Excel)
+// Gestión de Ventas y Formatos
 function ajustarCampos(){
-    if(iTipo.value==="CHIP"||iTipo.value==="PORTA") seccionEquipo.classList.add("hidden");
+    if(iTipo.value==="CHIP" || iTipo.value==="PORTA") seccionEquipo.classList.add("hidden");
     else seccionEquipo.classList.remove("hidden");
 }
 
-fReg.onsubmit=e=>{
+fReg.onsubmit = e => {
     e.preventDefault();
-    const v={ id:Date.now(), sincronizado:false, "NUM. CELULAR":iTel.value, "IMEI":iIme.value||"-", "ICCID":iIcc.value, "Renuevate / Kit / Chip / Porta":iTipo.value, "# TIENDA / Determinante":iTiendaNum.value, "SOLO NOMBRE DE LA CADENA":iCadena.value, "SOLO NOMBRE DE TIENDA SIN CADENA":iTiendaNombre.value, "NOMBRE COMPLETO PROMOTOR":iProm.value, "FECHA DE ACTIVACION":iFec.value, "MARCA":iMarca.value||"-", "MODELO":iMod.value||"-" };
-    let localData = JSON.parse(localStorage.getItem("ventas_save")||"[]");
+    const v = { 
+        id: Date.now(), 
+        sincronizado: false, 
+        "NUM. CELULAR": iTel.value, 
+        "IMEI": iIme.value || "-", 
+        "ICCID": iIcc.value, 
+        "Renuevate / Kit / Chip / Porta": iTipo.value, 
+        "# TIENDA / Determinante": iTiendaNum.value, 
+        "SOLO NOMBRE DE LA CADENA": iCadena.value, 
+        "SOLO NOMBRE DE TIENDA SIN CADENA": iTiendaNombre.value, 
+        "NOMBRE COMPLETO PROMOTOR": iProm.value, 
+        "FECHA DE ACTIVACION": iFec.value, 
+        "MARCA": iMarca.value || "-", 
+        "MODELO": iMod.value || "-" 
+    };
+    
+    let localData = JSON.parse(localStorage.getItem("ventas_save") || "[]");
     localData.unshift(v);
-    localStorage.setItem("ventas_save",JSON.stringify(localData));
-    if(navigator.onLine && uA) db.ref('ventas/'+btoa(uA)).push(v).then(()=>marcarSincronizado(v.id));
+    localStorage.setItem("ventas_save", JSON.stringify(localData));
+    
+    if(navigator.onLine && uA) {
+        db.ref('ventas/' + btoa(uA)).push(v).then(() => marcarSincronizado(v.id));
+    }
+    
     fReg.reset();
     let hoy = new Date();
     iFec.value = `${String(hoy.getDate()).padStart(2,'0')}/${String(hoy.getMonth()+1).padStart(2,'0')}/${hoy.getFullYear()}`;
     cargarVentasLocales();
+    alert("Venta Guardada Localmente");
 };
 
 function cargarVentasLocales(){
-    const div=document.getElementById("listaLocal");
-    let localData=JSON.parse(localStorage.getItem("ventas_save")||"[]");
-    div.innerHTML=localData.length===0 ? "<p style='text-align:center;opacity:.5;'>No hay registros.</p>" : localData.map(v=>`
+    const div = document.getElementById("listaLocal");
+    let localData = JSON.parse(localStorage.getItem("ventas_save") || "[]");
+    div.innerHTML = localData.length === 0 ? "<p style='text-align:center;opacity:.5;'>No hay registros.</p>" : 
+    localData.map(v => `
     <div class="venta-item">
-        <div class="status-icon">${v.sincronizado?'☁️':'⏳'}</div>
+        <div class="status-icon">${v.sincronizado ? '☁️' : '⏳'}</div>
         <div style="color:#ffc300;font-weight:bold;">${v["NUM. CELULAR"]}</div>
         <div style="font-size:10px;">${v["Renuevate / Kit / Chip / Porta"]} - ${v["FECHA DE ACTIVACION"]}</div>
     </div>`).join("");
@@ -184,8 +239,20 @@ function cargarVentasLocales(){
 
 function salir(){ localStorage.removeItem("sesion_activa"); location.reload(); }
 function toggleRegistro(){ modoReg=!modoReg; tituloAuth.innerText=modoReg?"Crear Usuario":"Acceso Sistema"; btnT.innerText=modoReg?"Ya tengo cuenta":"¿No tienes cuenta? Regístrate"; }
-function marcarSincronizado(id){ let localData = JSON.parse(localStorage.getItem("ventas_save")||"[]"); let item = localData.find(x=>x.id===id); if(item){ item.sincronizado=true; localStorage.setItem("ventas_save",JSON.stringify(localData)); cargarVentasLocales(); } }
-function exportarExcel(){ let localData=JSON.parse(localStorage.getItem("ventas_save")||"[]"); if(localData.length===0) return alert("Sin datos"); const paraExcel=localData.map(({id,sincronizado,...resto})=>resto); const ws=XLSX.utils.json_to_sheet(paraExcel); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Registro"); XLSX.writeFile(wb,"comisiones_2026_teledata.xlsx"); }
+function marcarSincronizado(id){ 
+    let localData = JSON.parse(localStorage.getItem("ventas_save") || "[]"); 
+    let item = localData.find(x => x.id === id); 
+    if(item){ item.sincronizado = true; localStorage.setItem("ventas_save", JSON.stringify(localData)); cargarVentasLocales(); } 
+}
+function exportarExcel(){ 
+    let localData = JSON.parse(localStorage.getItem("ventas_save") || "[]"); 
+    if(localData.length === 0) return alert("Sin datos"); 
+    const paraExcel = localData.map(({id, sincronizado, ...resto}) => resto); 
+    const ws = XLSX.utils.json_to_sheet(paraExcel); 
+    const wb = XLSX.utils.book_new(); 
+    XLSX.utils.book_append_sheet(wb, ws, "Registro"); 
+    XLSX.writeFile(wb, "comisiones_2026_teledata.xlsx"); 
+}
 </script>
 </body>
 </html>
