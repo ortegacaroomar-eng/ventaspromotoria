@@ -31,11 +31,13 @@
         .grid-detalle { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; border-top:1px solid rgba(255,255,255,0.1); padding-top:8px; }
         .dato-item b { color:#ffc300; display:block; font-size:9px; text-transform:uppercase; }
 
-        /* Chat */
+        /* Chat con nombres visibles */
         #chatBox { position:fixed; bottom:90px; right:20px; width:320px; height:420px; background:#0b141a; border-radius:18px; display:flex; flex-direction:column; overflow:hidden; z-index:1000; border:1px solid rgba(255,255,255,0.1); }
         #chatMensajes { flex:1; overflow-y:auto; padding:15px; display:flex; flex-direction:column; gap:10px; }
-        .msg-bubble { max-width: 80%; padding: 8px 12px; border-radius: 12px; font-size: 13px; word-wrap: break-word; }
+        .msg-bubble { max-width: 80%; padding: 8px 12px; border-radius: 12px; font-size: 13px; word-wrap: break-word; position: relative; }
+        .msg-name { display: block; font-size: 10px; font-weight: bold; margin-bottom: 3px; color: #ffc300; }
         .msg-mio { align-self: flex-end; background: #ffc300; color: #003566; border-bottom-right-radius: 2px; }
+        .msg-mio .msg-name { color: #003566; text-align: right; }
         .msg-otro { align-self: flex-start; background: #202c33; color: white; border-bottom-left-radius: 2px; }
     </style>
 </head>
@@ -47,7 +49,7 @@
         <input id="u" placeholder="Usuario">
         <input id="p" type="password" placeholder="Contraseña">
         <button class="btn-main" onclick="entrar()">ENTRAR / REGISTRAR</button>
-        <p style="font-size:10px; color:gray;">Si es tu primera vez, ingresa tus datos y presiona el botón.</p>
+        <p style="font-size:10px; color:gray;">Ingresa tu usuario para identificarte en el chat.</p>
     </div>
 
     <div id="appBox" class="app hidden">
@@ -87,7 +89,7 @@
             <button type="submit" class="btn-main">GUARDAR VENTA</button>
         </form>
 
-        <button class="btn-excel" onclick="exportarExcel()"><i class="fa-solid fa-file-excel"></i> EXCEL</button>
+        <button class="btn-excel" onclick="exportarExcel()"><i class="fa-solid fa-file-excel"></i> DESCARGAR EXCEL</button>
         <div class="header" style="font-size:16px;margin-top:25px;">Historial Local Detallado</div>
         <div id="listaLocal"></div>
     </div>
@@ -97,10 +99,10 @@
     </button>
 
     <div id="chatBox" class="hidden">
-        <div style="background:#ffc300;color:#003566;padding:12px;font-weight:bold;text-align:center;">Chat</div>
+        <div style="background:#ffc300;color:#003566;padding:12px;font-weight:bold;text-align:center;">Chat de Promotores</div>
         <div id="chatMensajes"></div>
         <div style="display:flex;background:#1e2a30;padding:8px;gap:5px;">
-            <input id="chatInput" placeholder="Escribe..." style="flex:1;margin:0;">
+            <input id="chatInput" placeholder="Escribe un mensaje..." style="flex:1;margin:0;">
             <button onclick="enviarMensaje()" style="width:auto;margin:0;background:#ffc300;padding:0 15px;"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
@@ -112,9 +114,11 @@
         function inicio(){
             if(!firebase.apps.length){ firebase.initializeApp(firebaseConfig); }
             db = firebase.database();
-            // Formato DD/MM/YYYY
+            
+            // Fecha DD/MM/YYYY
             let hoy = new Date();
             iFec.value = `${String(hoy.getDate()).padStart(2,'0')}/${String(hoy.getMonth()+1).padStart(2,'0')}/${hoy.getFullYear()}`;
+            
             const sesion = localStorage.getItem("sesion_activa");
             if(sesion){ uA = sesion; mostrarApp(); escucharChat(); }
         }
@@ -124,9 +128,9 @@
             let pass = p.value.trim();
             if(!uA || !pass) return alert("Ingresa usuario y contraseña");
             
-            let regPass = localStorage.getItem("user_" + uA);
+            let regPass = localStorage.getItem("user_" + uA); // Local Storage
             if(!regPass) {
-                if(confirm("El usuario no existe. ¿Deseas registrarlo con esta contraseña?")) {
+                if(confirm("¿Registrar nuevo usuario: " + uA + "?")) {
                     localStorage.setItem("user_" + uA, pass);
                 } else { return; }
             } else if(regPass !== pass) {
@@ -166,9 +170,9 @@
             let ld = JSON.parse(localStorage.getItem("ventas_save") || "[]");
             ld.unshift(v);
             localStorage.setItem("ventas_save", JSON.stringify(ld));
+            
             if(navigator.onLine) {
                 db.ref('ventas').push(v).then(() => {
-                    v.sincronizado = true;
                     marcarSincronizado(v.id);
                 });
             }
@@ -194,16 +198,16 @@
             </div>`).join("");
         }
 
-        function eliminarVenta(id){
-            let ld = JSON.parse(localStorage.getItem("ventas_save") || "[]").filter(x => x.id !== id);
-            localStorage.setItem("ventas_save", JSON.stringify(ld));
-            cargarVentasLocales();
-        }
-
         function marcarSincronizado(id){
             let ld = JSON.parse(localStorage.getItem("ventas_save") || "[]");
             let itm = ld.find(x => x.id === id);
             if(itm) { itm.sincronizado = true; localStorage.setItem("ventas_save", JSON.stringify(ld)); cargarVentasLocales(); }
+        }
+
+        function eliminarVenta(id){
+            let ld = JSON.parse(localStorage.getItem("ventas_save") || "[]").filter(x => x.id !== id);
+            localStorage.setItem("ventas_save", JSON.stringify(ld));
+            cargarVentasLocales();
         }
 
         function exportarExcel(){
@@ -211,24 +215,38 @@
             const ws = XLSX.utils.json_to_sheet(ld);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Ventas");
-            XLSX.writeFile(wb, "Ventas_28_02_2026.xlsx");
+            XLSX.writeFile(wb, "Reporte_Ventas.xlsx");
         }
 
-        function toggleChat(){ chatBox.classList.toggle("hidden"); }
+        // --- LÓGICA DEL CHAT CON NOMBRES ---
+        function toggleChat(){ chatBox.classList.toggle("hidden"); chatMensajes.scrollTop = chatMensajes.scrollHeight; }
+        
         function enviarMensaje(){
             let t = chatInput.value.trim();
-            if(!t) return;
-            db.ref("chat_general").push({ usuario: uA, mensaje: t, hora: Date.now() });
+            if(!t || !uA) return;
+            // Guardamos el usuario junto al mensaje
+            db.ref("chat_general").push({ 
+                usuario: uA, 
+                mensaje: t, 
+                hora: firebase.database.ServerValue.TIMESTAMP 
+            });
             chatInput.value = "";
         }
+
         function escucharChat(){
             chatMensajes.innerHTML = "";
-            db.ref("chat_general").limitToLast(30).on("child_added", snap => {
+            db.ref("chat_general").limitToLast(40).on("child_added", snap => {
                 let d = snap.val();
                 let esMio = d.usuario === uA;
                 let div = document.createElement("div");
                 div.className = `msg-bubble ${esMio ? 'msg-mio' : 'msg-otro'}`;
-                div.innerHTML = `<small style="display:block; font-size:9px;">${esMio ? 'Tú' : d.usuario}</small>${d.mensaje}`;
+                
+                // Mostramos el nombre de usuario registrado
+                div.innerHTML = `
+                    <span class="msg-name">${esMio ? 'Tú (' + d.usuario + ')' : d.usuario}</span>
+                    ${d.mensaje}
+                `;
+                
                 chatMensajes.appendChild(div);
                 chatMensajes.scrollTop = chatMensajes.scrollHeight;
             });
