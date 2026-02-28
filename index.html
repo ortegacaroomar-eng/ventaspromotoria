@@ -7,183 +7,193 @@
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
-body { margin:0; font-family:'Segoe UI',system-ui; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; }
-.app { max-width:480px; margin:auto; padding:20px; position: relative; }
-.card { background:rgba(255,255,255,.08); backdrop-filter:blur(12px); border-radius:18px; padding:18px; margin-bottom:16px; box-shadow:0 10px 25px rgba(0,0,0,.3); border:1px solid rgba(255,255,255,0.1); }
-.header { text-align:center; font-size:20px; font-weight:bold; color:#ffc300; margin-bottom:20px; }
-label { font-size:11px; font-weight:600; color:#ffc300; }
-input, select { width:100%; padding:12px; margin-top:4px; margin-bottom:12px; border-radius:10px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing:border-box; }
-button { width:100%; padding:14px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; transition:.2s; margin-bottom:10px; }
-.btn-main { background:#ffc300; color:#003566; }
-.btn-excel { background:#1f7a3f; color:white; }
-.btn-logout { position:absolute; top:20px; right:20px; background:#ff4d4d; color:white; padding:8px 12px; border-radius:8px; font-size:12px; width:auto; }
-.login { max-width:350px; margin:100px auto; background:white; color:black; padding:30px; border-radius:18px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5); }
-.hidden { display:none !important; }
-.venta-item { background:rgba(255,255,255,0.07); padding:15px; border-radius:12px; margin-bottom:15px; border-left:5px solid #ffc300; font-size:11px; position:relative; }
-.btn-del { position:absolute; top:12px; right:12px; color:#ff4d4d; cursor:pointer; font-size:18px; }
+body{
+    font-family: Arial;
+    background:#0f172a;
+    color:white;
+    margin:0;
+    padding:20px;
+}
+h1{ text-align:center; }
 
-/* CHAT */
-.chat-box { height:250px; overflow-y:auto; margin-bottom:10px; display:flex; flex-direction:column; gap:6px; }
-.msg { max-width:75%; padding:8px 12px; border-radius:14px; font-size:12px; }
-.msg.me { align-self:flex-end; background:#ffc300; color:#003566; }
-.msg.other { align-self:flex-start; background:rgba(255,255,255,0.15); }
-.msg-user { font-weight:bold; font-size:11px; margin-bottom:2px; }
-.msg-time { font-size:9px; opacity:.7; margin-top:2px; text-align:right; }
+.container{
+    max-width:900px;
+    margin:auto;
+}
+
+input, button{
+    padding:10px;
+    margin:5px 0;
+    width:100%;
+    border-radius:8px;
+    border:none;
+}
+
+button{
+    background:#22c55e;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+button:hover{
+    opacity:0.8;
+}
+
+.card{
+    background:#1e293b;
+    padding:15px;
+    border-radius:12px;
+    margin-top:20px;
+}
+
+.chat-box{
+    height:200px;
+    overflow-y:auto;
+    background:#0f172a;
+    padding:10px;
+    border-radius:8px;
+}
 </style>
 </head>
+<body>
 
-<body onload="inicio()">
+<div class="container">
 
-<div id="loginBox" class="login">
-<h2 id="tituloAuth">Acceso Sistema</h2>
-<input id="u" placeholder="Nombre del promotor">
-<input id="p" type="password" placeholder="Contraseña">
-<button class="btn-main" onclick="entrar()">ENTRAR</button>
-<button style="background:none; color:#003566; font-size:12px;" onclick="toggleRegistro()" id="btnT">¿No tienes cuenta? Regístrate</button>
-</div>
+<h1>📊 Sistema Ventas Telcel Pro</h1>
 
-<div id="appBox" class="app hidden">
-<button class="btn-logout" onclick="salir()">Salir</button>
-
-<div class="header">REGISTRO DE VENTAS</div>
-
-<form id="fReg">
 <div class="card">
-<label>TIPO</label>
-<select id="iTipo" required onchange="ajustarCampos()">
-<option value="">Seleccionar</option>
-<option value="KIT">KIT</option>
-<option value="CHIP">CHIP</option>
-<option value="PORTA">PORTA</option>
-<option value="RENUEVATE">RENUEVATE</option>
-</select>
+<h3>Registrar Venta</h3>
 
-<label>FECHA</label>
-<input id="iFec" required>
+<input type="text" id="nombrePromotor" placeholder="Nombre del promotor">
+<input type="text" id="cliente" placeholder="Nombre del cliente">
+<input type="number" id="monto" placeholder="Monto">
 
-<label>NUM. CELULAR</label>
-<input id="iTel" required maxlength="10">
-
-<label>ICCID</label>
-<input id="iIcc" required>
+<button onclick="guardarVenta()">Guardar Venta</button>
 </div>
 
 <div class="card">
-<label># TIENDA</label><input id="iTiendaNum" required>
-<label>CADENA</label><input id="iCadena" required>
-<label>TIENDA</label><input id="iTiendaNombre" required>
-<label>PROMOTOR</label><input id="iProm" required>
+<h3>Ventas Registradas</h3>
+<div id="listaVentas"></div>
 </div>
-
-<button type="submit" class="btn-main">GUARDAR</button>
-</form>
-
-<button class="btn-excel" onclick="exportarExcel()">DESCARGAR EXCEL</button>
-
-<div class="header" style="font-size:16px;margin-top:25px;">CHAT PROMOTORES</div>
 
 <div class="card">
-<div id="chatBox" class="chat-box"></div>
-<div style="display:flex; gap:6px;">
-<input id="msgInput" placeholder="Escribe un mensaje..." style="margin:0;">
-<button onclick="enviarMsg()" style="width:70px; background:#ffc300; color:#003566;">
-<i class="fa-solid fa-paper-plane"></i>
-</button>
-</div>
+<h3>💬 Chat Global Promotores</h3>
+<div class="chat-box" id="chatBox"></div>
+<input type="text" id="mensajeChat" placeholder="Escribe un mensaje">
+<button onclick="enviarMensaje()">Enviar</button>
 </div>
 
 </div>
 
 <script>
-const firebaseConfig = {
-apiKey:"AIzaSy",
-databaseURL:"https://ventastelcel4029-default-rtdb.firebaseio.com"
+
+// 🔥 CONFIGURA AQUÍ TU FIREBASE
+var firebaseConfig = {
+    apiKey: "TU_API_KEY",
+    authDomain: "TU_DOMINIO.firebaseapp.com",
+    databaseURL: "https://TU_DATABASE.firebaseio.com",
+    projectId: "TU_ID",
+    storageBucket: "TU_BUCKET",
+    messagingSenderId: "TU_SENDER",
+    appId: "TU_APP_ID"
 };
 
-let usuarioActual="", db, modoReg=false;
+firebase.initializeApp(firebaseConfig);
+var database = firebase.database();
 
-function inicio(){
-if(!firebase.apps.length){ firebase.initializeApp(firebaseConfig); }
-db=firebase.database();
-iFec.value=new Date().toLocaleDateString('es-MX');
-const sesion=localStorage.getItem("sesion_activa");
-if(sesion){ usuarioActual=sesion; mostrarApp(); }
+// ===============================
+// GUARDAR VENTAS (Firebase + Local)
+// ===============================
+
+function guardarVenta(){
+
+    var promotor = document.getElementById("nombrePromotor").value;
+    var cliente = document.getElementById("cliente").value;
+    var monto = document.getElementById("monto").value;
+
+    if(!promotor || !cliente || !monto){
+        alert("Completa todos los campos");
+        return;
+    }
+
+    var venta = {
+        promotor: promotor,
+        cliente: cliente,
+        monto: monto,
+        fecha: new Date().toLocaleString()
+    };
+
+    // 🔥 Guardar en Firebase
+    database.ref("ventas").push(venta);
+
+    // 🔥 Guardar en LocalStorage
+    var ventasLocales = JSON.parse(localStorage.getItem("ventas")) || [];
+    ventasLocales.push(venta);
+    localStorage.setItem("ventas", JSON.stringify(ventasLocales));
+
+    mostrarVentas();
+
+    document.getElementById("cliente").value="";
+    document.getElementById("monto").value="";
 }
 
-function toggleRegistro(){
-modoReg=!modoReg;
-tituloAuth.innerText=modoReg?"Crear Usuario":"Acceso Sistema";
-btnT.innerText=modoReg?"Ya tengo cuenta":"¿No tienes cuenta? Regístrate";
+// Mostrar ventas locales
+function mostrarVentas(){
+    var lista = document.getElementById("listaVentas");
+    lista.innerHTML="";
+
+    var ventasLocales = JSON.parse(localStorage.getItem("ventas")) || [];
+
+    ventasLocales.forEach(function(v){
+        lista.innerHTML += `
+            <p>👤 ${v.promotor} | 🧾 ${v.cliente} | 💰 $${v.monto} | 📅 ${v.fecha}</p>
+        `;
+    });
 }
 
-function entrar(){
-let nombre=u.value.trim();
-let pass=p.value.trim();
-if(!nombre||!pass) return alert("Completa campos");
+mostrarVentas();
 
-if(modoReg){
-localStorage.setItem("user_"+nombre,pass);
-alert("Usuario creado");
-}else{
-if(localStorage.getItem("user_"+nombre)!==pass) return alert("Usuario incorrecto");
+// ===============================
+// CHAT GLOBAL
+// ===============================
+
+function enviarMensaje(){
+
+    var promotor = document.getElementById("nombrePromotor").value;
+    var mensaje = document.getElementById("mensajeChat").value;
+
+    if(!promotor){
+        alert("Escribe tu nombre primero");
+        return;
+    }
+
+    if(!mensaje) return;
+
+    database.ref("chatGlobal").push({
+        nombre: promotor,
+        mensaje: mensaje,
+        hora: new Date().toLocaleTimeString()
+    });
+
+    document.getElementById("mensajeChat").value="";
 }
 
-usuarioActual=nombre;
-localStorage.setItem("sesion_activa",nombre);
-mostrarApp();
-}
+// Escuchar mensajes en tiempo real
+database.ref("chatGlobal").limitToLast(50).on("child_added", function(snapshot){
 
-function mostrarApp(){
-loginBox.classList.add("hidden");
-appBox.classList.remove("hidden");
-iniciarChat();
-}
+    var data = snapshot.val();
+    var chatBox = document.getElementById("chatBox");
 
-function salir(){
-localStorage.removeItem("sesion_activa");
-location.reload();
-}
+    chatBox.innerHTML += `
+        <p><strong>${data.nombre}:</strong> ${data.mensaje} <small>(${data.hora})</small></p>
+    `;
 
-/* CHAT */
-
-function iniciarChat(){
-db.ref("chatGlobal").limitToLast(100).on("child_added", snap=>{
-const data=snap.val();
-const box=document.getElementById("chatBox");
-
-const div=document.createElement("div");
-div.className="msg " + (data.usuario===usuarioActual ? "me":"other");
-
-const fecha=new Date(data.fecha);
-const hora=fecha.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
-
-div.innerHTML=`
-<div class="msg-user">${data.usuario}</div>
-<div>${data.mensaje}</div>
-<div class="msg-time">${hora}</div>
-`;
-
-box.appendChild(div);
-box.scrollTop=box.scrollHeight;
+    chatBox.scrollTop = chatBox.scrollHeight;
 });
-}
 
-function enviarMsg(){
-const texto=msgInput.value.trim();
-if(!texto) return;
-
-db.ref("chatGlobal").push({
-usuario:usuarioActual,
-mensaje:texto,
-fecha:Date.now()
-});
-
-msgInput.value="";
-}
 </script>
 
 </body>
