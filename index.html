@@ -24,6 +24,8 @@
         .btn-logout { position:absolute; top:20px; right:20px; background:#ff4d4d; color:white; padding:8px 12px; border-radius:8px; font-size:12px; width:auto; border:none; }
         .login { max-width:350px; margin:80px auto; background:white; color:black; padding:30px; border-radius:18px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5); }
         .hidden { display:none !important; }
+        
+        /* Historial Local */
         .venta-item { background:rgba(255,255,255,0.07); padding:15px; border-radius:12px; margin-bottom:15px; border-left:5px solid #ffc300; font-size:11px; position:relative; }
         .status-icon { position:absolute; top:15px; right:45px; font-size:14px; }
         .btn-del { position:absolute; top:12px; right:12px; color:#ff4d4d; cursor:pointer; font-size:18px; padding:5px; }
@@ -85,8 +87,9 @@
         </form>
 
         <button class="btn-excel" onclick="exportarExcel()">
-            <i class="fa-solid fa-file-excel"></i> DESCARGAR EXCEL (FORMATO OMAR)
+            <i class="fa-solid fa-file-excel"></i> DESCARGAR EXCEL DE COMISIONES
         </button>
+        
         <div id="listaLocal" style="margin-top:25px;"></div>
     </div>
 
@@ -111,6 +114,7 @@
             if(!firebase.apps.length){ firebase.initializeApp(firebaseConfig); }
             db = firebase.database();
             let hoy = new Date();
+            // Formato DD/MM/YYYY
             iFec.value = `${String(hoy.getDate()).padStart(2,'0')}/${String(hoy.getMonth()+1).padStart(2,'0')}/${hoy.getFullYear()}`;
             const sesion = localStorage.getItem("sesion_activa");
             if(sesion){ uA = sesion; mostrarApp(); escucharChat(); }
@@ -139,17 +143,11 @@
         fReg.onsubmit = e => {
             e.preventDefault();
             const v = {
-                "NUM. CELULAR": iTel.value,
-                "IMEI": iIme.value || "-",
-                "ICCID": iIcc.value,
-                "Renuevate/ Kit/Chip/Porta": iTipo.value,
-                "#TIENDA / Determinante": iTiendaNum.value,
-                "SOLO NOMBRE DE LA CADENA": iCadena.value,
-                "SOLO NOMBRE DE TIENDA SIN CADENA": iTiendaNombre.value,
-                "NOMBRE COMPLETO PROMOTOR": iProm.value,
-                "FECHA DE ACTIVACION": iFec.value,
-                "MARCA": iMarca.value || "-",
-                "MODELO": iMod.value || "-",
+                "NUM. CELULAR": iTel.value, "IMEI": iIme.value || "-", "ICCID": iIcc.value,
+                "Renuevate/ Kit/Chip/Porta": iTipo.value, "#TIENDA / Determinante": iTiendaNum.value,
+                "SOLO NOMBRE DE LA CADENA": iCadena.value, "SOLO NOMBRE DE TIENDA SIN CADENA": iTiendaNombre.value,
+                "NOMBRE COMPLETO PROMOTOR": iProm.value, "FECHA DE ACTIVACION": iFec.value,
+                "MARCA": iMarca.value || "-", "MODELO": iMod.value || "-",
                 id: Date.now(), sincronizado: false
             };
             let ld = JSON.parse(localStorage.getItem("ventas_save") || "[]");
@@ -170,7 +168,7 @@
                 <div class="info-grid">
                     <div><b>IMEI</b><span>${v["IMEI"]}</span></div>
                     <div><b>ICCID</b><span>${v["ICCID"]}</span></div>
-                    <div><b>Equipo</b><span>${v["MARCA"]} ${v["MODELO"]}</span></div>
+                    <div><b>Marca/Mod</b><span>${v["MARCA"]} ${v["MODELO"]}</span></div>
                     <div><b>Fecha</b><span>${v["FECHA DE ACTIVACION"]}</span></div>
                     <div><b>Tipo</b><span>${v["Renuevate/ Kit/Chip/Porta"]}</span></div>
                 </div>
@@ -184,6 +182,7 @@
         }
 
         function eliminarVenta(id){
+            if(!confirm("¿Eliminar registro?")) return;
             let ld = JSON.parse(localStorage.getItem("ventas_save") || "[]").filter(x => x.id !== id);
             localStorage.setItem("ventas_save", JSON.stringify(ld));
             cargarVentasLocales();
@@ -191,17 +190,18 @@
 
         function exportarExcel(){
             let ld = JSON.parse(localStorage.getItem("ventas_save") || "[]");
-            if(ld.length===0) return alert("Sin datos");
+            if(ld.length===0) return alert("No hay datos");
+            // Encabezados exactos de tu formato Hoja1
             const encabezados = ["NUM. CELULAR", "IMEI", "ICCID", "Renuevate/ Kit/Chip/Porta", "#TIENDA / Determinante", "SOLO NOMBRE DE LA CADENA", "SOLO NOMBRE DE TIENDA SIN CADENA", "NOMBRE COMPLETO PROMOTOR", "FECHA DE ACTIVACION", "MARCA", "MODELO"];
             const filas = ld.map(v => encabezados.map(h => v[h] || ""));
             const ws = XLSX.utils.aoa_to_sheet([encabezados, ...filas]);
-            ws['!cols'] = encabezados.map(() => ({ wch: 25 }));
+            ws['!cols'] = encabezados.map(() => ({ wch: 22 }));
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Hoja1");
-            XLSX.writeFile(wb, "omar_ortega_caro_comiciones.xlsx");
+            // Nombre de archivo corregido sin nombre personal
+            XLSX.writeFile(wb, "comisiones_2026.xlsx");
         }
 
-        /* Funciones Chat */
         function toggleChat(){ chatBox.classList.toggle("hidden"); chatMensajes.scrollTop = chatMensajes.scrollHeight; }
         function enviarMensaje(){
             let t = chatInput.value.trim();
@@ -224,4 +224,3 @@
     </script>
 </body>
 </html>
-
