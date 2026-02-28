@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Teledata 2026</title>
+    <title>Sistema Teledata Pro 2026</title>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -15,25 +15,34 @@
         .app { max-width:480px; margin:auto; padding:20px; position: relative; }
         .card { background:rgba(255,255,255,.08); backdrop-filter:blur(12px); border-radius:18px; padding:18px; margin-bottom:16px; border:1px solid rgba(255,255,255,0.1); }
         .header { text-align:center; font-size:18px; font-weight:bold; color:#ffc300; margin-bottom:20px; text-transform: uppercase; }
+        
         label { font-size:10px; font-weight:600; color:#ffc300; display: block; margin-bottom: 4px; text-transform: uppercase; }
         input, select { width:100%; padding:12px; margin-bottom:12px; border-radius:10px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing:border-box; outline: none; font-size: 14px; }
+        
         button { width:100%; padding:14px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; transition:.2s; }
         .btn-main { background:#ffc300; color:#003566; margin-bottom:10px; }
         .btn-reg { background:#ffffff; color:#003566; margin-top: 10px; }
         .btn-excel { background:#1f7a3f; color:white; margin-top: 20px; font-size: 16px; }
         .btn-logout { position:absolute; top:20px; right:20px; background:#ff4d4d; color:white; padding:8px 12px; border-radius:8px; font-size:12px; width:auto; border:none; }
+
         .login { max-width:350px; margin:80px auto; background:white; color:black; padding:30px; border-radius:18px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5); }
         .hidden { display:none !important; }
+
+        /* Historial Local con Datos Completos */
         .venta-item { background:rgba(255,255,255,0.07); padding:15px; border-radius:12px; margin-bottom:15px; border-left:5px solid #ffc300; font-size:11px; position:relative; }
-        .btn-del { position:absolute; top:12px; right:12px; color:#ff4d4d; cursor:pointer; font-size:18px; padding:5px; }
         .status-icon { position:absolute; top:15px; right:45px; font-size:14px; }
+        .btn-del { position:absolute; top:12px; right:12px; color:#ff4d4d; cursor:pointer; font-size:18px; padding:5px; }
+        
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; }
+        .info-grid div b { color: #ffc300; display: block; font-size: 8px; text-transform: uppercase; }
+        .info-grid div span { color: #fff; font-size: 11px; }
     </style>
 </head>
 
 <body onload="inicio()">
 
     <div id="loginBox" class="login">
-        <h2 style="margin-bottom:20px; color:#003566;">Sistema de Ventas</h2>
+        <h2 style="margin-bottom:20px; color:#003566;">Acceso Teledata</h2>
         <input id="u" placeholder="Usuario">
         <input id="p" type="password" placeholder="Contraseña">
         <button class="btn-main" onclick="entrar()">ENTRAR</button>
@@ -42,7 +51,7 @@
 
     <div id="appBox" class="app hidden">
         <button class="btn-logout" onclick="salir()">SALIR</button>
-        <div class="header">Registro Teledata 2026</div>
+        <div class="header">Registro de Ventas 2026</div>
 
         <form id="fReg">
             <div class="card">
@@ -76,14 +85,15 @@
                 <label>Fecha de Activación</label><input id="iFec" required>
             </div>
             
-            <button type="submit" class="btn-main">GUARDAR EN LOCAL</button>
+            <button type="submit" class="btn-main">GUARDAR REGISTRO LOCAL</button>
         </form>
 
         <button class="btn-excel" onclick="exportarExcel()">
             <i class="fa-solid fa-file-excel"></i> DESCARGAR EXCEL (FORMATO OMAR)
         </button>
 
-        <div id="listaLocal" style="margin-top:25px;"></div>
+        <div class="header" style="font-size:14px; margin-top:30px;">Historial de Ventas Locales</div>
+        <div id="listaLocal"></div>
     </div>
 
     <script>
@@ -105,14 +115,14 @@
             if(localStorage.getItem("user_" + uA) === pass && uA !== "") {
                 localStorage.setItem("sesion_activa", uA);
                 mostrarApp();
-            } else { alert("Datos incorrectos"); }
+            } else { alert("Usuario o contraseña incorrectos"); }
         }
 
         function registrarNuevo(){
             if(u.value && p.value){
                 localStorage.setItem("user_" + u.value.trim(), p.value.trim());
-                alert("Usuario registrado.");
-            } else { alert("Llena los campos arriba"); }
+                alert("Usuario registrado correctamente.");
+            } else { alert("Completa los campos de arriba primero"); }
         }
 
         function mostrarApp(){ loginBox.classList.add("hidden"); appBox.classList.remove("hidden"); cargarVentasLocales(); }
@@ -124,7 +134,6 @@
 
         fReg.onsubmit = e => {
             e.preventDefault();
-            // Mapeo exacto basado en el archivo de Omar
             const v = {
                 "NUM. CELULAR": iTel.value,
                 "IMEI": iIme.value || "-",
@@ -150,20 +159,33 @@
         function cargarVentasLocales(){
             const div = document.getElementById("listaLocal");
             let ld = JSON.parse(localStorage.getItem("ventas_save") || "[]");
-            div.innerHTML = ld.map(v => `<div class="venta-item">
+            if(ld.length === 0) { div.innerHTML = "<p style='text-align:center; opacity:0.5;'>No hay registros aún.</p>"; return; }
+            
+            div.innerHTML = ld.map(v => `
+            <div class="venta-item">
                 <div class="status-icon">${v.sincronizado ? '☁️' : '⏳'}</div>
                 <div class="btn-del" onclick="eliminarVenta(${v.id})"><i class="fa-solid fa-trash-can"></i></div>
-                <b>${v["NUM. CELULAR"]}</b><br>${v["Renuevate/ Kit/Chip/Porta"]} | ${v["FECHA DE ACTIVACION"]}
+                <b style="font-size:14px; color:#ffc300;">${v["NUM. CELULAR"]}</b>
+                
+                <div class="info-grid">
+                    <div><b>IMEI</b><span>${v["IMEI"]}</span></div>
+                    <div><b>ICCID</b><span>${v["ICCID"]}</span></div>
+                    <div><b>Marca/Mod</b><span>${v["MARCA"]} ${v["MODELO"]}</span></div>
+                    <div><b>Fecha</b><span>${v["FECHA DE ACTIVACION"]}</span></div>
+                    <div><b>Tipo</b><span>${v["Renuevate/ Kit/Chip/Porta"]}</span></div>
+                    <div><b>Tienda</b><span>${v["SOLO NOMBRE DE TIENDA SIN CADENA"]}</span></div>
+                </div>
             </div>`).join("");
         }
 
         function marcarSinc(id){
             let ld = JSON.parse(localStorage.getItem("ventas_save") || "[]");
             let itm = ld.find(x => x.id === id);
-            if(itm){ itm.sincronizado=true; localStorage.setItem("ventas_save", JSON.stringify(ld)); cargarVentasLocales(); }
+            if(itm){ itm.sincronizado = true; localStorage.setItem("ventas_save", JSON.stringify(ld)); cargarVentasLocales(); }
         }
 
         function eliminarVenta(id){
+            if(!confirm("¿Eliminar este registro local?")) return;
             let ld = JSON.parse(localStorage.getItem("ventas_save") || "[]").filter(x => x.id !== id);
             localStorage.setItem("ventas_save", JSON.stringify(ld));
             cargarVentasLocales();
@@ -171,9 +193,9 @@
 
         function exportarExcel(){
             let ld = JSON.parse(localStorage.getItem("ventas_save") || "[]");
-            if(ld.length===0) return alert("No hay datos");
+            if(ld.length===0) return alert("No hay datos para exportar");
             
-            // Encabezados exactos del archivo "omar ortega"
+            // Encabezados exactos del archivo de Omar Ortega
             const encabezados = [
                 "NUM. CELULAR", 
                 "IMEI", 
@@ -191,11 +213,10 @@
             const filas = ld.map(v => encabezados.map(h => v[h] || ""));
             const ws = XLSX.utils.aoa_to_sheet([encabezados, ...filas]);
 
-            // Auto-ajuste de ancho para que no esté amontonado
-            ws['!cols'] = encabezados.map(() => ({ wch: 22 }));
+            // Ancho automático para evitar amontonamiento en Excel
+            ws['!cols'] = encabezados.map(() => ({ wch: 25 }));
 
             const wb = XLSX.utils.book_new();
-            // Nombre de la hoja idéntico: Hoja1
             XLSX.utils.book_append_sheet(wb, ws, "Hoja1");
             XLSX.writeFile(wb, "omar_ortega_caro_comiciones.xlsx");
         }
