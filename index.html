@@ -72,6 +72,10 @@ button:hover{
 <input type="number" id="monto" placeholder="Monto">
 
 <button onclick="guardarVenta()">Guardar Venta</button>
+
+<!-- 🔥 BOTÓN DE SALIDA -->
+<button onclick="salirSistema()" style="background:#ef4444;">Cerrar Sesión</button>
+
 </div>
 
 <div class="card">
@@ -105,7 +109,7 @@ firebase.initializeApp(firebaseConfig);
 var database = firebase.database();
 
 // ===============================
-// GUARDAR VENTA (Firebase + Local)
+// GUARDAR VENTAS
 // ===============================
 
 function guardarVenta(){
@@ -126,10 +130,8 @@ function guardarVenta(){
         fecha: new Date().toLocaleString()
     };
 
-    // 🔥 Guardar en Firebase
     database.ref("ventas").push(venta);
 
-    // 🔥 Guardar en LocalStorage (respaldo)
     var ventasLocales = JSON.parse(localStorage.getItem("ventas")) || [];
     ventasLocales.push(venta);
     localStorage.setItem("ventas", JSON.stringify(ventasLocales));
@@ -140,10 +142,7 @@ function guardarVenta(){
     document.getElementById("monto").value="";
 }
 
-// ===============================
-// MOSTRAR VENTAS LOCALES
-// ===============================
-
+// Mostrar ventas locales
 function mostrarVentas(){
     var lista = document.getElementById("listaVentas");
     lista.innerHTML="";
@@ -160,7 +159,7 @@ function mostrarVentas(){
 mostrarVentas();
 
 // ===============================
-// CHAT GLOBAL
+// CHAT EN TIEMPO REAL
 // ===============================
 
 function enviarMensaje(){
@@ -184,7 +183,6 @@ function enviarMensaje(){
     document.getElementById("mensajeChat").value="";
 }
 
-// Escuchar mensajes en tiempo real
 database.ref("chatGlobal").limitToLast(50).on("child_added", function(snapshot){
 
     var data = snapshot.val();
@@ -196,6 +194,19 @@ database.ref("chatGlobal").limitToLast(50).on("child_added", function(snapshot){
 
     chatBox.scrollTop = chatBox.scrollHeight;
 });
+
+// ===============================
+// 🔥 FUNCIÓN SALIR
+// ===============================
+
+function salirSistema(){
+    if(confirm("¿Seguro que deseas salir?")){
+        document.getElementById("nombrePromotor").value = "";
+        document.getElementById("cliente").value = "";
+        document.getElementById("monto").value = "";
+        alert("Sesión cerrada correctamente");
+    }
+}
 
 </script>
 
