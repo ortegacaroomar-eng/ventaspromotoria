@@ -1,214 +1,225 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistema Ventas Telcel Pro</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Ventas Telcel Pro</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body { margin:0; font-family:'Segoe UI',system-ui; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; }
+        .app { max-width:480px; margin:auto; padding:20px; position: relative; }
+        .card { background:rgba(255,255,255,.08); backdrop-filter:blur(12px); border-radius:18px; padding:18px; margin-bottom:16px; box-shadow:0 10px 25px rgba(0,0,0,.3); border:1px solid rgba(255,255,255,0.1); }
+        .header { text-align:center; font-size:20px; font-weight:bold; color:#ffc300; margin-bottom:20px; }
+        label { font-size:11px; font-weight:600; color:#ffc300; }
+        input, select { width:100%; padding:12px; margin-top:4px; margin-bottom:12px; border-radius:10px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing:border-box; }
+        button { width:100%; padding:14px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; transition:.2s; margin-bottom:10px; }
+        .btn-main { background:#ffc300; color:#003566; }
+        .btn-excel { background:#1f7a3f; color:white; width:100%; }
+        .btn-logout { position:absolute; top:20px; right:20px; background:#ff4d4d; color:white; padding:8px 12px; border-radius:8px; font-size:12px; z-index:10; width:auto; border:none; cursor:pointer; }
+        .login { max-width:350px; margin:100px auto; background:white; color:black; padding:30px; border-radius:18px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5); }
+        .hidden { display:none !important; }
 
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
-<style>
-body{
-    font-family: Arial;
-    background:#0f172a;
-    color:white;
-    margin:0;
-    padding:20px;
-}
-h1{ text-align:center; }
-
-.container{
-    max-width:900px;
-    margin:auto;
-}
-
-input, button{
-    padding:10px;
-    margin:5px 0;
-    width:100%;
-    border-radius:8px;
-    border:none;
-}
-
-button{
-    background:#22c55e;
-    color:white;
-    font-weight:bold;
-    cursor:pointer;
-}
-
-button:hover{
-    opacity:0.8;
-}
-
-.card{
-    background:#1e293b;
-    padding:15px;
-    border-radius:12px;
-    margin-top:20px;
-}
-
-.chat-box{
-    height:200px;
-    overflow-y:auto;
-    background:#0f172a;
-    padding:10px;
-    border-radius:8px;
-}
-</style>
+        .venta-item { background:rgba(255,255,255,0.07); padding:15px; border-radius:12px; margin-bottom:15px; border-left:5px solid #ffc300; font-size:11px; position:relative; }
+        .status-icon { position:absolute; top:15px; right:45px; font-size:14px; }
+        .btn-del { position:absolute; top:12px; right:12px; color:#ff4d4d; cursor:pointer; font-size:18px; padding:5px; }
+        .grid-datos { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; border-top:1px solid rgba(255,255,255,0.1); padding-top:8px; }
+        .dato b { color:#ffc300; display:block; font-size:9px; text-transform:uppercase; }
+    </style>
 </head>
-<body>
+<body onload="inicio()">
 
-<div class="container">
-
-<h1>📊 Sistema Ventas Telcel Pro</h1>
-
-<div class="card">
-<h3>Registrar Venta</h3>
-
-<input type="text" id="nombrePromotor" placeholder="Nombre del promotor">
-<input type="text" id="cliente" placeholder="Nombre del cliente">
-<input type="number" id="monto" placeholder="Monto">
-
-<button onclick="guardarVenta()">Guardar Venta</button>
-
-<!-- 🔥 BOTÓN DE SALIDA -->
-<button onclick="salirSistema()" style="background:#ef4444;">Cerrar Sesión</button>
-
+<div id="loginBox" class="login">
+    <h2 id="tituloAuth" style="margin-top:0">Acceso Sistema</h2>
+    <input id="u" placeholder="Correo / Usuario">
+    <input id="p" type="password" placeholder="Contraseña">
+    <button class="btn-main" onclick="entrar()">ENTRAR</button>
+    <button style="background:none; color:#003566; font-size:12px; margin-top:10px" onclick="toggleRegistro()" id="btnT">¿No tienes cuenta? Regístrate</button>
 </div>
 
-<div class="card">
-<h3>Ventas Registradas</h3>
-<div id="listaVentas"></div>
-</div>
+<div id="appBox" class="app hidden">
+    <button class="btn-logout" onclick="salir()"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
+    <div class="header">REGISTRO DE VENTAS</div>
 
-<div class="card">
-<h3>💬 Chat Global Promotores</h3>
-<div class="chat-box" id="chatBox"></div>
-<input type="text" id="mensajeChat" placeholder="Escribe un mensaje">
-<button onclick="enviarMensaje()">Enviar</button>
-</div>
+    <form id="fReg">
+        <div class="card">
+            <label>TIPO DE PRODUCTO</label>
+            <select id="iTipo" required onchange="ajustarCampos()">
+                <option value="">Seleccionar</option>
+                <option value="KIT">KIT</option>
+                <option value="CHIP">CHIP</option>
+                <option value="PORTA">PORTA</option>
+                <option value="RENUEVATE">RENUEVATE</option>
+            </select>
+            <label>FECHA DE ACTIVACION</label>
+            <input id="iFec" required>
+            <label>NUM. CELULAR</label>
+            <input id="iTel" type="tel" required maxlength="10">
+            <label>ICCID</label>
+            <input id="iIcc" required>
+        </div>
 
+        <div id="seccionEquipo" class="card">
+            <label>IMEI</label><input id="iIme">
+            <label>MARCA</label><input id="iMarca">
+            <label>MODELO</label><input id="iMod">
+        </div>
+
+        <div class="card">
+            <label># TIENDA / Determinante</label><input id="iTiendaNum" required>
+            <label>SOLO NOMBRE DE LA CADENA</label><input id="iCadena" required>
+            <label>SOLO NOMBRE DE TIENDA</label><input id="iTiendaNombre" required>
+            <label>NOMBRE COMPLETO PROMOTOR</label><input id="iProm" required>
+        </div>
+        <button type="submit" class="btn-main">GUARDAR VENTA</button>
+    </form>
+
+    <button class="btn-excel" onclick="exportarExcel()">
+        <i class="fa-solid fa-file-excel"></i> DESCARGAR EXCEL (.xlsx)
+    </button>
+
+    <div class="header" style="font-size:16px; margin-top:25px;">HISTORIAL LOCAL</div>
+    <div id="listaLocal"></div>
+
+    <!-- ================= CHAT ================= -->
+    <div class="header" style="font-size:16px; margin-top:30px;">CHAT GLOBAL PROMOTORES</div>
+    <div class="card">
+        <div id="chatBox" style="height:200px; overflow-y:auto; font-size:12px;"></div>
+        <input id="chatMsg" placeholder="Escribe un mensaje..." maxlength="200">
+        <button class="btn-main" onclick="enviarMensaje()">ENVIAR MENSAJE</button>
+    </div>
 </div>
 
 <script>
+const firebaseConfig = { apiKey:"AIzaSy", databaseURL:"https://ventastelcel4029-default-rtdb.firebaseio.com" };
+let uA="", db, modoReg=false;
 
-// 🔥 CONFIGURA AQUÍ TU FIREBASE
-var firebaseConfig = {
-    apiKey: "TU_API_KEY",
-    authDomain: "TU_DOMINIO.firebaseapp.com",
-    databaseURL: "https://TU_DATABASE.firebaseio.com",
-    projectId: "TU_ID",
-    storageBucket: "TU_BUCKET",
-    messagingSenderId: "TU_SENDER",
-    appId: "TU_APP_ID"
-};
+function inicio(){
+    if(!firebase.apps.length){ firebase.initializeApp(firebaseConfig); }
+    db=firebase.database();
+    const hoy=new Date();
+    iFec.value=hoy.toLocaleDateString('es-MX',{day:'2-digit',month:'2-digit',year:'numeric'});
+    const sesion=localStorage.getItem("sesion_activa");
+    if(sesion){ uA=sesion; mostrarApp(); }
+}
 
-firebase.initializeApp(firebaseConfig);
-var database = firebase.database();
+function toggleRegistro(){
+    modoReg=!modoReg;
+    tituloAuth.innerText=modoReg?"Crear Usuario":"Acceso Sistema";
+    btnT.innerText=modoReg?"Ya tengo cuenta, entrar":"¿No tienes cuenta? Regístrate";
+}
 
-// ===============================
-// GUARDAR VENTAS
-// ===============================
-
-function guardarVenta(){
-
-    var promotor = document.getElementById("nombrePromotor").value;
-    var cliente = document.getElementById("cliente").value;
-    var monto = document.getElementById("monto").value;
-
-    if(!promotor || !cliente || !monto){
-        alert("Completa todos los campos");
-        return;
+function entrar(){
+    uA=u.value.trim();
+    let pass=p.value.trim();
+    if(!uA||!pass) return alert("Por favor llena todos los campos");
+    if(modoReg){
+        localStorage.setItem("user_"+uA,pass);
+        alert("Usuario registrado correctamente");
+    } else {
+        const savePass=localStorage.getItem("user_"+uA);
+        if(savePass!==pass) return alert("Usuario o contraseña incorrectos");
     }
+    localStorage.setItem("sesion_activa",uA);
+    mostrarApp();
+}
 
-    var venta = {
-        promotor: promotor,
-        cliente: cliente,
-        monto: monto,
-        fecha: new Date().toLocaleString()
+function mostrarApp(){
+    loginBox.classList.add("hidden");
+    appBox.classList.remove("hidden");
+    cargarVentasLocales();
+    iniciarChat();
+}
+
+function salir(){ localStorage.removeItem("sesion_activa"); location.reload(); }
+
+function ajustarCampos(){
+    const t=iTipo.value;
+    if(t==="CHIP"||t==="PORTA"){ seccionEquipo.classList.add("hidden"); }
+    else{ seccionEquipo.classList.remove("hidden"); }
+}
+
+fReg.onsubmit=e=>{
+    e.preventDefault();
+    const v={
+        id:Date.now(), sincronizado:false,
+        "NUM. CELULAR":iTel.value,
+        "IMEI":iIme.value||"-",
+        "ICCID":iIcc.value,
+        "Renuevate / Kit / Chip / Porta":iTipo.value,
+        "# TIENDA / Determinante":iTiendaNum.value,
+        "SOLO NOMBRE DE LA CADENA":iCadena.value,
+        "SOLO NOMBRE DE TIENDA SIN CADENA":iTiendaNombre.value,
+        "NOMBRE COMPLETO PROMOTOR":iProm.value,
+        "FECHA DE ACTIVACION":iFec.value,
+        "MARCA":iMarca.value||"-",
+        "MODELO":iMod.value||"-"
     };
 
-    database.ref("ventas").push(venta);
+    let local=JSON.parse(localStorage.getItem("ventas_save")||"[]");
+    local.unshift(v);
+    localStorage.setItem("ventas_save",JSON.stringify(local));
 
-    var ventasLocales = JSON.parse(localStorage.getItem("ventas")) || [];
-    ventasLocales.push(venta);
-    localStorage.setItem("ventas", JSON.stringify(ventasLocales));
+    if(navigator.onLine&&uA){
+        db.ref('ventas/'+btoa(uA)).push(v).then(()=>marcarSincronizado(v.id));
+    }
 
-    mostrarVentas();
+    fReg.reset(); ajustarCampos();
+    iFec.value=new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'2-digit',year:'numeric'});
+    cargarVentasLocales();
+};
 
-    document.getElementById("cliente").value="";
-    document.getElementById("monto").value="";
+function cargarVentasLocales(){
+    const div=document.getElementById("listaLocal");
+    let local=JSON.parse(localStorage.getItem("ventas_save")||"[]");
+    if(local.length===0){ div.innerHTML="<p style='text-align:center;opacity:0.5;'>No hay ventas registradas.</p>"; return; }
+    div.innerHTML=local.map(v=>`
+        <div class="venta-item">
+            <div class="status-icon">${v.sincronizado?'☁️':'⏳'}</div>
+            <div style="color:#ffc300;font-weight:bold;font-size:14px;">${v["NUM. CELULAR"]}</div>
+            <div style="opacity:0.8;margin-bottom:5px;">${v["Renuevate / Kit / Chip / Porta"]} - ${v["FECHA DE ACTIVACION"]}</div>
+        </div>
+    `).join("");
 }
 
-// Mostrar ventas locales
-function mostrarVentas(){
-    var lista = document.getElementById("listaVentas");
-    lista.innerHTML="";
+function exportarExcel(){
+    let local=JSON.parse(localStorage.getItem("ventas_save")||"[]");
+    if(local.length===0) return alert("No hay datos");
+    const paraExcel=local.map(({id,sincronizado,...resto})=>resto);
+    const ws=XLSX.utils.json_to_sheet(paraExcel);
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,"Registro");
+    XLSX.writeFile(wb,"comisiones_2026_teledata.xlsx");
+}
 
-    var ventasLocales = JSON.parse(localStorage.getItem("ventas")) || [];
+/* ================= CHAT ================= */
 
-    ventasLocales.forEach(function(v){
-        lista.innerHTML += `
-            <p>👤 ${v.promotor} | 🧾 ${v.cliente} | 💰 $${v.monto} | 📅 ${v.fecha}</p>
-        `;
+function iniciarChat(){
+    db.ref("chatGlobal").limitToLast(100).on("child_added",snap=>{
+        const data=snap.val();
+        const box=document.getElementById("chatBox");
+        box.innerHTML+=`
+            <div style="margin-bottom:6px;">
+                <b style="color:#ffc300;">${data.usuario}</b>
+                <span style="opacity:.6;font-size:10px;">(${data.hora})</span><br>
+                ${data.mensaje}
+            </div>`;
+        box.scrollTop=box.scrollHeight;
     });
 }
-
-mostrarVentas();
-
-// ===============================
-// CHAT EN TIEMPO REAL
-// ===============================
 
 function enviarMensaje(){
-
-    var promotor = document.getElementById("nombrePromotor").value;
-    var mensaje = document.getElementById("mensajeChat").value;
-
-    if(!promotor){
-        alert("Escribe tu nombre primero");
-        return;
-    }
-
-    if(!mensaje) return;
-
-    database.ref("chatGlobal").push({
-        nombre: promotor,
-        mensaje: mensaje,
-        hora: new Date().toLocaleTimeString()
+    const msg=document.getElementById("chatMsg").value.trim();
+    if(!msg||!uA) return;
+    db.ref("chatGlobal").push({
+        usuario:uA,
+        mensaje:msg,
+        hora:new Date().toLocaleTimeString('es-MX')
     });
-
-    document.getElementById("mensajeChat").value="";
+    document.getElementById("chatMsg").value="";
 }
-
-database.ref("chatGlobal").limitToLast(50).on("child_added", function(snapshot){
-
-    var data = snapshot.val();
-    var chatBox = document.getElementById("chatBox");
-
-    chatBox.innerHTML += `
-        <p><strong>${data.nombre}:</strong> ${data.mensaje} <small>(${data.hora})</small></p>
-    `;
-
-    chatBox.scrollTop = chatBox.scrollHeight;
-});
-
-// ===============================
-// 🔥 FUNCIÓN SALIR
-// ===============================
-
-function salirSistema(){
-    if(confirm("¿Seguro que deseas salir?")){
-        document.getElementById("nombrePromotor").value = "";
-        document.getElementById("cliente").value = "";
-        document.getElementById("monto").value = "";
-        alert("Sesión cerrada correctamente");
-    }
-}
-
 </script>
-
 </body>
 </html>
