@@ -1,117 +1,179 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-  <title>Sistema Teledata</title>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
-</head>
-<body>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teledata Ventas</title>
 
-<h2>Login</h2>
-<input type="email" id="email" placeholder="Correo">
-<input type="password" id="password" placeholder="Contraseña">
-<button onclick="registrar()">Registrarse</button>
-<button onclick="login()">Iniciar sesión</button>
-<button onclick="logout()">Cerrar sesión</button>
+<!-- Firebase SDK (Modular v10) -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getDatabase, ref, push } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-<hr>
+const firebaseConfig = {
+  apiKey: "TU_API_KEY",
+  authDomain: "TU_AUTH_DOMAIN",
+  databaseURL: "TU_DATABASE_URL",
+  projectId: "TU_PROJECT_ID",
+  storageBucket: "TU_STORAGE_BUCKET",
+  messagingSenderId: "TU_MESSAGING_ID",
+  appId: "TU_APP_ID"
+};
 
-<h2>Registrar Venta</h2>
-<input type="text" id="cliente" placeholder="Nombre cliente">
-<input type="number" id="monto" placeholder="Monto">
-<button onclick="guardarVenta()">Guardar Venta</button>
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
 
-<script>
-  // 🔥 TU CONFIGURACIÓN
-  const firebaseConfig = {
-    apiKey: "TU_API_KEY",
-    authDomain: "TU_AUTH_DOMAIN",
-    databaseURL: "TU_DATABASE_URL",
-    projectId: "TU_PROJECT_ID",
-    storageBucket: "TU_STORAGE_BUCKET",
-    messagingSenderId: "TU_MESSAGING_ID",
-    appId: "TU_APP_ID"
+window.registrar = async function () {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  try {
+    await createUserWithEmailAndPassword(auth, email, password);
+    alert("Usuario registrado ✅");
+  } catch (error) {
+    alert(error.message);
+  }
+};
+
+window.login = async function () {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    alert("Sesión iniciada 🔓");
+  } catch (error) {
+    alert(error.message);
+  }
+};
+
+window.logout = async function () {
+  await signOut(auth);
+};
+
+window.guardarVenta = async function () {
+  const user = auth.currentUser;
+  if (!user) return alert("Debes iniciar sesión");
+
+  const cliente = document.getElementById("cliente").value;
+  const monto = document.getElementById("monto").value;
+
+  const venta = {
+    cliente,
+    monto,
+    fecha: new Date().toISOString()
   };
 
-  // Inicializar Firebase
-  firebase.initializeApp(firebaseConfig);
-
-  const auth = firebase.auth();
-  const db = firebase.database();
-
-  // 🟢 Registrar usuario
-  function registrar() {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-
-    auth.createUserWithEmailAndPassword(email, password)
-      .then(() => {
-        alert("Usuario registrado correctamente");
-      })
-      .catch(error => {
-        alert(error.message);
-      });
+  try {
+    await push(ref(db, "ventas/" + user.uid), venta);
+    alert("Venta guardada 💰");
+  } catch (error) {
+    alert(error.message);
   }
+};
 
-  // 🔵 Iniciar sesión
-  function login() {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-
-    auth.signInWithEmailAndPassword(email, password)
-      .then(() => {
-        alert("Sesión iniciada");
-      })
-      .catch(error => {
-        alert(error.message);
-      });
-  }
-
-  // 🔴 Cerrar sesión
-  function logout() {
-    auth.signOut().then(() => {
-      alert("Sesión cerrada");
-    });
-  }
-
-  // 💾 Guardar venta
-  function guardarVenta() {
-    const user = auth.currentUser;
-
-    if (!user) {
-      alert("Debes iniciar sesión");
-      return;
-    }
-
-    const cliente = document.getElementById("cliente").value;
-    const monto = document.getElementById("monto").value;
-
-    const nuevaVenta = {
-      cliente: cliente,
-      monto: monto,
-      fecha: new Date().toISOString()
-    };
-
-    db.ref("ventas/" + user.uid).push(nuevaVenta)
-      .then(() => {
-        alert("Venta guardada correctamente");
-      })
-      .catch(error => {
-        alert(error.message);
-      });
-  }
-
-  // 👀 Detectar estado de sesión
-  auth.onAuthStateChanged(user => {
-    if (user) {
-      console.log("Usuario activo:", user.email);
-    } else {
-      console.log("No hay sesión activa");
-    }
-  });
-
+onAuthStateChanged(auth, (user) => {
+  document.getElementById("userStatus").innerText =
+    user ? "Conectado como: " + user.email : "No conectado";
+});
 </script>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #4e73df, #1cc88a);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.container {
+  background: white;
+  padding: 30px;
+  width: 350px;
+  border-radius: 15px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 8px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.btn-primary {
+  background: #4e73df;
+  color: white;
+}
+
+.btn-success {
+  background: #1cc88a;
+  color: white;
+}
+
+.btn-danger {
+  background: #e74a3b;
+  color: white;
+}
+
+button:hover {
+  opacity: 0.85;
+}
+
+.status {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 14px;
+  color: #555;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>🔐 Teledata Ventas</h2>
+
+  <input type="email" id="email" placeholder="Correo">
+  <input type="password" id="password" placeholder="Contraseña">
+
+  <button class="btn-primary" onclick="login()">Iniciar sesión</button>
+  <button class="btn-success" onclick="registrar()">Registrarse</button>
+  <button class="btn-danger" onclick="logout()">Cerrar sesión</button>
+
+  <hr>
+
+  <input type="text" id="cliente" placeholder="Nombre del cliente">
+  <input type="number" id="monto" placeholder="Monto">
+
+  <button class="btn-success" onclick="guardarVenta()">Guardar Venta</button>
+
+  <div class="status" id="userStatus">No conectado</div>
+</div>
 
 </body>
 </html>
