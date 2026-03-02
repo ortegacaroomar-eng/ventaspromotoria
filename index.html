@@ -3,177 +3,189 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Teledata Ventas</title>
+<title>Sistema Ventas Telcel Pro</title>
 
-<!-- Firebase SDK (Modular v10) -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } 
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getDatabase, ref, push } 
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "TU_API_KEY",
-  authDomain: "TU_AUTH_DOMAIN",
-  databaseURL: "TU_DATABASE_URL",
-  projectId: "TU_PROJECT_ID",
-  storageBucket: "TU_STORAGE_BUCKET",
-  messagingSenderId: "TU_MESSAGING_ID",
-  appId: "TU_APP_ID"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
-
-window.registrar = async function () {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  try {
-    await createUserWithEmailAndPassword(auth, email, password);
-    alert("Usuario registrado ✅");
-  } catch (error) {
-    alert(error.message);
-  }
-};
-
-window.login = async function () {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  try {
-    await signInWithEmailAndPassword(auth, email, password);
-    alert("Sesión iniciada 🔓");
-  } catch (error) {
-    alert(error.message);
-  }
-};
-
-window.logout = async function () {
-  await signOut(auth);
-};
-
-window.guardarVenta = async function () {
-  const user = auth.currentUser;
-  if (!user) return alert("Debes iniciar sesión");
-
-  const cliente = document.getElementById("cliente").value;
-  const monto = document.getElementById("monto").value;
-
-  const venta = {
-    cliente,
-    monto,
-    fecha: new Date().toISOString()
-  };
-
-  try {
-    await push(ref(db, "ventas/" + user.uid), venta);
-    alert("Venta guardada 💰");
-  } catch (error) {
-    alert(error.message);
-  }
-};
-
-onAuthStateChanged(auth, (user) => {
-  document.getElementById("userStatus").innerText =
-    user ? "Conectado como: " + user.email : "No conectado";
-});
-</script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 
 <style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #4e73df, #1cc88a);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+body{
+margin:0;
+font-family:Arial, sans-serif;
+background:linear-gradient(135deg,#0033A0,#001f5c);
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+color:white;
 }
 
-.container {
-  background: white;
-  padding: 30px;
-  width: 350px;
-  border-radius: 15px;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+.card{
+background:white;
+color:#333;
+padding:25px;
+border-radius:15px;
+width:350px;
+box-shadow:0 10px 30px rgba(0,0,0,.3);
 }
 
-h2 {
-  text-align: center;
-  margin-bottom: 20px;
+h2{
+text-align:center;
+margin-bottom:20px;
+color:#0033A0;
 }
 
-input {
-  width: 100%;
-  padding: 10px;
-  margin: 8px 0;
-  border-radius: 8px;
-  border: 1px solid #ccc;
+input, select, button{
+width:100%;
+padding:10px;
+margin:8px 0;
+border-radius:8px;
+border:1px solid #ccc;
 }
 
-button {
-  width: 100%;
-  padding: 10px;
-  margin-top: 8px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: 0.3s;
+button{
+background:#0033A0;
+color:white;
+border:none;
+font-weight:bold;
+cursor:pointer;
 }
 
-.btn-primary {
-  background: #4e73df;
-  color: white;
+button:hover{
+background:#001f5c;
 }
 
-.btn-success {
-  background: #1cc88a;
-  color: white;
+.link{
+text-align:center;
+margin-top:10px;
+cursor:pointer;
+color:#0033A0;
+font-size:14px;
 }
 
-.btn-danger {
-  background: #e74a3b;
-  color: white;
+.hidden{ display:none; }
+
+.header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:10px;
 }
 
-button:hover {
-  opacity: 0.85;
-}
-
-.status {
-  text-align: center;
-  margin-top: 10px;
-  font-size: 14px;
-  color: #555;
+.logout{
+background:red;
+padding:5px 10px;
+border-radius:6px;
+cursor:pointer;
+font-size:12px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
-  <h2>🔐 Teledata Ventas</h2>
-
-  <input type="email" id="email" placeholder="Correo">
-  <input type="password" id="password" placeholder="Contraseña">
-
-  <button class="btn-primary" onclick="login()">Iniciar sesión</button>
-  <button class="btn-success" onclick="registrar()">Registrarse</button>
-  <button class="btn-danger" onclick="logout()">Cerrar sesión</button>
-
-  <hr>
-
-  <input type="text" id="cliente" placeholder="Nombre del cliente">
-  <input type="number" id="monto" placeholder="Monto">
-
-  <button class="btn-success" onclick="guardarVenta()">Guardar Venta</button>
-
-  <div class="status" id="userStatus">No conectado</div>
+<div class="card" id="loginCard">
+<h2>Login Promotor</h2>
+<input type="email" id="email" placeholder="Correo">
+<input type="password" id="password" placeholder="Contraseña">
+<button onclick="login()">Entrar</button>
+<div class="link" onclick="toggleMode()">¿No tienes cuenta? Regístrate</div>
 </div>
+
+<div class="card hidden" id="appCard">
+<div class="header">
+<h3>Ventas</h3>
+<div class="logout" onclick="logout()">Salir</div>
+</div>
+
+<input type="text" id="cliente" placeholder="Nombre Cliente">
+<input type="text" id="producto" placeholder="Producto">
+<input type="number" id="monto" placeholder="Monto">
+<button onclick="guardarVenta()">Guardar Venta</button>
+</div>
+
+<script>
+
+const firebaseConfig = {
+  apiKey: "TU_API_KEY",
+  authDomain: "TU_PROJECT.firebaseapp.com",
+  databaseURL: "https://TU_PROJECT-default-rtdb.firebaseio.com",
+  projectId: "TU_PROJECT",
+  storageBucket: "TU_PROJECT.appspot.com",
+  messagingSenderId: "XXXX",
+  appId: "XXXX"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const auth = firebase.auth();
+
+let modoRegistro = false;
+let currentUID = null;
+
+auth.onAuthStateChanged(user=>{
+if(user){
+currentUID = user.uid;
+loginCard.classList.add("hidden");
+appCard.classList.remove("hidden");
+}else{
+loginCard.classList.remove("hidden");
+appCard.classList.add("hidden");
+}
+});
+
+function toggleMode(){
+modoRegistro = !modoRegistro;
+document.querySelector(".link").innerText =
+modoRegistro ? "¿Ya tienes cuenta? Inicia sesión" : "¿No tienes cuenta? Regístrate";
+}
+
+function login(){
+const email = document.getElementById("email").value;
+const password = document.getElementById("password").value;
+
+if(!email || !password) return alert("Completa los campos");
+
+if(modoRegistro){
+auth.createUserWithEmailAndPassword(email,password)
+.then(()=> alert("Cuenta creada"))
+.catch(e=> alert(e.message));
+}else{
+auth.signInWithEmailAndPassword(email,password)
+.catch(e=> alert(e.message));
+}
+}
+
+function logout(){
+auth.signOut();
+}
+
+function guardarVenta(){
+const cliente = document.getElementById("cliente").value;
+const producto = document.getElementById("producto").value;
+const monto = document.getElementById("monto").value;
+
+if(!cliente || !producto || !monto) return alert("Llena todos los campos");
+
+const venta = {
+cliente,
+producto,
+monto,
+fecha: new Date().toLocaleString()
+};
+
+db.ref("ventas/"+currentUID).push(venta)
+.then(()=>{
+alert("Venta guardada");
+document.getElementById("cliente").value="";
+document.getElementById("producto").value="";
+document.getElementById("monto").value="";
+})
+.catch(e=>alert(e.message));
+}
+
+</script>
 
 </body>
 </html>
