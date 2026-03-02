@@ -20,7 +20,7 @@
         .hidden{ display:none; }
         .header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
         .logout{ background:red; color:white; padding:5px 10px; border-radius:6px; cursor:pointer; font-size:12px; border:none; width: auto; }
-        #listaVentas{ margin-top: 15px; font-size: 12px; border-top: 1px solid #eee; padding-top: 10px; max-height: 150px; overflow-y: auto; }
+        #historialLocales{ margin-top: 15px; font-size: 11px; color: #666; border-top: 1px solid #eee; padding-top: 10px; }
     </style>
 </head>
 <body>
@@ -35,24 +35,24 @@
 
     <div class="card hidden" id="appCard">
         <div class="header">
-            <h3>Ventas Telcel</h3>
+            <h3>Ventas</h3>
             <button class="logout" onclick="logout()">Salir</button>
         </div>
         <input type="text" id="cliente" placeholder="Nombre Cliente">
-        <input type="text" id="producto" placeholder="Producto (Amigo Kit, Plan)">
-        <input type="number" id="monto" placeholder="Monto $">
+        <input type="text" id="producto" placeholder="Producto">
+        <input type="number" id="monto" placeholder="Monto">
         <button onclick="guardarVenta()">Guardar Venta</button>
         
-        <div id="listaVentas">
-            <strong>Últimas ventas locales:</strong>
-            <div id="ventasContenedor"></div>
+        <div id="historialLocales">
+            <strong>Último registro local:</strong>
+            <div id="statusLocal">Ninguno</div>
         </div>
     </div>
 
     <script>
-        // CONFIGURACIÓN: Sustituye con tu nueva "Clave de API 1"
+        // CONFIGURACIÓN DE TU PROYECTO
         const firebaseConfig = {
-            apiKey: "PEGA_AQUÍ_TU_CLAVE_API_NUEVA", 
+            apiKey: "AQUÍ_PEGA_TU_NUEVA_CLAVE_API_1", //
             authDomain: "ventastelcel4029.firebaseapp.com",
             databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com",
             projectId: "ventastelcel4029",
@@ -68,22 +68,21 @@
         let modoRegistro = false;
         let currentUID = null;
 
-        // Formato DD/MM/YYYY solicitado
-        function obtenerFecha() {
+        // Formato DD/MM/YYYY
+        function formatFecha() {
             const hoy = new Date();
             const d = String(hoy.getDate()).padStart(2, '0');
             const m = String(hoy.getMonth() + 1).padStart(2, '0');
-            const y = hoy.getFullYear();
-            return d + "/" + m + "/" + y;
+            return d + "/" + m + "/" + hoy.getFullYear();
         }
 
-        // Control de Sesión
+        // Manejo de Sesión y Local Storage
         auth.onAuthStateChanged(user => {
             if(user){
                 currentUID = user.uid;
                 loginCard.classList.add("hidden");
                 appCard.classList.remove("hidden");
-                actualizarVistaVentas();
+                localStorage.setItem("user_email", user.email);
             } else {
                 loginCard.classList.remove("hidden");
                 appCard.classList.add("hidden");
@@ -97,45 +96,36 @@
 
             if(modoRegistro){
                 auth.createUserWithEmailAndPassword(email, pass)
-                .then(()=> alert("Cuenta creada"))
+                .then(()=> alert("Registrado"))
                 .catch(e => alert(e.message));
             } else {
                 auth.signInWithEmailAndPassword(email, pass)
-                .catch(e => alert("Error: Revisa tu Clave API en el código"));
+                .catch(e => alert("Error: Verifica la Clave API en el código"));
             }
         }
 
+        // GUARDAR VENTA (LOCAL Y NUBE)
         function guardarVenta(){
             const cliente = document.getElementById("cliente").value;
             const producto = document.getElementById("producto").value;
             const monto = document.getElementById("monto").value;
-            const fecha = obtenerFecha();
+            const fecha = formatFecha();
 
             if(!cliente || !producto || !monto) return alert("Faltan datos");
 
-            const venta = { cliente, producto, monto, fecha };
+            const datosVenta = { cliente, producto, monto, fecha };
 
-            // 1. Guardar Localmente
-            let locales = JSON.parse(localStorage.getItem("ventas_historial") || "[]");
-            locales.unshift(venta); // Pone la más reciente primero
-            localStorage.setItem("ventas_historial", JSON.stringify(locales));
+            // Persistencia Local
+            localStorage.setItem("ultima_venta", JSON.stringify(datosVenta));
+            document.getElementById("statusLocal").innerText = cliente + " - " + fecha;
 
-            // 2. Guardar en Firebase
-            db.ref("ventas/" + currentUID).push(venta)
+            // Guardar en Firebase
+            db.ref("ventas/" + currentUID).push(datosVenta)
             .then(() => {
-                alert("Guardado: " + fecha);
+                alert("Venta guardada en el sistema (" + fecha + ")");
                 limpiar();
-                actualizarVistaVentas();
             })
             .catch(e => alert("Error Nube: " + e.message));
-        }
-
-        function actualizarVistaVentas() {
-            const contenedor = document.getElementById("ventasContenedor");
-            const datos = JSON.parse(localStorage.getItem("ventas_historial") || "[]");
-            contenedor.innerHTML = datos.slice(0, 5).map(v => 
-                `<div>${v.fecha} - ${v.cliente} ($${v.monto})</div>`
-            ).join("");
         }
 
         function toggleMode(){
@@ -143,7 +133,7 @@
             document.querySelector(".link").innerText = modoRegistro ? "Ya tengo cuenta" : "Crear cuenta";
         }
 
-        function logout(){ auth.signOut(); }
+        function logout(){ auth.signOut(); localStorage.removeItem("user_email"); }
         function limpiar(){
             document.getElementById("cliente").value="";
             document.getElementById("producto").value="";
