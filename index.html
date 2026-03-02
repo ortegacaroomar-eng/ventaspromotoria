@@ -13,13 +13,14 @@
         body{ margin:0; font-family:Arial, sans-serif; background:linear-gradient(135deg,#0033A0,#001f5c); display:flex; justify-content:center; align-items:center; height:100vh; color:white; }
         .card{ background:white; color:#333; padding:25px; border-radius:15px; width:350px; box-shadow:0 10px 30px rgba(0,0,0,.3); }
         h2{ text-align:center; margin-bottom:20px; color:#0033A0; }
-        input, select, button{ width:100%; padding:10px; margin:8px 0; border-radius:8px; border:1px solid #ccc; box-sizing: border-box; }
+        input, button{ width:100%; padding:10px; margin:8px 0; border-radius:8px; border:1px solid #ccc; box-sizing: border-box; }
         button{ background:#0033A0; color:white; border:none; font-weight:bold; cursor:pointer; }
         button:hover{ background:#001f5c; }
         .link{ text-align:center; margin-top:10px; cursor:pointer; color:#0033A0; font-size:14px; }
         .hidden{ display:none; }
         .header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
         .logout{ background:red; color:white; padding:5px 10px; border-radius:6px; cursor:pointer; font-size:12px; border:none; width: auto; }
+        #listaVentas{ margin-top: 15px; font-size: 12px; border-top: 1px solid #eee; padding-top: 10px; max-height: 150px; overflow-y: auto; }
     </style>
 </head>
 <body>
@@ -34,28 +35,32 @@
 
     <div class="card hidden" id="appCard">
         <div class="header">
-            <h3>Registro de Ventas</h3>
+            <h3>Ventas Telcel</h3>
             <button class="logout" onclick="logout()">Salir</button>
         </div>
         <input type="text" id="cliente" placeholder="Nombre Cliente">
-        <input type="text" id="producto" placeholder="Producto">
-        <input type="number" id="monto" placeholder="Monto">
+        <input type="text" id="producto" placeholder="Producto (Amigo Kit, Plan)">
+        <input type="number" id="monto" placeholder="Monto $">
         <button onclick="guardarVenta()">Guardar Venta</button>
+        
+        <div id="listaVentas">
+            <strong>Últimas ventas locales:</strong>
+            <div id="ventasContenedor"></div>
+        </div>
     </div>
 
     <script>
-        // CONFIGURACIÓN CON TU NUEVA CLAVE
+        // CONFIGURACIÓN: Sustituye con tu nueva "Clave de API 1"
         const firebaseConfig = {
-            apiKey: "AQUÍ_PEGA_TU_NUEVA_CLAVE_DE_API_1", 
+            apiKey: "PEGA_AQUÍ_TU_CLAVE_API_NUEVA", 
             authDomain: "ventastelcel4029.firebaseapp.com",
             databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com",
             projectId: "ventastelcel4029",
             storageBucket: "ventastelcel4029.appspot.com",
             messagingSenderId: "480758010888",
-            appId: "1:480758010888:web:e948c54f..."
+            appId: "1:480758010888:web:e948c54f051670989f660d"
         };
 
-        // Inicializar Firebase
         if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
         const db = firebase.database();
         const auth = firebase.auth();
@@ -63,77 +68,86 @@
         let modoRegistro = false;
         let currentUID = null;
 
-        // Formato de fecha DD/MM/YYYY
+        // Formato DD/MM/YYYY solicitado
         function obtenerFecha() {
             const hoy = new Date();
             const d = String(hoy.getDate()).padStart(2, '0');
             const m = String(hoy.getMonth() + 1).padStart(2, '0');
             const y = hoy.getFullYear();
-            return `${d}/${m}/${y}`;
+            return d + "/" + m + "/" + y;
         }
 
-        // Control de Sesión y Local Storage
+        // Control de Sesión
         auth.onAuthStateChanged(user => {
             if(user){
                 currentUID = user.uid;
                 loginCard.classList.add("hidden");
                 appCard.classList.remove("hidden");
-                localStorage.setItem("sesion_activa", user.email);
-            }else{
+                actualizarVistaVentas();
+            } else {
                 loginCard.classList.remove("hidden");
                 appCard.classList.add("hidden");
-                localStorage.removeItem("sesion_activa");
             }
         });
 
-        function toggleMode(){
-            modoRegistro = !modoRegistro;
-            document.querySelector(".link").innerText = 
-            modoRegistro ? "¿Ya tienes cuenta? Inicia sesión" : "¿No tienes cuenta? Regístrate";
-        }
-
         function login(){
             const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
-            if(!email || !password) return alert("Completa los campos");
+            const pass = document.getElementById("password").value;
+            if(!email || !pass) return alert("Llena los campos");
 
             if(modoRegistro){
-                auth.createUserWithEmailAndPassword(email, password)
-                .then(()=> alert("Cuenta creada exitosamente"))
-                .catch(e=> alert("Error al registrar: " + e.message));
-            }else{
-                auth.signInWithEmailAndPassword(email, password)
-                .catch(e=> alert("Error de acceso (revisa tu Clave API): " + e.message));
+                auth.createUserWithEmailAndPassword(email, pass)
+                .then(()=> alert("Cuenta creada"))
+                .catch(e => alert(e.message));
+            } else {
+                auth.signInWithEmailAndPassword(email, pass)
+                .catch(e => alert("Error: Revisa tu Clave API en el código"));
             }
         }
 
-        function logout(){ auth.signOut(); }
-
-        // Función Principal: Guardar Venta Local y Firebase
         function guardarVenta(){
             const cliente = document.getElementById("cliente").value;
             const producto = document.getElementById("producto").value;
             const monto = document.getElementById("monto").value;
             const fecha = obtenerFecha();
 
-            if(!cliente || !producto || !monto) return alert("Llena todos los campos");
+            if(!cliente || !producto || !monto) return alert("Faltan datos");
 
             const venta = { cliente, producto, monto, fecha };
 
-            // 1. Guardar en Local Storage
-            let locales = JSON.parse(localStorage.getItem("ventas_locales") || "[]");
-            locales.push(venta);
-            localStorage.setItem("ventas_locales", JSON.stringify(locales));
+            // 1. Guardar Localmente
+            let locales = JSON.parse(localStorage.getItem("ventas_historial") || "[]");
+            locales.unshift(venta); // Pone la más reciente primero
+            localStorage.setItem("ventas_historial", JSON.stringify(locales));
 
-            // 2. Guardar en Firebase Realtime Database
+            // 2. Guardar en Firebase
             db.ref("ventas/" + currentUID).push(venta)
             .then(() => {
-                alert("Venta guardada localmente con fecha: " + fecha);
-                document.getElementById("cliente").value="";
-                document.getElementById("producto").value="";
-                document.getElementById("monto").value="";
+                alert("Guardado: " + fecha);
+                limpiar();
+                actualizarVistaVentas();
             })
-            .catch(e => alert("Error en nube: " + e.message));
+            .catch(e => alert("Error Nube: " + e.message));
+        }
+
+        function actualizarVistaVentas() {
+            const contenedor = document.getElementById("ventasContenedor");
+            const datos = JSON.parse(localStorage.getItem("ventas_historial") || "[]");
+            contenedor.innerHTML = datos.slice(0, 5).map(v => 
+                `<div>${v.fecha} - ${v.cliente} ($${v.monto})</div>`
+            ).join("");
+        }
+
+        function toggleMode(){
+            modoRegistro = !modoRegistro;
+            document.querySelector(".link").innerText = modoRegistro ? "Ya tengo cuenta" : "Crear cuenta";
+        }
+
+        function logout(){ auth.signOut(); }
+        function limpiar(){
+            document.getElementById("cliente").value="";
+            document.getElementById("producto").value="";
+            document.getElementById("monto").value="";
         }
     </script>
 </body>
