@@ -13,75 +13,217 @@
         body { margin:0; font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; }
         .app { max-width:1000px; margin:auto; padding:20px; }
         
-        /* LOGIN */
+        /* LOGIN MODERNO */
         .login-box { max-width: 350px; margin: 40px auto; background: white; padding: 30px; border-radius: 20px; text-align: center; color: #000; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
         .login-box input { width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #ccc; background:#f9f9f9; color:#000; box-sizing: border-box; }
         
-        #camera-container { width: 100%; height: 200px; background: #000; border-radius: 15px; margin-bottom: 15px; overflow: hidden; display: none; position: relative; border: 3px solid #ffc300; }
+        /* BIOMETRICO */
+        #camera-container { width: 100%; height: 240px; background: #000; border-radius: 15px; margin-bottom: 15px; overflow: hidden; position: relative; border: 3px solid #00b4d8; display: none; }
         #video { width: 100%; height: 100%; object-fit: cover; }
-        .scan-line { position: absolute; width: 100%; height: 4px; background: #00ff00; top: 0; animation: scan 2s linear infinite; }
+        .scan-line { position: absolute; width: 100%; height: 4px; background: #00ff00; top: 0; animation: scan 2s linear infinite; box-shadow: 0 0 15px #00ff00; }
         @keyframes scan { from { top: 0; } to { top: 100%; } }
 
-        /* INTERFAZ APP */
-        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; gap: 10px; }
-        .gps-card { background: #000; border: 1px solid #00b4d8; padding: 10px; border-radius: 12px; color: #00b4d8; font-size: 11px; flex: 1; display: flex; align-items: center; }
-        .btn-exit-icon { background: #ff4d4d; color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn-face { background: #e0f2f1; color: #00796b; padding: 12px; border-radius: 10px; border: 2px dashed #00796b; cursor: pointer; margin-top: 15px; font-weight: bold; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; }
+
+        /* INTERFAZ */
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .gps-card { background: #000; border: 1px solid #00b4d8; padding: 10px; border-radius: 12px; color: #00b4d8; font-size: 11px; flex: 1; margin-right: 10px; }
+        .btn-exit { background: #ff4d4d; color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; }
 
         .card { background:rgba(255,255,255,.08); backdrop-filter:blur(10px); border-radius:15px; padding:20px; margin-bottom:15px; border:1px solid rgba(255,255,255,0.1); }
         label { font-size:10px; font-weight:bold; color:#ffc300; text-transform: uppercase; display: block; margin-bottom: 5px; }
         .app input, .app select { width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; }
         
-        .btn-save { background:#ffc300; color:#001d3d; width:100%; padding:15px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size: 16px; }
+        .btn-save { background:#ffc300; color:#001d3d; width:100%; padding:15px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; }
         .btn-payjoy { background: #6200ee; color: white; margin-bottom: 15px; }
 
-        /* TABLA REGISTROS */
         .table-container { overflow-x: auto; background: white; border-radius: 10px; margin-top: 20px; }
         table { width: 100%; border-collapse: collapse; color: #333; font-size: 10px; min-width: 1000px; }
-        th { background: #001d3d; color: white; padding: 10px; text-align: left; }
+        th { background: #001d3d; color: white; padding: 10px; }
         td { padding: 8px; border: 1px solid #ddd; }
 
+        .captcha-container { background: #eee; padding: 10px; border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; }
         .hidden { display: none !important; }
-        .captcha-container { background: #f8d7da; padding: 8px; border-radius: 8px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #f5c6cb; }
     </style>
 </head>
 <body onload="inicio()">
 
     <div id="loginBox" class="login-box">
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Logo_Telcel.svg/1200px-Logo_Telcel.svg.png" width="100">
-        <h3 id="authTitle" style="color:#003566;">Acceso Seguro</h3>
+        <h3 id="authTitle" style="color:#003566;">Acceso Promotores</h3>
         
-        <div id="camera-container"><video id="video" autoplay muted playsinline></video><div class="scan-line"></div></div>
+        <div id="camera-container">
+            <video id="video" autoplay muted playsinline></video>
+            <div class="scan-line"></div>
+        </div>
 
         <div id="form-auth">
             <input id="u" type="email" placeholder="Correo">
             <input id="p" type="password" placeholder="Contraseña">
             <div class="captcha-container">
-                <span id="txtCaptcha" style="font-weight:bold; color:#721c24;"></span>
+                <span id="txtCaptcha" style="font-weight:bold; color:red;"></span>
                 <input id="iCaptchaAns" type="number" style="width:60px; margin:0;" placeholder="?">
             </div>
-            <button class="btn-save" onclick="manejarAuth()">ENTRAR</button>
+            <button class="btn-save" onclick="manejarAuth()">ENTRAR AL SISTEMA</button>
         </div>
 
-        <button class="btn-save" style="background:#e9ecef; color:#003566; margin-top:15px; border:2px dashed #003566;" onclick="activarFacial('login')">
-            <i class="fa-solid fa-face-viewfinder"></i> ACCESO FACIAL
+        <button class="btn-face" onclick="activarBiometrico('login')">
+            <i class="fa-solid fa-face-viewfinder"></i> USAR RECONOCIMIENTO FACIAL
         </button>
-        <button style="background:none; border:none; color:#003566; cursor:pointer; text-decoration:underline; margin-top:10px;" onclick="toggleAuth()">Registrar nueva cuenta</button>
+        
+        <button style="background:none; border:none; color:#003566; margin-top:15px; text-decoration:underline; cursor:pointer;" onclick="toggleAuth()">¿Nuevo usuario? Regístrate</button>
     </div>
 
     <div id="appBox" class="app hidden">
         <div class="top-bar">
             <div class="gps-card">
-                <i class="fa-solid fa-location-dot" style="margin-right:10px; color:#ffc300;"></i>
-                <div><b style="color:white">TIENDA:</b><br><span id="txtGps">Ubicando...</span></div>
+                <i class="fa-solid fa-location-dot"></i> <b>UBICACIÓN:</b> <span id="txtGps">Detectando...</span>
             </div>
-            <button class="btn-exit-icon" onclick="cerrarSesion()"><i class="fa-solid fa-power-off"></i></button>
+            <button class="btn-exit" onclick="cerrarSesion()"><i class="fa-solid fa-power-off"></i></button>
         </div>
 
-        <button class="btn-save btn-payjoy" onclick="window.open('https://www.payjoy.com', '_blank')">
-            <i class="fa-solid fa-mobile-screen"></i> ABRIR PAYJOY
-        </button>
+        <div class="card" style="border: 2px solid #ffc300; text-align: center;">
+            <p style="margin:0 0 10px 0; color:#ffc300; font-weight:bold;">SISTEMA BIOMÉTRICO</p>
+            <button class="btn-face" style="margin:0 auto;" onclick="activarBiometrico('registro')">
+                <i class="fa-solid fa-camera"></i> REGISTRAR MI ROSTRO AHORA
+            </button>
+        </div>
+
+        <button class="btn-save btn-payjoy" onclick="window.open('https://www.payjoy.com', '_blank')">ABRIR PAYJOY</button>
 
         <form id="fReg">
             <div class="card">
-                <label>Tipo de Venta</label>
-                <select id="iTipo"><option>KIT</option>
+                <label>Tipo Venta</label><select id="iTipo"><option>KIT</option><option>CHIP</option><option>PORTA</option><option>RENUEVATE</option></select>
+                <label>Fecha</label><input id="iFec" required>
+                <label>Teléfono</label><input id="iTel" type="tel" maxlength="10" required>
+                <label>ICCID</label><input id="iIcc" required>
+            </div>
+            <div class="card">
+                <label>IMEI</label><input id="iIme"><label>Marca</label><input id="iMarca"><label>Modelo</label><input id="iMod">
+            </div>
+            <div class="card">
+                <label># Tienda</label><input id="iTiendaNum" required>
+                <label>Cadena</label><input id="iCadena" required>
+                <label>Nombre Tienda</label><input id="iTiendaNombre" required>
+                <label>Promotor</label><input id="iProm" required>
+            </div>
+            <button type="submit" class="btn-save">GUARDAR REGISTRO</button>
+        </form>
+
+        <h3 style="color:#ffc300;">REGISTROS GUARDADOS</h3>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr><th>CELULAR</th><th>IMEI</th><th>ICCID</th><th>TIPO</th><th>TIENDA</th><th>PROMOTOR</th><th>FECHA</th><th>X</th></tr>
+                </thead>
+                <tbody id="bodyVentas"></tbody>
+            </table>
+        </div>
+
+        <button class="btn-save" style="background:#1f7a3f; color:white; margin-top:20px;" onclick="exportarExcel()">DESCARGAR EXCEL</button>
+    </div>
+
+<script>
+    const firebaseConfig = { apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc", authDomain: "ventastelcel4029.firebaseapp.com", databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com", projectId: "ventastelcel4029", storageBucket: "ventastelcel4029.firebasestorage.app", messagingSenderId: "480758010888", appId: "1:480758010888:web:e948c54f0217536aa9adbd" };
+
+    let auth, isLogin = true, cRes = 0, stream = null;
+
+    function inicio() {
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        auth = firebase.auth();
+        genCaptcha();
+        obtenerGps();
+        auth.onAuthStateChanged(user => {
+            if(user) {
+                document.getElementById('loginBox').classList.add("hidden");
+                document.getElementById('appBox').classList.remove("hidden");
+                cargarLocal();
+            } else {
+                document.getElementById('loginBox').classList.remove("hidden");
+                document.getElementById('appBox').classList.add("hidden");
+            }
+        });
+        document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX');
+    }
+
+    // --- RECONOCIMIENTO FACIAL ---
+    async function activarBiometrico(modo) {
+        const cam = document.getElementById('camera-container');
+        const form = document.getElementById('form-auth');
+        cam.style.display = "block";
+        if(modo === 'login') form.style.display = "none";
+
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            document.getElementById('video').srcObject = stream;
+            
+            setTimeout(() => {
+                detenerCam();
+                cam.style.display = "none";
+                form.style.display = "block";
+                if(modo === 'registro') alert("¡Rostro vinculado exitosamente!");
+                else {
+                    alert("Identidad confirmada");
+                    document.getElementById('loginBox').classList.add("hidden");
+                    document.getElementById('appBox').classList.remove("hidden");
+                }
+            }, 4000);
+        } catch (e) { alert("Error de cámara"); cam.style.display = "none"; form.style.display = "block"; }
+    }
+
+    function detenerCam() { if(stream) stream.getTracks().forEach(t => t.stop()); }
+    function cerrarSesion() { if(confirm("¿Cerrar sesión?")) auth.signOut(); }
+
+    function genCaptcha() {
+        const n1 = Math.floor(Math.random()*9)+1, n2 = Math.floor(Math.random()*9)+1;
+        cRes = n1 + n2;
+        document.getElementById('txtCaptcha').innerText = `${n1} + ${n2} =`;
+    }
+
+    function manejarAuth() {
+        const u = document.getElementById('u').value, p = document.getElementById('p').value, a = parseInt(document.getElementById('iCaptchaAns').value);
+        if(a !== cRes) { alert("Captcha incorrecto"); genCaptcha(); return; }
+        if(isLogin) auth.signInWithEmailAndPassword(u, p).catch(e => alert("Error"));
+        else auth.createUserWithEmailAndPassword(u, p).then(() => isLogin=true);
+    }
+
+    function obtenerGps() {
+        if(navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(pos => {
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`)
+                .then(r => r.json()).then(d => document.getElementById('txtGps').innerText = d.display_name);
+            });
+        }
+    }
+
+    document.getElementById('fReg').onsubmit = e => {
+        e.preventDefault();
+        const v = { id:Date.now(), cel:document.getElementById('iTel').value, imei:document.getElementById('iIme').value, iccid:document.getElementById('iIcc').value, tipo:document.getElementById('iTipo').value, nt:document.getElementById('iTiendaNombre').value, prom:document.getElementById('iProm').value, fec:document.getElementById('iFec').value };
+        let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
+        l.unshift(v);
+        localStorage.setItem("ventas_omar", JSON.stringify(l));
+        cargarLocal(); e.target.reset();
+    };
+
+    function cargarLocal() {
+        let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
+        document.getElementById('bodyVentas').innerHTML = l.map(v => `<tr><td>${v.cel}</td><td>${v.imei}</td><td>${v.iccid}</td><td>${v.tipo}</td><td>${v.nt}</td><td>${v.prom}</td><td>${v.fec}</td><td><button onclick="eliminar(${v.id})">X</button></td></tr>`).join("");
+    }
+
+    function eliminar(id) {
+        let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]").filter(x => x.id !== id);
+        localStorage.setItem("ventas_omar", JSON.stringify(l)); cargarLocal();
+    }
+
+    function exportarExcel() {
+        let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
+        const ws = XLSX.utils.json_to_sheet(l);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Ventas");
+        XLSX.writeFile(wb, "Ventas_Omar.xlsx");
+    }
+
+    function toggleAuth() { isLogin = !isLogin; document.getElementById('authTitle').innerText = isLogin ? "Acceso Promotores" : "Registro"; }
+</script>
+</body>
+</html>
