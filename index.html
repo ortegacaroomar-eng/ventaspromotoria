@@ -23,14 +23,14 @@
         .card { background:rgba(255,255,255,.08); backdrop-filter:blur(10px); border-radius:15px; padding:20px; margin-bottom:15px; border:1px solid rgba(255,255,255,0.1); }
         label { font-size:10px; font-weight:bold; color:#ffc300; text-transform: uppercase; display: block; margin-bottom: 5px; }
         
-        /* Inputs de la APP (Fondo oscuro, texto blanco) */
+        /* Inputs APP */
         .app input, .app select { width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; }
         
-        /* Inputs del LOGIN (Fondo claro, texto NEGRO para que se vea) */
-        .login-box input { width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #ccc; background:#f9f9f9; color:#333; box-sizing: border-box; font-size: 14px; }
+        /* Inputs LOGIN (Texto Negro) */
+        .login-box input { width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #ccc; background:#f9f9f9; color:#000; box-sizing: border-box; font-size: 14px; }
 
         .btn-save { background:#ffc300; color:#001d3d; width:100%; padding:15px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size: 16px; }
-        .btn-excel { background:#1f7a3f; color:white; width:100%; padding:12px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; margin-top:20px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-excel { background:#1f7a3f; color:white; width:100%; padding:14px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; margin-top:20px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(31, 122, 63, 0.4); }
 
         .table-container { overflow-x: auto; background: white; border-radius: 10px; margin-top: 20px; }
         table { width: 100%; border-collapse: collapse; color: #333; font-size: 11px; min-width: 1000px; }
@@ -73,8 +73,8 @@
                     <option value="PORTA">PORTA</option>
                     <option value="RENUEVATE">RENUEVATE</option>
                 </select>
-                <label>FECHA DE ACTIVACION (DD/MM/YYYY)</label>
-                <input id="iFec" required placeholder="02/02/2026">
+                <label>FECHA DE ACTIVACION</label>
+                <input id="iFec" required>
                 <label>NUM. CELULAR</label>
                 <input id="iTel" type="tel" required maxlength="10">
                 <label>ICCID</label>
@@ -98,7 +98,7 @@
         </form>
 
         <button class="btn-excel" onclick="exportarExcel()">
-            <i class="fa-solid fa-file-excel"></i> DESCARGAR EXCEL FORMATEADO
+            <i class="fa-solid fa-file-excel"></i> DESCARGAR REPORTE PROFESIONAL
         </button>
 
         <div class="table-container">
@@ -143,20 +143,12 @@
         db = firebase.database();
         auth = firebase.auth();
         setInterval(() => document.getElementById('txtReloj').innerText = new Date().toLocaleTimeString('es-MX'), 1000);
-        
         if(navigator.geolocation) {
             navigator.geolocation.watchPosition(p => {
                 document.getElementById('txtGps').innerHTML = `${p.coords.latitude.toFixed(6)}, ${p.coords.longitude.toFixed(6)}`;
             });
         }
-        
-        // Formato DD/MM/YYYY como pediste
-        const hoy = new Date();
-        const dia = String(hoy.getDate()).padStart(2, '0');
-        const mes = String(hoy.getMonth() + 1).padStart(2, '0');
-        const anio = hoy.getFullYear();
-        document.getElementById('iFec').value = `${dia}/${mes}/${anio}`;
-
+        document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
         auth.onAuthStateChanged(user => {
             if(user) {
                 document.getElementById('loginBox').classList.add("hidden");
@@ -174,24 +166,14 @@
         document.getElementById('authTitle').innerText = isLoginMode ? "Acceso Promotores" : "Registrar Nuevo Usuario";
         document.getElementById('btnAuthAction').innerText = isLoginMode ? "ENTRAR" : "REGISTRAR";
         document.getElementById('btnToggleAuth').innerText = isLoginMode ? "¿No tienes cuenta? Regístrate aquí" : "¿Ya tienes cuenta? Inicia sesión";
-        // Limpiar campos al cambiar
-        document.getElementById('u').value = "";
-        document.getElementById('p').value = "";
     }
 
     function manejarAuth() {
         const u = document.getElementById('u').value;
         const p = document.getElementById('p').value;
-        if(!u || !p) return alert("Por favor llena los campos");
-
-        if(isLoginMode) {
-            auth.signInWithEmailAndPassword(u, p).catch(e => alert("Error: " + e.message));
-        } else {
-            auth.createUserWithEmailAndPassword(u, p).then(() => {
-                alert("¡Usuario registrado! Ahora puedes entrar.");
-                toggleAuthMode();
-            }).catch(e => alert("Error: " + e.message));
-        }
+        if(!u || !p) return alert("Llena los campos");
+        if(isLoginMode) { auth.signInWithEmailAndPassword(u, p).catch(e => alert(e.message)); }
+        else { auth.createUserWithEmailAndPassword(u, p).then(() => { alert("Registrado"); toggleAuthMode(); }).catch(e => alert(e.message)); }
     }
 
     function salir() { auth.signOut(); }
@@ -217,14 +199,11 @@
         localStorage.setItem("ventas_omar", JSON.stringify(l));
         cargarLocal();
         e.target.reset();
-        // Reset fecha tras guardar
-        const hoy = new Date();
-        document.getElementById('iFec').value = `${String(hoy.getDate()).padStart(2,'0')}/${String(hoy.getMonth()+1).padStart(2,'0')}/${hoy.getFullYear()}`;
-        alert("Venta guardada");
+        document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
     };
 
     function eliminar(id) {
-        if(!confirm("¿Eliminar registro?")) return;
+        if(!confirm("¿Borrar?")) return;
         let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]").filter(v => v.id !== id);
         localStorage.setItem("ventas_omar", JSON.stringify(l));
         cargarLocal();
@@ -269,10 +248,21 @@
         }));
 
         const ws = XLSX.utils.json_to_sheet(datosExcel);
-        ws['!cols'] = [{wch:15},{wch:20},{wch:22},{wch:25},{wch:22},{wch:25},{wch:35},{wch:30},{wch:20},{wch:15},{wch:15}];
+        
+        // --- MEJORAS DE FORMATO ---
+        // 1. Anchos de columna automáticos + margen extra
+        ws['!cols'] = [
+            {wch: 18}, {wch: 22}, {wch: 22}, {wch: 25}, {wch: 22}, 
+            {wch: 28}, {wch: 38}, {wch: 32}, {wch: 20}, {wch: 15}, {wch: 15}
+        ];
+
+        // 2. Filtros automáticos
+        const range = XLSX.utils.decode_range(ws['!ref']);
+        ws['!autofilter'] = { ref: XLSX.utils.encode_range(range) };
+
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Hoja1");
-        XLSX.writeFile(wb, "Comisiones_Omar_Ortega.xlsx");
+        XLSX.utils.book_append_sheet(wb, ws, "Comisiones");
+        XLSX.writeFile(wb, "Reporte_Omar_Ortega_Final.xlsx");
     }
 </script>
 </body>
