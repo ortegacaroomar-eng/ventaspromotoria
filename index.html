@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -10,7 +9,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    
     <style>
         body { margin:0; font-family:'Segoe UI',system-ui; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; }
         .app { max-width:480px; margin:auto; padding:20px; position: relative; }
@@ -35,10 +33,10 @@
 
     <div id="loginBox" class="login">
         <h2 id="tituloAuth" style="margin-top:0">Acceso Sistema</h2>
-        <input id="u" placeholder="Correo / Usuario">
+        <input id="u" placeholder="Correo Electrónico">
         <input id="p" type="password" placeholder="Contraseña">
         <button class="btn-main" onclick="entrar()">ENTRAR</button>
-        <button style="background:none; color:#0033A0; font-size:12px; margin-top:10px; cursor:pointer;" onclick="toggleRegistro()" id="btnT">¿No tienes cuenta? Regístrate</button>
+        <button style="background:none; color:#003566; font-size:12px; margin-top:10px; cursor:pointer;" onclick="toggleRegistro()" id="btnT">¿No tienes cuenta? Regístrate</button>
     </div>
 
     <div id="appBox" class="app hidden">
@@ -87,15 +85,15 @@
     </div>
 
 <script>
-    // CONFIGURACIÓN EXTRAÍDA DE TU IMAGEN
+    // CONFIGURACIÓN FINAL CORREGIDA DESDE TU CONSOLA
     const firebaseConfig = {
-        apiKey: "AIzaSyD4UK_j8UxMvDCtrlX1YFt8e_...", // Reemplaza los ... con el resto de tu clave
+        apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc", 
         authDomain: "ventastelcel4029.firebaseapp.com",
         databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com",
         projectId: "ventastelcel4029",
-        storageBucket: "ventastelcel4029.appspot.com",
+        storageBucket: "ventastelcel4029.firebasestorage.app",
         messagingSenderId: "480758010888",
-        appId: "1:480758010888:web:e948c54f8217536aa9adbd"
+        appId: "1:480758010888:web:e948c54f0217536aa9adbd"
     };
 
     let uA = "", db, auth, modoReg = false;
@@ -105,16 +103,11 @@
         db = firebase.database();
         auth = firebase.auth();
         
-        // Fecha por defecto DD/MM/YYYY solicitado
         const hoy = new Date();
-        const d = String(hoy.getDate()).padStart(2, '0');
-        const m = String(hoy.getMonth() + 1).padStart(2, '0');
-        const y = hoy.getFullYear();
-        iFec.value = `${d}/${m}/${y}`;
+        iFec.value = hoy.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
         
-        // Escuchar cambios de sesión
         auth.onAuthStateChanged(user => {
-            if (user) {
+            if(user) {
                 uA = user.email;
                 mostrarApp();
             } else {
@@ -131,17 +124,17 @@
     }
 
     function entrar() {
-        const email = u.value.trim();
-        const pass = p.value.trim();
-        if(!email || !pass) return alert("Llena los campos");
+        let userEmail = u.value.trim();
+        let pass = p.value.trim();
+        if(!userEmail || !pass) return alert("Por favor llena todos los campos");
         
         if(modoReg) {
-            auth.createUserWithEmailAndPassword(email, pass)
-            .then(() => { alert("Registrado exitosamente"); toggleRegistro(); })
+            auth.createUserWithEmailAndPassword(userEmail, pass)
+            .then(() => { alert("Usuario registrado"); toggleRegistro(); })
             .catch(e => alert("Error: " + e.message));
         } else {
-            auth.signInWithEmailAndPassword(email, pass)
-            .catch(e => alert("Error: " + e.message));
+            auth.signInWithEmailAndPassword(userEmail, pass)
+            .catch(e => alert("Acceso denegado: " + e.message));
         }
     }
 
@@ -177,12 +170,10 @@
             "MODELO": iMod.value || "-"
         };
 
-        // Guardado Local (Como pediste, siempre local primero)
         let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
         local.unshift(v);
         localStorage.setItem("ventas_save", JSON.stringify(local));
 
-        // Subida a Firebase
         if(auth.currentUser) {
             db.ref('ventas/' + auth.currentUser.uid).push(v).then(() => {
                 marcarSincronizado(v.id);
@@ -191,10 +182,17 @@
 
         fReg.reset();
         ajustarCampos();
-        const hoy = new Date();
-        iFec.value = `${String(hoy.getDate()).padStart(2, '0')}/${String(hoy.getMonth() + 1).padStart(2, '0')}/${hoy.getFullYear()}`;
+        iFec.value = new Date().toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
         cargarVentasLocales();
-        alert("Venta guardada");
+        alert("Venta guardada localmente");
+    }
+
+    function eliminarVenta(id) {
+        if(confirm("¿Borrar venta local?")) {
+            let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
+            localStorage.setItem("ventas_save", JSON.stringify(local.filter(v => v.id !== id)));
+            cargarVentasLocales();
+        }
     }
 
     function marcarSincronizado(id) {
@@ -207,22 +205,11 @@
         }
     }
 
-    function eliminarVenta(id) {
-        if(confirm("¿Borrar venta local?")) {
-            let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
-            localStorage.setItem("ventas_save", JSON.stringify(local.filter(v => v.id !== id)));
-            cargarVentasLocales();
-        }
-    }
-
     function cargarVentasLocales() {
         const div = document.getElementById("listaLocal");
         let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
-        if(local.length === 0) {
-            div.innerHTML = "<p style='text-align:center; opacity:0.5;'>Sin registros.</p>";
-            return;
-        }
-        div.innerHTML = local.map(v => `
+        div.innerHTML = local.length === 0 ? "<p style='text-align:center; opacity:0.5;'>Sin registros.</p>" : 
+        local.map(v => `
             <div class="venta-item">
                 <div class="status-icon">${v.sincronizado ? '☁️' : '⏳'}</div>
                 <div class="btn-del" onclick="eliminarVenta(${v.id})"><i class="fa-solid fa-trash-can"></i></div>
@@ -242,10 +229,9 @@
         const paraExcel = local.map(({id, sincronizado, ...resto}) => resto);
         const ws = XLSX.utils.json_to_sheet(paraExcel);
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Ventas");
-        XLSX.writeFile(wb, "Ventas_Teledata_2026.xlsx");
+        XLSX.utils.book_append_sheet(wb, ws, "Registro");
+        XLSX.writeFile(wb, "comisiones_2026_teledata.xlsx");
     }
 </script>
 </body>
 </html>
-
