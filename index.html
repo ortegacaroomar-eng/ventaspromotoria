@@ -35,16 +35,18 @@
 
         .hidden { display: none !important; }
         .login-box { max-width: 350px; margin: 100px auto; background: white; padding: 30px; border-radius: 20px; text-align: center; color: #000; }
+        .btn-link-auth { background: none; border: none; color: #003566; font-size: 12px; text-decoration: underline; cursor: pointer; margin-top: 15px; }
     </style>
 </head>
 <body onload="inicio()">
 
     <div id="loginBox" class="login-box">
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Logo_Telcel.svg/1200px-Logo_Telcel.svg.png" width="120">
-        <h3>Acceso Promotores</h3>
-        <input id="u" type="email" placeholder="Usuario">
+        <h3 id="authTitle">Acceso Promotores</h3>
+        <input id="u" type="email" placeholder="Usuario (Correo)">
         <input id="p" type="password" placeholder="Contraseña">
-        <button class="btn-save" onclick="manejarAuth()">ENTRAR</button>
+        <button class="btn-save" id="btnAuthAction" onclick="manejarAuth()">ENTRAR</button>
+        <button class="btn-link-auth" id="btnToggleAuth" onclick="toggleAuthMode()">¿No tienes cuenta? Regístrate aquí</button>
     </div>
 
     <div id="appBox" class="app hidden">
@@ -66,7 +68,7 @@
                     <option value="PORTA">PORTA</option>
                     <option value="RENUEVATE">RENUEVATE</option>
                 </select>
-                <label>FECHA DE ACTIVACION</label>
+                <label>FECHA DE ACTIVACION (DD/MM/YYYY)</label>
                 <input id="iFec" required>
                 <label>NUM. CELULAR</label>
                 <input id="iTel" type="tel" required maxlength="10">
@@ -129,18 +131,22 @@
     };
 
     let db, auth;
+    let isLoginMode = true;
 
     function inicio() {
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         db = firebase.database();
         auth = firebase.auth();
         setInterval(() => document.getElementById('txtReloj').innerText = new Date().toLocaleTimeString('es-MX'), 1000);
+        
         if(navigator.geolocation) {
             navigator.geolocation.watchPosition(p => {
                 document.getElementById('txtGps').innerHTML = `${p.coords.latitude.toFixed(6)}, ${p.coords.longitude.toFixed(6)}`;
             });
         }
+        
         document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
+
         auth.onAuthStateChanged(user => {
             if(user) {
                 document.getElementById('loginBox').classList.add("hidden");
@@ -153,8 +159,27 @@
         });
     }
 
+    function toggleAuthMode() {
+        isLoginMode = !isLoginMode;
+        document.getElementById('authTitle').innerText = isLoginMode ? "Acceso Promotores" : "Registrar Nuevo Usuario";
+        document.getElementById('btnAuthAction').innerText = isLoginMode ? "ENTRAR" : "REGISTRAR";
+        document.getElementById('btnToggleAuth').innerText = isLoginMode ? "¿No tienes cuenta? Regístrate aquí" : "¿Ya tienes cuenta? Inicia sesión";
+    }
+
     function manejarAuth() {
-        auth.signInWithEmailAndPassword(document.getElementById('u').value, document.getElementById('p').value).catch(e => alert("Error"));
+        const u = document.getElementById('u').value;
+        const p = document.getElementById('p').value;
+        if(!u || !p) return alert("Por favor llena todos los campos");
+
+        if(isLoginMode) {
+            auth.signInWithEmailAndPassword(u, p).catch(e => alert("Error de acceso: " + e.message));
+        } else {
+            auth.createUserWithEmailAndPassword(u, p).then(() => {
+                alert("¡Cuenta creada con éxito!");
+                isLoginMode = true;
+                toggleAuthMode();
+            }).catch(e => alert("Error al registrar: " + e.message));
+        }
     }
 
     function salir() { auth.signOut(); }
@@ -181,9 +206,11 @@
         cargarLocal();
         e.target.reset();
         document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
+        alert("Venta guardada localmente");
     };
 
     function eliminar(id) {
+        if(!confirm("¿Borrar este registro?")) return;
         let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]").filter(v => v.id !== id);
         localStorage.setItem("ventas_omar", JSON.stringify(l));
         cargarLocal();
@@ -211,9 +238,8 @@
 
     function exportarExcel() {
         let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-        if(l.length === 0) return alert("Sin datos");
+        if(l.length === 0) return alert("No hay datos para exportar");
 
-        // MAPEO EXACTO PARA EL EXCEL (ORDEN OFICIAL)
         const datosExcel = l.map(v => ({
             "NUM. CELULAR": v["NUM. CELULAR"],
             "IMEI": v.IMEI,
@@ -230,12 +256,11 @@
 
         const ws = XLSX.utils.json_to_sheet(datosExcel);
         
-        // AJUSTE DE ANCHO DE COLUMNAS (Para que no salga amontonado)
-        const wscols = [
+        // Ajuste de anchos para que no se amontone
+        ws['!cols'] = [
             {wch: 15}, {wch: 20}, {wch: 22}, {wch: 25}, {wch: 22}, 
             {wch: 25}, {wch: 35}, {wch: 30}, {wch: 20}, {wch: 15}, {wch: 15}
         ];
-        ws['!cols'] = wscols;
 
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Hoja1");
