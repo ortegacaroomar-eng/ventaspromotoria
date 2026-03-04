@@ -14,39 +14,37 @@
         .app { max-width:480px; margin:auto; padding:20px; position: relative; }
         .card { background:rgba(255,255,255,.08); backdrop-filter:blur(12px); border-radius:18px; padding:18px; margin-bottom:16px; box-shadow:0 10px 25px rgba(0,0,0,.3); border:1px solid rgba(255,255,255,0.1); }
         
-        /* BIENVENIDA PERSONALIZADA */
-        .welcome-bar { text-align: left; margin-bottom: 20px; padding: 10px 5px; border-bottom: 2px solid #ffc300; }
-        .welcome-text { font-size: 18px; font-weight: bold; color: #ffc300; display: block; }
-        .user-name { font-size: 14px; color: #00b4d8; }
+        /* BARRA SUPERIOR CON RELOJ Y INFO */
+        .info-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 12px; font-size: 12px; border: 1px solid rgba(255,195,0,0.3); }
+        #reloj { font-weight: bold; color: #ffc300; font-family: monospace; font-size: 14px; }
+        #ubicacion { color: #00b4d8; font-style: italic; }
 
+        .welcome-text { font-size: 18px; font-weight: bold; color: #ffc300; display: block; margin-bottom: 5px; }
         .header { text-align:center; font-size:20px; font-weight:bold; color:#ffc300; margin-bottom:20px; text-transform: uppercase; }
         label { font-size:11px; font-weight:600; color:#ffc300; text-transform: uppercase; }
         input, select { width:100%; padding:12px; margin-top:4px; margin-bottom:12px; border-radius:10px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; }
-        .login input { background: #f0f2f5; color: #000 !important; border: 1px solid #ccc; }
         
-        button { width:100%; padding:14px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; transition:.2s; margin-bottom: 10px; }
-        .btn-main { background:#ffc300; color:#003566; }
-        .btn-excel { background:#1f7a3f; color:white; width: 100%; margin-top: 10px; }
-        .btn-logout { position: absolute; top: 20px; right: 20px; background: #ff4d4d; color: white; padding: 8px 12px; border-radius: 8px; font-size: 12px; z-index: 10; width: auto; border:none; cursor:pointer; }
+        .login input { background: #f0f2f5; color: #000 !important; border: 1px solid #ccc; }
+        .btn-main { background:#ffc300; color:#003566; width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        .btn-excel { background:#1f7a3f; color:white; width: 100%; margin-top: 10px; padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        .btn-logout { position: absolute; top: 20px; right: 20px; background: #ff4d4d; color: white; padding: 8px 12px; border-radius: 8px; font-size: 12px; z-index: 10; border:none; cursor:pointer; }
         
         .login { max-width:350px; margin:100px auto; background:white; color:black; padding:30px; border-radius:18px; text-align:center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .hidden { display:none !important; }
 
-        /* ESTILO DETALLADO DEL HISTORIAL */
+        /* HISTORIAL */
         .venta-item { background: rgba(255,255,255,0.07); padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 5px solid #ffc300; font-size: 11px; position: relative; }
         .status-icon { position: absolute; top: 15px; right: 45px; font-size: 14px; }
-        .btn-del { position: absolute; top: 12px; right: 12px; color: #ff4d4d; cursor: pointer; font-size: 18px; padding: 5px; }
+        .btn-del { position: absolute; top: 12px; right: 12px; color: #ff4d4d; cursor: pointer; font-size: 18px; }
         .grid-historial { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; }
-        .dato-h { margin-bottom: 5px; }
-        .dato-h b { color: #ffc300; display: block; font-size: 9px; text-transform: uppercase; margin-bottom: 2px; }
-        .dato-h span { font-size: 12px; color: #fff; word-break: break-all; }
+        .dato-h b { color: #ffc300; display: block; font-size: 9px; text-transform: uppercase; }
         .full-width { grid-column: span 2; }
     </style>
 </head>
 <body onload="inicio()">
 
     <div id="loginBox" class="login">
-        <h2 id="tituloAuth" style="margin-top:0">Acceso Sistema</h2>
+        <h2 id="tituloAuth">Acceso Sistema</h2>
         <input id="u" placeholder="Correo Electrónico">
         <input id="p" type="password" placeholder="Contraseña">
         <button class="btn-main" onclick="entrar()">ENTRAR</button>
@@ -56,11 +54,12 @@
     <div id="appBox" class="app hidden">
         <button class="btn-logout" onclick="salir()"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
         
-        <div class="welcome-bar">
-            <span class="welcome-text">¡Bienvenido a Telcel!</span>
-            <span id="userNameDisp" class="user-name">Cargando promotor...</span>
+        <div class="info-bar">
+            <div id="reloj">00:00:00</div>
+            <div id="ubicacion"><i class="fa-solid fa-location-dot"></i> Buscando...</div>
         </div>
 
+        <div class="welcome-text" id="welcomeMsg">¡Bienvenido a Telcel!</div>
         <div class="header">Registro de Ventas</div>
         
         <form id="fReg">
@@ -88,9 +87,9 @@
             </div>
 
             <div class="card">
-                <label># TIENDA / Determinante</label><input id="iTiendaNum" required>
+                <label># TIENDA / Determinante (Manual)</label><input id="iTiendaNum" required placeholder="Ej: 5432">
                 <label>SOLO NOMBRE DE LA CADENA</label><input id="iCadena" required>
-                <label>SOLO NOMBRE DE TIENDA SIN CADENA</label><input id="iTiendaNombre" required>
+                <label>SOLO NOMBRE DE TIENDA</label><input id="iTiendaNombre" required>
                 <label>NOMBRE COMPLETO PROMOTOR</label><input id="iProm" required>
             </div>
             <button type="submit" class="btn-main">GUARDAR VENTA</button>
@@ -100,7 +99,7 @@
             <i class="fa-solid fa-file-excel"></i> DESCARGAR EXCEL (.xlsx)
         </button>
 
-        <div class="header" style="font-size: 16px; margin-top: 25px;">Historial Local Detallado</div>
+        <div class="header" style="font-size: 16px; margin-top: 25px;">Historial Local</div>
         <div id="listaLocal"></div>
     </div>
 
@@ -121,35 +120,45 @@
         if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
         db = firebase.database();
         auth = firebase.auth();
+        
+        // Reloj en tiempo real
+        setInterval(() => {
+            const d = new Date();
+            reloj.innerText = d.toLocaleTimeString('es-MX');
+        }, 1000);
+
+        // Ubicación
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(pos => {
+                ubicacion.innerText = `Lat: ${pos.coords.latitude.toFixed(2)}, Lon: ${pos.coords.longitude.toFixed(2)}`;
+            }, () => { ubicacion.innerText = "GPS Desactivado"; });
+        }
+
         const hoy = new Date();
         iFec.value = hoy.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
         
         auth.onAuthStateChanged(user => {
             if(user) { 
-                // Extraer nombre del correo antes del @ para la bienvenida
-                const nombreLimpio = user.email.split('@')[0].toUpperCase();
-                userNameDisp.innerText = "Promotor: " + nombreLimpio;
+                const nom = user.email.split('@')[0].toUpperCase();
+                welcomeMsg.innerText = "¡Bienvenido, " + nom + "!";
+                iProm.value = nom; // Auto-llenado de promotor
                 mostrarApp(); 
             } 
             else { loginBox.classList.remove("hidden"); appBox.classList.add("hidden"); }
         });
     }
 
-    function toggleRegistro() {
-        let modoReg = (tituloAuth.innerText === "Acceso Sistema");
-        tituloAuth.innerText = modoReg ? "Crear Usuario" : "Acceso Sistema";
-        btnT.innerText = modoReg ? "Ya tengo cuenta, entrar" : "¿No tienes cuenta? Regístrate";
-    }
-
     function entrar() {
         let userEmail = u.value.trim();
         let pass = p.value.trim();
-        if(!userEmail || !pass) return alert("Por favor llena todos los campos");
-        if(tituloAuth.innerText === "Crear Usuario") {
-            auth.createUserWithEmailAndPassword(userEmail, pass).then(() => { alert("Usuario registrado"); toggleRegistro(); }).catch(e => alert("Error: " + e.message));
-        } else {
-            auth.signInWithEmailAndPassword(userEmail, pass).catch(e => alert("Error: " + e.message));
-        }
+        if(!userEmail || !pass) return alert("Llena los campos");
+        auth.signInWithEmailAndPassword(userEmail, pass).catch(e => alert("Error: " + e.message));
+    }
+
+    function toggleRegistro() {
+        let modoReg = (tituloAuth.innerText === "Acceso Sistema");
+        tituloAuth.innerText = modoReg ? "Crear Usuario" : "Acceso Sistema";
+        btnT.innerText = modoReg ? "Ya tengo cuenta" : "¿No tienes cuenta? Regístrate";
     }
 
     function mostrarApp() { loginBox.classList.add("hidden"); appBox.classList.remove("hidden"); cargarVentasLocales(); }
@@ -186,48 +195,24 @@
         }
         fReg.reset();
         iFec.value = new Date().toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        iProm.value = auth.currentUser.email.split('@')[0].toUpperCase();
         cargarVentasLocales();
-        alert("Venta guardada localmente");
-    }
-
-    function eliminarVenta(id) {
-        if(confirm("¿Eliminar este registro?")) {
-            let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
-            localStorage.setItem("ventas_save", JSON.stringify(local.filter(v => v.id !== id)));
-            cargarVentasLocales();
-        }
-    }
-
-    function marcarSincronizado(id) {
-        let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
-        let item = local.find(x => x.id === id);
-        if(item) {
-            item.sincronizado = true;
-            localStorage.setItem("ventas_save", JSON.stringify(local));
-            cargarVentasLocales();
-        }
+        alert("Venta guardada");
     }
 
     function cargarVentasLocales() {
         const div = document.getElementById("listaLocal");
         let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
-        div.innerHTML = local.length === 0 ? "<p style='text-align:center; opacity:0.5;'>Sin registros.</p>" : 
+        div.innerHTML = local.length === 0 ? "<p style='text-align:center;'>Sin registros.</p>" : 
         local.map(v => `
             <div class="venta-item">
                 <div class="status-icon">${v.sincronizado ? '☁️' : '⏳'}</div>
-                <div class="btn-del" onclick="eliminarVenta(${v.id})"><i class="fa-solid fa-trash-can"></i></div>
-                
-                <div style="color:#ffc300; font-weight:bold; font-size:16px; margin-bottom:5px;">${v["NUM. CELULAR"]}</div>
-                <div style="font-size:13px; margin-bottom:10px;">${v["Renuevate / Kit / Chip / Porta"]} | ${v["FECHA DE ACTIVACION"]}</div>
-
+                <div style="color:#ffc300; font-weight:bold; font-size:16px;">${v["NUM. CELULAR"]}</div>
                 <div class="grid-historial">
-                    <div class="dato-h"><b>ICCID</b><span>${v.ICCID}</span></div>
-                    <div class="dato-h"><b>IMEI</b><span>${v.IMEI}</span></div>
-                    <div class="dato-h"><b>MARCA/MODELO</b><span>${v.MARCA} ${v.MODELO}</span></div>
-                    <div class="dato-h"><b># TIENDA</b><span>${v["# TIENDA / Determinante"]}</span></div>
-                    <div class="dato-h full-width"><b>CADENA</b><span>${v["SOLO NOMBRE DE LA CADENA"]}</span></div>
+                    <div class="dato-h"><b>DET / TIENDA</b><span>${v["# TIENDA / Determinante"]}</span></div>
+                    <div class="dato-h"><b>TIPO</b><span>${v["Renuevate / Kit / Chip / Porta"]}</span></div>
                     <div class="dato-h full-width"><b>TIENDA</b><span>${v["SOLO NOMBRE DE TIENDA SIN CADENA"]}</span></div>
-                    <div class="dato-h full-width"><b>PROMOTOR</b><span>${v["NOMBRE COMPLETO PROMOTOR"]}</span></div>
+                    <div class="dato-h full-width"><b>ICCID</b><span>${v.ICCID}</span></div>
                 </div>
             </div>
         `).join("");
@@ -242,7 +227,7 @@
             "ICCID": v.ICCID,
             "Renuevate / Kit / Chip / Porta": v["Renuevate / Kit / Chip / Porta"],
             "# TIENDA / Determinante": v["# TIENDA / Determinante"],
-            "SOLO NOMBRE DE LA CADENA": v["SOLO NOMBRE DE LA CADENA"],
+            "SOLO NOMBRE DE LA CADENA": v["SOLO NOMBRE DE la CADENA"],
             "SOLO NOMBRE DE TIENDA SIN CADENA": v["SOLO NOMBRE DE TIENDA SIN CADENA"],
             "NOMBRE COMPLETO PROMOTOR": v["NOMBRE COMPLETO PROMOTOR"],
             "FECHA DE ACTIVACION": v["FECHA DE ACTIVACION"],
@@ -250,11 +235,4 @@
             "MODELO": v.MODELO
         }));
         const ws = XLSX.utils.json_to_sheet(dataParaExcel);
-        ws['!cols'] = [{ wch: 16 }, { wch: 20 }, { wch: 22 }, { wch: 25 }, { wch: 20 }, { wch: 25 }, { wch: 35 }, { wch: 30 }, { wch: 18 }, { wch: 15 }, { wch: 15 }];
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Ventas");
-        XLSX.writeFile(wb, "comisiones_2026.xlsx");
-    }
-</script>
-</body>
-</html>
+        ws['!cols'] = [{ wch: 16 }, { wch: 20 }, { wch: 22 }, { wch: 25 }, { wch: 20 }, { wch: 25 }, { wch: 35 }, { wch: 30 }, { wch: 18 }, { wch: 15
