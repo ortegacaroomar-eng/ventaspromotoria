@@ -13,28 +13,15 @@
         body { margin:0; font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; }
         .app { max-width:480px; margin:auto; padding:20px; position: relative; }
         
-        /* BOTÓN SALIR MINI (FLECHA) */
         .btn-logout-mini { 
-            position: absolute; 
-            top: 20px; 
-            right: 20px; 
-            background: rgba(255, 77, 77, 0.2); 
-            color: #ff4d4d; 
-            width: 35px; 
-            height: 35px; 
-            border-radius: 50%; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            border: 1px solid #ff4d4d; 
-            cursor: pointer; 
-            z-index: 100;
-            transition: 0.3s;
+            position: absolute; top: 20px; right: 20px; background: rgba(255, 77, 77, 0.2); 
+            color: #ff4d4d; width: 35px; height: 35px; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            border: 1px solid #ff4d4d; cursor: pointer; z-index: 100;
         }
-        .btn-logout-mini:hover { background: #ff4d4d; color: white; }
 
         .reloj-container { font-family: 'Courier New', monospace; font-size: 26px; color: #ffc300; font-weight: bold; text-align: center; margin-bottom: 10px; text-shadow: 0 0 10px rgba(255,195,0,0.5); }
-        .status-bar { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.1); padding: 12px; border-radius: 15px; margin-bottom: 15px; border: 1px solid rgba(255,195,0,0.3); width: 85%; }
+        .status-bar { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.1); padding: 12px; border-radius: 15px; margin-bottom: 15px; border: 1px solid rgba(255,195,0,0.3); width: 80%; }
         
         #relojApp { font-family: monospace; font-weight: bold; color: #ffc300; font-size: 18px; }
         #ubicacion { font-size: 10px; color: #00b4d8; text-align: right; }
@@ -55,10 +42,13 @@
         .bg-vincula { background: #003566; border: 1px solid #ffc300; }
         .bg-docs { background: #7248b9; grid-column: span 2; }
 
-        .login { max-width:350px; margin:80px auto; background:white; color:black; padding:30px; border-radius:20px; text-align:center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .login { max-width:350px; margin:80px auto; background:white; color:black; padding:30px; border-radius:20px; text-align:center; }
         .hidden { display:none !important; }
 
-        .venta-item { background: rgba(255,255,255,0.08); padding: 15px; border-radius: 15px; margin-bottom: 15px; border-left: 5px solid #ffc300; }
+        /* HISTORIAL CON BOTÓN ELIMINAR */
+        .venta-item { position: relative; background: rgba(255,255,255,0.08); padding: 15px; border-radius: 15px; margin-bottom: 15px; border-left: 5px solid #ffc300; }
+        .btn-del { position: absolute; top: 15px; right: 15px; color: #ff4d4d; cursor: pointer; font-size: 18px; background: none; border: none; width: auto; padding: 0; }
+        
         .grid-detalles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; font-size: 11px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; }
         .dato-h { display: flex; flex-direction: column; }
         .dato-h span { color: #aaa; font-size: 9px; text-transform: uppercase; }
@@ -74,22 +64,19 @@
         <input id="u" type="email" placeholder="Correo">
         <input id="p" type="password" placeholder="Contraseña">
         <button class="btn-main" onclick="entrar()">ENTRAR</button>
-        <button style="background:none; border:none; font-size:11px; margin-top:15px; cursor:pointer;" onclick="toggleReg()" id="btnT">¿Registrar nuevo promotor?</button>
+        <button style="background:none; border:none; font-size:11px; margin-top:15px; cursor:pointer;" onclick="toggleReg()">¿Nuevo registro?</button>
     </div>
 
     <div id="appBox" class="app hidden">
-        <div class="btn-logout-mini" onclick="salir()">
-            <i class="fa-solid fa-sign-out-alt"></i>
-        </div>
+        <div class="btn-logout-mini" onclick="salir()"><i class="fa-solid fa-arrow-right-from-bracket"></i></div>
 
         <div class="status-bar">
             <div id="relojApp">00:00:00</div>
-            <div id="ubicacion">GPS: Buscando...</div>
+            <div id="ubicacion">Buscando...</div>
         </div>
 
-        <div style="font-size: 18px; color:#ffc300; font-weight: bold;">¡Bienvenido!</div>
-        <div id="promotorName" style="font-size: 12px; color: #00b4d8;">PROMOTOR</div>
-        <div id="sessionTime" style="font-size: 10px; color: #aaa; margin-bottom: 15px;">Sesión: --:--</div>
+        <div style="font-size: 18px; color:#ffc300; font-weight: bold;">¡Buen día!</div>
+        <div id="promotorName" style="font-size: 12px; color: #00b4d8; margin-bottom: 10px;">PROMOTOR</div>
 
         <div class="external-links">
             <a href="https://app.payjoy.com/accounts/login?afterLogin=https://app.payjoy.com/merchant3?merchantId=199557" target="_blank" class="btn-link bg-payjoy">PAYJOY</a>
@@ -100,7 +87,7 @@
 
         <form id="fReg">
             <div class="card">
-                <div class="header">Registro de Venta</div>
+                <div class="header">Nueva Venta</div>
                 <label>Movimiento</label>
                 <select id="iTipo" required onchange="ajustarCampos()">
                     <option value="KIT">KIT</option>
@@ -115,22 +102,28 @@
 
             <div id="seccionEquipo" class="card">
                 <label>IMEI</label><input id="iIme">
-                <label>Marca</label><input id="iMarca">
-                <label>Modelo</label><input id="iMod">
+                <label>Marca / Modelo</label>
+                <div style="display: flex; gap:5px;">
+                    <input id="iMarca" placeholder="Marca">
+                    <input id="iMod" placeholder="Modelo">
+                </div>
             </div>
 
             <div class="card">
-                <label># Tienda / Determinante</label><input id="iTiendaNum" required>
-                <label>Cadena</label><input id="iCadena" required>
-                <label>Nombre Tienda</label><input id="iTiendaNombre" required>
-                <label>Nombre del Promotor</label><input id="iProm" required>
+                <label>Determinante</label><input id="iTiendaNum" required>
+                <label>Cadena / Tienda</label>
+                <div style="display: flex; gap:5px;">
+                    <input id="iCadena" placeholder="Cadena">
+                    <input id="iTiendaNombre" placeholder="Tienda">
+                </div>
+                <label>Nombre Promotor</label><input id="iProm" required>
             </div>
-            <button type="submit" class="btn-main">GUARDAR VENTA</button>
+            <button type="submit" class="btn-main">GUARDAR</button>
         </form>
 
         <button class="btn-excel" onclick="exportarExcel()">DESCARGAR EXCEL (.xlsx)</button>
 
-        <div class="header" style="margin-top: 30px;">Historial del Día (Detallado)</div>
+        <div class="header" style="margin-top: 30px;">Historial del Día</div>
         <div id="listaLocal"></div>
     </div>
 
@@ -171,7 +164,6 @@
                 const nombre = user.email.split('@')[0].toUpperCase();
                 document.getElementById('promotorName').innerText = "PROMOTOR: " + nombre;
                 document.getElementById('iProm').value = nombre;
-                document.getElementById('sessionTime').innerText = "Sesión: " + new Date().toLocaleTimeString('es-MX', {hour:'2-digit', minute:'2-digit'});
                 document.getElementById('loginBox').classList.add("hidden");
                 document.getElementById('appBox').classList.remove("hidden");
                 cargarLocal();
@@ -184,16 +176,7 @@
 
     function entrar() {
         let m = document.getElementById('u').value, p = document.getElementById('p').value;
-        if(document.getElementById('tituloAuth').innerText === "Crear Usuario") {
-            auth.createUserWithEmailAndPassword(m, p).then(() => toggleReg()).catch(e => alert(e.message));
-        } else {
-            auth.signInWithEmailAndPassword(m, p).catch(e => alert("Error al entrar"));
-        }
-    }
-
-    function toggleReg() {
-        const t = document.getElementById('tituloAuth');
-        t.innerText = (t.innerText === "Acceso Promotores") ? "Crear Usuario" : "Acceso Promotores";
+        auth.signInWithEmailAndPassword(m, p).catch(e => alert("Error: " + e.message));
     }
 
     function salir() { auth.signOut(); }
@@ -226,13 +209,23 @@
         document.getElementById('fReg').reset();
         document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
         cargarLocal();
-        alert("Guardado");
+        alert("Venta registrada");
     };
+
+    function eliminarVenta(id) {
+        if(confirm("¿Seguro que quieres borrar este registro?")) {
+            let l = JSON.parse(localStorage.getItem("ventas_save") || "[]");
+            l = l.filter(v => v.id !== id);
+            localStorage.setItem("ventas_save", JSON.stringify(l));
+            cargarLocal();
+        }
+    }
 
     function cargarLocal() {
         let l = JSON.parse(localStorage.getItem("ventas_save") || "[]");
         document.getElementById('listaLocal').innerHTML = l.map(v => `
             <div class="venta-item">
+                <button class="btn-del" onclick="eliminarVenta(${v.id})"><i class="fa-solid fa-trash-can"></i></button>
                 <div>📞 <b>${v["NUM. CELULAR"]}</b></div>
                 <div class="grid-detalles">
                     <div class="dato-h"><span>Determinante</span>${v["# TIENDA / Determinante"]}</div>
