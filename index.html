@@ -22,8 +22,13 @@
 
         .card { background:rgba(255,255,255,.08); backdrop-filter:blur(10px); border-radius:15px; padding:20px; margin-bottom:15px; border:1px solid rgba(255,255,255,0.1); }
         label { font-size:10px; font-weight:bold; color:#ffc300; text-transform: uppercase; display: block; margin-bottom: 5px; }
-        input, select { width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; }
         
+        /* Inputs de la APP (Fondo oscuro, texto blanco) */
+        .app input, .app select { width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; }
+        
+        /* Inputs del LOGIN (Fondo claro, texto NEGRO para que se vea) */
+        .login-box input { width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #ccc; background:#f9f9f9; color:#333; box-sizing: border-box; font-size: 14px; }
+
         .btn-save { background:#ffc300; color:#001d3d; width:100%; padding:15px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size: 16px; }
         .btn-excel { background:#1f7a3f; color:white; width:100%; padding:12px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; margin-top:20px; display: flex; align-items: center; justify-content: center; gap: 10px; }
 
@@ -34,16 +39,16 @@
         tr:nth-child(even) { background: #f9f9f9; }
 
         .hidden { display: none !important; }
-        .login-box { max-width: 350px; margin: 100px auto; background: white; padding: 30px; border-radius: 20px; text-align: center; color: #000; }
-        .btn-link-auth { background: none; border: none; color: #003566; font-size: 12px; text-decoration: underline; cursor: pointer; margin-top: 15px; }
+        .login-box { max-width: 350px; margin: 100px auto; background: white; padding: 30px; border-radius: 20px; text-align: center; color: #000; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .btn-link-auth { background: none; border: none; color: #003566; font-size: 13px; text-decoration: underline; cursor: pointer; margin-top: 15px; font-weight: bold; }
     </style>
 </head>
 <body onload="inicio()">
 
     <div id="loginBox" class="login-box">
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Logo_Telcel.svg/1200px-Logo_Telcel.svg.png" width="120">
-        <h3 id="authTitle">Acceso Promotores</h3>
-        <input id="u" type="email" placeholder="Usuario (Correo)">
+        <h3 id="authTitle" style="color:#003566; margin-top:10px;">Acceso Promotores</h3>
+        <input id="u" type="email" placeholder="Correo electrónico">
         <input id="p" type="password" placeholder="Contraseña">
         <button class="btn-save" id="btnAuthAction" onclick="manejarAuth()">ENTRAR</button>
         <button class="btn-link-auth" id="btnToggleAuth" onclick="toggleAuthMode()">¿No tienes cuenta? Regístrate aquí</button>
@@ -53,7 +58,7 @@
         <div class="top-bar">
             <div class="gps-card">
                 <i class="fa-solid fa-location-dot"></i>
-                <div><b style="color:white">UBICACIÓN</b><br><span id="txtGps">Localizando...</span></div>
+                <div><b style="color:white">UBICACIÓN GPS</b><br><span id="txtGps">Localizando...</span></div>
             </div>
             <div class="reloj-digital" id="txtReloj">00:00:00</div>
             <div class="btn-exit" onclick="salir()"><i class="fa-solid fa-power-off"></i></div>
@@ -69,7 +74,7 @@
                     <option value="RENUEVATE">RENUEVATE</option>
                 </select>
                 <label>FECHA DE ACTIVACION (DD/MM/YYYY)</label>
-                <input id="iFec" required>
+                <input id="iFec" required placeholder="02/02/2026">
                 <label>NUM. CELULAR</label>
                 <input id="iTel" type="tel" required maxlength="10">
                 <label>ICCID</label>
@@ -89,7 +94,7 @@
                 <label>NOMBRE COMPLETO PROMOTOR</label><input id="iProm" required>
             </div>
             
-            <button type="submit" class="btn-save">GUARDAR REGISTRO</button>
+            <button type="submit" class="btn-save">GUARDAR VENTA</button>
         </form>
 
         <button class="btn-excel" onclick="exportarExcel()">
@@ -145,7 +150,12 @@
             });
         }
         
-        document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
+        // Formato DD/MM/YYYY como pediste
+        const hoy = new Date();
+        const dia = String(hoy.getDate()).padStart(2, '0');
+        const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+        const anio = hoy.getFullYear();
+        document.getElementById('iFec').value = `${dia}/${mes}/${anio}`;
 
         auth.onAuthStateChanged(user => {
             if(user) {
@@ -164,21 +174,23 @@
         document.getElementById('authTitle').innerText = isLoginMode ? "Acceso Promotores" : "Registrar Nuevo Usuario";
         document.getElementById('btnAuthAction').innerText = isLoginMode ? "ENTRAR" : "REGISTRAR";
         document.getElementById('btnToggleAuth').innerText = isLoginMode ? "¿No tienes cuenta? Regístrate aquí" : "¿Ya tienes cuenta? Inicia sesión";
+        // Limpiar campos al cambiar
+        document.getElementById('u').value = "";
+        document.getElementById('p').value = "";
     }
 
     function manejarAuth() {
         const u = document.getElementById('u').value;
         const p = document.getElementById('p').value;
-        if(!u || !p) return alert("Por favor llena todos los campos");
+        if(!u || !p) return alert("Por favor llena los campos");
 
         if(isLoginMode) {
-            auth.signInWithEmailAndPassword(u, p).catch(e => alert("Error de acceso: " + e.message));
+            auth.signInWithEmailAndPassword(u, p).catch(e => alert("Error: " + e.message));
         } else {
             auth.createUserWithEmailAndPassword(u, p).then(() => {
-                alert("¡Cuenta creada con éxito!");
-                isLoginMode = true;
+                alert("¡Usuario registrado! Ahora puedes entrar.");
                 toggleAuthMode();
-            }).catch(e => alert("Error al registrar: " + e.message));
+            }).catch(e => alert("Error: " + e.message));
         }
     }
 
@@ -205,12 +217,14 @@
         localStorage.setItem("ventas_omar", JSON.stringify(l));
         cargarLocal();
         e.target.reset();
-        document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
-        alert("Venta guardada localmente");
+        // Reset fecha tras guardar
+        const hoy = new Date();
+        document.getElementById('iFec').value = `${String(hoy.getDate()).padStart(2,'0')}/${String(hoy.getMonth()+1).padStart(2,'0')}/${hoy.getFullYear()}`;
+        alert("Venta guardada");
     };
 
     function eliminar(id) {
-        if(!confirm("¿Borrar este registro?")) return;
+        if(!confirm("¿Eliminar registro?")) return;
         let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]").filter(v => v.id !== id);
         localStorage.setItem("ventas_omar", JSON.stringify(l));
         cargarLocal();
@@ -238,7 +252,7 @@
 
     function exportarExcel() {
         let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-        if(l.length === 0) return alert("No hay datos para exportar");
+        if(l.length === 0) return alert("No hay datos");
 
         const datosExcel = l.map(v => ({
             "NUM. CELULAR": v["NUM. CELULAR"],
@@ -255,13 +269,7 @@
         }));
 
         const ws = XLSX.utils.json_to_sheet(datosExcel);
-        
-        // Ajuste de anchos para que no se amontone
-        ws['!cols'] = [
-            {wch: 15}, {wch: 20}, {wch: 22}, {wch: 25}, {wch: 22}, 
-            {wch: 25}, {wch: 35}, {wch: 30}, {wch: 20}, {wch: 15}, {wch: 15}
-        ];
-
+        ws['!cols'] = [{wch:15},{wch:20},{wch:22},{wch:25},{wch:22},{wch:25},{wch:35},{wch:30},{wch:20},{wch:15},{wch:15}];
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Hoja1");
         XLSX.writeFile(wb, "Comisiones_Omar_Ortega.xlsx");
