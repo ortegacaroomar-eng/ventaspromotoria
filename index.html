@@ -30,18 +30,23 @@
         .btn-excel { background:#1f7a3f; color:white; margin-top:10px; }
         .btn-logout { position: absolute; top: 20px; right: 20px; background: #ff4d4d; color: white; padding: 6px 10px; border-radius: 8px; font-size: 10px; border:none; z-index: 100; }
         
-        /* BOTONES DE ENLACES EXTERNOS */
         .external-links { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
         .btn-link { text-decoration: none; display: flex; align-items: center; justify-content: center; border-radius: 12px; height: 45px; font-weight: bold; font-size: 11px; color: white; text-align: center; padding: 0 5px; }
         .bg-payjoy { background: #00a8e8; }
         .bg-vincula { background: #003566; border: 1px solid #ffc300; }
-        .bg-docs { background: #7248b9; grid-column: span 2; } /* El formulario ocupa todo el ancho */
+        .bg-docs { background: #7248b9; grid-column: span 2; }
 
         .login { max-width:350px; margin:80px auto; background:white; color:black; padding:30px; border-radius:20px; text-align:center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .login input { background: #f0f2f5; color: black; border: 1px solid #ccc; }
         .hidden { display:none !important; }
 
-        .venta-item { background: rgba(255,255,255,0.06); padding: 15px; border-radius: 15px; margin-bottom: 12px; border-left: 4px solid #ffc300; font-size: 12px; }
+        /* HISTORIAL DETALLADO */
+        .venta-item { background: rgba(255,255,255,0.08); padding: 15px; border-radius: 15px; margin-bottom: 15px; border-left: 5px solid #ffc300; }
+        .venta-item b { color: #ffc300; }
+        .grid-detalles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; font-size: 11px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; }
+        .dato-h { display: flex; flex-direction: column; }
+        .dato-h span { color: #aaa; font-size: 9px; text-transform: uppercase; font-weight: bold; }
+        .full-row { grid-column: span 2; }
     </style>
 </head>
 <body onload="inicio()">
@@ -61,7 +66,7 @@
 
         <div class="status-bar">
             <div id="relojApp">00:00:00</div>
-            <div id="ubicacion"><i class="fa-solid fa-location-dot"></i> Buscando...</div>
+            <div id="ubicacion">GPS: Buscando...</div>
         </div>
 
         <div style="font-size: 18px; color:#ffc300; font-weight: bold;">¡Bienvenido a Telcel!</div>
@@ -69,15 +74,9 @@
         <div id="sessionTime" style="font-size: 10px; color: #aaa; margin-bottom: 15px;">Sesión: --:--</div>
 
         <div class="external-links">
-            <a href="https://app.payjoy.com/accounts/login?afterLogin=https://app.payjoy.com/merchant3?merchantId=199557" target="_blank" class="btn-link bg-payjoy">
-                <i class="fa-solid fa-mobile-screen"></i> &nbsp; PAYJOY
-            </a>
-            <a href="https://registro.telcel.com/vinculatulinea/#/" target="_blank" class="btn-link bg-vincula">
-                <i class="fa-solid fa-link"></i> &nbsp; VINCULA LÍNEA
-            </a>
-            <a href="https://docs.google.com/forms/d/e/1FAIpQLSfQMT1FUeOLNJUzB8DeGhKNTqiU_DS7wr7y2p_Ab7xgHHjYbw/viewform?pli=1" target="_blank" class="btn-link bg-docs">
-                <i class="fa-solid fa-file-lines"></i> &nbsp; FORMULARIO DE REGISTRO DOCS
-            </a>
+            <a href="https://app.payjoy.com/accounts/login?afterLogin=https://app.payjoy.com/merchant3?merchantId=199557" target="_blank" class="btn-link bg-payjoy">PAYJOY</a>
+            <a href="https://registro.telcel.com/vinculatulinea/#/" target="_blank" class="btn-link bg-vincula">VINCULA LÍNEA</a>
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLSfQMT1FUeOLNJUzB8DeGhKNTqiU_DS7wr7y2p_Ab7xgHHjYbw/viewform?pli=1" target="_blank" class="btn-link bg-docs">FORMULARIO DOCS</a>
         </div>
         <br>
 
@@ -91,12 +90,9 @@
                     <option value="PORTA">PORTA</option>
                     <option value="RENUEVATE">RENUEVATE</option>
                 </select>
-                <label>Fecha de Activación (DD/MM/YYYY)</label>
-                <input id="iFec" required>
-                <label>Número Celular</label>
-                <input id="iTel" type="tel" required maxlength="10">
-                <label>ICCID</label>
-                <input id="iIcc" required>
+                <label>Fecha (DD/MM/YYYY)</label><input id="iFec" required>
+                <label>Número Celular</label><input id="iTel" type="tel" required maxlength="10">
+                <label>ICCID</label><input id="iIcc" required>
             </div>
 
             <div id="seccionEquipo" class="card">
@@ -106,7 +102,7 @@
             </div>
 
             <div class="card">
-                <label># Tienda / Determinante</label><input id="iTiendaNum" required>
+                <label>Determinante / # Tienda</label><input id="iTiendaNum" required>
                 <label>Cadena</label><input id="iCadena" required>
                 <label>Nombre Tienda</label><input id="iTiendaNombre" required>
                 <label>Nombre del Promotor</label><input id="iProm" required>
@@ -114,11 +110,9 @@
             <button type="submit" class="btn-main">GUARDAR VENTA</button>
         </form>
 
-        <button class="btn-excel" onclick="exportarExcel()">
-            <i class="fa-solid fa-file-excel"></i> DESCARGAR EXCEL (.xlsx)
-        </button>
+        <button class="btn-excel" onclick="exportarExcel()">DESCARGAR EXCEL (.xlsx)</button>
 
-        <div class="header" style="margin-top: 30px;">Historial del Día</div>
+        <div class="header" style="margin-top: 30px;">Historial del Día (Detallado)</div>
         <div id="listaLocal"></div>
     </div>
 
@@ -140,30 +134,26 @@
         db = firebase.database();
         auth = firebase.auth();
 
-        // Actualizar Relojes
         setInterval(() => {
             const ahora = new Date().toLocaleTimeString('es-MX');
             if(document.getElementById('relojLogin')) document.getElementById('relojLogin').innerText = ahora;
             if(document.getElementById('relojApp')) document.getElementById('relojApp').innerText = ahora;
         }, 1000);
 
-        // Ubicación GPS
         if(navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(p => {
-                document.getElementById('ubicacion').innerHTML = `Lat: ${p.coords.latitude.toFixed(2)} | Lon: ${p.coords.longitude.toFixed(2)}`;
-            }, () => { document.getElementById('ubicacion').innerText = "GPS Inactivo"; });
+                document.getElementById('ubicacion').innerHTML = `GPS: ${p.coords.latitude.toFixed(2)}, ${p.coords.longitude.toFixed(2)}`;
+            });
         }
 
-        // Formato DD/MM/YYYY
-        const hoy = new Date();
-        document.getElementById('iFec').value = hoy.toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
+        document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
 
         auth.onAuthStateChanged(user => {
             if(user) {
                 const nombre = user.email.split('@')[0].toUpperCase();
                 document.getElementById('promotorName').innerText = "PROMOTOR: " + nombre;
                 document.getElementById('iProm').value = nombre;
-                document.getElementById('sessionTime').innerText = "Sesión iniciada: " + new Date().toLocaleTimeString('es-MX', {hour:'2-digit', minute:'2-digit'});
+                document.getElementById('sessionTime').innerText = "Sesión: " + new Date().toLocaleTimeString('es-MX', {hour:'2-digit', minute:'2-digit'});
                 document.getElementById('loginBox').classList.add("hidden");
                 document.getElementById('appBox').classList.remove("hidden");
                 cargarLocal();
@@ -176,9 +166,8 @@
 
     function entrar() {
         let m = document.getElementById('u').value, p = document.getElementById('p').value;
-        if(!m || !p) return alert("Ingresa datos");
         if(document.getElementById('tituloAuth').innerText === "Crear Usuario") {
-            auth.createUserWithEmailAndPassword(m, p).then(() => { alert("Registrado"); toggleReg(); }).catch(e => alert(e.message));
+            auth.createUserWithEmailAndPassword(m, p).then(() => toggleReg()).catch(e => alert(e.message));
         } else {
             auth.signInWithEmailAndPassword(m, p).catch(e => alert("Error al entrar"));
         }
@@ -219,22 +208,30 @@
         document.getElementById('fReg').reset();
         document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
         cargarLocal();
-        alert("¡Venta Guardada Localmente!");
+        alert("Guardado en Historial");
     };
 
     function cargarLocal() {
         let l = JSON.parse(localStorage.getItem("ventas_save") || "[]");
         document.getElementById('listaLocal').innerHTML = l.map(v => `
             <div class="venta-item">
-                <b style="color:#ffc300">${v["NUM. CELULAR"]}</b> | DET: ${v["# TIENDA / Determinante"]} <br>
-                <small>${v["Renuevate / Kit / Chip / Porta"]} - ${v.ICCID}</small>
+                <div style="font-size: 16px; margin-bottom: 5px;">📞 <b>${v["NUM. CELULAR"]}</b></div>
+                <div class="grid-detalles">
+                    <div class="dato-h"><span>Determinante</span>${v["# TIENDA / Determinante"]}</div>
+                    <div class="dato-h"><span>Tipo</span>${v["Renuevate / Kit / Chip / Porta"]}</div>
+                    <div class="dato-h"><span>Modelo</span>${v.MODELO}</div>
+                    <div class="dato-h"><span>Marca</span>${v.MARCA}</div>
+                    <div class="dato-h full-row"><span>IMEI</span>${v.IMEI}</div>
+                    <div class="dato-h full-row"><span>ICCID</span>${v.ICCID}</div>
+                    <div class="dato-h full-row"><span>Promotor</span>${v["NOMBRE COMPLETO PROMOTOR"]}</div>
+                    <div class="dato-h full-row"><span>Fecha</span>${v["FECHA DE ACTIVACION"]}</div>
+                </div>
             </div>
         `).join("");
     }
 
     function exportarExcel() {
         let l = JSON.parse(localStorage.getItem("ventas_save") || "[]");
-        if(l.length === 0) return alert("No hay datos");
         const ws = XLSX.utils.json_to_sheet(l);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Ventas");
