@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Ventas Telcel - GPS Activo</title>
+    <title>Sistema Ventas Telcel - Formato Excel</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -11,107 +11,105 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         body { margin:0; font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; }
-        .app { max-width:480px; margin:auto; padding:20px; position: relative; }
+        .app { max-width:1000px; margin:auto; padding:20px; position: relative; }
         
-        /* BOTÓN SALIR DISCRETO */
-        .btn-logout-mini { 
-            position: absolute; top: 20px; right: 20px; background: rgba(255, 77, 77, 0.2); 
-            color: #ff4d4d; width: 35px; height: 35px; border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; 
-            border: 1px solid #ff4d4d; cursor: pointer; z-index: 100;
-        }
+        /* ESTILO GPS Y RELOJ */
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .gps-card { background: #000; border: 1px solid #00b4d8; padding: 10px 15px; border-radius: 12px; color: #00b4d8; font-size: 12px; display: flex; align-items: center; }
+        .gps-card i { margin-right: 10px; font-size: 18px; color: #ffc300; }
+        .reloj-digital { font-family: monospace; font-size: 24px; color: #ffc300; font-weight: bold; }
 
-        /* DISEÑO GPS Y RELOJ MEJORADO */
-        .status-container { margin-bottom: 20px; width: 85%; }
-        .reloj-grande { font-family: monospace; font-size: 28px; color: #ffc300; font-weight: bold; }
-        .gps-box { 
-            display: flex; align-items: center; background: rgba(0, 180, 216, 0.15); 
-            padding: 8px 12px; border-radius: 10px; border: 1px solid #00b4d8; 
-            margin-top: 5px; font-size: 11px; color: #90e0ef;
-        }
-        .gps-box i { margin-right: 8px; color: #00b4d8; font-size: 14px; }
+        /* BOTÓN SALIR MINI */
+        .btn-exit { background: rgba(255, 77, 77, 0.2); color: #ff4d4d; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #ff4d4d; cursor: pointer; transition: 0.3s; }
+        .btn-exit:hover { background: #ff4d4d; color: white; }
 
-        .card { background:rgba(255,255,255,.08); backdrop-filter:blur(12px); border-radius:18px; padding:18px; margin-bottom:16px; border:1px solid rgba(255,255,255,0.1); }
-        .header { text-align:center; font-size:15px; font-weight:bold; color:#ffc300; margin-bottom:15px; text-transform: uppercase; border-bottom: 1px solid rgba(255,195,0,0.2); padding-bottom: 10px; }
+        /* TARJETAS DE FORMULARIO */
+        .card { background:rgba(255,255,255,.08); backdrop-filter:blur(10px); border-radius:15px; padding:20px; margin-bottom:15px; border:1px solid rgba(255,255,255,0.1); }
+        label { font-size:10px; font-weight:bold; color:#ffc300; text-transform: uppercase; display: block; margin-bottom: 5px; }
+        input, select { width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; }
         
-        label { font-size:10px; font-weight:600; color:#ffc300; text-transform: uppercase; display: block; margin-bottom: 4px; }
-        input, select { width:100%; padding:10px; margin-bottom:10px; border-radius:10px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; }
-        
-        button { width:100%; padding:14px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; }
-        .btn-main { background:#ffc300; color:#003566; }
-        .btn-excel { background:#1f7a3f; color:white; margin-top:10px; border: 1px solid #2ecc71; }
-        
-        .external-links { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
-        .btn-link { text-decoration: none; display: flex; align-items: center; justify-content: center; border-radius: 12px; height: 45px; font-weight: bold; font-size: 11px; color: white; text-align: center; border: 1px solid rgba(255,255,255,0.2); }
-        .bg-payjoy { background: #00a8e8; }
-        .bg-vincula { background: #003566; border-color: #ffc300; }
-        .bg-docs { background: #7248b9; grid-column: span 2; }
+        .btn-save { background:#ffc300; color:#001d3d; width:100%; padding:15px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size: 16px; }
+        .btn-excel { background:#1f7a3f; color:white; width:100%; padding:12px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; margin-top:10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
 
-        .login { max-width:350px; margin:80px auto; background:white; color:black; padding:30px; border-radius:20px; text-align:center; }
-        .hidden { display:none !important; }
+        /* TABLA ESTILO EXCEL (ENCABEZADO NEGRO) */
+        .table-container { overflow-x: auto; background: white; border-radius: 10px; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; color: #333; font-size: 11px; min-width: 900px; }
+        th { background: #000; color: #fff; padding: 12px; text-align: left; text-transform: uppercase; font-weight: bold; border: 1px solid #333; }
+        td { padding: 10px; border: 1px solid #ddd; font-weight: 500; }
+        tr:nth-child(even) { background: #f2f2f2; }
+        .btn-delete-row { color: #ff4d4d; background: none; border: none; cursor: pointer; font-size: 14px; }
 
-        /* HISTORIAL CON FORMATO EXCEL */
-        .venta-item { position: relative; background: rgba(255,255,255,0.06); padding: 15px; border-radius: 15px; margin-bottom: 15px; border-left: 5px solid #ffc300; }
-        .btn-del { position: absolute; top: 12px; right: 12px; color: #ff4d4d; cursor: pointer; background:none; border:none; width:auto; font-size: 16px; }
-        
-        .grid-detalles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; font-size: 11px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; }
-        .dato-h { display: flex; flex-direction: column; }
-        .dato-h span { color: #888; font-size: 9px; font-weight: bold; }
-        .full-row { grid-column: span 2; }
+        .external-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; }
+        .btn-link { text-decoration: none; display: flex; align-items: center; justify-content: center; border-radius: 10px; height: 40px; font-weight: bold; font-size: 11px; color: white; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); }
+        .hidden { display: none !important; }
+
+        .login-box { max-width: 350px; margin: 100px auto; background: white; padding: 30px; border-radius: 20px; text-align: center; color: #000; }
     </style>
 </head>
 <body onload="inicio()">
 
-    <div id="loginBox" class="login">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Logo_Telcel.svg/1200px-Logo_Telcel.svg.png" width="100" style="margin-bottom:15px">
-        <h2>Acceso Oficial</h2>
-        <input id="u" type="email" placeholder="Correo">
+    <div id="loginBox" class="login-box">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Logo_Telcel.svg/1200px-Logo_Telcel.svg.png" width="120">
+        <h3 style="margin-top:20px">Acceso Sistema de Comisiones</h3>
+        <input id="u" type="email" placeholder="Correo electrónico">
         <input id="p" type="password" placeholder="Contraseña">
-        <button class="btn-main" onclick="entrar()">ENTRAR</button>
+        <button class="btn-save" onclick="entrar()">ENTRAR AL PANEL</button>
     </div>
 
     <div id="appBox" class="app hidden">
-        <div class="btn-logout-mini" onclick="salir()"><i class="fa-solid fa-power-off"></i></div>
-
-        <div class="status-container">
-            <div id="relojApp" class="reloj-grande">00:00:00</div>
-            <div class="gps-box">
-                <i class="fa-solid fa-location-crosshairs fa-spin"></i>
-                <span id="ubicacion">Localizando señal GPS...</span>
+        <div class="top-bar">
+            <div class="gps-card">
+                <i class="fa-solid fa-map-location-dot"></i>
+                <div>
+                    <b style="color:white">UBICACIÓN GPS ACTIVA</b><br>
+                    <span id="txtGps">Obteniendo coordenadas...</span>
+                </div>
             </div>
+            <div class="reloj-digital" id="txtReloj">00:00:00</div>
+            <div class="btn-exit" onclick="salir()"><i class="fa-solid fa-power-off"></i></div>
         </div>
 
-        <div id="promotorName" style="font-size: 14px; color: #ffc300; font-weight: bold;">PROMOTOR</div>
-        <div style="font-size: 10px; color: #aaa; margin-bottom: 15px;">Omar Ortega Caro - Formato Excel 2026</div>
+        <div style="margin-bottom: 20px;">
+            <span id="txtUser" style="color: #ffc300; font-weight: bold; font-size: 18px;">PROMOTOR</span><br>
+            <span style="font-size: 12px; color: #00b4d8;">Formato oficial: Omar Ortega Caro</span>
+        </div>
 
         <div class="external-links">
-            <a href="https://app.payjoy.com/accounts/login?afterLogin=https://app.payjoy.com/merchant3?merchantId=199557" target="_blank" class="btn-link bg-payjoy">PORTAL PAYJOY</a>
-            <a href="https://registro.telcel.com/vinculatulinea/#/" target="_blank" class="btn-link bg-vincula">VINCULAR LÍNEA</a>
-            <a href="https://docs.google.com/forms/d/e/1FAIpQLSfQMT1FUeOLNJUzB8DeGhKNTqiU_DS7wr7y2p_Ab7xgHHjYbw/viewform?pli=1" target="_blank" class="btn-link bg-docs">FORMULARIO GOOGLE</a>
+            <a href="https://app.payjoy.com/accounts/login?afterLogin=https://app.payjoy.com/merchant3?merchantId=199557" target="_blank" class="btn-link" style="border-color: #00a8e8;">PAYJOY</a>
+            <a href="https://registro.telcel.com/vinculatulinea/#/" target="_blank" class="btn-link" style="border-color: #ffc300;">VINCULA LÍNEA</a>
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLSfQMT1FUeOLNJUzB8DeGhKNTqiU_DS7wr7y2p_Ab7xgHHjYbw/viewform?pli=1" target="_blank" class="btn-link" style="border-color: #7248b9;">GOOGLE FORM</a>
         </div>
 
         <form id="fReg">
             <div class="card">
-                <div class="header">Nueva Entrada de Venta</div>
-                <label>Renuevate/ Kit/Chip/Porta</label>
-                <select id="iTipo" required onchange="ajustarCampos()">
-                    <option value="KIT">KIT</option>
-                    <option value="CHIP">CHIP</option>
-                    <option value="PORTA">PORTA</option>
-                    <option value="RENUEVATE">RENUEVATE</option>
-                </select>
-                <label>FECHA DE ACTIVACION</label>
-                <input id="iFec" required placeholder="DD/MM/YYYY">
+                <div style="color:#ffc300; font-weight: bold; margin-bottom: 15px; border-bottom: 1px solid #333;">DATOS DE VENTA</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div>
+                        <label>Renuevate/ Kit/Chip/Porta</label>
+                        <select id="iTipo" required onchange="checkTipo()">
+                            <option value="KIT">KIT</option>
+                            <option value="CHIP">CHIP</option>
+                            <option value="PORTA">PORTA</option>
+                            <option value="RENUEVATE">RENUEVATE</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>FECHA DE ACTIVACION</label>
+                        <input id="iFec" required>
+                    </div>
+                </div>
                 <label>NUM. CELULAR</label>
                 <input id="iTel" type="tel" required maxlength="10">
                 <label>ICCID</label>
                 <input id="iIcc" required>
             </div>
 
-            <div id="seccionEquipo" class="card">
+            <div id="divEquipo" class="card">
                 <label>IMEI</label><input id="iIme">
-                <label>MARCA</label><input id="iMarca">
-                <label>MODELO</label><input id="iMod">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div><label>MARCA</label><input id="iMarca"></div>
+                    <div><label>MODELO</label><input id="iMod"></div>
+                </div>
             </div>
 
             <div class="card">
@@ -120,15 +118,36 @@
                 <label>SOLO NOMBRE DE TIENDA SIN CADENA</label><input id="iTiendaNombre" required>
                 <label>NOMBRE COMPLETO PROMOTOR</label><input id="iProm" required>
             </div>
-            <button type="submit" class="btn-main">GUARDAR EN BASE DE DATOS</button>
+            
+            <button type="submit" class="btn-save">REGISTRAR VENTA</button>
         </form>
 
         <button class="btn-excel" onclick="exportarExcel()">
-            <i class="fa-solid fa-file-excel"></i> DESCARGAR EXCEL OFICIAL
+            <i class="fa-solid fa-file-excel"></i> DESCARGAR REPORTE EXCEL (HOJA 1)
         </button>
 
-        <div class="header" style="margin-top: 30px;">Registros Locales</div>
-        <div id="listaLocal"></div>
+        <h3 style="color:#ffc300; margin-top: 30px;">HISTORIAL DEL DÍA</h3>
+        <div class="table-container">
+            <table id="tablaVentas">
+                <thead>
+                    <tr>
+                        <th>NUM. CELULAR</th>
+                        <th>IMEI</th>
+                        <th>ICCID</th>
+                        <th>Renuevate/ Kit/Chip/Porta</th>
+                        <th>#TIENDA / Determinante</th>
+                        <th>SOLO NOMBRE DE LA CADENA</th>
+                        <th>SOLO NOMBRE DE TIENDA SIN CADENA</th>
+                        <th>NOMBRE COMPLETO PROMOTOR</th>
+                        <th>FECHA DE ACTIVACION</th>
+                        <th>MARCA</th>
+                        <th>MODELO</th>
+                        <th style="background: #ff4d4d;">X</th>
+                    </tr>
+                </thead>
+                <tbody id="bodyVentas"></tbody>
+            </table>
+        </div>
     </div>
 
 <script>
@@ -150,16 +169,13 @@
         auth = firebase.auth();
 
         setInterval(() => {
-            document.getElementById('relojApp').innerText = new Date().toLocaleTimeString('es-MX');
+            document.getElementById('txtReloj').innerText = new Date().toLocaleTimeString('es-MX');
         }, 1000);
 
-        // GPS MEJORADO
         if(navigator.geolocation) {
             navigator.geolocation.watchPosition(p => {
-                document.getElementById('ubicacion').innerHTML = `COORD: ${p.coords.latitude.toFixed(5)}, ${p.coords.longitude.toFixed(5)}`;
-            }, e => {
-                document.getElementById('ubicacion').innerText = "GPS: Sin acceso a ubicación";
-            }, { enableHighAccuracy: true });
+                document.getElementById('txtGps').innerHTML = `${p.coords.latitude.toFixed(6)}, ${p.coords.longitude.toFixed(6)}`;
+            }, null, {enableHighAccuracy:true});
         }
 
         document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
@@ -167,7 +183,7 @@
         auth.onAuthStateChanged(user => {
             if(user) {
                 const nombre = user.email.split('@')[0].toUpperCase();
-                document.getElementById('promotorName').innerText = "PROMOTOR: " + nombre;
+                document.getElementById('txtUser').innerText = "BIENVENIDO: " + nombre;
                 document.getElementById('iProm').value = nombre;
                 document.getElementById('loginBox').classList.add("hidden");
                 document.getElementById('appBox').classList.remove("hidden");
@@ -180,15 +196,15 @@
     }
 
     function entrar() {
-        let m = document.getElementById('u').value, p = document.getElementById('p').value;
-        auth.signInWithEmailAndPassword(m, p).catch(e => alert("Acceso Incorrecto"));
+        let u = document.getElementById('u').value, p = document.getElementById('p').value;
+        auth.signInWithEmailAndPassword(u, p).catch(e => alert("Error de acceso"));
     }
 
     function salir() { auth.signOut(); }
 
-    function ajustarCampos() {
+    function checkTipo() {
         const t = document.getElementById('iTipo').value;
-        document.getElementById('seccionEquipo').className = (t === "CHIP" || t === "PORTA") ? "hidden" : "card";
+        document.getElementById('divEquipo').className = (t === "CHIP" || t === "PORTA") ? "hidden" : "card";
     }
 
     document.getElementById('fReg').onsubmit = e => {
@@ -207,49 +223,51 @@
             "MARCA": document.getElementById('iMarca').value || "N/A",
             "MODELO": document.getElementById('iMod').value || "N/A"
         };
-        let l = JSON.parse(localStorage.getItem("ventas_save") || "[]");
+        let l = JSON.parse(localStorage.getItem("ventas_2026") || "[]");
         l.unshift(v);
-        localStorage.setItem("ventas_save", JSON.stringify(l));
+        localStorage.setItem("ventas_2026", JSON.stringify(l));
         if(auth.currentUser) db.ref('ventas/' + auth.currentUser.uid).push(v);
         document.getElementById('fReg').reset();
         document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
         cargarLocal();
-        alert("¡Venta Guardada!");
     };
 
-    function eliminarVenta(id) {
-        if(confirm("¿Desea eliminar este registro?")) {
-            let l = JSON.parse(localStorage.getItem("ventas_save") || "[]");
+    function eliminar(id) {
+        if(confirm("¿Borrar registro?")) {
+            let l = JSON.parse(localStorage.getItem("ventas_2026") || "[]");
             l = l.filter(v => v.id !== id);
-            localStorage.setItem("ventas_save", JSON.stringify(l));
+            localStorage.setItem("ventas_2026", JSON.stringify(l));
             cargarLocal();
         }
     }
 
     function cargarLocal() {
-        let l = JSON.parse(localStorage.getItem("ventas_save") || "[]");
-        document.getElementById('listaLocal').innerHTML = l.map(v => `
-            <div class="venta-item">
-                <button class="btn-del" onclick="eliminarVenta(${v.id})"><i class="fa-solid fa-trash"></i></button>
-                <div style="font-size: 15px; color:#ffc300;">📞 <b>${v["NUM. CELULAR"]}</b></div>
-                <div class="grid-detalles">
-                    <div class="dato-h"><span>#TIENDA</span>${v["#TIENDA / Determinante"]}</div>
-                    <div class="dato-h"><span>MODELO</span>${v.MODELO}</div>
-                    <div class="dato-h full-row"><span>IMEI</span>${v.IMEI}</div>
-                    <div class="dato-h full-row"><span>ICCID</span>${v.ICCID}</div>
-                </div>
-            </div>
+        let l = JSON.parse(localStorage.getItem("ventas_2026") || "[]");
+        document.getElementById('bodyVentas').innerHTML = l.map(v => `
+            <tr>
+                <td><b>${v["NUM. CELULAR"]}</b></td>
+                <td>${v.IMEI}</td>
+                <td>${v.ICCID}</td>
+                <td>${v["Renuevate/ Kit/Chip/Porta"]}</td>
+                <td>${v["#TIENDA / Determinante"]}</td>
+                <td>${v["SOLO NOMBRE DE LA CADENA"]}</td>
+                <td>${v["SOLO NOMBRE DE TIENDA SIN CADENA"]}</td>
+                <td>${v["NOMBRE COMPLETO PROMOTOR"]}</td>
+                <td>${v["FECHA DE ACTIVACION"]}</td>
+                <td>${v.MARCA}</td>
+                <td>${v.MODELO}</td>
+                <td><button class="btn-delete-row" onclick="eliminar(${v.id})"><i class="fa-solid fa-trash"></i></button></td>
+            </tr>
         `).join("");
     }
 
     function exportarExcel() {
-        let l = JSON.parse(localStorage.getItem("ventas_save") || "[]");
-        if(l.length === 0) return alert("Nada que exportar");
+        let l = JSON.parse(localStorage.getItem("ventas_2026") || "[]");
         const limpio = l.map(({id, ...resto}) => resto);
         const ws = XLSX.utils.json_to_sheet(limpio);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Hoja1");
-        XLSX.writeFile(wb, "comisiones_Omar_Ortega.xlsx");
+        XLSX.writeFile(wb, "Reporte_Ventas_OmarOrtega.xlsx");
     }
 </script>
 </body>
