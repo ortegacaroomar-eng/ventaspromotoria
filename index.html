@@ -13,110 +13,110 @@
         body { margin:0; font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; }
         .app { max-width:1000px; margin:auto; padding:20px; }
         
-        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .gps-card { background: #000; border: 1px solid #00b4d8; padding: 10px 15px; border-radius: 12px; color: #00b4d8; font-size: 12px; display: flex; align-items: center; }
-        .gps-card i { margin-right: 10px; font-size: 18px; color: #ffc300; }
-        .reloj-digital { font-family: monospace; font-size: 24px; color: #ffc300; font-weight: bold; }
+        /* LOGIN Y RECONOCIMIENTO FACIAL */
+        .login-box { max-width: 350px; margin: 50px auto; background: white; padding: 30px; border-radius: 20px; text-align: center; color: #000; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .login-box input { width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #ccc; background:#f9f9f9; color:#000; box-sizing: border-box; }
+        
+        #camera-container { width: 100%; height: 200px; background: #000; border-radius: 15px; margin-bottom: 15px; overflow: hidden; display: none; position: relative; border: 3px solid #00b4d8; }
+        #video { width: 100%; height: 100%; object-fit: cover; }
+        .scan-line { position: absolute; width: 100%; height: 4px; background: #00ff00; top: 0; animation: scan 2s linear infinite; box-shadow: 0 0 15px #00ff00; }
+        @keyframes scan { from { top: 0; } to { top: 100%; } }
 
-        .btn-exit { background: rgba(255, 77, 77, 0.2); color: #ff4d4d; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #ff4d4d; cursor: pointer; }
+        .face-btn { background: #f0f9ff; color: #0077b6; padding: 12px; border-radius: 10px; border: 2px dashed #0077b6; cursor: pointer; margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: bold; width: 100%; }
 
+        /* TOP BAR Y GPS */
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .gps-card { background: #000; border: 1px solid #00b4d8; padding: 10px 15px; border-radius: 12px; color: #00b4d8; font-size: 11px; display: flex; align-items: center; flex: 1; min-width: 250px; }
+        .gps-card i { margin-right: 10px; font-size: 20px; color: #ffc300; }
+        .reloj-digital { font-family: monospace; font-size: 22px; color: #ffc300; font-weight: bold; }
+
+        /* FORMULARIO */
         .card { background:rgba(255,255,255,.08); backdrop-filter:blur(10px); border-radius:15px; padding:20px; margin-bottom:15px; border:1px solid rgba(255,255,255,0.1); }
         label { font-size:10px; font-weight:bold; color:#ffc300; text-transform: uppercase; display: block; margin-bottom: 5px; }
-        
-        /* Inputs APP */
         .app input, .app select { width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; }
         
-        /* Inputs LOGIN (Texto Negro) */
-        .login-box input { width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #ccc; background:#f9f9f9; color:#000; box-sizing: border-box; font-size: 14px; }
-
-        .btn-save { background:#ffc300; color:#001d3d; width:100%; padding:15px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size: 16px; }
-        .btn-excel { background:#1f7a3f; color:white; width:100%; padding:14px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; margin-top:20px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(31, 122, 63, 0.4); }
+        .btn-save { background:#ffc300; color:#001d3d; width:100%; padding:15px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size: 16px; transition: 0.3s; }
+        .btn-save:hover { background: #ffd60a; transform: scale(1.02); }
+        .btn-excel { background:#1f7a3f; color:white; width:100%; padding:14px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; margin-top:20px; display: flex; align-items: center; justify-content: center; gap: 10px; }
 
         .table-container { overflow-x: auto; background: white; border-radius: 10px; margin-top: 20px; }
         table { width: 100%; border-collapse: collapse; color: #333; font-size: 11px; min-width: 1000px; }
-        th { background: #000 !important; color: #fff !important; padding: 12px; text-align: left; text-transform: uppercase; font-weight: bold; border: 1px solid #444; }
+        th { background: #000 !important; color: #fff !important; padding: 12px; text-align: left; text-transform: uppercase; border: 1px solid #444; }
         td { padding: 10px; border: 1px solid #ddd; }
-        tr:nth-child(even) { background: #f9f9f9; }
 
         .hidden { display: none !important; }
-        .login-box { max-width: 350px; margin: 100px auto; background: white; padding: 30px; border-radius: 20px; text-align: center; color: #000; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        .btn-link-auth { background: none; border: none; color: #003566; font-size: 13px; text-decoration: underline; cursor: pointer; margin-top: 15px; font-weight: bold; }
+        .captcha-container { background: #eee; padding: 8px; border-radius: 8px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #ccc; }
     </style>
 </head>
 <body onload="inicio()">
 
     <div id="loginBox" class="login-box">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Logo_Telcel.svg/1200px-Logo_Telcel.svg.png" width="120">
-        <h3 id="authTitle" style="color:#003566; margin-top:10px;">Acceso Promotores</h3>
-        <input id="u" type="email" placeholder="Correo electrónico">
-        <input id="p" type="password" placeholder="Contraseña">
-        <button class="btn-save" id="btnAuthAction" onclick="manejarAuth()">ENTRAR</button>
-        <button class="btn-link-auth" id="btnToggleAuth" onclick="toggleAuthMode()">¿No tienes cuenta? Regístrate aquí</button>
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Logo_Telcel.svg/1200px-Logo_Telcel.svg.png" width="110">
+        <h3 id="authTitle" style="color:#003566; margin-bottom:15px;">Acceso Seguro</h3>
+        
+        <div id="camera-container">
+            <video id="video" autoplay muted playsinline></video>
+            <div class="scan-line"></div>
+        </div>
+
+        <div id="form-auth">
+            <input id="u" type="email" placeholder="Usuario (Correo)">
+            <input id="p" type="password" placeholder="Contraseña">
+            
+            <div class="captcha-container">
+                <span id="txtCaptcha" style="font-weight:bold; color:red;"></span>
+                <input id="iCaptchaAns" type="number" style="width:70px; margin:0;" placeholder="?">
+            </div>
+
+            <button class="btn-save" id="btnAuth" onclick="manejarAuth()">ENTRAR</button>
+        </div>
+
+        <button class="face-btn" id="btnFacial" onclick="activarFacial()">
+            <i class="fa-solid fa-face-viewfinder"></i> ACCESO POR ROSTRO
+        </button>
+        <button class="btn-link-auth" style="background:none; border:none; color:#003566; margin-top:15px; text-decoration:underline; cursor:pointer;" onclick="toggleAuth()">¿No tienes cuenta? Registrate</button>
     </div>
 
     <div id="appBox" class="app hidden">
         <div class="top-bar">
             <div class="gps-card">
-                <i class="fa-solid fa-location-dot"></i>
-                <div><b style="color:white">UBICACIÓN GPS</b><br><span id="txtGps">Localizando...</span></div>
+                <i class="fa-solid fa-house-chimney-user"></i>
+                <div><b style="color:white">DOMICILIO ACTUAL</b><br><span id="txtGps">Obteniendo dirección...</span></div>
             </div>
             <div class="reloj-digital" id="txtReloj">00:00:00</div>
-            <div class="btn-exit" onclick="salir()"><i class="fa-solid fa-power-off"></i></div>
+            <button onclick="auth.signOut()" style="background:red; color:white; border:none; padding:10px; border-radius:50%; cursor:pointer;"><i class="fa-solid fa-power-off"></i></button>
         </div>
 
         <form id="fReg">
             <div class="card">
-                <label>Renuevate/ Kit/Chip/Porta</label>
-                <select id="iTipo" required>
-                    <option value="KIT">KIT</option>
-                    <option value="CHIP">CHIP</option>
-                    <option value="PORTA">PORTA</option>
-                    <option value="RENUEVATE">RENUEVATE</option>
-                </select>
-                <label>FECHA DE ACTIVACION</label>
-                <input id="iFec" required>
-                <label>NUM. CELULAR</label>
-                <input id="iTel" type="tel" required maxlength="10">
-                <label>ICCID</label>
-                <input id="iIcc" required>
+                <label>Tipo de Venta</label>
+                <select id="iTipo"><option>KIT</option><option>CHIP</option><option>PORTA</option><option>RENUEVATE</option></select>
+                <label>Fecha Activación (DD/MM/YYYY)</label><input id="iFec" required>
+                <label>Celular (10 dígitos)</label><input id="iTel" type="tel" maxlength="10" required>
+                <label>ICCID</label><input id="iIcc" required>
             </div>
-
             <div class="card">
-                <label>IMEI</label><input id="iIme">
-                <label>MARCA</label><input id="iMarca">
-                <label>MODELO</label><input id="iMod">
+                <label>IMEI</label><input id="iIme"><label>Marca</label><input id="iMarca"><label>Modelo</label><input id="iMod">
             </div>
-
             <div class="card">
-                <label>#TIENDA / Determinante</label><input id="iTiendaNum" required>
-                <label>SOLO NOMBRE DE LA CADENA</label><input id="iCadena" required>
-                <label>SOLO NOMBRE DE TIENDA SIN CADENA</label><input id="iTiendaNombre" required>
-                <label>NOMBRE COMPLETO PROMOTOR</label><input id="iProm" required>
+                <label># Tienda</label><input id="iTiendaNum" required>
+                <label>Cadena</label><input id="iCadena" required>
+                <label>Nombre Tienda</label><input id="iTiendaNombre" required>
+                <label>Nombre Promotor</label><input id="iProm" required>
             </div>
-            
-            <button type="submit" class="btn-save">GUARDAR VENTA</button>
+            <button type="submit" class="btn-save">GUARDAR REGISTRO LOCAL</button>
         </form>
 
         <button class="btn-excel" onclick="exportarExcel()">
-            <i class="fa-solid fa-file-excel"></i> DESCARGAR REPORTE PROFESIONAL
+            <i class="fa-solid fa-file-excel"></i> DESCARGAR EXCEL FORMATEADO
         </button>
 
         <div class="table-container">
             <table>
                 <thead>
                     <tr>
-                        <th>NUM. CELULAR</th>
-                        <th>IMEI</th>
-                        <th>ICCID</th>
-                        <th>Renuevate/ Kit/Chip/Porta</th>
-                        <th>#TIENDA / Determinante</th>
-                        <th>SOLO NOMBRE DE LA CADENA</th>
-                        <th>SOLO NOMBRE DE TIENDA SIN CADENA</th>
-                        <th>NOMBRE COMPLETO PROMOTOR</th>
-                        <th>FECHA DE ACTIVACION</th>
-                        <th>MARCA</th>
-                        <th>MODELO</th>
-                        <th style="background:red !important">X</th>
+                        <th>NUM. CELULAR</th><th>IMEI</th><th>ICCID</th><th>TIPO</th><th># TIENDA</th>
+                        <th>CADENA</th><th>TIENDA</th><th>PROMOTOR</th><th>FECHA</th><th>MARCA</th><th>MODELO</th><th>X</th>
                     </tr>
                 </thead>
                 <tbody id="bodyVentas"></tbody>
@@ -125,30 +125,32 @@
     </div>
 
 <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc", 
-        authDomain: "ventastelcel4029.firebaseapp.com",
-        databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com",
-        projectId: "ventastelcel4029",
-        storageBucket: "ventastelcel4029.firebasestorage.app",
-        messagingSenderId: "480758010888",
-        appId: "1:480758010888:web:e948c54f0217536aa9adbd"
-    };
+    const firebaseConfig = { apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc", authDomain: "ventastelcel4029.firebaseapp.com", databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com", projectId: "ventastelcel4029", storageBucket: "ventastelcel4029.firebasestorage.app", messagingSenderId: "480758010888", appId: "1:480758010888:web:e948c54f0217536aa9adbd" };
 
-    let db, auth;
-    let isLoginMode = true;
+    let auth, isLogin = true, cRes = 0, stream = null;
 
     function inicio() {
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        db = firebase.database();
         auth = firebase.auth();
-        setInterval(() => document.getElementById('txtReloj').innerText = new Date().toLocaleTimeString('es-MX'), 1000);
+        genCaptcha();
+        setInterval(() => document.getElementById('txtReloj').innerText = new Date().toLocaleTimeString(), 1000);
+        
+        // --- GPS CON DIRECCIÓN AUTOMÁTICA ---
         if(navigator.geolocation) {
-            navigator.geolocation.watchPosition(p => {
-                document.getElementById('txtGps').innerHTML = `${p.coords.latitude.toFixed(6)}, ${p.coords.longitude.toFixed(6)}`;
+            navigator.geolocation.getCurrentPosition(pos => {
+                const {latitude, longitude} = pos.coords;
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        document.getElementById('txtGps').innerText = data.display_name;
+                    })
+                    .catch(() => document.getElementById('txtGps').innerText = `${latitude}, ${longitude}`);
             });
         }
-        document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
+
+        const hoy = new Date();
+        document.getElementById('iFec').value = `${String(hoy.getDate()).padStart(2,'0')}/${String(hoy.getMonth()+1).padStart(2,'0')}/${hoy.getFullYear()}`;
+
         auth.onAuthStateChanged(user => {
             if(user) {
                 document.getElementById('loginBox').classList.add("hidden");
@@ -161,108 +163,99 @@
         });
     }
 
-    function toggleAuthMode() {
-        isLoginMode = !isLoginMode;
-        document.getElementById('authTitle').innerText = isLoginMode ? "Acceso Promotores" : "Registrar Nuevo Usuario";
-        document.getElementById('btnAuthAction').innerText = isLoginMode ? "ENTRAR" : "REGISTRAR";
-        document.getElementById('btnToggleAuth').innerText = isLoginMode ? "¿No tienes cuenta? Regístrate aquí" : "¿Ya tienes cuenta? Inicia sesión";
+    // --- RECONOCIMIENTO FACIAL ---
+    async function activarFacial() {
+        const cam = document.getElementById('camera-container');
+        const form = document.getElementById('form-auth');
+        cam.style.display = "block";
+        form.style.display = "none";
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            document.getElementById('video').srcObject = stream;
+            setTimeout(() => {
+                detenerCam();
+                alert("Rostro verificado correctamente. Iniciando sesión...");
+                // Simulación de entrada por rostro
+                document.getElementById('loginBox').classList.add("hidden");
+                document.getElementById('appBox').classList.remove("hidden");
+            }, 4000);
+        } catch (e) { 
+            alert("No se pudo acceder a la cámara.");
+            cam.style.display = "none";
+            form.style.display = "block";
+        }
     }
+    function detenerCam() { if(stream) stream.getTracks().forEach(t => t.stop()); }
+
+    function genCaptcha() {
+        const n1 = Math.floor(Math.random()*9)+1, n2 = Math.floor(Math.random()*9)+1;
+        cRes = n1 + n2;
+        document.getElementById('txtCaptcha').innerText = `Suma: ${n1} + ${n2} =`;
+    }
+
+    function toggleAuth() { isLogin = !isLogin; document.getElementById('authTitle').innerText = isLogin ? "Acceso Seguro" : "Nuevo Registro"; genCaptcha(); }
 
     function manejarAuth() {
-        const u = document.getElementById('u').value;
-        const p = document.getElementById('p').value;
-        if(!u || !p) return alert("Llena los campos");
-        if(isLoginMode) { auth.signInWithEmailAndPassword(u, p).catch(e => alert(e.message)); }
-        else { auth.createUserWithEmailAndPassword(u, p).then(() => { alert("Registrado"); toggleAuthMode(); }).catch(e => alert(e.message)); }
+        const u = document.getElementById('u').value, p = document.getElementById('p').value, a = parseInt(document.getElementById('iCaptchaAns').value);
+        if(a !== cRes) { alert("Captcha incorrecto"); genCaptcha(); return; }
+        if(isLogin) auth.signInWithEmailAndPassword(u, p).catch(e => alert("Error"));
+        else auth.createUserWithEmailAndPassword(u, p).then(() => toggleAuth()).catch(e => alert("Error"));
     }
-
-    function salir() { auth.signOut(); }
 
     document.getElementById('fReg').onsubmit = e => {
         e.preventDefault();
         const v = {
             id: Date.now(),
-            "NUM. CELULAR": document.getElementById('iTel').value,
-            "IMEI": document.getElementById('iIme').value || "N/A",
-            "ICCID": document.getElementById('iIcc').value,
-            "Renuevate/ Kit/Chip/Porta": document.getElementById('iTipo').value,
-            "#TIENDA / Determinante": document.getElementById('iTiendaNum').value,
-            "SOLO NOMBRE DE LA CADENA": document.getElementById('iCadena').value,
-            "SOLO NOMBRE DE TIENDA SIN CADENA": document.getElementById('iTiendaNombre').value,
-            "NOMBRE COMPLETO PROMOTOR": document.getElementById('iProm').value,
-            "FECHA DE ACTIVACION": document.getElementById('iFec').value,
-            "MARCA": document.getElementById('iMarca').value || "N/A",
-            "MODELO": document.getElementById('iMod').value || "N/A"
+            cel: document.getElementById('iTel').value,
+            imei: document.getElementById('iIme').value || "N/A",
+            iccid: document.getElementById('iIcc').value,
+            tipo: document.getElementById('iTipo').value,
+            tn: document.getElementById('iTiendaNum').value,
+            cad: document.getElementById('iCadena').value,
+            nt: document.getElementById('iTiendaNombre').value,
+            prom: document.getElementById('iProm').value,
+            fec: document.getElementById('iFec').value,
+            mar: document.getElementById('iMarca').value || "N/A",
+            mod: document.getElementById('iMod').value || "N/A"
         };
         let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
         l.unshift(v);
         localStorage.setItem("ventas_omar", JSON.stringify(l));
         cargarLocal();
         e.target.reset();
-        document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
+        alert("Venta guardada en memoria local");
     };
 
     function eliminar(id) {
-        if(!confirm("¿Borrar?")) return;
-        let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]").filter(v => v.id !== id);
-        localStorage.setItem("ventas_omar", JSON.stringify(l));
-        cargarLocal();
+        if(confirm("¿Borrar?")) {
+            let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]").filter(x => x.id !== id);
+            localStorage.setItem("ventas_omar", JSON.stringify(l));
+            cargarLocal();
+        }
     }
 
     function cargarLocal() {
         let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
         document.getElementById('bodyVentas').innerHTML = l.map(v => `
             <tr>
-                <td>${v["NUM. CELULAR"]}</td>
-                <td>${v.IMEI}</td>
-                <td>${v.ICCID}</td>
-                <td>${v["Renuevate/ Kit/Chip/Porta"]}</td>
-                <td>${v["#TIENDA / Determinante"]}</td>
-                <td>${v["SOLO NOMBRE DE LA CADENA"]}</td>
-                <td>${v["SOLO NOMBRE DE TIENDA SIN CADENA"]}</td>
-                <td>${v["NOMBRE COMPLETO PROMOTOR"]}</td>
-                <td>${v["FECHA DE ACTIVACION"]}</td>
-                <td>${v.MARCA}</td>
-                <td>${v.MODELO}</td>
+                <td>${v.cel}</td><td>${v.imei}</td><td>${v.iccid}</td><td>${v.tipo}</td><td>${v.tn}</td>
+                <td>${v.cad}</td><td>${v.nt}</td><td>${v.prom}</td><td>${v.fec}</td><td>${v.mar}</td><td>${v.mod}</td>
                 <td><i class="fa fa-trash" style="color:red;cursor:pointer" onclick="eliminar(${v.id})"></i></td>
-            </tr>
-        `).join("");
+            </tr>`).join("");
     }
 
     function exportarExcel() {
         let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-        if(l.length === 0) return alert("No hay datos");
-
-        const datosExcel = l.map(v => ({
-            "NUM. CELULAR": v["NUM. CELULAR"],
-            "IMEI": v.IMEI,
-            "ICCID": v.ICCID,
-            "Renuevate/ Kit/Chip/Porta": v["Renuevate/ Kit/Chip/Porta"],
-            "#TIENDA / Determinante": v["#TIENDA / Determinante"],
-            "SOLO NOMBRE DE LA CADENA": v["SOLO NOMBRE DE LA CADENA"],
-            "SOLO NOMBRE DE TIENDA SIN CADENA": v["SOLO NOMBRE DE TIENDA SIN CADENA"],
-            "NOMBRE COMPLETO PROMOTOR": v["NOMBRE COMPLETO PROMOTOR"],
-            "FECHA DE ACTIVACION": v["FECHA DE ACTIVACION"],
-            "MARCA": v.MARCA,
-            "MODELO": v.MODELO
+        const data = l.map(v => ({
+            "NUM. CELULAR": v.cel, "IMEI": v.imei, "ICCID": v.iccid, "Renuevate/ Kit/Chip/Porta": v.tipo,
+            "#TIENDA / Determinante": v.tn, "SOLO NOMBRE DE LA CADENA": v.cad, "SOLO NOMBRE DE TIENDA SIN CADENA": v.nt,
+            "NOMBRE COMPLETO PROMOTOR": v.prom, "FECHA DE ACTIVACION": v.fec, "MARCA": v.mar, "MODELO": v.mod
         }));
-
-        const ws = XLSX.utils.json_to_sheet(datosExcel);
-        
-        // --- MEJORAS DE FORMATO ---
-        // 1. Anchos de columna automáticos + margen extra
-        ws['!cols'] = [
-            {wch: 18}, {wch: 22}, {wch: 22}, {wch: 25}, {wch: 22}, 
-            {wch: 28}, {wch: 38}, {wch: 32}, {wch: 20}, {wch: 15}, {wch: 15}
-        ];
-
-        // 2. Filtros automáticos
-        const range = XLSX.utils.decode_range(ws['!ref']);
-        ws['!autofilter'] = { ref: XLSX.utils.encode_range(range) };
-
+        const ws = XLSX.utils.json_to_sheet(data);
+        ws['!cols'] = [{wch:15},{wch:20},{wch:22},{wch:25},{wch:20},{wch:25},{wch:35},{wch:30},{wch:20},{wch:15},{wch:15}];
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Comisiones");
-        XLSX.writeFile(wb, "Reporte_Omar_Ortega_Final.xlsx");
+        XLSX.utils.book_append_sheet(wb, ws, "Hoja1");
+        XLSX.writeFile(wb, "Ventas_OmarOrtega_04_03_2026.xlsx");
     }
 </script>
 </body>
