@@ -13,65 +13,87 @@
         body { margin:0; font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; }
         .app { max-width:480px; margin:auto; padding:20px; position: relative; }
         
-        /* BARRA SUPERIOR CON RELOJ Y GPS */
-        .status-bar { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.1); padding: 12px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,195,0,0.3); }
-        #reloj { font-family: 'Courier New', monospace; font-size: 18px; color: #ffc300; font-weight: bold; text-shadow: 0 0 10px rgba(255,195,0,0.5); }
-        #ubicacion { font-size: 10px; color: #00b4d8; text-align: right; line-height: 1.2; }
+        /* RELOJES */
+        .reloj-container { font-family: 'Courier New', monospace; font-size: 26px; color: #ffc300; font-weight: bold; text-align: center; margin-bottom: 10px; text-shadow: 0 0 10px rgba(255,195,0,0.5); }
+        .status-bar { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.1); padding: 12px; border-radius: 15px; margin-bottom: 15px; border: 1px solid rgba(255,195,0,0.3); }
+        #relojApp { font-family: monospace; font-weight: bold; color: #ffc300; font-size: 18px; }
+        #ubicacion { font-size: 10px; color: #00b4d8; text-align: right; }
 
         .card { background:rgba(255,255,255,.08); backdrop-filter:blur(12px); border-radius:18px; padding:18px; margin-bottom:16px; border:1px solid rgba(255,255,255,0.1); }
-        .header { text-align:center; font-size:18px; font-weight:bold; color:#ffc300; margin-bottom:15px; text-transform: uppercase; }
+        .header { text-align:center; font-size:16px; font-weight:bold; color:#ffc300; margin-bottom:15px; text-transform: uppercase; }
         
-        label { font-size:11px; font-weight:600; color:#ffc300; text-transform: uppercase; display: block; margin-bottom: 5px; }
-        input, select { width:100%; padding:12px; margin-bottom:12px; border-radius:10px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; }
+        label { font-size:10px; font-weight:600; color:#ffc300; text-transform: uppercase; display: block; margin-bottom: 4px; }
+        input, select { width:100%; padding:10px; margin-bottom:10px; border-radius:10px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; }
         
-        .btn-main { background:#ffc300; color:#003566; width:100%; padding:14px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; }
-        .btn-excel { background:#1f7a3f; color:white; width:100%; padding:14px; border:none; border-radius:12px; margin-top:10px; font-weight:bold; cursor:pointer; }
-        .btn-logout { position: absolute; top: 20px; right: 20px; background: #ff4d4d; color: white; padding: 6px 10px; border-radius: 8px; font-size: 10px; border:none; cursor:pointer; z-index: 100; }
+        button { width:100%; padding:14px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; transition: 0.3s; }
+        .btn-main { background:#ffc300; color:#003566; }
+        .btn-excel { background:#1f7a3f; color:white; margin-top:10px; }
+        .btn-logout { position: absolute; top: 20px; right: 20px; background: #ff4d4d; color: white; padding: 6px 10px; border-radius: 8px; font-size: 10px; border:none; z-index: 100; }
         
-        .login { max-width:350px; margin:100px auto; background:white; color:black; padding:30px; border-radius:20px; text-align:center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        /* BOTONES DE ENLACES EXTERNOS */
+        .external-links { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .btn-link { text-decoration: none; display: flex; align-items: center; justify-content: center; border-radius: 12px; height: 45px; font-weight: bold; font-size: 11px; color: white; text-align: center; padding: 0 5px; }
+        .bg-payjoy { background: #00a8e8; }
+        .bg-vincula { background: #003566; border: 1px solid #ffc300; }
+        .bg-docs { background: #7248b9; grid-column: span 2; } /* El formulario ocupa todo el ancho */
+
+        .login { max-width:350px; margin:80px auto; background:white; color:black; padding:30px; border-radius:20px; text-align:center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .login input { background: #f0f2f5; color: black; border: 1px solid #ccc; }
         .hidden { display:none !important; }
 
-        /* HISTORIAL */
-        .venta-item { background: rgba(255,255,255,0.06); padding: 15px; border-radius: 15px; margin-bottom: 12px; border-left: 4px solid #ffc300; }
-        .grid-h { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; font-size: 11px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; }
-        .dato-h b { color: #ffc300; display: block; font-size: 9px; }
+        .venta-item { background: rgba(255,255,255,0.06); padding: 15px; border-radius: 15px; margin-bottom: 12px; border-left: 4px solid #ffc300; font-size: 12px; }
     </style>
 </head>
 <body onload="inicio()">
 
     <div id="loginBox" class="login">
-        <h2 id="tituloAuth">Acceso Telcel</h2>
+        <div class="reloj-container" id="relojLogin">00:00:00</div>
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Logo_Telcel.svg/1200px-Logo_Telcel.svg.png" width="100" style="margin-bottom:15px">
+        <h2 id="tituloAuth">Acceso Promotores</h2>
         <input id="u" type="email" placeholder="Correo">
         <input id="p" type="password" placeholder="Contraseña">
         <button class="btn-main" onclick="entrar()">ENTRAR</button>
-        <button style="background:none; border:none; font-size:11px; margin-top:15px; cursor:pointer;" onclick="toggleReg()" id="btnT">¿Eres nuevo? Regístrate aquí</button>
+        <button style="background:none; border:none; font-size:11px; margin-top:15px; cursor:pointer;" onclick="toggleReg()" id="btnT">¿Registrar nuevo promotor?</button>
     </div>
 
     <div id="appBox" class="app hidden">
         <button class="btn-logout" onclick="salir()">SALIR</button>
 
         <div class="status-bar">
-            <div id="reloj">00:00:00</div>
-            <div id="ubicacion"><i class="fa-solid fa-location-crosshairs"></i> GPS: Buscando...</div>
+            <div id="relojApp">00:00:00</div>
+            <div id="ubicacion"><i class="fa-solid fa-location-dot"></i> Buscando...</div>
         </div>
 
-        <div style="font-size: 18px; color:#ffc300; font-weight: bold; margin-bottom: 5px;">¡Bienvenido a Telcel!</div>
-        <div id="promotorName" style="font-size: 12px; color: #00b4d8; margin-bottom: 20px;">Cargando...</div>
+        <div style="font-size: 18px; color:#ffc300; font-weight: bold;">¡Bienvenido a Telcel!</div>
+        <div id="promotorName" style="font-size: 12px; color: #00b4d8;">PROMOTOR</div>
+        <div id="sessionTime" style="font-size: 10px; color: #aaa; margin-bottom: 15px;">Sesión: --:--</div>
+
+        <div class="external-links">
+            <a href="https://app.payjoy.com/accounts/login?afterLogin=https://app.payjoy.com/merchant3?merchantId=199557" target="_blank" class="btn-link bg-payjoy">
+                <i class="fa-solid fa-mobile-screen"></i> &nbsp; PAYJOY
+            </a>
+            <a href="https://registro.telcel.com/vinculatulinea/#/" target="_blank" class="btn-link bg-vincula">
+                <i class="fa-solid fa-link"></i> &nbsp; VINCULA LÍNEA
+            </a>
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLSfQMT1FUeOLNJUzB8DeGhKNTqiU_DS7wr7y2p_Ab7xgHHjYbw/viewform?pli=1" target="_blank" class="btn-link bg-docs">
+                <i class="fa-solid fa-file-lines"></i> &nbsp; FORMULARIO DE REGISTRO DOCS
+            </a>
+        </div>
+        <br>
 
         <form id="fReg">
             <div class="card">
                 <div class="header">Registro de Venta</div>
-                <label>Tipo</label>
+                <label>Movimiento</label>
                 <select id="iTipo" required onchange="ajustarCampos()">
                     <option value="KIT">KIT</option>
                     <option value="CHIP">CHIP</option>
                     <option value="PORTA">PORTA</option>
                     <option value="RENUEVATE">RENUEVATE</option>
                 </select>
-                <label>Fecha (DD/MM/YYYY)</label>
+                <label>Fecha de Activación (DD/MM/YYYY)</label>
                 <input id="iFec" required>
-                <label>Celular</label>
+                <label>Número Celular</label>
                 <input id="iTel" type="tel" required maxlength="10">
                 <label>ICCID</label>
                 <input id="iIcc" required>
@@ -79,18 +101,15 @@
 
             <div id="seccionEquipo" class="card">
                 <label>IMEI</label><input id="iIme">
-                <label>Marca / Modelo</label>
-                <div style="display: flex; gap: 10px;">
-                    <input id="iMarca" placeholder="Marca">
-                    <input id="iMod" placeholder="Modelo">
-                </div>
+                <label>Marca</label><input id="iMarca">
+                <label>Modelo</label><input id="iMod">
             </div>
 
             <div class="card">
-                <label>Determinante / # Tienda</label><input id="iTiendaNum" required>
+                <label># Tienda / Determinante</label><input id="iTiendaNum" required>
                 <label>Cadena</label><input id="iCadena" required>
                 <label>Nombre Tienda</label><input id="iTiendaNombre" required>
-                <label>Nombre Promotor</label><input id="iProm" required>
+                <label>Nombre del Promotor</label><input id="iProm" required>
             </div>
             <button type="submit" class="btn-main">GUARDAR VENTA</button>
         </form>
@@ -99,7 +118,7 @@
             <i class="fa-solid fa-file-excel"></i> DESCARGAR EXCEL (.xlsx)
         </button>
 
-        <div class="header" style="margin-top: 30px;">Historial Local</div>
+        <div class="header" style="margin-top: 30px;">Historial del Día</div>
         <div id="listaLocal"></div>
     </div>
 
@@ -121,19 +140,21 @@
         db = firebase.database();
         auth = firebase.auth();
 
-        // LOGICA DEL RELOJ
+        // Actualizar Relojes
         setInterval(() => {
-            const ahora = new Date();
-            document.getElementById('reloj').innerText = ahora.toLocaleTimeString('es-MX');
+            const ahora = new Date().toLocaleTimeString('es-MX');
+            if(document.getElementById('relojLogin')) document.getElementById('relojLogin').innerText = ahora;
+            if(document.getElementById('relojApp')) document.getElementById('relojApp').innerText = ahora;
         }, 1000);
 
-        // LOGICA GPS
+        // Ubicación GPS
         if(navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(p => {
-                document.getElementById('ubicacion').innerHTML = `<i class="fa-solid fa-location-dot"></i> Lat: ${p.coords.latitude.toFixed(2)} | Lon: ${p.coords.longitude.toFixed(2)}`;
-            });
+                document.getElementById('ubicacion').innerHTML = `Lat: ${p.coords.latitude.toFixed(2)} | Lon: ${p.coords.longitude.toFixed(2)}`;
+            }, () => { document.getElementById('ubicacion').innerText = "GPS Inactivo"; });
         }
 
+        // Formato DD/MM/YYYY
         const hoy = new Date();
         document.getElementById('iFec').value = hoy.toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
 
@@ -142,6 +163,7 @@
                 const nombre = user.email.split('@')[0].toUpperCase();
                 document.getElementById('promotorName').innerText = "PROMOTOR: " + nombre;
                 document.getElementById('iProm').value = nombre;
+                document.getElementById('sessionTime').innerText = "Sesión iniciada: " + new Date().toLocaleTimeString('es-MX', {hour:'2-digit', minute:'2-digit'});
                 document.getElementById('loginBox').classList.add("hidden");
                 document.getElementById('appBox').classList.remove("hidden");
                 cargarLocal();
@@ -153,18 +175,18 @@
     }
 
     function entrar() {
-        let mail = document.getElementById('u').value;
-        let pass = document.getElementById('p').value;
+        let m = document.getElementById('u').value, p = document.getElementById('p').value;
+        if(!m || !p) return alert("Ingresa datos");
         if(document.getElementById('tituloAuth').innerText === "Crear Usuario") {
-            auth.createUserWithEmailAndPassword(mail, pass).then(() => toggleReg()).catch(e => alert(e.message));
+            auth.createUserWithEmailAndPassword(m, p).then(() => { alert("Registrado"); toggleReg(); }).catch(e => alert(e.message));
         } else {
-            auth.signInWithEmailAndPassword(mail, pass).catch(e => alert("Error: Verifica tus datos"));
+            auth.signInWithEmailAndPassword(m, p).catch(e => alert("Error al entrar"));
         }
     }
 
     function toggleReg() {
         const t = document.getElementById('tituloAuth');
-        t.innerText = (t.innerText === "Acceso Telcel") ? "Crear Usuario" : "Acceso Telcel";
+        t.innerText = (t.innerText === "Acceso Promotores") ? "Crear Usuario" : "Acceso Promotores";
     }
 
     function salir() { auth.signOut(); }
@@ -190,34 +212,30 @@
             "MARCA": document.getElementById('iMarca').value || "N/A",
             "MODELO": document.getElementById('iMod').value || "N/A"
         };
-        let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
-        local.unshift(v);
-        localStorage.setItem("ventas_save", JSON.stringify(local));
+        let l = JSON.parse(localStorage.getItem("ventas_save") || "[]");
+        l.unshift(v);
+        localStorage.setItem("ventas_save", JSON.stringify(l));
         if(auth.currentUser) db.ref('ventas/' + auth.currentUser.uid).push(v);
-        
         document.getElementById('fReg').reset();
-        inicio();
-        alert("Venta guardada");
+        document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
+        cargarLocal();
+        alert("¡Venta Guardada Localmente!");
     };
 
     function cargarLocal() {
-        let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
-        document.getElementById('listaLocal').innerHTML = local.map(v => `
+        let l = JSON.parse(localStorage.getItem("ventas_save") || "[]");
+        document.getElementById('listaLocal').innerHTML = l.map(v => `
             <div class="venta-item">
-                <b style="color:#ffc300">${v["NUM. CELULAR"]}</b> - ${v["Renuevate / Kit / Chip / Porta"]}
-                <div class="grid-h">
-                    <div class="dato-h"><b>Determinante</b>${v["# TIENDA / Determinante"]}</div>
-                    <div class="dato-h"><b>Tienda</b>${v["SOLO NOMBRE DE TIENDA SIN CADENA"]}</div>
-                    <div class="dato-h"><b>ICCID</b>${v.ICCID}</div>
-                    <div class="dato-h"><b>Fecha</b>${v["FECHA DE ACTIVACION"]}</div>
-                </div>
+                <b style="color:#ffc300">${v["NUM. CELULAR"]}</b> | DET: ${v["# TIENDA / Determinante"]} <br>
+                <small>${v["Renuevate / Kit / Chip / Porta"]} - ${v.ICCID}</small>
             </div>
         `).join("");
     }
 
     function exportarExcel() {
-        let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
-        const ws = XLSX.utils.json_to_sheet(local);
+        let l = JSON.parse(localStorage.getItem("ventas_save") || "[]");
+        if(l.length === 0) return alert("No hay datos");
+        const ws = XLSX.utils.json_to_sheet(l);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Ventas");
         XLSX.writeFile(wb, "comisiones_2026.xlsx");
