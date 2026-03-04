@@ -13,15 +13,13 @@
         body { margin:0; font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; }
         .app { max-width:1000px; margin:auto; padding:20px; }
         
-        /* GPS Y RELOJ */
-        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .gps-card { background: #000; border: 1px solid #00b4d8; padding: 10px 15px; border-radius: 12px; color: #00b4d8; font-size: 12px; display: flex; align-items: center; }
         .gps-card i { margin-right: 10px; font-size: 18px; color: #ffc300; }
         .reloj-digital { font-family: monospace; font-size: 24px; color: #ffc300; font-weight: bold; }
 
         .btn-exit { background: rgba(255, 77, 77, 0.2); color: #ff4d4d; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #ff4d4d; cursor: pointer; }
 
-        /* FORMULARIO */
         .card { background:rgba(255,255,255,.08); backdrop-filter:blur(10px); border-radius:15px; padding:20px; margin-bottom:15px; border:1px solid rgba(255,255,255,0.1); }
         label { font-size:10px; font-weight:bold; color:#ffc300; text-transform: uppercase; display: block; margin-bottom: 5px; }
         input, select { width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; }
@@ -29,7 +27,6 @@
         .btn-save { background:#ffc300; color:#001d3d; width:100%; padding:15px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size: 16px; }
         .btn-excel { background:#1f7a3f; color:white; width:100%; padding:12px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; margin-top:20px; display: flex; align-items: center; justify-content: center; gap: 10px; }
 
-        /* TABLA ESTILO EXCEL (ENCABEZADO NEGRO) */
         .table-container { overflow-x: auto; background: white; border-radius: 10px; margin-top: 20px; }
         table { width: 100%; border-collapse: collapse; color: #333; font-size: 11px; min-width: 1000px; }
         th { background: #000 !important; color: #fff !important; padding: 12px; text-align: left; text-transform: uppercase; font-weight: bold; border: 1px solid #444; }
@@ -38,28 +35,23 @@
 
         .hidden { display: none !important; }
         .login-box { max-width: 350px; margin: 100px auto; background: white; padding: 30px; border-radius: 20px; text-align: center; color: #000; }
-        .btn-link-auth { background: none; border: none; color: #003566; font-size: 12px; text-decoration: underline; cursor: pointer; margin-top: 15px; }
     </style>
 </head>
 <body onload="inicio()">
 
     <div id="loginBox" class="login-box">
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Logo_Telcel.svg/1200px-Logo_Telcel.svg.png" width="120">
-        <h3 id="authTitle">Acceso Promotores</h3>
-        <input id="u" type="email" placeholder="Usuario (Correo)">
+        <h3>Acceso Promotores</h3>
+        <input id="u" type="email" placeholder="Usuario">
         <input id="p" type="password" placeholder="Contraseña">
-        <button class="btn-save" id="btnAuthAction" onclick="manejarAuth()">ENTRAR</button>
-        <button class="btn-link-auth" id="btnToggleAuth" onclick="toggleAuthMode()">¿No tienes cuenta? Regístrate aquí</button>
+        <button class="btn-save" onclick="manejarAuth()">ENTRAR</button>
     </div>
 
     <div id="appBox" class="app hidden">
         <div class="top-bar">
             <div class="gps-card">
                 <i class="fa-solid fa-location-dot"></i>
-                <div>
-                    <b style="color:white">SISTEMA GPS</b><br>
-                    <span id="txtGps">Localizando...</span>
-                </div>
+                <div><b style="color:white">UBICACIÓN</b><br><span id="txtGps">Localizando...</span></div>
             </div>
             <div class="reloj-digital" id="txtReloj">00:00:00</div>
             <div class="btn-exit" onclick="salir()"><i class="fa-solid fa-power-off"></i></div>
@@ -68,7 +60,7 @@
         <form id="fReg">
             <div class="card">
                 <label>Renuevate/ Kit/Chip/Porta</label>
-                <select id="iTipo" required onchange="checkTipo()">
+                <select id="iTipo" required>
                     <option value="KIT">KIT</option>
                     <option value="CHIP">CHIP</option>
                     <option value="PORTA">PORTA</option>
@@ -82,7 +74,7 @@
                 <input id="iIcc" required>
             </div>
 
-            <div id="divEquipo" class="card">
+            <div class="card">
                 <label>IMEI</label><input id="iIme">
                 <label>MARCA</label><input id="iMarca">
                 <label>MODELO</label><input id="iMod">
@@ -99,7 +91,7 @@
         </form>
 
         <button class="btn-excel" onclick="exportarExcel()">
-            <i class="fa-solid fa-file-excel"></i> DESCARGAR EXCEL (HOJA 1)
+            <i class="fa-solid fa-file-excel"></i> DESCARGAR EXCEL FORMATEADO
         </button>
 
         <div class="table-container">
@@ -117,7 +109,7 @@
                         <th>FECHA DE ACTIVACION</th>
                         <th>MARCA</th>
                         <th>MODELO</th>
-                        <th style="background: #ff4d4d !important;">X</th>
+                        <th style="background:red !important">X</th>
                     </tr>
                 </thead>
                 <tbody id="bodyVentas"></tbody>
@@ -137,25 +129,18 @@
     };
 
     let db, auth;
-    let isLoginMode = true;
 
     function inicio() {
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         db = firebase.database();
         auth = firebase.auth();
-
-        setInterval(() => {
-            document.getElementById('txtReloj').innerText = new Date().toLocaleTimeString('es-MX');
-        }, 1000);
-
+        setInterval(() => document.getElementById('txtReloj').innerText = new Date().toLocaleTimeString('es-MX'), 1000);
         if(navigator.geolocation) {
             navigator.geolocation.watchPosition(p => {
                 document.getElementById('txtGps').innerHTML = `${p.coords.latitude.toFixed(6)}, ${p.coords.longitude.toFixed(6)}`;
             });
         }
-
         document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
-
         auth.onAuthStateChanged(user => {
             if(user) {
                 document.getElementById('loginBox').classList.add("hidden");
@@ -168,35 +153,11 @@
         });
     }
 
-    function toggleAuthMode() {
-        isLoginMode = !isLoginMode;
-        document.getElementById('authTitle').innerText = isLoginMode ? "Acceso Promotores" : "Registrar Nuevo Usuario";
-        document.getElementById('btnAuthAction').innerText = isLoginMode ? "ENTRAR" : "REGISTRAR";
-        document.getElementById('btnToggleAuth').innerText = isLoginMode ? "¿No tienes cuenta? Regístrate aquí" : "¿Ya tienes cuenta? Inicia sesión";
-    }
-
     function manejarAuth() {
-        const u = document.getElementById('u').value;
-        const p = document.getElementById('p').value;
-        if(!u || !p) return alert("Llena los campos");
-
-        if(isLoginMode) {
-            auth.signInWithEmailAndPassword(u, p).catch(e => alert("Error: " + e.message));
-        } else {
-            auth.createUserWithEmailAndPassword(u, p).then(() => {
-                alert("Usuario creado con éxito");
-                isLoginMode = true;
-                toggleAuthMode();
-            }).catch(e => alert("Error: " + e.message));
-        }
+        auth.signInWithEmailAndPassword(document.getElementById('u').value, document.getElementById('p').value).catch(e => alert("Error"));
     }
 
     function salir() { auth.signOut(); }
-
-    function checkTipo() {
-        const t = document.getElementById('iTipo').value;
-        document.getElementById('divEquipo').className = (t === "CHIP" || t === "PORTA") ? "hidden" : "card";
-    }
 
     document.getElementById('fReg').onsubmit = e => {
         e.preventDefault();
@@ -217,17 +178,13 @@
         let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
         l.unshift(v);
         localStorage.setItem("ventas_omar", JSON.stringify(l));
-        if(auth.currentUser) db.ref('ventas/' + auth.currentUser.uid).push(v);
-        document.getElementById('fReg').reset();
-        document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
         cargarLocal();
-        alert("Guardado");
+        e.target.reset();
+        document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
     };
 
     function eliminar(id) {
-        if(!confirm("¿Eliminar registro?")) return;
-        let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-        l = l.filter(v => v.id !== id);
+        let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]").filter(v => v.id !== id);
         localStorage.setItem("ventas_omar", JSON.stringify(l));
         cargarLocal();
     }
@@ -236,7 +193,7 @@
         let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
         document.getElementById('bodyVentas').innerHTML = l.map(v => `
             <tr>
-                <td><b>${v["NUM. CELULAR"]}</b></td>
+                <td>${v["NUM. CELULAR"]}</td>
                 <td>${v.IMEI}</td>
                 <td>${v.ICCID}</td>
                 <td>${v["Renuevate/ Kit/Chip/Porta"]}</td>
@@ -247,16 +204,16 @@
                 <td>${v["FECHA DE ACTIVACION"]}</td>
                 <td>${v.MARCA}</td>
                 <td>${v.MODELO}</td>
-                <td><i class="fa-solid fa-trash" style="color:red; cursor:pointer;" onclick="eliminar(${v.id})"></i></td>
+                <td><i class="fa fa-trash" style="color:red;cursor:pointer" onclick="eliminar(${v.id})"></i></td>
             </tr>
         `).join("");
     }
 
     function exportarExcel() {
         let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-        if(l.length === 0) return alert("No hay datos para exportar");
+        if(l.length === 0) return alert("Sin datos");
 
-        // Limpiar datos y asegurar orden de columnas del formato Omar Ortega
+        // MAPEO EXACTO PARA EL EXCEL (ORDEN OFICIAL)
         const datosExcel = l.map(v => ({
             "NUM. CELULAR": v["NUM. CELULAR"],
             "IMEI": v.IMEI,
@@ -272,6 +229,14 @@
         }));
 
         const ws = XLSX.utils.json_to_sheet(datosExcel);
+        
+        // AJUSTE DE ANCHO DE COLUMNAS (Para que no salga amontonado)
+        const wscols = [
+            {wch: 15}, {wch: 20}, {wch: 22}, {wch: 25}, {wch: 22}, 
+            {wch: 25}, {wch: 35}, {wch: 30}, {wch: 20}, {wch: 15}, {wch: 15}
+        ];
+        ws['!cols'] = wscols;
+
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Hoja1");
         XLSX.writeFile(wb, "Comisiones_Omar_Ortega.xlsx");
