@@ -13,20 +13,34 @@
         body { margin:0; font-family:'Segoe UI',system-ui; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; }
         .app { max-width:480px; margin:auto; padding:20px; position: relative; }
         .card { background:rgba(255,255,255,.08); backdrop-filter:blur(12px); border-radius:18px; padding:18px; margin-bottom:16px; box-shadow:0 10px 25px rgba(0,0,0,.3); border:1px solid rgba(255,255,255,0.1); }
-        .header { text-align:center; font-size:20px; font-weight:bold; color:#ffc300; margin-bottom:20px; }
-        label { font-size:11px; font-weight:600; color:#ffc300; }
+        
+        /* BIENVENIDA PERSONALIZADA */
+        .welcome-bar { text-align: left; margin-bottom: 20px; padding: 10px 5px; border-bottom: 2px solid #ffc300; }
+        .welcome-text { font-size: 18px; font-weight: bold; color: #ffc300; display: block; }
+        .user-name { font-size: 14px; color: #00b4d8; }
+
+        .header { text-align:center; font-size:20px; font-weight:bold; color:#ffc300; margin-bottom:20px; text-transform: uppercase; }
+        label { font-size:11px; font-weight:600; color:#ffc300; text-transform: uppercase; }
         input, select { width:100%; padding:12px; margin-top:4px; margin-bottom:12px; border-radius:10px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; }
         .login input { background: #f0f2f5; color: #000 !important; border: 1px solid #ccc; }
+        
         button { width:100%; padding:14px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; transition:.2s; margin-bottom: 10px; }
         .btn-main { background:#ffc300; color:#003566; }
-        .btn-excel { background:#1f7a3f; color:white; width: 100%; }
+        .btn-excel { background:#1f7a3f; color:white; width: 100%; margin-top: 10px; }
         .btn-logout { position: absolute; top: 20px; right: 20px; background: #ff4d4d; color: white; padding: 8px 12px; border-radius: 8px; font-size: 12px; z-index: 10; width: auto; border:none; cursor:pointer; }
+        
         .login { max-width:350px; margin:100px auto; background:white; color:black; padding:30px; border-radius:18px; text-align:center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .hidden { display:none !important; }
+
+        /* ESTILO DETALLADO DEL HISTORIAL */
         .venta-item { background: rgba(255,255,255,0.07); padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 5px solid #ffc300; font-size: 11px; position: relative; }
         .status-icon { position: absolute; top: 15px; right: 45px; font-size: 14px; }
-        .grid-datos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; }
-        .dato b { color: #ffc300; display: block; font-size: 9px; text-transform: uppercase; }
+        .btn-del { position: absolute; top: 12px; right: 12px; color: #ff4d4d; cursor: pointer; font-size: 18px; padding: 5px; }
+        .grid-historial { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; }
+        .dato-h { margin-bottom: 5px; }
+        .dato-h b { color: #ffc300; display: block; font-size: 9px; text-transform: uppercase; margin-bottom: 2px; }
+        .dato-h span { font-size: 12px; color: #fff; word-break: break-all; }
+        .full-width { grid-column: span 2; }
     </style>
 </head>
 <body onload="inicio()">
@@ -41,7 +55,13 @@
 
     <div id="appBox" class="app hidden">
         <button class="btn-logout" onclick="salir()"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
-        <div class="header">REGISTRO DE VENTAS</div>
+        
+        <div class="welcome-bar">
+            <span class="welcome-text">¡Bienvenido a Telcel!</span>
+            <span id="userNameDisp" class="user-name">Cargando promotor...</span>
+        </div>
+
+        <div class="header">Registro de Ventas</div>
         
         <form id="fReg">
             <div class="card">
@@ -80,7 +100,7 @@
             <i class="fa-solid fa-file-excel"></i> DESCARGAR EXCEL (.xlsx)
         </button>
 
-        <div class="header" style="font-size: 16px; margin-top: 25px;">HISTORIAL LOCAL</div>
+        <div class="header" style="font-size: 16px; margin-top: 25px;">Historial Local Detallado</div>
         <div id="listaLocal"></div>
     </div>
 
@@ -95,7 +115,7 @@
         appId: "1:480758010888:web:e948c54f0217536aa9adbd"
     };
 
-    let uA = "", db, auth;
+    let db, auth;
 
     function inicio() {
         if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
@@ -103,8 +123,14 @@
         auth = firebase.auth();
         const hoy = new Date();
         iFec.value = hoy.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        
         auth.onAuthStateChanged(user => {
-            if(user) { uA = user.email; mostrarApp(); } 
+            if(user) { 
+                // Extraer nombre del correo antes del @ para la bienvenida
+                const nombreLimpio = user.email.split('@')[0].toUpperCase();
+                userNameDisp.innerText = "Promotor: " + nombreLimpio;
+                mostrarApp(); 
+            } 
             else { loginBox.classList.remove("hidden"); appBox.classList.add("hidden"); }
         });
     }
@@ -141,7 +167,7 @@
             id: Date.now(),
             sincronizado: false,
             "NUM. CELULAR": iTel.value,
-            "IMEI": iIme.value || "-",
+            "IMEI": iIme.value || "N/A",
             "ICCID": iIcc.value,
             "Renuevate / Kit / Chip / Porta": iTipo.value,
             "# TIENDA / Determinante": iTiendaNum.value,
@@ -149,8 +175,8 @@
             "SOLO NOMBRE DE TIENDA SIN CADENA": iTiendaNombre.value,
             "NOMBRE COMPLETO PROMOTOR": iProm.value,
             "FECHA DE ACTIVACION": iFec.value,
-            "MARCA": iMarca.value || "-",
-            "MODELO": iMod.value || "-"
+            "MARCA": iMarca.value || "N/A",
+            "MODELO": iMod.value || "N/A"
         };
         let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
         local.unshift(v);
@@ -161,7 +187,15 @@
         fReg.reset();
         iFec.value = new Date().toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
         cargarVentasLocales();
-        alert("Venta guardada");
+        alert("Venta guardada localmente");
+    }
+
+    function eliminarVenta(id) {
+        if(confirm("¿Eliminar este registro?")) {
+            let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
+            localStorage.setItem("ventas_save", JSON.stringify(local.filter(v => v.id !== id)));
+            cargarVentasLocales();
+        }
     }
 
     function marcarSincronizado(id) {
@@ -181,8 +215,20 @@
         local.map(v => `
             <div class="venta-item">
                 <div class="status-icon">${v.sincronizado ? '☁️' : '⏳'}</div>
-                <div style="color:#ffc300; font-weight:bold; font-size:14px;">${v["NUM. CELULAR"]}</div>
-                <div style="opacity:0.8;">${v["Renuevate / Kit / Chip / Porta"]} - ${v["FECHA DE ACTIVACION"]}</div>
+                <div class="btn-del" onclick="eliminarVenta(${v.id})"><i class="fa-solid fa-trash-can"></i></div>
+                
+                <div style="color:#ffc300; font-weight:bold; font-size:16px; margin-bottom:5px;">${v["NUM. CELULAR"]}</div>
+                <div style="font-size:13px; margin-bottom:10px;">${v["Renuevate / Kit / Chip / Porta"]} | ${v["FECHA DE ACTIVACION"]}</div>
+
+                <div class="grid-historial">
+                    <div class="dato-h"><b>ICCID</b><span>${v.ICCID}</span></div>
+                    <div class="dato-h"><b>IMEI</b><span>${v.IMEI}</span></div>
+                    <div class="dato-h"><b>MARCA/MODELO</b><span>${v.MARCA} ${v.MODELO}</span></div>
+                    <div class="dato-h"><b># TIENDA</b><span>${v["# TIENDA / Determinante"]}</span></div>
+                    <div class="dato-h full-width"><b>CADENA</b><span>${v["SOLO NOMBRE DE LA CADENA"]}</span></div>
+                    <div class="dato-h full-width"><b>TIENDA</b><span>${v["SOLO NOMBRE DE TIENDA SIN CADENA"]}</span></div>
+                    <div class="dato-h full-width"><b>PROMOTOR</b><span>${v["NOMBRE COMPLETO PROMOTOR"]}</span></div>
+                </div>
             </div>
         `).join("");
     }
@@ -190,7 +236,6 @@
     function exportarExcel() {
         let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
         if(local.length === 0) return alert("No hay datos");
-
         const dataParaExcel = local.map(v => ({
             "NUM. CELULAR": v["NUM. CELULAR"],
             "IMEI": v.IMEI,
@@ -204,27 +249,8 @@
             "MARCA": v.MARCA,
             "MODELO": v.MODELO
         }));
-
         const ws = XLSX.utils.json_to_sheet(dataParaExcel);
-
-        // ESTILO DE ENCABEZADO NEGRO (Se aplica a la primera fila)
-        const range = XLSX.utils.decode_range(ws['!ref']);
-        for (let C = range.s.c; C <= range.e.c; ++C) {
-            const address = XLSX.utils.encode_col(C) + "1";
-            if (!ws[address]) continue;
-            ws[address].s = {
-                fill: { fgColor: { rgb: "000000" } },
-                font: { color: { rgb: "FFFFFF" }, bold: true },
-                alignment: { horizontal: "center" }
-            };
-        }
-
-        // ANCHOS DE COLUMNA AUTOMÁTICOS
-        ws['!cols'] = [
-            { wch: 16 }, { wch: 20 }, { wch: 22 }, { wch: 25 }, { wch: 20 },
-            { wch: 25 }, { wch: 35 }, { wch: 30 }, { wch: 18 }, { wch: 15 }, { wch: 15 }
-        ];
-
+        ws['!cols'] = [{ wch: 16 }, { wch: 20 }, { wch: 22 }, { wch: 25 }, { wch: 20 }, { wch: 25 }, { wch: 35 }, { wch: 30 }, { wch: 18 }, { wch: 15 }, { wch: 15 }];
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Ventas");
         XLSX.writeFile(wb, "comisiones_2026_Omar_Ortega.xlsx");
