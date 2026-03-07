@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Sistema Ventas Telcel - Omar Ortega</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -26,7 +28,11 @@ min-height:100vh;
 color:white;
 }
 
-.app{max-width:1000px;margin:auto;padding:20px;}
+.app{
+max-width:1000px;
+margin:auto;
+padding:20px;
+}
 
 .login-box{
 max-width:350px;
@@ -62,7 +68,11 @@ border:3px solid #00b4d8;
 display:none;
 }
 
-#video{width:100%;height:100%;object-fit:cover;}
+#video{
+width:100%;
+height:100%;
+object-fit:cover;
+}
 
 .scan-line{
 position:absolute;
@@ -74,7 +84,10 @@ animation:scan 2s linear infinite;
 box-shadow:0 0 15px #00ff00;
 }
 
-@keyframes scan{from{top:0;}to{top:100%;}}
+@keyframes scan{
+from{top:0;}
+to{top:100%;}
+}
 
 .tools-grid{
 display:grid;
@@ -172,6 +185,15 @@ font-weight:bold;
 cursor:pointer;
 }
 
+.scanBtn{
+background:#00b4d8;
+border:none;
+border-radius:8px;
+padding:8px;
+color:white;
+cursor:pointer;
+}
+
 .table-container{
 overflow-x:auto;
 background:white;
@@ -211,15 +233,6 @@ justify-content:space-between;
 
 .hidden{display:none!important;}
 
-.scanBtn{
-background:#00b4d8;
-border:none;
-border-radius:8px;
-color:white;
-padding:8px 10px;
-cursor:pointer;
-}
-
 #scannerBox{
 display:none;
 background:black;
@@ -229,9 +242,12 @@ margin-top:10px;
 }
 
 </style>
+
 </head>
 
 <body onload="inicio()">
+
+<!-- LOGIN -->
 
 <div id="loginBox" class="login-box">
 
@@ -245,7 +261,9 @@ margin-top:10px;
 </div>
 
 <div id="form-auth">
+
 <input id="u" type="email" placeholder="Correo">
+
 <input id="p" type="password" placeholder="Contraseña">
 
 <div class="captcha-container">
@@ -254,6 +272,7 @@ margin-top:10px;
 </div>
 
 <button class="btn-save" onclick="manejarAuth()">ENTRAR</button>
+
 </div>
 
 <button class="btn-tool bg-face" style="margin-top:15px;color:#003566;background:#e9ecef;border:2px dashed #003566;" onclick="activarBiometrico('login')">
@@ -264,13 +283,22 @@ margin-top:10px;
 
 </div>
 
+<!-- APP -->
+
 <div id="appBox" class="app hidden">
 
 <div class="top-bar">
+
 <div class="gps-card">
-<i class="fa-solid fa-location-dot"></i> <b>DIRECCIÓN:</b> <span id="txtGps">Detectando...</span>
+<i class="fa-solid fa-location-dot"></i>
+<b>DIRECCIÓN:</b>
+<span id="txtGps">Detectando...</span>
 </div>
-<button class="btn-exit" onclick="cerrarSesion()"><i class="fa-solid fa-power-off"></i></button>
+
+<button class="btn-exit" onclick="cerrarSesion()">
+<i class="fa-solid fa-power-off"></i>
+</button>
+
 </div>
 
 <h4 style="color:#ffc300;margin-bottom:10px;text-transform:uppercase;font-size:12px;">Herramientas de Trabajo</h4>
@@ -285,12 +313,12 @@ margin-top:10px;
 <i class="fa-solid fa-file-lines"></i> FORMULARIO
 </a>
 
-<a href="https://app.payjoy.com/store/merchant-login" target="_blank" class="btn-tool bg-payjoy" style="grid-column: span 2;">
+<a href="https://app.payjoy.com/store/merchant-login" target="_blank" class="btn-tool bg-payjoy" style="grid-column:span 2;">
 <i class="fa-solid fa-mobile-screen"></i> ACCESO PAYJOY MERCHANT
 </a>
 
 <button onclick="activarBiometrico('registro')" class="btn-tool bg-face">
-<i class="fa-solid fa-camera"></i> REGISTRAR MI ROSTRO (PRIMERA VEZ)
+<i class="fa-solid fa-camera"></i> REGISTRAR MI ROSTRO
 </button>
 
 </div>
@@ -300,6 +328,7 @@ margin-top:10px;
 <div class="card">
 
 <label>Tipo Venta</label>
+
 <select id="iTipo">
 <option>KIT</option>
 <option>CHIP</option>
@@ -311,12 +340,14 @@ margin-top:10px;
 <input id="iFec" required>
 
 <label>Num. Celular</label>
+
 <div style="display:flex;gap:5px;">
 <input id="iTel" type="tel" maxlength="10" required>
 <button type="button" class="scanBtn" onclick="abrirScanner('iTel')"><i class="fa fa-camera"></i></button>
 </div>
 
 <label>ICCID</label>
+
 <div style="display:flex;gap:5px;">
 <input id="iIcc" required>
 <button type="button" class="scanBtn" onclick="abrirScanner('iIcc')"><i class="fa fa-camera"></i></button>
@@ -327,6 +358,7 @@ margin-top:10px;
 <div class="card">
 
 <label>IMEI</label>
+
 <div style="display:flex;gap:5px;">
 <input id="iIme">
 <button type="button" class="scanBtn" onclick="abrirScanner('iIme')"><i class="fa fa-camera"></i></button>
@@ -357,14 +389,19 @@ margin-top:10px;
 </form>
 
 <div id="scannerBox">
+
 <div id="reader"></div>
+
 <button class="btn-save" onclick="cerrarScanner()">CERRAR ESCÁNER</button>
+
 </div>
 
 <h3 style="color:#ffc300;margin-top:25px;font-size:14px;">REGISTROS DEL DÍA</h3>
 
 <div class="table-container">
+
 <table>
+
 <thead>
 <tr>
 <th>CELULAR</th>
@@ -379,7 +416,9 @@ margin-top:10px;
 </thead>
 
 <tbody id="bodyVentas"></tbody>
+
 </table>
+
 </div>
 
 <button class="btn-save" style="background:#1f7a3f;color:white;margin-top:20px;" onclick="exportarExcel()">
@@ -391,7 +430,7 @@ margin-top:10px;
 <script>
 
 let html5QrCode;
-let campoActual=null;
+let campoActual;
 
 function abrirScanner(campo){
 
