@@ -1,105 +1,182 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistema Ventas Telcel - Omar Ortega</title>
 
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<title>Sistema Ventas Telcel</title>
 
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 <style>
 
 body{
-font-family:Arial;
-background:#001d3d;
-color:white;
 margin:0;
-padding:20px;
+font-family:Segoe UI;
+background:linear-gradient(135deg,#003566,#001d3d);
+color:white;
 }
 
-.app{
+.container{
 max-width:900px;
 margin:auto;
+padding:20px;
 }
+
+/* HEADER */
+
+.header{
+display:flex;
+align-items:center;
+justify-content:space-between;
+margin-bottom:20px;
+}
+
+.logo{
+font-size:22px;
+font-weight:bold;
+color:#ffc300;
+}
+
+/* CARD */
 
 .card{
-background:rgba(255,255,255,.1);
+background:rgba(255,255,255,0.1);
+backdrop-filter:blur(10px);
+border-radius:15px;
 padding:20px;
-border-radius:10px;
 margin-bottom:15px;
+box-shadow:0 8px 20px rgba(0,0,0,0.3);
 }
 
-input,select{
-width:100%;
-padding:10px;
-margin-bottom:10px;
-border-radius:6px;
-border:none;
-}
+/* INPUTS */
 
-button{
-padding:10px;
-border:none;
-border-radius:6px;
-cursor:pointer;
-}
-
-.btn{
-background:#ffc300;
+label{
+font-size:11px;
+color:#ffc300;
 font-weight:bold;
 }
 
-.scan{
-background:#00b4d8;
+input,select{
+
+width:100%;
+padding:12px;
+margin-top:5px;
+margin-bottom:10px;
+
+border-radius:8px;
+border:none;
+
+background:rgba(255,255,255,0.15);
 color:white;
-margin-left:5px;
+
+}
+
+/* SCAN INPUT */
+
+.scan-box{
+display:flex;
+gap:8px;
+}
+
+.scan-btn{
+
+background:#00b4d8;
+border:none;
+border-radius:8px;
+padding:10px;
+color:white;
+cursor:pointer;
+
+}
+
+/* BUTTON */
+
+.btn-main{
+
+background:#ffc300;
+color:#001d3d;
+padding:14px;
+border:none;
+border-radius:10px;
+font-weight:bold;
+cursor:pointer;
+width:100%;
+
+}
+
+/* TABLE */
+
+.table-box{
+
+background:white;
+border-radius:10px;
+overflow:auto;
+color:black;
+
 }
 
 table{
+
 width:100%;
-background:white;
-color:black;
-font-size:12px;
 border-collapse:collapse;
+font-size:12px;
+
 }
 
 th{
-background:#001d3d;
+
+background:#003566;
 color:white;
-padding:8px;
+padding:10px;
+
 }
 
 td{
-padding:6px;
-border:1px solid #ccc;
+
+padding:8px;
+border-bottom:1px solid #eee;
+
 }
 
+/* SCANNER */
+
 #scanner{
+
 display:none;
 background:black;
 padding:10px;
-margin-top:10px;
 border-radius:10px;
+margin-top:15px;
+
 }
 
 </style>
+
 </head>
 
 <body>
 
-<div class="app">
+<div class="container">
 
-<h2>Sistema Ventas Telcel</h2>
+<div class="header">
+
+<div class="logo">
+<i class="fa-solid fa-signal"></i> Ventas Telcel
+</div>
+
+</div>
 
 <form id="fReg">
 
 <div class="card">
 
-<label>Tipo Venta</label>
+<label>Tipo venta</label>
+
 <select id="iTipo">
 <option>KIT</option>
 <option>CHIP</option>
@@ -107,35 +184,31 @@ border-radius:10px;
 <option>RENUEVATE</option>
 </select>
 
-<label>Fecha</label>
-<input id="iFec">
-
 <label>Número celular</label>
-<div style="display:flex">
+
+<div class="scan-box">
 <input id="iTel">
-<button type="button" class="scan" onclick="abrirScanner('iTel')">📷</button>
+<button type="button" class="scan-btn" onclick="abrirScanner('iTel')">
+<i class="fa-solid fa-camera"></i>
+</button>
 </div>
 
 <label>ICCID</label>
-<div style="display:flex">
+
+<div class="scan-box">
 <input id="iIcc">
-<button type="button" class="scan" onclick="abrirScanner('iIcc')">📷</button>
+<button type="button" class="scan-btn" onclick="abrirScanner('iIcc')">
+<i class="fa-solid fa-camera"></i>
+</button>
 </div>
-
-<label>¿Tienes IMEI?</label>
-<select id="imeiStatus" onchange="toggleImei()">
-<option value="si">SI</option>
-<option value="pendiente">IMEI PENDIENTE</option>
-</select>
-
-<div id="imeiBox">
 
 <label>IMEI</label>
-<div style="display:flex">
-<input id="iIme">
-<button type="button" class="scan" onclick="abrirScanner('iIme')">📷</button>
-</div>
 
+<div class="scan-box">
+<input id="iIme">
+<button type="button" class="scan-btn" onclick="abrirScanner('iIme')">
+<i class="fa-solid fa-camera"></i>
+</button>
 </div>
 
 <label>Marca</label>
@@ -145,38 +218,42 @@ border-radius:10px;
 <input id="iMod">
 
 <label>Tienda</label>
-<input id="iTiendaNombre">
+<input id="iTienda">
 
 <label>Promotor</label>
 <input id="iProm">
 
-</div>
+<button class="btn-main">
+Guardar Venta
+</button>
 
-<button class="btn" type="submit">GUARDAR VENTA</button>
+</div>
 
 </form>
 
 <div id="scanner">
 <div id="reader"></div>
-<button onclick="cerrarScanner()" class="btn">Cerrar escáner</button>
+<button class="btn-main" onclick="cerrarScanner()">Cerrar escáner</button>
 </div>
 
-<h3>Registros</h3>
+<div class="card">
+
+<h3>Ventas registradas</h3>
+
+<div class="table-box">
 
 <table>
 
 <thead>
 
 <tr>
-<th>Celular</th>
+<th>Cel</th>
 <th>IMEI</th>
 <th>Marca</th>
 <th>Modelo</th>
 <th>ICCID</th>
 <th>Tipo</th>
 <th>Tienda</th>
-<th>Promotor</th>
-<th>Fecha</th>
 <th></th>
 </tr>
 
@@ -186,9 +263,13 @@ border-radius:10px;
 
 </table>
 
-<button class="btn" onclick="exportarExcel()" style="margin-top:10px">
-Descargar Excel
+</div>
+
+<button class="btn-main" style="margin-top:10px;" onclick="exportarExcel()">
+<i class="fa-solid fa-file-excel"></i> Descargar Excel
 </button>
+
+</div>
 
 </div>
 
@@ -226,68 +307,39 @@ function cerrarScanner(){
 if(html5QrCode){
 
 html5QrCode.stop().then(()=>{
+
 document.getElementById("scanner").style.display="none";
+
 });
 
 }
 
 }
 
-function toggleImei(){
-
-const status=document.getElementById("imeiStatus").value;
-const box=document.getElementById("imeiBox");
-
-if(status==="pendiente"){
-box.style.display="none";
-}else{
-box.style.display="block";
-}
-
-}
-
-const hoy=new Date();
-
-document.getElementById("iFec").value=
-hoy.getDate()+"/"+(hoy.getMonth()+1)+"/"+hoy.getFullYear();
-
 document.getElementById("fReg").onsubmit=(e)=>{
 
 e.preventDefault();
-
-const imeiStatus=document.getElementById("imeiStatus").value;
 
 const venta={
 
 id:Date.now(),
 
-celular:document.getElementById("iTel").value,
-
-imei:imeiStatus==="pendiente"
-?"IMEI PENDIENTE"
-:document.getElementById("iIme").value,
-
+cel:document.getElementById("iTel").value,
+imei:document.getElementById("iIme").value,
 marca:document.getElementById("iMarca").value,
-
 modelo:document.getElementById("iMod").value,
-
 iccid:document.getElementById("iIcc").value,
-
 tipo:document.getElementById("iTipo").value,
-
-tienda:document.getElementById("iTiendaNombre").value,
-
-promotor:document.getElementById("iProm").value,
-
-fecha:document.getElementById("iFec").value
+tienda:document.getElementById("iTienda").value,
+promotor:document.getElementById("iProm").value
 
 };
 
-let l=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
+let l=JSON.parse(localStorage.getItem("ventas")||"[]");
 
 l.unshift(venta);
 
-localStorage.setItem("ventas_omar",JSON.stringify(l));
+localStorage.setItem("ventas",JSON.stringify(l));
 
 cargar();
 
@@ -297,34 +349,24 @@ e.target.reset();
 
 function cargar(){
 
-let l=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
+let l=JSON.parse(localStorage.getItem("ventas")||"[]");
 
 document.getElementById("bodyVentas").innerHTML=l.map(v=>`
 
 <tr>
 
-<td>${v.celular}</td>
-
-<td style="color:${v.imei==="IMEI PENDIENTE"?"red":"black"}">
-${v.imei}
-</td>
-
+<td>${v.cel}</td>
+<td>${v.imei}</td>
 <td>${v.marca}</td>
-
 <td>${v.modelo}</td>
-
 <td>${v.iccid}</td>
-
 <td>${v.tipo}</td>
-
 <td>${v.tienda}</td>
 
-<td>${v.promotor}</td>
-
-<td>${v.fecha}</td>
-
 <td>
-<button onclick="eliminar(${v.id})">❌</button>
+<button onclick="eliminar(${v.id})">
+❌
+</button>
 </td>
 
 </tr>
@@ -335,11 +377,11 @@ ${v.imei}
 
 function eliminar(id){
 
-let l=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
+let l=JSON.parse(localStorage.getItem("ventas")||"[]");
 
 l=l.filter(x=>x.id!==id);
 
-localStorage.setItem("ventas_omar",JSON.stringify(l));
+localStorage.setItem("ventas",JSON.stringify(l));
 
 cargar();
 
@@ -347,20 +389,14 @@ cargar();
 
 function exportarExcel(){
 
-let l=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
-
-if(l.length===0){
-alert("No hay datos");
-return;
-}
+let l=JSON.parse(localStorage.getItem("ventas")||"[]");
 
 const ws=XLSX.utils.json_to_sheet(l);
-
 const wb=XLSX.utils.book_new();
 
 XLSX.utils.book_append_sheet(wb,ws,"Ventas");
 
-XLSX.writeFile(wb,"ventas_telcel_omar.xlsx");
+XLSX.writeFile(wb,"ventas_telcel.xlsx");
 
 }
 
