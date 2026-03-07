@@ -1,180 +1,481 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema Ventas Telcel - Omar Ortega</title>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<!-- LIBRERIA SCANNER -->
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<style>
+
+body{
+margin:0;
+font-family:'Segoe UI',sans-serif;
+background:linear-gradient(135deg,#001d3d,#003566,#000814);
+min-height:100vh;
+color:white;
+}
+
+.app{
+max-width:1000px;
+margin:auto;
+padding:20px;
+}
+
+.login-box{
+max-width:350px;
+margin:40px auto;
+background:white;
+padding:30px;
+border-radius:20px;
+text-align:center;
+color:#000;
+box-shadow:0 10px 25px rgba(0,0,0,0.5);
+}
+
+.login-box input{
+width:100%;
+padding:12px;
+margin-bottom:15px;
+border-radius:8px;
+border:1px solid #ccc;
+background:#f9f9f9;
+color:#000;
+box-sizing:border-box;
+}
+
+#camera-container{
+width:100%;
+height:240px;
+background:#000;
+border-radius:15px;
+margin-bottom:15px;
+overflow:hidden;
+position:relative;
+border:3px solid #00b4d8;
+display:none;
+}
+
+#video{
+width:100%;
+height:100%;
+object-fit:cover;
+}
+
+.scan-line{
+position:absolute;
+width:100%;
+height:4px;
+background:#00ff00;
+top:0;
+animation:scan 2s linear infinite;
+box-shadow:0 0 15px #00ff00;
+}
+
+@keyframes scan{
+from{top:0;}
+to{top:100%;}
+}
+
+.tools-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+margin-bottom:20px;
+}
+
+.btn-tool{
+padding:12px;
+border:none;
+border-radius:10px;
+font-weight:bold;
+cursor:pointer;
+display:flex;
+align-items:center;
+justify-content:center;
+gap:8px;
+font-size:12px;
+color:white;
+text-decoration:none;
+text-align:center;
+}
+
+.bg-telcel{background:#0045ad;}
+.bg-google{background:#db4437;}
+.bg-payjoy{background:#6200ee;}
+.bg-face{background:#00b4d8;grid-column:span 2;}
+
+.top-bar{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:15px;
+}
+
+.gps-card{
+background:#000;
+border:1px solid #00b4d8;
+padding:10px;
+border-radius:12px;
+color:#00b4d8;
+font-size:11px;
+flex:1;
+margin-right:10px;
+}
+
+.btn-exit{
+background:#ff4d4d;
+color:white;
+border:none;
+width:40px;
+height:40px;
+border-radius:50%;
+cursor:pointer;
+}
+
+.card{
+background:rgba(255,255,255,.08);
+backdrop-filter:blur(10px);
+border-radius:15px;
+padding:20px;
+margin-bottom:15px;
+border:1px solid rgba(255,255,255,0.1);
+}
+
+label{
+font-size:10px;
+font-weight:bold;
+color:#ffc300;
+text-transform:uppercase;
+display:block;
+margin-bottom:5px;
+}
+
+.app input,.app select{
+width:100%;
+padding:10px;
+margin-bottom:10px;
+border-radius:8px;
+border:none;
+background:rgba(255,255,255,.12);
+color:white;
+box-sizing:border-box;
+}
+
+.btn-save{
+background:#ffc300;
+color:#001d3d;
+width:100%;
+padding:15px;
+border:none;
+border-radius:10px;
+font-weight:bold;
+cursor:pointer;
+}
+
+.table-container{
+overflow-x:auto;
+background:white;
+border-radius:10px;
+margin-top:20px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+color:#333;
+font-size:10px;
+min-width:1000px;
+}
+
+th{
+background:#001d3d;
+color:white;
+padding:10px;
+text-align:left;
+}
+
+td{
+padding:8px;
+border:1px solid #ddd;
+}
+
+.captcha-container{
+background:#eee;
+padding:10px;
+border-radius:8px;
+margin-bottom:15px;
+display:flex;
+align-items:center;
+justify-content:space-between;
+}
+
+.hidden{
+display:none !important;
+}
+
+</style>
+</head>
+
+<body onload="inicio()">
+
+<!-- LOGIN -->
+<div id="loginBox" class="login-box">
+
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Logo_Telcel.svg/1200px-Logo_Telcel.svg.png" width="100">
+
+<h3 id="authTitle" style="color:#003566;margin-bottom:20px;">
+Acceso Promotores
+</h3>
+
+<div id="camera-container">
+<video id="video" autoplay muted playsinline></video>
+<div class="scan-line"></div>
+</div>
+
+<div id="form-auth">
+
+<input id="u" type="email" placeholder="Correo">
+<input id="p" type="password" placeholder="Contraseña">
+
+<div class="captcha-container">
+<span id="txtCaptcha" style="font-weight:bold;color:red;"></span>
+<input id="iCaptchaAns" type="number" style="width:60px;margin:0;" placeholder="?">
+</div>
+
+<button class="btn-save" onclick="manejarAuth()">ENTRAR</button>
+
+</div>
+
+<button class="btn-tool bg-face" style="margin-top:15px;color:#003566;background:#e9ecef;border:2px dashed #003566;" onclick="activarBiometrico('login')">
+<i class="fa-solid fa-face-viewfinder"></i> ACCESO POR ROSTRO
+</button>
+
+<button style="background:none;border:none;color:#003566;margin-top:15px;text-decoration:underline;cursor:pointer;" onclick="toggleAuth()">
+¿No tienes cuenta? Regístrate
+</button>
+
+</div>
+
+<!-- APP -->
+
+<div id="appBox" class="app hidden">
+
+<div class="top-bar">
+
+<div class="gps-card">
+<i class="fa-solid fa-location-dot"></i>
+<b>DIRECCIÓN:</b>
+<span id="txtGps">Detectando...</span>
+</div>
+
+<button class="btn-exit" onclick="cerrarSesion()">
+<i class="fa-solid fa-power-off"></i>
+</button>
+
+</div>
+
+<form id="fReg">
+
+<div class="card">
+
+<label>Tipo Venta</label>
+
+<select id="iTipo">
+<option>KIT</option>
+<option>CHIP</option>
+<option>PORTA</option>
+<option>RENUEVATE</option>
+</select>
+
+<label>Fecha de Activación</label>
+<input id="iFec" required>
+
+<label>Num. Celular</label>
+<input id="iTel" type="tel" maxlength="10" required>
+<button type="button" onclick="scanTel()" class="btn-save" style="background:#00b4d8;margin-bottom:10px;">📷 Escanear</button>
+<div id="readerTel"></div>
+
+<label>ICCID</label>
+<input id="iIcc" required>
+<button type="button" onclick="scanIcc()" class="btn-save" style="background:#00b4d8;margin-bottom:10px;">📷 Escanear</button>
+<div id="readerIcc"></div>
+
+</div>
+
+<div class="card">
+
+<label>IMEI</label>
+<input id="iIme">
+<button type="button" onclick="scanImei()" class="btn-save" style="background:#00b4d8;margin-bottom:10px;">📷 Escanear</button>
+<div id="readerImei"></div>
+
+<label>Marca / Modelo</label>
+
+<div style="display:flex;gap:10px;">
+<input id="iMarca" placeholder="Marca" style="margin:0">
+<input id="iMod" placeholder="Modelo" style="margin:0">
+</div>
+
+</div>
+
+<div class="card">
+
+<label>Datos Tienda</label>
+
+<input id="iTiendaNum" placeholder="# Tienda / Determinante" required>
+<input id="iCadena" placeholder="Nombre de la Cadena" required>
+<input id="iTiendaNombre" placeholder="Nombre de Tienda (Sin Cadena)" required>
+<input id="iProm" placeholder="Nombre Completo Promotor" required>
+
+</div>
+
+<button type="submit" class="btn-save">
+GUARDAR VENTA LOCALMENTE
+</button>
+
+</form>
+
+<h3 style="color:#ffc300;margin-top:25px;font-size:14px;">
+REGISTROS DEL DÍA
+</h3>
+
+<div class="table-container">
+
+<table>
+
+<thead>
+<tr>
+<th>CELULAR</th>
+<th>IMEI</th>
+<th>ICCID</th>
+<th>TIPO</th>
+<th>MODELO</th>
+<th>TIENDA</th>
+<th>PROMOTOR</th>
+<th>FECHA</th>
+<th>ACCION</th>
+</tr>
+</thead>
+
+<tbody id="bodyVentas"></tbody>
+
+</table>
+
+</div>
+
+<button class="btn-save" style="background:#1f7a3f;color:white;margin-top:20px;" onclick="exportarExcel()">
+<i class="fa-solid fa-file-excel"></i>
+DESCARGAR REPORTE EXCEL
+</button>
+
+</div>
+
 <script>
 
-const firebaseConfig = {
-apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
-authDomain: "ventastelcel4029.firebaseapp.com",
-databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com",
-projectId: "ventastelcel4029",
-storageBucket: "ventastelcel4029.firebasestorage.app",
-messagingSenderId: "480758010888",
-appId: "1:480758010888:web:e948c54f0217536aa9adbd"
+const firebaseConfig={
+apiKey:"AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
+authDomain:"ventastelcel4029.firebaseapp.com",
+databaseURL:"https://ventastelcel4029-default-rtdb.firebaseio.com",
+projectId:"ventastelcel4029",
+storageBucket:"ventastelcel4029.firebasestorage.app",
+messagingSenderId:"480758010888",
+appId:"1:480758010888:web:e948c54f0217536aa9adbd"
 };
 
-let auth, isLogin = true, cRes = 0, stream = null;
-
-/* INICIO */
+let auth,isLogin=true,cRes=0;
 
 function inicio(){
 
-if (!firebase.apps.length){
-firebase.initializeApp(firebaseConfig);
-}
+if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
 
-auth = firebase.auth();
+auth=firebase.auth();
 
 genCaptcha();
-obtenerGps();
 
-/* LOGIN ACTIVO */
-
-auth.onAuthStateChanged(user => {
-
+auth.onAuthStateChanged(user=>{
 if(user){
-
-document.getElementById('loginBox').classList.add("hidden");
-document.getElementById('appBox').classList.remove("hidden");
-
+loginBox.classList.add("hidden");
+appBox.classList.remove("hidden");
 cargarLocal();
-
 }else{
-
-document.getElementById('loginBox').classList.remove("hidden");
-document.getElementById('appBox').classList.add("hidden");
-
+loginBox.classList.remove("hidden");
+appBox.classList.add("hidden");
 }
-
 });
 
-/* FECHA AUTOMATICA */
-
-const hoy = new Date();
-
-document.getElementById('iFec').value =
-`${String(hoy.getDate()).padStart(2,'0')}/${String(hoy.getMonth()+1).padStart(2,'0')}/${hoy.getFullYear()}`;
+const hoy=new Date();
+iFec.value=`${String(hoy.getDate()).padStart(2,'0')}/${String(hoy.getMonth()+1).padStart(2,'0')}/${hoy.getFullYear()}`;
 
 }
-
-/* CAPTCHA */
 
 function genCaptcha(){
-
-const n1 = Math.floor(Math.random()*9)+1;
-const n2 = Math.floor(Math.random()*9)+1;
-
-cRes = n1 + n2;
-
-document.getElementById('txtCaptcha').innerText = `${n1} + ${n2} =`;
-
+const n1=Math.floor(Math.random()*9)+1;
+const n2=Math.floor(Math.random()*9)+1;
+cRes=n1+n2;
+txtCaptcha.innerText=`${n1} + ${n2} =`;
 }
-
-/* LOGIN */
 
 function manejarAuth(){
 
-const u = document.getElementById('u').value;
-const p = document.getElementById('p').value;
-const a = parseInt(document.getElementById('iCaptchaAns').value);
+const u=document.getElementById('u').value;
+const p=document.getElementById('p').value;
+const a=parseInt(iCaptchaAns.value);
 
-if(a !== cRes){
-
-alert("Captcha incorrecto");
-genCaptcha();
-return;
-
-}
+if(a!==cRes){alert("Captcha incorrecto");genCaptcha();return;}
 
 if(isLogin){
-
-auth.signInWithEmailAndPassword(u,p)
-.catch(()=> alert("Correo o contraseña incorrectos"));
-
+auth.signInWithEmailAndPassword(u,p).catch(()=>alert("Error en datos"));
 }else{
-
-auth.createUserWithEmailAndPassword(u,p)
-.then(()=>{
-alert("Usuario registrado");
-isLogin=true;
-})
-.catch(e=>alert(e.message));
-
+auth.createUserWithEmailAndPassword(u,p).then(()=>{alert("Registrado");isLogin=true;});
 }
 
 }
-
-/* GPS */
-
-function obtenerGps(){
-
-if(navigator.geolocation){
-
-navigator.geolocation.getCurrentPosition(pos=>{
-
-fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`)
-.then(r=>r.json())
-.then(d=>{
-
-const a=d.address;
-
-document.getElementById('txtGps').innerText =
-`${a.road || ''} ${a.house_number || ''}, ${a.suburb || a.neighbourhood || ''}`;
-
-});
-
-});
-
-}
-
-}
-
-/* CERRAR SESION */
 
 function cerrarSesion(){
-
-if(confirm("¿Cerrar sesión?")){
-auth.signOut();
+if(confirm("¿Cerrar sesión?"))auth.signOut();
 }
 
-}
-
-/* GUARDAR VENTA */
-
-document.getElementById('fReg').onsubmit = e => {
+document.getElementById('fReg').onsubmit=e=>{
 
 e.preventDefault();
 
-const v = {
+const v={
 
-id: Date.now(),
+id:Date.now(),
 
-"NUM. CELULAR": document.getElementById('iTel').value,
+"NUM. CELULAR":iTel.value,
+"IMEI":iIme.value||"N/A",
+"ICCID":iIcc.value,
 
-"IMEI": document.getElementById('iIme').value || "N/A",
+"Renuevate/ Kit/Chip/Porta":iTipo.value,
 
-"ICCID": document.getElementById('iIcc').value,
+"#TIENDA / Determinante":iTiendaNum.value,
+"SOLO NOMBRE DE LA CADENA":iCadena.value,
+"SOLO NOMBRE DE TIENDA SIN CADENA":iTiendaNombre.value,
+"NOMBRE COMPLETO PROMOTOR":iProm.value,
 
-"Renuevate/ Kit/Chip/Porta": document.getElementById('iTipo').value,
+"FECHA DE ACTIVACION":iFec.value,
 
-"#TIENDA / Determinante": document.getElementById('iTiendaNum').value,
-
-"SOLO NOMBRE DE LA CADENA": document.getElementById('iCadena').value,
-
-"SOLO NOMBRE DE TIENDA SIN CADENA": document.getElementById('iTiendaNombre').value,
-
-"NOMBRE COMPLETO PROMOTOR": document.getElementById('iProm').value,
-
-"FECHA DE ACTIVACION": document.getElementById('iFec').value,
-
-"MARCA": document.getElementById('iMarca').value || "N/A",
-
-"MODELO": document.getElementById('iMod').value || "N/A"
+"MARCA":iMarca.value||"N/A",
+"MODELO":iMod.value||"N/A"
 
 };
 
-let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
+let l=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
 
 l.unshift(v);
 
-localStorage.setItem("ventas_omar", JSON.stringify(l));
+localStorage.setItem("ventas_omar",JSON.stringify(l));
 
 cargarLocal();
 
@@ -184,13 +485,11 @@ inicio();
 
 };
 
-/* CARGAR TABLA */
-
 function cargarLocal(){
 
-let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
+let l=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
 
-document.getElementById('bodyVentas').innerHTML = l.map(v => `
+bodyVentas.innerHTML=l.map(v=>`
 
 <tr>
 
@@ -198,6 +497,7 @@ document.getElementById('bodyVentas').innerHTML = l.map(v => `
 <td>${v.IMEI}</td>
 <td>${v.ICCID}</td>
 <td>${v["Renuevate/ Kit/Chip/Porta"]}</td>
+<td>${v.MODELO}</td>
 <td>${v["SOLO NOMBRE DE TIENDA SIN CADENA"]}</td>
 <td>${v["NOMBRE COMPLETO PROMOTOR"]}</td>
 <td>${v["FECHA DE ACTIVACION"]}</td>
@@ -212,16 +512,13 @@ document.getElementById('bodyVentas').innerHTML = l.map(v => `
 
 }
 
-/* ELIMINAR */
-
 function eliminar(id){
 
 if(confirm("¿Eliminar registro?")){
 
-let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]")
-.filter(x => x.id !== id);
+let l=JSON.parse(localStorage.getItem("ventas_omar")||"[]").filter(x=>x.id!==id);
 
-localStorage.setItem("ventas_omar", JSON.stringify(l));
+localStorage.setItem("ventas_omar",JSON.stringify(l));
 
 cargarLocal();
 
@@ -229,34 +526,78 @@ cargarLocal();
 
 }
 
-/* EXCEL */
-
 function exportarExcel(){
 
-let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
+let l=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
 
-if(l.length === 0) return alert("No hay datos");
+if(l.length===0)return alert("No hay datos para exportar");
 
-const ws = XLSX.utils.json_to_sheet(l);
-const wb = XLSX.utils.book_new();
+const ws=XLSX.utils.json_to_sheet(l);
 
-XLSX.utils.book_append_sheet(wb, ws, "Ventas");
+const wb=XLSX.utils.book_new();
 
-XLSX.writeFile(wb,
-`Ventas_OmarOrtega_${new Date().toLocaleDateString().replace(/\//g,'-')}.xlsx`
+XLSX.utils.book_append_sheet(wb,ws,"Ventas");
+
+XLSX.writeFile(wb,`Ventas_OmarOrtega_${new Date().toLocaleDateString().replace(/\//g,'-')}.xlsx`);
+
+}
+
+/* SCANNERS */
+
+function scanTel(){
+
+const scanner=new Html5Qrcode("readerTel");
+
+scanner.start(
+{facingMode:"environment"},
+{fps:10,qrbox:250},
+text=>{
+iTel.value=text;
+scanner.stop();
+readerTel.innerHTML="";
+}
 );
 
 }
 
-/* REGISTRO / LOGIN */
+function scanIcc(){
 
-function toggleAuth(){
+const scanner=new Html5Qrcode("readerIcc");
 
-isLogin = !isLogin;
-
-document.getElementById('authTitle').innerText =
-isLogin ? "Acceso Promotores" : "Registro de Usuario";
+scanner.start(
+{facingMode:"environment"},
+{fps:10,qrbox:250},
+text=>{
+iIcc.value=text;
+scanner.stop();
+readerIcc.innerHTML="";
+}
+);
 
 }
 
+function scanImei(){
+
+const scanner=new Html5Qrcode("readerImei");
+
+scanner.start(
+{facingMode:"environment"},
+{fps:10,qrbox:250},
+text=>{
+iIme.value=text;
+scanner.stop();
+readerImei.innerHTML="";
+}
+);
+
+}
+
+function toggleAuth(){
+isLogin=!isLogin;
+authTitle.innerText=isLogin?"Acceso Promotores":"Registro de Usuario";
+}
+
 </script>
+
+</body>
+</html>
