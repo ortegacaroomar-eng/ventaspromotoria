@@ -1,6 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema Ventas Telcel - Omar Ortega</title>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+
 <script src="https://unpkg.com/html5-qrcode"></script>
 
-### Acceso Promotores
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+
+body{
+margin:0;
+font-family:'Segoe UI',sans-serif;
+background:linear-gradient(135deg,#001d3d,#003566,#000814);
+min-height:100vh;
+color:white;
+}
+
+.app{max-width:1000px;margin:auto;padding:20px;}
+
+.login-box{
+max-width:350px;
+margin:40px auto;
+background:white;
+padding:30px;
+border-radius:20px;
+text-align:center;
+color:#000;
+box-shadow:0 10px 25px rgba(0,0,0,0.5);
+}
+
+.login-box input{
+width:100%;
+padding:12px;
+margin-bottom:15px;
+border-radius:8px;
+border:1px solid #ccc;
+background:#f9f9f9;
+color:#000;
+box-sizing:border-box;
+}
+
+#camera-container{
+width:100%;
+height:240px;
+background:#000;
+border-radius:15px;
+margin-bottom:15px;
+overflow:hidden;
+position:relative;
+border:3px solid #00b4d8;
+display:none;
+}
+
+#video{width:100%;height:100%;object-fit:cover;}
+
+.scan-line{
+position:absolute;
+width:100%;
+height:4px;
+background:#00ff00;
+top:0;
+animation:scan 2s linear infinite;
+box-shadow:0 0 15px #00ff00;
+}
+
+@keyframes scan{from{top:0;}to{top:100%;}}
+
+.tools-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+margin-bottom:20px;
+}
+
+.btn-tool{
+padding:12px;
+border:none;
+border-radius:10px;
+font-weight:bold;
+cursor:pointer;
+display:flex;
+align-items:center;
+justify-content:center;
+gap:8px;
+font-size:12px;
+color:white;
+text-decoration:none;
+text-align:center;
+}
+
+.bg-telcel{background:#0045ad;}
+.bg-google{background:#db4437;}
+.bg-payjoy{background:#6200ee;}
+.bg-face{background:#00b4d8;grid-column:span 2;}
+
+.top-bar{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:15px;
+}
+
+.gps-card{
+background:#000;
+border:1px solid #00b4d8;
+padding:10px;
+border-radius:12px;
+color:#00b4d8;
+font-size:11px;
+flex:1;
+margin-right:10px;
+}
+
+.btn-exit{
+background:#ff4d4d;
+color:white;
+border:none;
+width:40px;
+height:40px;
+border-radius:50%;
+cursor:pointer;
+}
+
+.card{
+background:rgba(255,255,255,.08);
+backdrop-filter:blur(10px);
+border-radius:15px;
+padding:20px;
+margin-bottom:15px;
+border:1px solid rgba(255,255,255,0.1);
+}
+
+label{
+font-size:10px;
+font-weight:bold;
+color:#ffc300;
+text-transform:uppercase;
+display:block;
+margin-bottom:5px;
+}
+
+.app input,.app select{
+width:100%;
+padding:10px;
+margin-bottom:10px;
+border-radius:8px;
+border:none;
+background:rgba(255,255,255,.12);
+color:white;
+box-sizing:border-box;
+}
+
+.btn-save{
+background:#ffc300;
+color:#001d3d;
+width:100%;
+padding:15px;
+border:none;
+border-radius:10px;
+font-weight:bold;
+cursor:pointer;
+}
+
+.table-container{
+overflow-x:auto;
+background:white;
+border-radius:10px;
+margin-top:20px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+color:#333;
+font-size:10px;
+min-width:1000px;
+}
+
+th{
+background:#001d3d;
+color:white;
+padding:10px;
+text-align:left;
+}
+
+td{
+padding:8px;
+border:1px solid #ddd;
+}
+
+.captcha-container{
+background:#eee;
+padding:10px;
+border-radius:8px;
+margin-bottom:15px;
+display:flex;
+align-items:center;
+justify-content:space-between;
+}
+
+.hidden{display:none!important;}
+
+.scanBtn{
+background:#00b4d8;
+border:none;
+border-radius:8px;
+color:white;
+padding:8px 10px;
+cursor:pointer;
+}
+
+#scannerBox{
+display:none;
+background:black;
+padding:10px;
+border-radius:10px;
+margin-top:10px;
+}
+
+</style>
+</head>
+
+<body onload="inicio()">
+
+<div id="loginBox" class="login-box">
+
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Logo_Telcel.svg/1200px-Logo_Telcel.svg.png" width="100">
+
+<h3 id="authTitle" style="color:#003566;margin-bottom:20px;">Acceso Promotores</h3>
 
 <div id="camera-container">
 <video id="video" autoplay muted playsinline></video>
@@ -8,32 +245,35 @@
 </div>
 
 <div id="form-auth">
-
 <input id="u" type="email" placeholder="Correo">
-
 <input id="p" type="password" placeholder="Contraseña">
 
 <div class="captcha-container">
-<span id="txtCaptcha" style="font-weight:bold; color:red;"></span>
-
-<input id="iCaptchaAns" type="number" style="width:60px; margin:0;" placeholder="?">
+<span id="txtCaptcha" style="font-weight:bold;color:red;"></span>
+<input id="iCaptchaAns" type="number" style="width:60px;margin:0;" placeholder="?">
 </div>
 
 <button class="btn-save" onclick="manejarAuth()">ENTRAR</button>
-
 </div>
 
-<button class="btn-tool bg-face" style="margin-top:15px; color:#003566; background:#e9ecef; border:2px dashed #003566;" onclick="activarBiometrico('login')">
+<button class="btn-tool bg-face" style="margin-top:15px;color:#003566;background:#e9ecef;border:2px dashed #003566;" onclick="activarBiometrico('login')">
 <i class="fa-solid fa-face-viewfinder"></i> ACCESO POR ROSTRO
 </button>
 
-<button style="background:none; border:none; color:#003566; margin-top:15px; text-decoration:underline; cursor:pointer;" onclick="toggleAuth()">¿No tienes cuenta? Regístrate</button>
+<button style="background:none;border:none;color:#003566;margin-top:15px;text-decoration:underline;cursor:pointer;" onclick="toggleAuth()">¿No tienes cuenta? Regístrate</button>
 
-** **DIRECCIÓN:** Detectando...
+</div>
 
-**
+<div id="appBox" class="app hidden">
 
-<h4 style="color:#ffc300; margin-bottom:10px; text-transform:uppercase; font-size:12px;">Herramientas de Trabajo</h4>
+<div class="top-bar">
+<div class="gps-card">
+<i class="fa-solid fa-location-dot"></i> <b>DIRECCIÓN:</b> <span id="txtGps">Detectando...</span>
+</div>
+<button class="btn-exit" onclick="cerrarSesion()"><i class="fa-solid fa-power-off"></i></button>
+</div>
+
+<h4 style="color:#ffc300;margin-bottom:10px;text-transform:uppercase;font-size:12px;">Herramientas de Trabajo</h4>
 
 <div class="tools-grid">
 
@@ -60,7 +300,6 @@
 <div class="card">
 
 <label>Tipo Venta</label>
-
 <select id="iTipo">
 <option>KIT</option>
 <option>CHIP</option>
@@ -72,17 +311,15 @@
 <input id="iFec" required>
 
 <label>Num. Celular</label>
-
 <div style="display:flex;gap:5px;">
 <input id="iTel" type="tel" maxlength="10" required>
-<button type="button" onclick="abrirScanner('iTel')">📷</button>
+<button type="button" class="scanBtn" onclick="abrirScanner('iTel')"><i class="fa fa-camera"></i></button>
 </div>
 
 <label>ICCID</label>
-
 <div style="display:flex;gap:5px;">
 <input id="iIcc" required>
-<button type="button" onclick="abrirScanner('iIcc')">📷</button>
+<button type="button" class="scanBtn" onclick="abrirScanner('iIcc')"><i class="fa fa-camera"></i></button>
 </div>
 
 </div>
@@ -90,15 +327,14 @@
 <div class="card">
 
 <label>IMEI</label>
-
 <div style="display:flex;gap:5px;">
 <input id="iIme">
-<button type="button" onclick="abrirScanner('iIme')">📷</button>
+<button type="button" class="scanBtn" onclick="abrirScanner('iIme')"><i class="fa fa-camera"></i></button>
 </div>
 
 <label>Marca / Modelo</label>
 
-<div style="display:flex; gap:10px;">
+<div style="display:flex;gap:10px;">
 <input id="iMarca" placeholder="Marca" style="margin:0">
 <input id="iMod" placeholder="Modelo" style="margin:0">
 </div>
@@ -110,39 +346,26 @@
 <label>Datos Tienda</label>
 
 <input id="iTiendaNum" placeholder="# Tienda / Determinante" required>
-
 <input id="iCadena" placeholder="Nombre de la Cadena" required>
-
 <input id="iTiendaNombre" placeholder="Nombre de Tienda (Sin Cadena)" required>
-
 <input id="iProm" placeholder="Nombre Completo Promotor" required>
 
 </div>
 
-<button type="submit" class="btn-save">
-GUARDAR VENTA LOCALMENTE
-</button>
+<button type="submit" class="btn-save">GUARDAR VENTA LOCALMENTE</button>
 
 </form>
 
-<div id="scannerBox" style="display:none;background:black;padding:10px;border-radius:10px;margin-top:10px;">
-
-<div id="reader" style="width:100%"></div>
-
-<button class="btn-save" onclick="cerrarScanner()" style="margin-top:10px;">
-CERRAR ESCÁNER
-</button>
-
+<div id="scannerBox">
+<div id="reader"></div>
+<button class="btn-save" onclick="cerrarScanner()">CERRAR ESCÁNER</button>
 </div>
 
-<h3 style="color:#ffc300; margin-top:25px; font-size:14px;">REGISTROS DEL DÍA</h3>
+<h3 style="color:#ffc300;margin-top:25px;font-size:14px;">REGISTROS DEL DÍA</h3>
 
 <div class="table-container">
-
 <table>
-
 <thead>
-
 <tr>
 <th>CELULAR</th>
 <th>IMEI</th>
@@ -153,18 +376,17 @@ CERRAR ESCÁNER
 <th>FECHA</th>
 <th>ACCION</th>
 </tr>
-
 </thead>
 
 <tbody id="bodyVentas"></tbody>
-
 </table>
-
 </div>
 
-<button class="btn-save" style="background:#1f7a3f; color:white; margin-top:20px;" onclick="exportarExcel()">
+<button class="btn-save" style="background:#1f7a3f;color:white;margin-top:20px;" onclick="exportarExcel()">
 <i class="fa-solid fa-file-excel"></i> DESCARGAR REPORTE EXCEL
 </button>
+
+</div>
 
 <script>
 
@@ -198,9 +420,7 @@ function cerrarScanner(){
 if(html5QrCode){
 
 html5QrCode.stop().then(()=>{
-
 document.getElementById("scannerBox").style.display="none";
-
 });
 
 }
@@ -208,3 +428,6 @@ document.getElementById("scannerBox").style.display="none";
 }
 
 </script>
+
+</body>
+</html>
