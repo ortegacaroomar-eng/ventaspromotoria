@@ -1,173 +1,57 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Sistema Ventas Telcel</title>
-
 <script src="https://unpkg.com/html5-qrcode"></script>
-<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+### Acceso Promotores
 
-<style>
-
-body{
-margin:0;
-font-family:Segoe UI;
-background:linear-gradient(135deg,#003566,#001d3d);
-color:white;
-}
-
-.container{
-max-width:900px;
-margin:auto;
-padding:20px;
-}
-
-/* HEADER */
-
-.header{
-display:flex;
-align-items:center;
-justify-content:space-between;
-margin-bottom:20px;
-}
-
-.logo{
-font-size:22px;
-font-weight:bold;
-color:#ffc300;
-}
-
-/* CARD */
-
-.card{
-background:rgba(255,255,255,0.1);
-backdrop-filter:blur(10px);
-border-radius:15px;
-padding:20px;
-margin-bottom:15px;
-box-shadow:0 8px 20px rgba(0,0,0,0.3);
-}
-
-/* INPUTS */
-
-label{
-font-size:11px;
-color:#ffc300;
-font-weight:bold;
-}
-
-input,select{
-
-width:100%;
-padding:12px;
-margin-top:5px;
-margin-bottom:10px;
-
-border-radius:8px;
-border:none;
-
-background:rgba(255,255,255,0.15);
-color:white;
-
-}
-
-/* SCAN INPUT */
-
-.scan-box{
-display:flex;
-gap:8px;
-}
-
-.scan-btn{
-
-background:#00b4d8;
-border:none;
-border-radius:8px;
-padding:10px;
-color:white;
-cursor:pointer;
-
-}
-
-/* BUTTON */
-
-.btn-main{
-
-background:#ffc300;
-color:#001d3d;
-padding:14px;
-border:none;
-border-radius:10px;
-font-weight:bold;
-cursor:pointer;
-width:100%;
-
-}
-
-/* TABLE */
-
-.table-box{
-
-background:white;
-border-radius:10px;
-overflow:auto;
-color:black;
-
-}
-
-table{
-
-width:100%;
-border-collapse:collapse;
-font-size:12px;
-
-}
-
-th{
-
-background:#003566;
-color:white;
-padding:10px;
-
-}
-
-td{
-
-padding:8px;
-border-bottom:1px solid #eee;
-
-}
-
-/* SCANNER */
-
-#scanner{
-
-display:none;
-background:black;
-padding:10px;
-border-radius:10px;
-margin-top:15px;
-
-}
-
-</style>
-
-</head>
-
-<body>
-
-<div class="container">
-
-<div class="header">
-
-<div class="logo">
-<i class="fa-solid fa-signal"></i> Ventas Telcel
+<div id="camera-container">
+<video id="video" autoplay muted playsinline></video>
+<div class="scan-line"></div>
 </div>
+
+<div id="form-auth">
+
+<input id="u" type="email" placeholder="Correo">
+
+<input id="p" type="password" placeholder="Contraseña">
+
+<div class="captcha-container">
+<span id="txtCaptcha" style="font-weight:bold; color:red;"></span>
+
+<input id="iCaptchaAns" type="number" style="width:60px; margin:0;" placeholder="?">
+</div>
+
+<button class="btn-save" onclick="manejarAuth()">ENTRAR</button>
+
+</div>
+
+<button class="btn-tool bg-face" style="margin-top:15px; color:#003566; background:#e9ecef; border:2px dashed #003566;" onclick="activarBiometrico('login')">
+<i class="fa-solid fa-face-viewfinder"></i> ACCESO POR ROSTRO
+</button>
+
+<button style="background:none; border:none; color:#003566; margin-top:15px; text-decoration:underline; cursor:pointer;" onclick="toggleAuth()">¿No tienes cuenta? Regístrate</button>
+
+** **DIRECCIÓN:** Detectando...
+
+**
+
+<h4 style="color:#ffc300; margin-bottom:10px; text-transform:uppercase; font-size:12px;">Herramientas de Trabajo</h4>
+
+<div class="tools-grid">
+
+<a href="https://registro.telcel.com/vinculatulinea/#/" target="_blank" class="btn-tool bg-telcel">
+<i class="fa-solid fa-link"></i> VINCULAR LÍNEA
+</a>
+
+<a href="https://docs.google.com/forms/d/e/1FAIpQLSfQMT1FUeOLNJUzB8DeGhKNTqiU_DS7wr7y2p_Ab7xgHHjYbw/viewform?pli=1" target="_blank" class="btn-tool bg-google">
+<i class="fa-solid fa-file-lines"></i> FORMULARIO
+</a>
+
+<a href="https://app.payjoy.com/store/merchant-login" target="_blank" class="btn-tool bg-payjoy" style="grid-column: span 2;">
+<i class="fa-solid fa-mobile-screen"></i> ACCESO PAYJOY MERCHANT
+</a>
+
+<button onclick="activarBiometrico('registro')" class="btn-tool bg-face">
+<i class="fa-solid fa-camera"></i> REGISTRAR MI ROSTRO (PRIMERA VEZ)
+</button>
 
 </div>
 
@@ -175,7 +59,7 @@ margin-top:15px;
 
 <div class="card">
 
-<label>Tipo venta</label>
+<label>Tipo Venta</label>
 
 <select id="iTipo">
 <option>KIT</option>
@@ -184,77 +68,90 @@ margin-top:15px;
 <option>RENUEVATE</option>
 </select>
 
-<label>Número celular</label>
+<label>Fecha de Activación</label>
+<input id="iFec" required>
 
-<div class="scan-box">
-<input id="iTel">
-<button type="button" class="scan-btn" onclick="abrirScanner('iTel')">
-<i class="fa-solid fa-camera"></i>
-</button>
+<label>Num. Celular</label>
+
+<div style="display:flex;gap:5px;">
+<input id="iTel" type="tel" maxlength="10" required>
+<button type="button" onclick="abrirScanner('iTel')">📷</button>
 </div>
 
 <label>ICCID</label>
 
-<div class="scan-box">
-<input id="iIcc">
-<button type="button" class="scan-btn" onclick="abrirScanner('iIcc')">
-<i class="fa-solid fa-camera"></i>
-</button>
+<div style="display:flex;gap:5px;">
+<input id="iIcc" required>
+<button type="button" onclick="abrirScanner('iIcc')">📷</button>
 </div>
 
-<label>IMEI</label>
-
-<div class="scan-box">
-<input id="iIme">
-<button type="button" class="scan-btn" onclick="abrirScanner('iIme')">
-<i class="fa-solid fa-camera"></i>
-</button>
-</div>
-
-<label>Marca</label>
-<input id="iMarca">
-
-<label>Modelo</label>
-<input id="iMod">
-
-<label>Tienda</label>
-<input id="iTienda">
-
-<label>Promotor</label>
-<input id="iProm">
-
-<button class="btn-main">
-Guardar Venta
-</button>
-
-</div>
-
-</form>
-
-<div id="scanner">
-<div id="reader"></div>
-<button class="btn-main" onclick="cerrarScanner()">Cerrar escáner</button>
 </div>
 
 <div class="card">
 
-<h3>Ventas registradas</h3>
+<label>IMEI</label>
 
-<div class="table-box">
+<div style="display:flex;gap:5px;">
+<input id="iIme">
+<button type="button" onclick="abrirScanner('iIme')">📷</button>
+</div>
+
+<label>Marca / Modelo</label>
+
+<div style="display:flex; gap:10px;">
+<input id="iMarca" placeholder="Marca" style="margin:0">
+<input id="iMod" placeholder="Modelo" style="margin:0">
+</div>
+
+</div>
+
+<div class="card">
+
+<label>Datos Tienda</label>
+
+<input id="iTiendaNum" placeholder="# Tienda / Determinante" required>
+
+<input id="iCadena" placeholder="Nombre de la Cadena" required>
+
+<input id="iTiendaNombre" placeholder="Nombre de Tienda (Sin Cadena)" required>
+
+<input id="iProm" placeholder="Nombre Completo Promotor" required>
+
+</div>
+
+<button type="submit" class="btn-save">
+GUARDAR VENTA LOCALMENTE
+</button>
+
+</form>
+
+<div id="scannerBox" style="display:none;background:black;padding:10px;border-radius:10px;margin-top:10px;">
+
+<div id="reader" style="width:100%"></div>
+
+<button class="btn-save" onclick="cerrarScanner()" style="margin-top:10px;">
+CERRAR ESCÁNER
+</button>
+
+</div>
+
+<h3 style="color:#ffc300; margin-top:25px; font-size:14px;">REGISTROS DEL DÍA</h3>
+
+<div class="table-container">
 
 <table>
 
 <thead>
 
 <tr>
-<th>Cel</th>
+<th>CELULAR</th>
 <th>IMEI</th>
-<th>Marca</th>
-<th>Modelo</th>
 <th>ICCID</th>
-<th>Tipo</th>
-<th>Tienda</th>
-<th></th>
+<th>TIPO</th>
+<th>TIENDA</th>
+<th>PROMOTOR</th>
+<th>FECHA</th>
+<th>ACCION</th>
 </tr>
 
 </thead>
@@ -265,13 +162,9 @@ Guardar Venta
 
 </div>
 
-<button class="btn-main" style="margin-top:10px;" onclick="exportarExcel()">
-<i class="fa-solid fa-file-excel"></i> Descargar Excel
+<button class="btn-save" style="background:#1f7a3f; color:white; margin-top:20px;" onclick="exportarExcel()">
+<i class="fa-solid fa-file-excel"></i> DESCARGAR REPORTE EXCEL
 </button>
-
-</div>
-
-</div>
 
 <script>
 
@@ -282,7 +175,7 @@ function abrirScanner(campo){
 
 campoActual=campo;
 
-document.getElementById("scanner").style.display="block";
+document.getElementById("scannerBox").style.display="block";
 
 html5QrCode=new Html5Qrcode("reader");
 
@@ -296,9 +189,7 @@ document.getElementById(campoActual).value=decodedText;
 
 cerrarScanner();
 
-}
-
-);
+});
 
 }
 
@@ -308,7 +199,7 @@ if(html5QrCode){
 
 html5QrCode.stop().then(()=>{
 
-document.getElementById("scanner").style.display="none";
+document.getElementById("scannerBox").style.display="none";
 
 });
 
@@ -316,93 +207,4 @@ document.getElementById("scanner").style.display="none";
 
 }
 
-document.getElementById("fReg").onsubmit=(e)=>{
-
-e.preventDefault();
-
-const venta={
-
-id:Date.now(),
-
-cel:document.getElementById("iTel").value,
-imei:document.getElementById("iIme").value,
-marca:document.getElementById("iMarca").value,
-modelo:document.getElementById("iMod").value,
-iccid:document.getElementById("iIcc").value,
-tipo:document.getElementById("iTipo").value,
-tienda:document.getElementById("iTienda").value,
-promotor:document.getElementById("iProm").value
-
-};
-
-let l=JSON.parse(localStorage.getItem("ventas")||"[]");
-
-l.unshift(venta);
-
-localStorage.setItem("ventas",JSON.stringify(l));
-
-cargar();
-
-e.target.reset();
-
-};
-
-function cargar(){
-
-let l=JSON.parse(localStorage.getItem("ventas")||"[]");
-
-document.getElementById("bodyVentas").innerHTML=l.map(v=>`
-
-<tr>
-
-<td>${v.cel}</td>
-<td>${v.imei}</td>
-<td>${v.marca}</td>
-<td>${v.modelo}</td>
-<td>${v.iccid}</td>
-<td>${v.tipo}</td>
-<td>${v.tienda}</td>
-
-<td>
-<button onclick="eliminar(${v.id})">
-❌
-</button>
-</td>
-
-</tr>
-
-`).join("");
-
-}
-
-function eliminar(id){
-
-let l=JSON.parse(localStorage.getItem("ventas")||"[]");
-
-l=l.filter(x=>x.id!==id);
-
-localStorage.setItem("ventas",JSON.stringify(l));
-
-cargar();
-
-}
-
-function exportarExcel(){
-
-let l=JSON.parse(localStorage.getItem("ventas")||"[]");
-
-const ws=XLSX.utils.json_to_sheet(l);
-const wb=XLSX.utils.book_new();
-
-XLSX.utils.book_append_sheet(wb,ws,"Ventas");
-
-XLSX.writeFile(wb,"ventas_telcel.xlsx");
-
-}
-
-cargar();
-
 </script>
-
-</body>
-</html>
