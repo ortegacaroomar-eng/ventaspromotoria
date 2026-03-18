@@ -5,297 +5,192 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sistema Ventas Telcel - Omar Ortega</title>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-<script src="https://unpkg.com/html5-qrcode"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
-:root{
---bg1:#0b1220;
---bg2:#0f1b3d;
---card:rgba(255,255,255,.06);
---accent:#00d4ff;
---accent2:#ffd60a;
---danger:#ff4d4f;
---success:#22c55e;
---text:#e6f0ff;
---radius:18px;
---shadow:0 20px 40px rgba(0,0,0,.35);
-}
-
-*{box-sizing:border-box}
-
 body{
 margin:0;
-font-family:'Segoe UI',system-ui,sans-serif;
-background:linear-gradient(160deg,var(--bg1),var(--bg2));
-color:var(--text);
-overflow-x:hidden;
+font-family:'Segoe UI',sans-serif;
+background:linear-gradient(135deg,#001d3d,#003566,#000814);
+color:white;
+animation:fadeIn .6s ease;
 }
-
-/* Animaciones base */
-.fade-in{animation:fade .6s ease both}
-.slide-up{animation:up .5s ease both}
-.pop{animation:pop .35s ease both}
-
-@keyframes fade{from{opacity:0}to{opacity:1}}
-@keyframes up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
-@keyframes pop{0%{transform:scale(.9);opacity:0}100%{transform:scale(1);opacity:1}}
-
-.app{max-width:1100px;margin:auto;padding:24px}
-
-/* LOGIN */
-.login-box{
-max-width:380px;margin:70px auto;
-background:white;color:#111;
-padding:34px;border-radius:24px;
-box-shadow:var(--shadow);
-text-align:center;
-animation:pop .5s ease;
-}
-
-.login-box input{
-width:100%;padding:14px;margin-bottom:14px;
-border-radius:12px;border:1px solid #ddd;
-font-size:14px;
-transition:.2s;
-}
-
-.login-box input:focus{
-border-color:var(--accent);
-box-shadow:0 0 0 3px rgba(0,212,255,.15);
-outline:none;
-}
-
-/* HEADER */
-.header{margin-bottom:20px}
-.header h2{margin:0;font-weight:700}
-.header span{color:var(--accent);font-weight:400}
-
-/* TOP BAR */
-.top-bar{
-display:flex;justify-content:space-between;
-align-items:center;margin-bottom:20px;
-gap:12px;
-}
-
-.gps-card{
-background:var(--card);
-backdrop-filter:blur(10px);
-padding:12px 16px;border-radius:var(--radius);
-border:1px solid rgba(255,255,255,.08);
-color:var(--accent);font-size:12px;
-animation:slide-up .5s ease .1s both;
-}
-
-.btn-exit{
-background:var(--danger);
-border:none;width:44px;height:44px;
-border-radius:50%;color:white;
-cursor:pointer;font-size:16px;
-transition:.2s;
-}
-.btn-exit:hover{transform:rotate(90deg) scale(1.05)}
-
-/* CARDS */
-.card{
-background:var(--card);
-backdrop-filter:blur(14px);
-border-radius:var(--radius);
-padding:20px;margin-bottom:18px;
-border:1px solid rgba(255,255,255,.08);
-box-shadow:var(--shadow);
-animation:slide-up .5s ease both;
-}
-
-/* LABELS */
-label{
-font-size:11px;font-weight:700;
-color:var(--accent2);
-text-transform:uppercase;
-display:block;margin-bottom:6px;
-letter-spacing:.5px;
-}
-
-/* INPUTS */
-.app input,.app select{
-width:100%;padding:12px;margin-bottom:12px;
-border-radius:12px;border:1px solid rgba(255,255,255,.08);
-background:#0e1730;color:white;
-transition:.2s;
-}
-
-.app input:focus,.app select:focus{
-border-color:var(--accent);
-box-shadow:0 0 0 3px rgba(0,212,255,.15);
-outline:none;
-}
-
-/* BUTTONS */
-.btn{
-width:100%;padding:15px;border:none;
-border-radius:14px;font-weight:700;
-cursor:pointer;margin-bottom:10px;
-letter-spacing:.5px;
-transition:.25s;
-position:relative;overflow:hidden;
-}
-
-.btn::after{
-content:"";position:absolute;inset:0;
-background:linear-gradient(120deg,transparent,rgba(255,255,255,.3),transparent);
-transform:translateX(-100%);
-}
-.btn:hover::after{animation:shine 1s}
-@keyframes shine{to{transform:translateX(100%)}}
-
-.btn-primary{background:linear-gradient(135deg,var(--accent2),#ffe066);color:#1a1a1a}
-.btn-secondary{background:linear-gradient(135deg,var(--accent),#0077ff);color:white}
-.btn-success{background:linear-gradient(135deg,var(--success),#16a34a);color:white}
-
-/* TABLE */
-.table-container{
-overflow-x:auto;background:white;
-border-radius:16px;margin-top:18px;
-box-shadow:var(--shadow);
-animation:fade .8s ease;
-}
-
-table{width:100%;border-collapse:collapse;font-size:12px;color:#333}
-th{background:#0f1b3d;color:white;padding:12px;text-align:left}
-td{padding:10px;border-bottom:1px solid #eee}
-tr:hover{background:#f1f5ff}
-
-/* CAMERA */
-.scanner{
-position:relative;
-border-radius:20px;
-overflow:hidden;
-margin-bottom:12px;
-border:2px solid var(--accent);
-box-shadow:0 0 25px rgba(0,212,255,.4);
-animation:pop .4s ease;
-}
-
-.scan-frame{
-position:absolute;inset:0;
-border:3px solid rgba(0,212,255,.6);
-border-radius:20px;
-pointer-events:none;
-}
-
-.scan-line{
-position:absolute;left:0;width:100%;height:3px;
-background:linear-gradient(90deg,transparent,var(--accent),transparent);
-box-shadow:0 0 15px var(--accent);
-animation:scan 2.2s linear infinite;
-}
-@keyframes scan{
-0%{top:0}
-100%{top:100%}
-}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
 
 .hidden{display:none}
+
+.app{max-width:1000px;margin:auto;padding:20px}
+
+.card{
+background:rgba(255,255,255,.08);
+backdrop-filter:blur(10px);
+border-radius:15px;
+padding:20px;
+margin-bottom:15px;
+border:1px solid rgba(255,255,255,0.1);
+animation:slideUp .4s ease;
+}
+@keyframes slideUp{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}
+
+input,select{
+width:100%;padding:10px;margin-bottom:10px;
+border-radius:8px;border:none;
+background:rgba(255,255,255,.12);
+color:white;
+}
+
+.btn{
+width:100%;padding:12px;border:none;
+border-radius:10px;font-weight:bold;
+cursor:pointer;margin-bottom:10px;
+transition:.2s;
+}
+.btn:hover{transform:scale(1.03)}
+.btn-primary{background:#ffc300;color:#001d3d}
+.btn-secondary{background:#00b4d8;color:white}
+.btn-danger{background:#ff4d4d;color:white}
+
+.topbar{
+display:flex;justify-content:space-between;align-items:center;
+gap:10px;margin-bottom:15px;flex-wrap:wrap;
+}
+
+.gps{
+flex:1;
+background:#000;
+border:1px solid #00b4d8;
+padding:10px;border-radius:10px;
+color:#00b4d8;font-size:12px;
+}
+
+.quick-links{
+display:flex;gap:10px;flex-wrap:wrap;
+}
+
+table{
+width:100%;border-collapse:collapse;
+background:white;color:black;font-size:12px;
+}
+th{background:#001d3d;color:white;padding:8px}
+td{padding:6px;border:1px solid #ddd}
+
+.login{
+max-width:350px;margin:60px auto;
+background:white;color:black;
+padding:30px;border-radius:20px;
+box-shadow:0 10px 25px rgba(0,0,0,.4);
+animation:pop .4s ease;
+}
+@keyframes pop{from{transform:scale(.9);opacity:0}to{transform:none;opacity:1}}
 </style>
 </head>
-
-<body onload="inicio()">
+<body>
 
 <!-- LOGIN -->
-<div id="loginBox" class="login-box">
-<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Logo_Telcel.svg/512px-Logo_Telcel.svg.png" width="120">
-<h3>Acceso Promotores</h3>
+<div id="loginBox" class="login">
+<h2 style="text-align:center;color:#003566">Acceso Promotores</h2>
+
 <input id="u" type="email" placeholder="Correo">
 <input id="p" type="password" placeholder="Contraseña">
-<button class="btn btn-primary" onclick="login()">Entrar / Registrarse</button>
+
+<button class="btn btn-primary" onclick="login()">
+<i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
+</button>
+
+<button class="btn btn-secondary" onclick="registrar()">
+<i class="fa-solid fa-user-plus"></i> Crear Cuenta Nueva
+</button>
 </div>
 
 <!-- APP -->
-<div id="appBox" class="app hidden fade-in">
+<div id="appBox" class="app hidden">
 
-<div class="header">
-<h2>Sistema de Registro de Ventas <span>Telcel Promotores</span></h2>
+<div class="topbar">
+
+<div class="gps">
+<i class="fa-solid fa-location-dot"></i>
+<b>Ubicación:</b>
+<span id="gpsTxt">Detectando...</span>
 </div>
 
-<div class="top-bar">
-<div class="gps-card">
-<i class="fa-solid fa-location-dot"></i> Sistema Activo
-</div>
-<button class="btn-exit" onclick="cerrarSesion()">
+<div class="quick-links">
+<a href="https://app.payjoy.com/accounts/login?afterLogin=https://app.payjoy.com/merchant3?merchantId=199557" target="_blank">
+<button class="btn btn-secondary" style="width:auto">
+<i class="fa-solid fa-mobile-screen"></i> PayJoy
+</button>
+</a>
+
+<a href="https://registro.telcel.com/vinculatulinea/#/" target="_blank">
+<button class="btn btn-primary" style="width:auto">
+<i class="fa-solid fa-sim-card"></i> Vincular Línea
+</button>
+</a>
+
+<button class="btn btn-danger" style="width:auto" onclick="logout()">
 <i class="fa-solid fa-power-off"></i>
 </button>
+</div>
+
 </div>
 
 <form id="fReg">
 
 <div class="card">
 <label>Tipo Venta</label>
-<select id="iTipo">
+<select id="tipo">
 <option>KIT</option>
 <option>CHIP</option>
 <option>PORTA</option>
 <option>RENUEVATE</option>
 </select>
 
-<label>Fecha</label>
-<input id="iFec" required>
-
 <label>Número Celular</label>
-<input id="iTel" required>
-<button type="button" onclick="scan('readerTel','iTel')" class="btn btn-secondary">
-<i class="fa-solid fa-camera"></i> Escanear
-</button>
-<div id="readerTel"></div>
+<input id="tel" required>
 
 <label>ICCID</label>
-<input id="iIcc" required>
-<button type="button" onclick="scan('readerIcc','iIcc')" class="btn btn-secondary">
-<i class="fa-solid fa-camera"></i> Escanear
-</button>
-<div id="readerIcc"></div>
-</div>
+<input id="icc" required>
 
-<div class="card">
 <label>IMEI</label>
-<input id="iIme">
-<button type="button" onclick="scan('readerImei','iIme')" class="btn btn-secondary">
-<i class="fa-solid fa-camera"></i> Escanear
-</button>
-<div id="readerImei"></div>
-
-<label>Marca</label>
-<input id="iMarca">
-<label>Modelo</label>
-<input id="iMod">
+<input id="imei">
 </div>
 
 <div class="card">
-<label>Tienda</label>
-<input id="iTienda" required>
-<label>Promotor</label>
-<input id="iProm" required>
+<label>Marca</label>
+<input id="marca">
+<label>Modelo</label>
+<input id="modelo">
 </div>
 
-<button type="submit" class="btn btn-primary">Guardar Venta</button>
+<div class="card">
+<label># Tienda</label>
+<input id="tienda" required>
+<label>Cadena</label>
+<input id="cadena" required>
+<label>Nombre Tienda</label>
+<input id="tiendaNombre" required>
+<label>Promotor</label>
+<input id="promotor" required>
+</div>
+
+<button class="btn btn-primary">Guardar Venta</button>
 </form>
 
-<h3 style="color:var(--accent2)">Registros del Día</h3>
-
-<div class="table-container">
+<h3>Registros</h3>
 <table>
 <thead>
 <tr>
-<th>CELULAR</th><th>IMEI</th><th>ICCID</th><th>TIPO</th>
-<th>MODELO</th><th>TIENDA</th><th>PROMOTOR</th><th>FECHA</th><th>ACCION</th>
+<th>Celular</th><th>IMEI</th><th>ICCID</th>
+<th>Tipo</th><th>Modelo</th><th>Tienda</th>
+<th>Promotor</th><th>Acción</th>
 </tr>
 </thead>
-<tbody id="bodyVentas"></tbody>
+<tbody id="tabla"></tbody>
 </table>
-</div>
 
-<button class="btn btn-success" onclick="exportarExcel()">
+<button class="btn btn-secondary" onclick="excel()">
 <i class="fa-solid fa-file-excel"></i> Exportar Excel
 </button>
 
@@ -307,88 +202,80 @@ apiKey:"AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
 authDomain:"ventastelcel4029.firebaseapp.com",
 projectId:"ventastelcel4029"
 };
-
-let auth;
-
-function inicio(){
 firebase.initializeApp(firebaseConfig);
-auth=firebase.auth();
+const auth=firebase.auth();
+
 auth.onAuthStateChanged(user=>{
 loginBox.classList.toggle("hidden",!!user);
 appBox.classList.toggle("hidden",!user);
+if(user) gps();
 });
-iFec.value=new Date().toLocaleDateString();
-cargarLocal();
-}
 
 function login(){
 auth.signInWithEmailAndPassword(u.value,p.value)
-.catch(()=>{
+.catch(()=>alert("Datos incorrectos"));
+}
+
+function registrar(){
 auth.createUserWithEmailAndPassword(u.value,p.value)
-.then(()=>alert("Usuario registrado"))
+.then(()=>alert("Cuenta creada"))
 .catch(e=>alert(e.message));
+}
+
+function logout(){auth.signOut()}
+
+/* GPS con dirección */
+function gps(){
+if(!navigator.geolocation) return;
+navigator.geolocation.getCurrentPosition(async pos=>{
+const {latitude,longitude}=pos.coords;
+const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+const d=await r.json();
+gpsTxt.innerText=d.display_name;
 });
 }
 
-function cerrarSesion(){auth.signOut();}
-
+/* Guardar ventas */
 fReg.onsubmit=e=>{
 e.preventDefault();
 const v={
 id:Date.now(),
-CELULAR:iTel.value,IMEI:iIme.value||"N/A",ICCID:iIcc.value,
-TIPO:iTipo.value,MODELO:iMod.value||"N/A",
-TIENDA:iTienda.value,PROMOTOR:iProm.value,FECHA:iFec.value
+cel:tel.value,imei:imei.value,icc:icc.value,
+tipo:tipo.value,modelo:modelo.value,
+tienda:tiendaNombre.value,promotor:promotor.value
 };
-let l=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
+let l=JSON.parse(localStorage.ventas||"[]");
 l.unshift(v);
-localStorage.setItem("ventas_omar",JSON.stringify(l));
-cargarLocal();
+localStorage.ventas=JSON.stringify(l);
+render();
 fReg.reset();
 };
 
-function cargarLocal(){
-let l=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
-bodyVentas.innerHTML=l.map(v=>`
+function render(){
+let l=JSON.parse(localStorage.ventas||"[]");
+tabla.innerHTML=l.map(v=>`
 <tr>
-<td>${v.CELULAR}</td><td>${v.IMEI}</td><td>${v.ICCID}</td>
-<td>${v.TIPO}</td><td>${v.MODELO}</td><td>${v.TIENDA}</td>
-<td>${v.PROMOTOR}</td><td>${v.FECHA}</td>
-<td><i class="fa fa-trash" style="color:red;cursor:pointer" onclick="eliminar(${v.id})"></i></td>
-</tr>`).join("");
+<td>${v.cel}</td><td>${v.imei||''}</td><td>${v.icc}</td>
+<td>${v.tipo}</td><td>${v.modelo||''}</td>
+<td>${v.tienda}</td><td>${v.promotor}</td>
+<td><button onclick="del(${v.id})">🗑️</button></td>
+</tr>`).join('');
+}
+render();
+
+function del(id){
+let l=JSON.parse(localStorage.ventas||"[]").filter(x=>x.id!=id);
+localStorage.ventas=JSON.stringify(l);
+render();
 }
 
-function eliminar(id){
-let l=JSON.parse(localStorage.getItem("ventas_omar")||"[]")
-.filter(x=>x.id!==id);
-localStorage.setItem("ventas_omar",JSON.stringify(l));
-cargarLocal();
-}
-
-function exportarExcel(){
-let l=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
-if(!l.length)return alert("No hay datos");
+function excel(){
+let l=JSON.parse(localStorage.ventas||"[]");
+if(!l.length)return alert("Sin datos");
 const ws=XLSX.utils.json_to_sheet(l);
 const wb=XLSX.utils.book_new();
 XLSX.utils.book_append_sheet(wb,ws,"Ventas");
-XLSX.writeFile(wb,"Ventas_OmarOrtega.xlsx");
-}
-
-function scan(reader,input){
-const container=document.getElementById(reader);
-container.innerHTML=`
-<div class="scanner">
-<div id="${reader}_cam"></div>
-<div class="scan-frame"></div>
-<div class="scan-line"></div>
-</div>`;
-const scanner=new Html5Qrcode(reader+"_cam");
-scanner.start({facingMode:"environment"},{fps:10,qrbox:250},
-text=>{
-document.getElementById(input).value=text;
-scanner.stop();
-container.innerHTML="";
-});
+XLSX.writeFile(wb,"Ventas_Omar_Ortega.xlsx");
 }
 </script>
 
