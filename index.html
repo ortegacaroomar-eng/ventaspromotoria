@@ -232,7 +232,7 @@ localStorage.ventas=JSON.stringify(l);
 render();
 }
 
-/* ===== EXCEL FORMATO EXACTO ===== */
+/* ===== EXCEL FORMATO EXACTO 500 FILAS ===== */
 function excel(){
 let l = JSON.parse(localStorage.ventas || "[]");
 if(!l.length) return alert("Sin datos");
@@ -246,16 +246,25 @@ const headers=[
 
 let data=[headers];
 
-for(let i=0;i<300;i++){
+for(let i=0;i<500;i++){
 const v=l[i]||{};
 data.push([
-v.cel||"",v.imei||"",v.icc||"",v.tipo||"",
-v.tiendaNum||"",v.cadena||"",v.tienda||"",
-v.promotor||"",v.fecha||"",v.marca||"",v.modelo||""
+v.cel||"",
+v.imei||"",
+v.icc||"",
+v.tipo||"",
+v.tiendaNum||"",
+v.cadena||"",
+v.tienda||"",
+v.promotor||"",
+v.fecha||"",
+v.marca||"",
+v.modelo||""
 ]);
 }
 
 const ws=XLSX.utils.aoa_to_sheet(data);
+
 ws["!cols"]=[
 {wch:14},{wch:16},{wch:22},{wch:24},{wch:20},
 {wch:26},{wch:30},{wch:28},{wch:18},{wch:16},{wch:18}
@@ -263,7 +272,7 @@ ws["!cols"]=[
 
 const wb=XLSX.utils.book_new();
 XLSX.utils.book_append_sheet(wb,ws,"FORMATO DIARIO");
-XLSX.writeFile(wb,"FORMATO_DIARIO_COMISIONES.xlsx");
+XLSX.writeFile(wb,"FORMATO_DIARIO_COMISIONES_500_FILAS.xlsx");
 }
 </script>
 
