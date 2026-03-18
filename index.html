@@ -1,332 +1,184 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistema Ventas Telcel - Omar Ortega</title>
+<!DOCTYPE html>  <html lang="es">  
+<head>  
+<meta charset="UTF-8">  
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">  
+<title>SISTEMA 4029 - FORMATO FINAL</title>  
+<script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>  
+<style>  
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f7f6; margin: 0; }  
+    .header { background: #003566; color: white; padding: 15px; text-align: center; border-bottom: 4px solid #ffc300; }  
+    .container { max-width: 450px; margin: auto; background: white; padding: 20px; min-height: 100vh; }  
+    input, select, button { width: 100%; padding: 14px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; box-sizing: border-box; }  
+    button { background: #003566; color: white; font-weight: bold; border: none; cursor: pointer; }  
+    .btn-save { background: #28a745; margin-top: 10px; }  
+    .btn-excel { background: #000; border: 2px solid #ffc300; margin-top: 25px; height: 60px; font-size: 18px; color: #fff; }  
+    .btn-link { background: #ffffff; color: #003566; border: 2px solid #003566; margin-top: 8px; font-size: 14px; }  
+    .hidden { display: none; }  
+    .reloj { font-size: 30px; font-weight: bold; color: #003566; margin: 20px 0; text-align: center; }  
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 11px; }  
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }  
+</style>  
+</head>  
+<body onload="inicio()">  <div id="lSec" style="text-align:center; padding:50px 20px;">  
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Telcel_logo.svg/1200px-Telcel_logo.svg.png" width="160">  
+    <div id="rel" class="reloj">00:00:00</div>  
+    <input type="text" id="u" placeholder="Usuario">  
+    <input type="password" id="p" placeholder="Contraseña">  
+    <button onclick="entrar()">ENTRAR AL PANEL</button>  
+</div>  <div id="mSec" class="hidden">  
+    <div class="header">  
+        <h3 style="margin:0">OMAR ORTEGA CARO</h3>  
+        <small id="txtMes" style="font-weight:bold;"></small>  
+    </div>  
+    <div class="container">  
+        <form id="fReg">  
+            <select id="iTipo" onchange="verEq()" required>  
+                <option value="" disabled selected>-- TIPO --</option>  
+                <option value="AK">AK</option>  
+                <option value="CHIP">CHIP</option>  
+                <option value="PORTA">PORTA</option>  
+                <option value="REN">REN</option>  
+            </select>  
+            <input type="text" id="iTel" placeholder="TELÉFONO (10)" inputmode="numeric" maxlength="10" required>  
+            <input type="text" id="iIcc" placeholder="ICCID (19)" inputmode="numeric" maxlength="19" required>  
+            <div id="gEq">  
+                <input type="text" id="iIme" placeholder="IMEI (15)" inputmode="numeric" maxlength="15">  
+                <input type="text" id="iMar" placeholder="MARCA">  
+                <input type="text" id="iMod" placeholder="MODELO">  
+            </div>  
+            <input type="date" id="iFec">  
+            <button type="submit" class="btn-save">💾 GUARDAR REGISTRO</button>  
+        </form>  <table id="tVistas">  
+        <thead><tr><th>TEL</th><th>TIPO</th><th>-</th></tr></thead>  
+        <tbody></tbody>  
+    </table>  
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-
-<!-- Excel -->
-<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-
-<!-- QR Scanner -->
-<script src="https://unpkg.com/html5-qrcode"></script>
-
-<!-- Icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-<style>
-:root{
---bg1:#0a0f1f;
---bg2:#0f1b3d;
---card:#111a33;
---accent:#00c2ff;
---accent2:#ffc107;
---danger:#ff4d4f;
---success:#22c55e;
---text:#e6f0ff;
---radius:14px;
---shadow:0 10px 30px rgba(0,0,0,.35);
-}
-
-*{box-sizing:border-box}
-
-body{
-margin:0;
-font-family:'Segoe UI',system-ui,sans-serif;
-background:linear-gradient(160deg,var(--bg1),var(--bg2));
-color:var(--text);
-}
-
-.app{max-width:1100px;margin:auto;padding:24px;}
-
-.login-box{
-max-width:380px;margin:60px auto;background:white;
-padding:32px;border-radius:20px;text-align:center;
-color:#111;box-shadow:var(--shadow);
-}
-
-.login-box input{
-width:100%;padding:14px;margin-bottom:14px;
-border-radius:10px;border:1px solid #ddd;
-}
-
-.header{margin-bottom:20px}
-.header h2{margin:0}
-.header span{color:var(--accent)}
-
-.top-bar{
-display:flex;justify-content:space-between;
-align-items:center;margin-bottom:20px;
-}
-
-.gps-card{
-background:var(--card);padding:12px;
-border-radius:var(--radius);color:var(--accent);
-font-size:12px;
-}
-
-.btn-exit{
-background:var(--danger);border:none;
-width:42px;height:42px;border-radius:50%;
-color:white;cursor:pointer;
-}
-
-.card{
-background:var(--card);border-radius:var(--radius);
-padding:20px;margin-bottom:18px;
-box-shadow:var(--shadow);
-}
-
-label{
-font-size:11px;font-weight:600;
-color:var(--accent2);text-transform:uppercase;
-display:block;margin-bottom:6px;
-}
-
-.app input,.app select{
-width:100%;padding:12px;margin-bottom:12px;
-border-radius:10px;border:none;
-background:#0e1730;color:white;
-}
-
-.btn{
-width:100%;padding:16px;border:none;
-border-radius:12px;font-weight:700;
-cursor:pointer;margin-bottom:10px;
-}
-
-.btn-primary{background:var(--accent2);color:#1a1a1a}
-.btn-secondary{background:var(--accent);color:white}
-.btn-success{background:var(--success);color:white}
-
-.table-container{
-overflow-x:auto;background:white;
-border-radius:14px;margin-top:18px;
-}
-
-table{width:100%;border-collapse:collapse;font-size:12px;color:#333}
-th{background:#0f1b3d;color:white;padding:12px;text-align:left}
-td{padding:10px;border-bottom:1px solid #eee}
-
-.hidden{display:none}
-</style>
-</head>
-
-<body onload="inicio()">
-
-<!-- LOGIN -->
-<div id="loginBox" class="login-box">
-<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Logo_Telcel.svg/512px-Logo_Telcel.svg.png" width="120">
-<h3>Acceso Promotores</h3>
-<input id="u" type="email" placeholder="Correo">
-<input id="p" type="password" placeholder="Contraseña">
-<button class="btn btn-primary" onclick="login()">Entrar / Registrarse</button>
+    <button onclick="bajarExcel()" class="btn-excel">📊 DESCARGAR EXCEL 1.5</button>  
+      
+    <button onclick="window.open('https://registro.telcel.com/vinculatulinea/#/', '_blank')" style="background:#003566; color:#ffc300; border:2px solid #ffc300; margin-top:10px;">🔗 VINCULA TU LÍNEA</button>  
+    <button onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSfQMT1FUeOLNJUzB8DeGhKNTqiU_DS7wr7y2p_Ab7xgHHjYbw/viewform', '_blank')" class="btn-link">📋 ABRIR FORMULARIO</button>  
+      
+    <button onclick="salir()" style="margin-top:40px; background:#6c757d; font-size:11px;">Cerrar Sesión</button>  
 </div>
 
-<!-- APP -->
-<div id="appBox" class="app hidden">
-
-<div class="header">
-<h2>Sistema de Registro de Ventas <span>Telcel Promotores</span></h2>
-</div>
-
-<div class="top-bar">
-<div class="gps-card">
-<i class="fa-solid fa-location-dot"></i> Sistema Activo
-</div>
-<button class="btn-exit" onclick="cerrarSesion()">
-<i class="fa-solid fa-power-off"></i>
-</button>
-</div>
-
-<form id="fReg">
-
-<div class="card">
-<label>Tipo Venta</label>
-<select id="iTipo">
-<option>KIT</option>
-<option>CHIP</option>
-<option>PORTA</option>
-<option>RENUEVATE</option>
-</select>
-
-<label>Fecha</label>
-<input id="iFec" required>
-
-<label>Número Celular</label>
-<input id="iTel" required>
-<button type="button" onclick="scan('readerTel','iTel')" class="btn btn-secondary">
-<i class="fa-solid fa-camera"></i> Escanear
-</button>
-<div id="readerTel"></div>
-
-<label>ICCID</label>
-<input id="iIcc" required>
-<button type="button" onclick="scan('readerIcc','iIcc')" class="btn btn-secondary">
-<i class="fa-solid fa-camera"></i> Escanear
-</button>
-<div id="readerIcc"></div>
-</div>
-
-<div class="card">
-<label>IMEI</label>
-<input id="iIme">
-<button type="button" onclick="scan('readerImei','iIme')" class="btn btn-secondary">
-<i class="fa-solid fa-camera"></i> Escanear
-</button>
-<div id="readerImei"></div>
-
-<label>Marca</label>
-<input id="iMarca">
-
-<label>Modelo</label>
-<input id="iMod">
-</div>
-
-<div class="card">
-<label>Tienda</label>
-<input id="iTienda" required>
-
-<label>Promotor</label>
-<input id="iProm" required>
-</div>
-
-<button type="submit" class="btn btn-primary">Guardar Venta</button>
-</form>
-
-<h3 style="color:var(--accent2)">Registros del Día</h3>
-
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>CELULAR</th>
-<th>IMEI</th>
-<th>ICCID</th>
-<th>TIPO</th>
-<th>MODELO</th>
-<th>TIENDA</th>
-<th>PROMOTOR</th>
-<th>FECHA</th>
-<th>ACCION</th>
-</tr>
-</thead>
-<tbody id="bodyVentas"></tbody>
-</table>
-</div>
-
-<button class="btn btn-success" onclick="exportarExcel()">
-<i class="fa-solid fa-file-excel"></i> Exportar Excel
-</button>
-
-</div>
-
-<script>
-// 🔥 Firebase Config completo
-const firebaseConfig={
-apiKey:"AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
-authDomain:"ventastelcel4029.firebaseapp.com",
-databaseURL:"https://ventastelcel4029-default-rtdb.firebaseio.com",
-projectId:"ventastelcel4029",
-storageBucket:"ventastelcel4029.firebasestorage.app",
-messagingSenderId:"480758010888",
-appId:"1:480758010888:web:e948c54f0217536aa9adbd"
-};
-
-let auth;
-
-function inicio(){
-firebase.initializeApp(firebaseConfig);
-auth=firebase.auth();
-
-auth.onAuthStateChanged(user=>{
-loginBox.classList.toggle("hidden",!!user);
-appBox.classList.toggle("hidden",!user);
-});
-
-iFec.value=new Date().toLocaleDateString();
-cargarLocal();
-}
-
-function login(){
-auth.signInWithEmailAndPassword(u.value,p.value)
-.catch(()=>{
-auth.createUserWithEmailAndPassword(u.value,p.value)
-.then(()=>alert("Usuario registrado y sesión iniciada"))
-.catch(e=>alert(e.message));
-});
-}
-
-function cerrarSesion(){auth.signOut();}
-
-fReg.onsubmit=e=>{
-e.preventDefault();
-
-const v={
-id:Date.now(),
-CELULAR:iTel.value,
-IMEI:iIme.value||"N/A",
-ICCID:iIcc.value,
-TIPO:iTipo.value,
-MODELO:iMod.value||"N/A",
-TIENDA:iTienda.value,
-PROMOTOR:iProm.value,
-FECHA:iFec.value
-};
-
-let l=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
-l.unshift(v);
-localStorage.setItem("ventas_omar",JSON.stringify(l));
-cargarLocal();
-fReg.reset();
-};
-
-function cargarLocal(){
-let l=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
-bodyVentas.innerHTML=l.map(v=>`
-<tr>
-<td>${v.CELULAR}</td>
-<td>${v.IMEI}</td>
-<td>${v.ICCID}</td>
-<td>${v.TIPO}</td>
-<td>${v.MODELO}</td>
-<td>${v.TIENDA}</td>
-<td>${v.PROMOTOR}</td>
-<td>${v.FECHA}</td>
-<td><i class="fa fa-trash" style="color:red;cursor:pointer" onclick="eliminar(${v.id})"></i></td>
-</tr>`).join("");
-}
-
-function eliminar(id){
-let l=JSON.parse(localStorage.getItem("ventas_omar")||"[]")
-.filter(x=>x.id!==id);
-localStorage.setItem("ventas_omar",JSON.stringify(l));
-cargarLocal();
-}
-
-function exportarExcel(){
-let l=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
-if(!l.length)return alert("No hay datos");
-const ws=XLSX.utils.json_to_sheet(l);
-const wb=XLSX.utils.book_new();
-XLSX.utils.book_append_sheet(wb,ws,"Ventas");
-XLSX.writeFile(wb,"Ventas_OmarOrtega.xlsx");
-}
-
-function scan(reader,input){
-const scanner=new Html5Qrcode(reader);
-scanner.start({facingMode:"environment"},{fps:10,qrbox:250},
-text=>{
-document.getElementById(input).value=text;
-scanner.stop();
-document.getElementById(reader).innerHTML="";
-});
-}
-</script>
-
-</body>
+</div>  <script>  
+let uA = "";  
+const mS = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];  
+  
+function inicio() {  
+    setInterval(() => { document.getElementById('rel').innerText = new Date().toLocaleTimeString(); }, 1000);  
+    const ahora = new Date();  
+    document.getElementById('txtMes').innerText = "FORMATO 1.5 - " + mS[ahora.getMonth()] + " " + ahora.getFullYear();  
+    const s = localStorage.getItem('ses_omar');  
+    if(s) { uA = s; mostrar(); }  
+    document.getElementById('iFec').value = ahora.toISOString().split('T')[0];  
+}  
+  
+function entrar() {  
+    const u = document.getElementById('u').value.trim();  
+    const p = document.getElementById('p').value.trim();  
+    if(u === "23OECO97111857227" && p === "AVNACIONAL4029") {  
+        localStorage.setItem('ses_omar', u);  
+        location.reload();  
+    } else { alert("Acceso Incorrecto"); }  
+}  
+  
+function salir() { localStorage.removeItem('ses_omar'); location.reload(); }  
+  
+function mostrar() {  
+    document.getElementById('lSec').className = 'hidden';  
+    document.getElementById('mSec').className = '';  
+    pintarTabla();  
+}  
+  
+function verEq() {  
+    const t = document.getElementById('iTipo').value;  
+    document.getElementById('gEq').style.display = (t==='CHIP' || t==='PORTA') ? 'none' : 'block';  
+}  
+  
+function pintarTabla() {  
+    const tbody = document.querySelector('#tVistas tbody');  
+    tbody.innerHTML = "";  
+    const d = JSON.parse(localStorage.getItem("db_omar_"+uA) || "[]");  
+    d.reverse().slice(0,5).forEach(x => {  
+        tbody.innerHTML += `<tr><td>${x.t}</td><td>${x.tp}</td><td><button onclick="borrar(${x.id})" style="background:red; color:white; border:none; padding:2px 5px;">X</button></td></tr>`;  
+    });  
+}  
+  
+function borrar(id) {  
+    let d = JSON.parse(localStorage.getItem("db_omar_"+uA) || "[]");  
+    d = d.filter(x => x.id !== id);  
+    localStorage.setItem("db_omar_"+uA, JSON.stringify(d));  
+    pintarTabla();  
+}  
+  
+document.getElementById('fReg').onsubmit = function(e) {  
+    e.preventDefault();  
+    const d = JSON.parse(localStorage.getItem("db_omar_"+uA) || "[]");  
+    d.push({  
+        t: document.getElementById('iTel').value,  
+        im: document.getElementById('iIme').value,  
+        ic: document.getElementById('iIcc').value,  
+        tp: document.getElementById('iTipo').value,  
+        f: document.getElementById('iFec').value,  
+        ma: document.getElementById('iMar').value.toUpperCase(),  
+        mo: document.getElementById('iMod').value.toUpperCase(),  
+        id: Date.now()  
+    });  
+    localStorage.setItem("db_omar_"+uA, JSON.stringify(d));  
+    this.reset();  
+    document.getElementById('iFec').value = new Date().toISOString().split('T')[0];  
+    pintarTabla();  
+};  
+  
+function bajarExcel() {  
+    const d = JSON.parse(localStorage.getItem("db_omar_"+uA) || "[]");  
+    if(d.length === 0) return alert("Sin datos");  
+  
+    const h = [["NUM. CELULAR", "IMEI", "ICCID", "Renuevate/\nKit/Chip/Porta", "#TIENDA /\nDeterminante", "SOLO\nNOMBRE DE\nLA CADENA", "SOLO NOMBRE DE TIENDA SIN CADENA", "NOMBRE COMPLETO PROMOTOR", "FECHA DE ACTIVACION", "MARCA", "MODELO"]];  
+      
+    d.forEach(x => {  
+        const p = x.f.split('-');  
+        h.push([x.t, x.im, x.ic, x.tp, "4029", "BA", "AV NACIONAL", "ORTEGA CARO OMAR", `${p[2]}/${p[1]}/${p[0]}`, x.ma, x.mo]);  
+    });  
+  
+    const wb = XLSX.utils.book_new();  
+    const ws = XLSX.utils.aoa_to_sheet(h);  
+  
+    ws['!rows'] = [{ hpt: 60 }];   
+    ws['!cols'] = [{wch:18}, {wch:22}, {wch:25}, {wch:25}, {wch:20}, {wch:20}, {wch:35}, {wch:30}, {wch:22}, {wch:15}, {wch:15}];  
+  
+    const range = XLSX.utils.decode_range(ws['!ref']);  
+    for (let R = 0; R <= range.e.r; ++R) {  
+        for (let C = 0; C <= 10; ++C) {  
+            const addr = XLSX.utils.encode_cell({r:R, c:C});  
+            if(!ws[addr]) ws[addr] = {t:'s', v:''};  
+              
+            ws[addr].s = {  
+                border: {  
+                    top: {style: "thin", color: {rgb: "000000"}},  
+                    bottom: {style: "thin", color: {rgb: "000000"}},  
+                    left: {style: "thin", color: {rgb: "000000"}},  
+                    right: {style: "thin", color: {rgb: "000000"}}  
+                },  
+                // CENTRADO ABSOLUTO (ENMEDIO)  
+                alignment: {   
+                    horizontal: "center",   
+                    vertical: "center",   
+                    wrapText: true   
+                }  
+            };  
+  
+            if(R === 0) {  
+                ws[addr].s.fill = { fgColor: { rgb: "000000" } };  
+                ws[addr].s.font = { color: { rgb: "FFFFFF" }, bold: true, sz: 10 };  
+            }  
+        }  
+    }  
+  
+    const ahora = new Date();  
+    XLSX.utils.book_append_sheet(wb, ws, "Hoja1");  
+    XLSX.writeFile(wb, "Comisiones_" + mS[ahora.getMonth()] + ".xlsx");  
+}  
+</script>  </body>  
 </html>
