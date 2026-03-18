@@ -11,217 +11,168 @@
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 
 <style>
-:root{
---primary:#0a84ff;
---secondary:#30d158;
---danger:#ff453a;
---glass:rgba(255,255,255,.08);
-}
-
-/* ===== APP BASE ===== */
+/* ===== FONDO APP ===== */
 body{
 margin:0;
-font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
-background:#0b0f1a;
+font-family:'Segoe UI',sans-serif;
 color:white;
+background:linear-gradient(-45deg,#0b0f1a,#0f1c2e,#0a1930,#08101f);
+background-size:400% 400%;
+animation:bgMove 12s ease infinite;
 overflow-x:hidden;
+}
+@keyframes bgMove{
+0%{background-position:0% 50%}
+50%{background-position:100% 50%}
+100%{background-position:0% 50%}
 }
 
 .hidden{display:none}
-.app{max-width:480px;margin:auto;padding:16px}
+.app{max-width:1000px;margin:auto;padding:20px}
 
-/* ===== TRANSICIONES ENTRE PANTALLAS ===== */
+/* ===== TRANSICIONES ===== */
 .screen{
-animation:screenIn .45s cubic-bezier(.22,1,.36,1);
+opacity:0;
+transform:translateX(30px);
+transition:.45s cubic-bezier(.4,0,.2,1);
+position:absolute;width:100%;top:0;left:0;
 }
-@keyframes screenIn{
-from{opacity:0;transform:translateX(40px)}
-to{opacity:1;transform:none}
-}
+.screen.active{opacity:1;transform:none;position:relative}
+.screen.exit{opacity:0;transform:translateX(-30px)}
 
-/* ===== TOPBAR ===== */
-.topbar{
-display:flex;
-justify-content:space-between;
-align-items:center;
-margin-bottom:16px;
-animation:slideDown .5s ease;
+/* ===== LOGIN ===== */
+.login{
+max-width:360px;margin:70px auto;
+background:white;color:black;
+padding:30px;border-radius:20px;
+box-shadow:0 15px 40px rgba(0,0,0,.45);
+animation:zoom .4s ease;
 }
-@keyframes slideDown{
-from{opacity:0;transform:translateY(-20px)}
-to{opacity:1;transform:none}
-}
+@keyframes zoom{from{transform:scale(.9);opacity:0}}
 
-/* ===== TARJETAS TIPO BANCA ===== */
+/* ===== TARJETAS ===== */
 .card{
-background:var(--glass);
-backdrop-filter:blur(20px);
-border-radius:20px;
-padding:16px;
-margin-bottom:14px;
-box-shadow:
-0 4px 20px rgba(0,0,0,.25),
-inset 0 1px 0 rgba(255,255,255,.05);
-border:1px solid rgba(255,255,255,.08);
-animation:cardFloat .6s ease;
+background:rgba(255,255,255,.08);
+backdrop-filter:blur(14px);
+border-radius:18px;padding:20px;margin-bottom:15px;
+border:1px solid rgba(255,255,255,.12);
+transition:.25s;
+animation:cardIn .4s ease;
 }
-@keyframes cardFloat{
-from{opacity:0;transform:translateY(15px)}
-to{opacity:1;transform:none}
-}
+.card:hover{transform:translateY(-3px)}
+.card:active{transform:scale(.98)}
+@keyframes cardIn{from{opacity:0;transform:translateY(15px)}}
 
-/* ===== INPUTS PREMIUM ===== */
+/* ===== INPUTS ===== */
 input,select{
-width:100%;
-padding:12px;
-margin-bottom:12px;
-border-radius:12px;
-border:1px solid rgba(255,255,255,.08);
-background:rgba(255,255,255,.04);
-color:white;
-font-size:14px;
+width:100%;padding:12px;margin-bottom:10px;
+border-radius:10px;border:none;
+background:rgba(255,255,255,.12);color:white;
 transition:.25s;
 }
 input:focus,select:focus{
-outline:none;
-border:1px solid var(--primary);
-box-shadow:0 0 0 3px rgba(10,132,255,.15);
+outline:none;background:rgba(255,255,255,.2);
+box-shadow:0 0 0 2px #0a84ff;
 transform:scale(1.02);
 }
 
-/* ===== BOTONES APP BANCARIA ===== */
+/* ===== BOTONES PRO ===== */
 .btn{
-width:100%;
-padding:13px;
-border:none;
-border-radius:14px;
-font-weight:600;
-cursor:pointer;
-margin-bottom:12px;
-transition:all .15s ease;
-letter-spacing:.3px;
+width:100%;padding:13px;border:none;border-radius:14px;
+font-weight:bold;cursor:pointer;margin-bottom:10px;
+transition:.25s;position:relative;overflow:hidden;
 }
-.btn:active{
-transform:scale(.96);
-filter:brightness(.9);
-}
+.btn-primary{background:#0a84ff;color:white}
+.btn-secondary{background:#00b4d8;color:white}
+.btn-danger{background:#ff4d4d;color:white}
 
-.btn-primary{
-background:var(--primary);
-color:white;
-box-shadow:0 6px 18px rgba(10,132,255,.35);
-}
-.btn-secondary{
-background:var(--secondary);
-color:white;
-box-shadow:0 6px 18px rgba(48,209,88,.35);
-}
-.btn-danger{
-background:var(--danger);
-color:white;
-}
+.btn:hover{transform:translateY(-2px)}
+.btn:active{transform:scale(.97)}
 
-/* ===== BOTONES PEQUEÑOS ===== */
-.btn-sm{
-width:auto;
-padding:10px 14px;
-border-radius:12px;
-font-size:13px;
+.btn::before{
+content:"";position:absolute;top:0;left:-100%;
+width:100%;height:100%;
+background:linear-gradient(120deg,transparent,rgba(255,255,255,.35),transparent);
+transition:.6s;
 }
+.btn:hover::before{left:100%}
+
+/* ===== TOPBAR ===== */
+.topbar{
+display:flex;justify-content:space-between;align-items:center;
+gap:10px;margin-bottom:15px;flex-wrap:wrap;
+animation:slideDown .4s ease;
+}
+@keyframes slideDown{from{opacity:0;transform:translateY(-15px)}}
 
 /* ===== GPS ===== */
 .gps{
-font-size:12px;
-opacity:.85;
-background:rgba(10,132,255,.08);
-padding:10px;
-border-radius:12px;
-border:1px solid rgba(10,132,255,.25);
+flex:1;background:#000;border:1px solid #0a84ff;
+padding:10px;border-radius:12px;color:#0a84ff;font-size:12px;
+animation:pulse 2s infinite;
+}
+@keyframes pulse{
+0%{box-shadow:0 0 0 0 rgba(10,132,255,.6)}
+70%{box-shadow:0 0 0 10px rgba(10,132,255,0)}
 }
 
 /* ===== TABLA ===== */
 table{
-width:100%;
-border-collapse:collapse;
-background:white;
-color:black;
-border-radius:14px;
-overflow:hidden;
-font-size:12px;
+width:100%;border-collapse:collapse;
+background:white;color:black;font-size:12px;
+border-radius:10px;overflow:hidden;
 }
-th{
-background:#0a84ff;
-color:white;
-padding:10px;
-}
-td{
-padding:8px;
-border-bottom:1px solid #eee;
-}
-tr:hover td{background:#f2f8ff}
-
-/* ===== LOGIN CARD ===== */
-.login{
-max-width:360px;
-margin:70px auto;
-background:white;
-color:black;
-padding:28px;
-border-radius:26px;
-box-shadow:0 25px 60px rgba(0,0,0,.45);
-animation:loginPop .5s cubic-bezier(.22,1,.36,1);
-}
-@keyframes loginPop{
-from{opacity:0;transform:scale(.9)}
-to{opacity:1;transform:none}
-}
+th{background:#0a84ff;color:white;padding:8px}
+td{padding:6px;border:1px solid #ddd}
+tbody tr{animation:rowIn .3s ease}
+@keyframes rowIn{from{opacity:0;transform:translateY(8px)}}
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
-<div id="loginBox" class="login screen">
+<!-- ===== AUDIO ===== -->
+<audio id="sClick" src="click.mp3" preload="auto"></audio>
+<audio id="sSuccess" src="success.mp3" preload="auto"></audio>
+<audio id="sLogin" src="login.mp3" preload="auto"></audio>
+
+<!-- ===== LOGIN ===== -->
+<div id="loginBox" class="login screen active">
 <h2 style="text-align:center;color:#0a84ff">Acceso</h2>
 <input id="u" type="email" placeholder="Correo">
 <input id="p" type="password" placeholder="Contraseña">
-<button class="btn btn-primary" onclick="login()">
-<i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
-</button>
-<button class="btn btn-secondary" onclick="registrar()">
-<i class="fa-solid fa-user-plus"></i> Crear Cuenta Nueva
-</button>
+<button class="btn btn-primary" onclick="login()">Iniciar Sesión</button>
+<button class="btn btn-secondary" onclick="registrar()">Crear Cuenta</button>
 </div>
 
-<!-- APP -->
+<!-- ===== APP ===== -->
 <div id="appBox" class="app hidden screen">
 
 <div class="topbar">
 <div class="gps">
 <i class="fa-solid fa-location-dot"></i>
-<span id="gpsTxt">Detectando ubicación...</span>
-</div>
-<div>
-<button class="btn btn-danger btn-sm" onclick="logout()">⏻</button>
-</div>
+<b>Ubicación:</b> <span id="gpsTxt">Detectando...</span>
 </div>
 
-<div class="card">
+<div style="display:flex;gap:10px;flex-wrap:wrap">
 <a href="https://app.payjoy.com/accounts/login?afterLogin=https://app.payjoy.com/merchant3?merchantId=199557" target="_blank">
-<button class="btn btn-secondary">PayJoy</button>
+<button class="btn btn-secondary" style="width:auto">PayJoy</button>
 </a>
+
 <a href="https://registro.telcel.com/vinculatulinea/#/" target="_blank">
-<button class="btn btn-primary">Vincular Línea</button>
+<button class="btn btn-primary" style="width:auto">Vincular Línea</button>
 </a>
+
+<button class="btn btn-danger" style="width:auto" onclick="logout()">⏻</button>
+</div>
 </div>
 
 <form id="fReg">
 <div class="card">
+<label>Tipo de Venta</label>
 <select id="tipo" required>
-<option value="">Tipo de Venta</option>
-<option>KIT</option>
-<option>CHIP</option>
-<option>PORTABILIDAD</option>
-<option>RENUEVA</option>
+<option value="">Selecciona...</option>
+<option>KIT</option><option>CHIP</option>
+<option>PORTABILIDAD</option><option>RENUEVA</option>
 </select>
 <input id="tel" placeholder="Número Celular" required>
 <input id="icc" placeholder="ICCID" required>
@@ -243,43 +194,55 @@ to{opacity:1;transform:none}
 <button class="btn btn-primary">Guardar Venta</button>
 </form>
 
-<div class="card">
 <h3>Registros</h3>
 <table>
 <thead>
 <tr>
-<th>Cel</th><th>Tipo</th><th>ICCID</th>
-<th>IMEI</th><th>Modelo</th>
-<th>Tienda</th><th>Promotor</th><th></th>
+<th>Cel</th><th>Tipo</th><th>ICCID</th><th>IMEI</th>
+<th>Modelo</th><th>Tienda</th><th>Promotor</th><th></th>
 </tr>
 </thead>
 <tbody id="tabla"></tbody>
 </table>
-</div>
 
-<button class="btn btn-secondary" onclick="excel()">
-<i class="fa-solid fa-file-excel"></i> Exportar Excel
-</button>
-
+<button class="btn btn-secondary" onclick="excel()">Exportar Excel</button>
 </div>
 
 <script>
-const firebaseConfig={
+/* ===== AUDIO ===== */
+const sClick=document.getElementById("sClick");
+const sSuccess=document.getElementById("sSuccess");
+const sLogin=document.getElementById("sLogin");
+
+function sound(a){a.currentTime=0;a.play();if(navigator.vibrate)navigator.vibrate(10);}
+document.addEventListener("click",e=>{if(e.target.classList.contains("btn"))sound(sClick);});
+
+/* ===== FIREBASE ===== */
+firebase.initializeApp({
 apiKey:"AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
 authDomain:"ventastelcel4029.firebaseapp.com",
 projectId:"ventastelcel4029"
-};
-firebase.initializeApp(firebaseConfig);
+});
 const auth=firebase.auth();
 
-auth.onAuthStateChanged(user=>{
-loginBox.classList.toggle("hidden",!!user);
-appBox.classList.toggle("hidden",!user);
-if(user) gps();
+/* ===== TRANSICIÓN ===== */
+function showScreen(show,hide){
+hide.classList.remove("active");hide.classList.add("exit");
+setTimeout(()=>{
+hide.classList.add("hidden");hide.classList.remove("exit");
+show.classList.remove("hidden");
+setTimeout(()=>show.classList.add("active"),10);
+},300);
+}
+
+auth.onAuthStateChanged(u=>{
+if(u){showScreen(appBox,loginBox);gps();}
+else{showScreen(loginBox,appBox);}
 });
 
 function login(){
 auth.signInWithEmailAndPassword(u.value,p.value)
+.then(()=>sound(sLogin))
 .catch(()=>alert("Datos incorrectos"));
 }
 function registrar(){
@@ -289,8 +252,9 @@ auth.createUserWithEmailAndPassword(u.value,p.value)
 }
 function logout(){auth.signOut()}
 
+/* ===== GPS ===== */
 function gps(){
-if(!navigator.geolocation) return;
+if(!navigator.geolocation)return;
 navigator.geolocation.getCurrentPosition(async pos=>{
 const {latitude,longitude}=pos.coords;
 const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
@@ -299,11 +263,18 @@ gpsTxt.innerText=d.display_name;
 });
 }
 
+/* ===== GUARDAR ===== */
 fReg.onsubmit=e=>{
 e.preventDefault();
-const v={id:Date.now(),cel:tel.value,tipo:tipo.value,icc:icc.value,imei:imei.value,
+sound(sSuccess);
+
+const v={
+id:Date.now(),cel:tel.value,tipo:tipo.value,icc:icc.value,imei:imei.value,
 marca:marca.value,modelo:modelo.value,tiendaNum:tienda.value,cadena:cadena.value,
-tienda:tiendaNombre.value,promotor:promotor.value,fecha:new Date().toLocaleDateString()};
+tienda:tiendaNombre.value,promotor:promotor.value,
+fecha:new Date().toLocaleDateString()
+};
+
 let l=JSON.parse(localStorage.ventas||"[]");
 l.unshift(v);
 localStorage.ventas=JSON.stringify(l);
@@ -315,9 +286,8 @@ function render(){
 let l=JSON.parse(localStorage.ventas||"[]");
 tabla.innerHTML=l.map(v=>`
 <tr>
-<td>${v.cel}</td><td>${v.tipo}</td>
-<td>${v.icc}</td><td>${v.imei||''}</td>
-<td>${v.modelo||''}</td>
+<td>${v.cel}</td><td>${v.tipo}</td><td>${v.icc}</td>
+<td>${v.imei||''}</td><td>${v.modelo||''}</td>
 <td>${v.tienda}</td><td>${v.promotor}</td>
 <td><button onclick="del(${v.id})">🗑️</button></td>
 </tr>`).join('');
@@ -326,18 +296,19 @@ render();
 
 function del(id){
 let l=JSON.parse(localStorage.ventas||"[]").filter(x=>x.id!=id);
-localStorage.ventas=JSON.stringify(l);
-render();
+localStorage.ventas=JSON.stringify(l);render();
 }
 
+/* ===== EXCEL FORMATO 300 FILAS ===== */
 function excel(){
-let l = JSON.parse(localStorage.ventas || "[]");
-if(!l.length) return alert("Sin datos");
+let l=JSON.parse(localStorage.ventas||"[]");
+if(!l.length)return alert("Sin datos");
 
 const headers=[
-"NUM. CELULAR","IMEI","ICCID","TIPO",
-"#TIENDA","CADENA","TIENDA",
-"PROMOTOR","FECHA","MARCA","MODELO"
+"NUM. CELULAR","IMEI","ICCID","Renuevate/ Kit/ Chip/Porta",
+"#TIENDA / Determinante","SOLO NOMBRE DE LA CADENA",
+"SOLO NOMBRE DE TIENDA SIN CADENA","NOMBRE COMPLETO PROMOTOR",
+"FECHA DE ACTIVACION","MARCA","MODELO"
 ];
 
 let data=[headers];
