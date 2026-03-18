@@ -42,6 +42,7 @@ padding:30px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.4);}
 </head>
 <body>
 
+<!-- LOGIN -->
 <div id="loginBox" class="login">
 <h2 style="text-align:center;color:#003566">Acceso</h2>
 <input id="u" type="email" placeholder="Correo">
@@ -54,6 +55,7 @@ padding:30px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.4);}
 </button>
 </div>
 
+<!-- APP -->
 <div id="appBox" class="app hidden">
 
 <div class="topbar">
@@ -78,8 +80,10 @@ padding:30px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.4);}
 <label>Tipo de Venta</label>
 <select id="tipo" required>
 <option value="">Selecciona tipo...</option>
-<option>KIT</option><option>CHIP</option>
-<option>PORTABILIDAD</option><option>RENUEVA</option>
+<option>KIT</option>
+<option>CHIP</option>
+<option>PORTABILIDAD</option>
+<option>RENUEVA</option>
 </select>
 <label>Número Celular</label><input id="tel" required>
 <label>ICCID</label><input id="icc" required>
@@ -145,6 +149,7 @@ auth.createUserWithEmailAndPassword(u.value,p.value)
 }
 function logout(){auth.signOut()}
 
+/* GPS */
 function gps(){
 if(!navigator.geolocation) return;
 navigator.geolocation.getCurrentPosition(async pos=>{
@@ -155,6 +160,7 @@ gpsTxt.innerText=d.display_name;
 });
 }
 
+/* Guardar */
 fReg.onsubmit=e=>{
 e.preventDefault();
 const v={
@@ -178,6 +184,7 @@ render();
 fReg.reset();
 };
 
+/* Render tabla */
 function render(){
 let l=JSON.parse(localStorage.ventas||"[]");
 tabla.innerHTML=l.map(v=>`
@@ -197,32 +204,48 @@ localStorage.ventas=JSON.stringify(l);
 render();
 }
 
+/* EXCEL FORMATO OFICIAL */
 function excel(){
 let l = JSON.parse(localStorage.ventas || "[]");
 if(!l.length) return alert("Sin datos");
 
 const headers = [
-"NUM. CELULAR","IMEI","ICCID","Renuevate/ Kit/ Chip/ Porta",
-"#TIENDA / Determinante","SOLO NOMBRE DE LA CADENA",
-"SOLO NOMBRE DE TIENDA SIN CADENA","NOMBRE COMPLETO PROMOTOR",
-"FECHA DE ACTIVACION","MARCA","MODELO"
+"NUM. CELULAR",
+"IMEI",
+"ICCID",
+"Renuevate/ Kit/ Chip/Porta",
+"#TIENDA / Determinante",
+"SOLO NOMBRE DE LA CADENA",
+"SOLO NOMBRE DE TIENDA SIN CADENA",
+"NOMBRE COMPLETO PROMOTOR",
+"FECHA DE ACTIVACION",
+"MARCA",
+"MODELO"
 ];
 
-let data=[headers];
+let data = [headers];
 
 for(let i=0;i<300;i++){
-const v=l[i]||{};
+const v = l[i] || {};
 data.push([
-v.cel||"",v.imei||"",v.icc||"",v.tipo||"",
-v.tiendaNum||"",v.cadena||"",v.tienda||"",
-v.promotor||"",v.fecha||"",v.marca||"",v.modelo||""
+v.cel || "",
+v.imei || "",
+v.icc || "",
+v.tipo || "",
+v.tiendaNum || "",
+v.cadena || "",
+v.tienda || "",
+v.promotor || "",
+v.fecha || "",
+v.marca || "",
+v.modelo || ""
 ]);
 }
 
-const ws=XLSX.utils.aoa_to_sheet(data);
-const wb=XLSX.utils.book_new();
-XLSX.utils.book_append_sheet(wb,ws,"Formato Diario");
-XLSX.writeFile(wb,"FORMATO_DIARIO_COMISIONES.xlsx");
+const ws = XLSX.utils.aoa_to_sheet(data);
+const wb = XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(wb, ws, "FORMATO DIARIO");
+XLSX.writeFile(wb, "FORMATO_DIARIO_COMISIONES.xlsx");
 }
 </script>
 
