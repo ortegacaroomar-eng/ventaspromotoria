@@ -114,17 +114,12 @@ padding:30px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.4);
 
 <div class="card">
 <label>Tipo de Venta</label>
-<select id="tipo" onchange="cargarOpciones()" required>
+<select id="tipo" required>
 <option value="">Selecciona tipo...</option>
-<option value="KIT">KIT</option>
-<option value="CHIP">CHIP</option>
-<option value="PORTA">PORTABILIDAD</option>
-<option value="RENUEVA">RENUEVA</option>
-</select>
-
-<label>Detalle</label>
-<select id="detalle" required>
-<option value="">Primero elige tipo...</option>
+<option>KIT</option>
+<option>CHIP</option>
+<option>PORTABILIDAD</option>
+<option>RENUEVA</option>
 </select>
 
 <label>Número Celular</label>
@@ -162,8 +157,8 @@ padding:30px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.4);
 <table>
 <thead>
 <tr>
-<th>Cel</th><th>Tipo</th><th>Detalle</th>
-<th>ICCID</th><th>IMEI</th><th>Modelo</th>
+<th>Cel</th><th>Tipo</th><th>ICCID</th>
+<th>IMEI</th><th>Modelo</th>
 <th>Tienda</th><th>Promotor</th><th></th>
 </tr>
 </thead>
@@ -215,35 +210,12 @@ gpsTxt.innerText=d.display_name;
 });
 }
 
-/* Menú dinámico */
-function cargarOpciones(){
-const tipo = document.getElementById("tipo").value;
-const detalle = document.getElementById("detalle");
-
-const opciones = {
-KIT:["Kit Básico","Kit Promo","Kit Gama Media","Kit Gama Alta"],
-CHIP:["Chip Nuevo","Reposición Robo","Reposición Daño","Chip Express"],
-PORTA:["Porta Prepago","Porta Pospago","Porta + Equipo","Porta Express"],
-RENUEVA:["Renovación 12m","Renovación 18m","Renovación 24m","Renueva + Equipo"]
-};
-
-detalle.innerHTML='<option value="">Selecciona detalle...</option>';
-
-if(opciones[tipo]){
-opciones[tipo].forEach(op=>{
-let o=document.createElement("option");
-o.value=op;o.textContent=op;
-detalle.appendChild(o);
-});
-}
-}
-
 /* Guardar */
 fReg.onsubmit=e=>{
 e.preventDefault();
 const v={
 id:Date.now(),
-cel:tel.value,tipo:tipo.value,detalle:detalle.value,
+cel:tel.value,tipo:tipo.value,
 icc:icc.value,imei:imei.value,
 modelo:modelo.value,tienda:tiendaNombre.value,
 promotor:promotor.value
@@ -259,8 +231,9 @@ function render(){
 let l=JSON.parse(localStorage.ventas||"[]");
 tabla.innerHTML=l.map(v=>`
 <tr>
-<td>${v.cel}</td><td>${v.tipo}</td><td>${v.detalle}</td>
-<td>${v.icc}</td><td>${v.imei||''}</td><td>${v.modelo||''}</td>
+<td>${v.cel}</td><td>${v.tipo}</td>
+<td>${v.icc}</td><td>${v.imei||''}</td>
+<td>${v.modelo||''}</td>
 <td>${v.tienda}</td><td>${v.promotor}</td>
 <td><button onclick="del(${v.id})">🗑️</button></td>
 </tr>`).join('');
