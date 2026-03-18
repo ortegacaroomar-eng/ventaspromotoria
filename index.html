@@ -11,141 +11,83 @@
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 
 <style>
-/* ===== FONDO APP ===== */
 body{
-margin:0;
-font-family:'Segoe UI',sans-serif;
-color:white;
-background:linear-gradient(-45deg,#0b0f1a,#0f1c2e,#0a1930,#08101f);
+margin:0;font-family:'Segoe UI',sans-serif;color:white;
+background:linear-gradient(-45deg,#001d3d,#003566,#000814,#001f54);
 background-size:400% 400%;
-animation:bgMove 12s ease infinite;
-overflow-x:hidden;
+animation:bgMove 12s ease infinite, fade .6s ease;
 }
-@keyframes bgMove{
-0%{background-position:0% 50%}
-50%{background-position:100% 50%}
-100%{background-position:0% 50%}
-}
+@keyframes bgMove{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
 
 .hidden{display:none}
 .app{max-width:1000px;margin:auto;padding:20px}
 
-/* ===== TRANSICIONES ===== */
-.screen{
-opacity:0;
-transform:translateX(30px);
-transition:.45s cubic-bezier(.4,0,.2,1);
-position:absolute;width:100%;top:0;left:0;
-}
-.screen.active{opacity:1;transform:none;position:relative}
-.screen.exit{opacity:0;transform:translateX(-30px)}
-
-/* ===== LOGIN ===== */
-.login{
-max-width:360px;margin:70px auto;
-background:white;color:black;
-padding:30px;border-radius:20px;
-box-shadow:0 15px 40px rgba(0,0,0,.45);
-animation:zoom .4s ease;
-}
-@keyframes zoom{from{transform:scale(.9);opacity:0}}
-
-/* ===== TARJETAS ===== */
 .card{
 background:rgba(255,255,255,.08);
 backdrop-filter:blur(14px);
-border-radius:18px;padding:20px;margin-bottom:15px;
-border:1px solid rgba(255,255,255,.12);
-transition:.25s;
-animation:cardIn .4s ease;
+border-radius:15px;
+padding:20px;
+margin-bottom:15px;
+border:1px solid rgba(255,255,255,.15);
+animation:cardIn .5s ease;
+transition:.3s;
 }
-.card:hover{transform:translateY(-3px)}
-.card:active{transform:scale(.98)}
-@keyframes cardIn{from{opacity:0;transform:translateY(15px)}}
+.card:hover{transform:translateY(-4px);box-shadow:0 10px 25px rgba(0,0,0,.35)}
+@keyframes cardIn{from{transform:translateY(15px);opacity:0}to{transform:none;opacity:1}}
 
-/* ===== INPUTS ===== */
 input,select{
-width:100%;padding:12px;margin-bottom:10px;
-border-radius:10px;border:none;
+width:100%;padding:10px;margin-bottom:10px;
+border-radius:8px;border:none;
 background:rgba(255,255,255,.12);color:white;
-transition:.25s;
-}
-input:focus,select:focus{
-outline:none;background:rgba(255,255,255,.2);
-box-shadow:0 0 0 2px #0a84ff;
-transform:scale(1.02);
 }
 
-/* ===== BOTONES PRO ===== */
 .btn{
-width:100%;padding:13px;border:none;border-radius:14px;
+width:100%;padding:12px;border:none;border-radius:12px;
 font-weight:bold;cursor:pointer;margin-bottom:10px;
-transition:.25s;position:relative;overflow:hidden;
+transition:.2s;position:relative;overflow:hidden;
 }
-.btn-primary{background:#0a84ff;color:white}
+.btn:hover{transform:scale(1.05)}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:#ffc300;color:#001d3d}
 .btn-secondary{background:#00b4d8;color:white}
 .btn-danger{background:#ff4d4d;color:white}
 
-.btn:hover{transform:translateY(-2px)}
-.btn:active{transform:scale(.97)}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:15px;flex-wrap:wrap}
+.gps{flex:1;background:#000;border:1px solid #00b4d8;padding:10px;border-radius:10px;color:#00b4d8;font-size:12px}
+.quick{display:flex;gap:10px;flex-wrap:wrap}
 
-.btn::before{
-content:"";position:absolute;top:0;left:-100%;
-width:100%;height:100%;
-background:linear-gradient(120deg,transparent,rgba(255,255,255,.35),transparent);
-transition:.6s;
-}
-.btn:hover::before{left:100%}
-
-/* ===== TOPBAR ===== */
-.topbar{
-display:flex;justify-content:space-between;align-items:center;
-gap:10px;margin-bottom:15px;flex-wrap:wrap;
-animation:slideDown .4s ease;
-}
-@keyframes slideDown{from{opacity:0;transform:translateY(-15px)}}
-
-/* ===== GPS ===== */
-.gps{
-flex:1;background:#000;border:1px solid #0a84ff;
-padding:10px;border-radius:12px;color:#0a84ff;font-size:12px;
-animation:pulse 2s infinite;
-}
-@keyframes pulse{
-0%{box-shadow:0 0 0 0 rgba(10,132,255,.6)}
-70%{box-shadow:0 0 0 10px rgba(10,132,255,0)}
-}
-
-/* ===== TABLA ===== */
-table{
-width:100%;border-collapse:collapse;
-background:white;color:black;font-size:12px;
-border-radius:10px;overflow:hidden;
-}
-th{background:#0a84ff;color:white;padding:8px}
+table{width:100%;border-collapse:collapse;background:white;color:black;font-size:12px}
+th{background:#001d3d;color:white;padding:8px}
 td{padding:6px;border:1px solid #ddd}
-tbody tr{animation:rowIn .3s ease}
-@keyframes rowIn{from{opacity:0;transform:translateY(8px)}}
+tbody tr{animation:rowIn .35s ease}
+@keyframes rowIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.login{
+max-width:350px;margin:60px auto;background:white;color:black;
+padding:30px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.4);
+}
 </style>
 </head>
 <body>
 
-<!-- ===== AUDIO ===== -->
-<audio id="sClick" src="click.mp3" preload="auto"></audio>
-<audio id="sSuccess" src="success.mp3" preload="auto"></audio>
-<audio id="sLogin" src="login.mp3" preload="auto"></audio>
-
-<!-- ===== LOGIN ===== -->
-<div id="loginBox" class="login screen active">
-<h2 style="text-align:center;color:#0a84ff">Acceso</h2>
+<!-- LOGIN -->
+<div id="loginBox" class="login">
+<h2 style="text-align:center;color:#003566">Acceso</h2>
 <input id="u" type="email" placeholder="Correo">
 <input id="p" type="password" placeholder="Contraseña">
-<button class="btn btn-primary" onclick="login()">Iniciar Sesión</button>
-<button class="btn btn-secondary" onclick="registrar()">Crear Cuenta</button>
+
+<button class="btn btn-primary" onclick="login()">
+<i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
+</button>
+
+<button class="btn btn-secondary" onclick="registrar()">
+<i class="fa-solid fa-user-plus"></i> Crear Cuenta Nueva
+</button>
 </div>
 
-<!-- ===== APP ===== -->
-<div id="appBox" class="app hidden screen">
+<!-- APP -->
+<div id="appBox" class="app hidden">
 
 <div class="topbar">
 <div class="gps">
@@ -153,7 +95,7 @@ tbody tr{animation:rowIn .3s ease}
 <b>Ubicación:</b> <span id="gpsTxt">Detectando...</span>
 </div>
 
-<div style="display:flex;gap:10px;flex-wrap:wrap">
+<div class="quick">
 <a href="https://app.payjoy.com/accounts/login?afterLogin=https://app.payjoy.com/merchant3?merchantId=199557" target="_blank">
 <button class="btn btn-secondary" style="width:auto">PayJoy</button>
 </a>
@@ -167,28 +109,32 @@ tbody tr{animation:rowIn .3s ease}
 </div>
 
 <form id="fReg">
+
 <div class="card">
 <label>Tipo de Venta</label>
 <select id="tipo" required>
-<option value="">Selecciona...</option>
-<option>KIT</option><option>CHIP</option>
-<option>PORTABILIDAD</option><option>RENUEVA</option>
+<option value="">Selecciona tipo...</option>
+<option>KIT</option>
+<option>CHIP</option>
+<option>PORTABILIDAD</option>
+<option>RENUEVA</option>
 </select>
-<input id="tel" placeholder="Número Celular" required>
-<input id="icc" placeholder="ICCID" required>
-<input id="imei" placeholder="IMEI">
+
+<label>Número Celular</label><input id="tel" required>
+<label>ICCID</label><input id="icc" required>
+<label>IMEI</label><input id="imei">
 </div>
 
 <div class="card">
-<input id="marca" placeholder="Marca">
-<input id="modelo" placeholder="Modelo">
+<label>Marca</label><input id="marca">
+<label>Modelo</label><input id="modelo">
 </div>
 
 <div class="card">
-<input id="tienda" placeholder="# Tienda" required>
-<input id="cadena" placeholder="Cadena" required>
-<input id="tiendaNombre" placeholder="Nombre Tienda" required>
-<input id="promotor" placeholder="Promotor" required>
+<label># Tienda</label><input id="tienda" required>
+<label>Cadena</label><input id="cadena" required>
+<label>Nombre Tienda</label><input id="tiendaNombre" required>
+<label>Promotor</label><input id="promotor" required>
 </div>
 
 <button class="btn btn-primary">Guardar Venta</button>
@@ -198,51 +144,37 @@ tbody tr{animation:rowIn .3s ease}
 <table>
 <thead>
 <tr>
-<th>Cel</th><th>Tipo</th><th>ICCID</th><th>IMEI</th>
-<th>Modelo</th><th>Tienda</th><th>Promotor</th><th></th>
+<th>Cel</th><th>Tipo</th><th>ICCID</th>
+<th>IMEI</th><th>Modelo</th>
+<th>Tienda</th><th>Promotor</th><th></th>
 </tr>
 </thead>
 <tbody id="tabla"></tbody>
 </table>
 
-<button class="btn btn-secondary" onclick="excel()">Exportar Excel</button>
+<button class="btn btn-secondary" onclick="excel()">
+<i class="fa-solid fa-file-excel"></i> Exportar Excel
+</button>
+
 </div>
 
 <script>
-/* ===== AUDIO ===== */
-const sClick=document.getElementById("sClick");
-const sSuccess=document.getElementById("sSuccess");
-const sLogin=document.getElementById("sLogin");
-
-function sound(a){a.currentTime=0;a.play();if(navigator.vibrate)navigator.vibrate(10);}
-document.addEventListener("click",e=>{if(e.target.classList.contains("btn"))sound(sClick);});
-
-/* ===== FIREBASE ===== */
-firebase.initializeApp({
+const firebaseConfig={
 apiKey:"AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
 authDomain:"ventastelcel4029.firebaseapp.com",
 projectId:"ventastelcel4029"
-});
+};
+firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth();
 
-/* ===== TRANSICIÓN ===== */
-function showScreen(show,hide){
-hide.classList.remove("active");hide.classList.add("exit");
-setTimeout(()=>{
-hide.classList.add("hidden");hide.classList.remove("exit");
-show.classList.remove("hidden");
-setTimeout(()=>show.classList.add("active"),10);
-},300);
-}
-
-auth.onAuthStateChanged(u=>{
-if(u){showScreen(appBox,loginBox);gps();}
-else{showScreen(loginBox,appBox);}
+auth.onAuthStateChanged(user=>{
+loginBox.classList.toggle("hidden",!!user);
+appBox.classList.toggle("hidden",!user);
+if(user) gps();
 });
 
 function login(){
 auth.signInWithEmailAndPassword(u.value,p.value)
-.then(()=>sound(sLogin))
 .catch(()=>alert("Datos incorrectos"));
 }
 function registrar(){
@@ -252,9 +184,9 @@ auth.createUserWithEmailAndPassword(u.value,p.value)
 }
 function logout(){auth.signOut()}
 
-/* ===== GPS ===== */
+/* GPS */
 function gps(){
-if(!navigator.geolocation)return;
+if(!navigator.geolocation) return;
 navigator.geolocation.getCurrentPosition(async pos=>{
 const {latitude,longitude}=pos.coords;
 const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
@@ -263,18 +195,17 @@ gpsTxt.innerText=d.display_name;
 });
 }
 
-/* ===== GUARDAR ===== */
+/* Guardar */
 fReg.onsubmit=e=>{
 e.preventDefault();
-sound(sSuccess);
-
 const v={
-id:Date.now(),cel:tel.value,tipo:tipo.value,icc:icc.value,imei:imei.value,
-marca:marca.value,modelo:modelo.value,tiendaNum:tienda.value,cadena:cadena.value,
+id:Date.now(),
+cel:tel.value,tipo:tipo.value,icc:icc.value,imei:imei.value,
+marca:marca.value,modelo:modelo.value,
+tiendaNum:tienda.value,cadena:cadena.value,
 tienda:tiendaNombre.value,promotor:promotor.value,
 fecha:new Date().toLocaleDateString()
 };
-
 let l=JSON.parse(localStorage.ventas||"[]");
 l.unshift(v);
 localStorage.ventas=JSON.stringify(l);
@@ -286,8 +217,9 @@ function render(){
 let l=JSON.parse(localStorage.ventas||"[]");
 tabla.innerHTML=l.map(v=>`
 <tr>
-<td>${v.cel}</td><td>${v.tipo}</td><td>${v.icc}</td>
-<td>${v.imei||''}</td><td>${v.modelo||''}</td>
+<td>${v.cel}</td><td>${v.tipo}</td>
+<td>${v.icc}</td><td>${v.imei||''}</td>
+<td>${v.modelo||''}</td>
 <td>${v.tienda}</td><td>${v.promotor}</td>
 <td><button onclick="del(${v.id})">🗑️</button></td>
 </tr>`).join('');
@@ -296,13 +228,14 @@ render();
 
 function del(id){
 let l=JSON.parse(localStorage.ventas||"[]").filter(x=>x.id!=id);
-localStorage.ventas=JSON.stringify(l);render();
+localStorage.ventas=JSON.stringify(l);
+render();
 }
 
-/* ===== EXCEL FORMATO 300 FILAS ===== */
+/* ===== EXCEL FORMATO EXACTO ===== */
 function excel(){
-let l=JSON.parse(localStorage.ventas||"[]");
-if(!l.length)return alert("Sin datos");
+let l = JSON.parse(localStorage.ventas || "[]");
+if(!l.length) return alert("Sin datos");
 
 const headers=[
 "NUM. CELULAR","IMEI","ICCID","Renuevate/ Kit/ Chip/Porta",
@@ -312,13 +245,22 @@ const headers=[
 ];
 
 let data=[headers];
+
 for(let i=0;i<300;i++){
 const v=l[i]||{};
-data.push([v.cel||"",v.imei||"",v.icc||"",v.tipo||"",v.tiendaNum||"",
-v.cadena||"",v.tienda||"",v.promotor||"",v.fecha||"",v.marca||"",v.modelo||""]);
+data.push([
+v.cel||"",v.imei||"",v.icc||"",v.tipo||"",
+v.tiendaNum||"",v.cadena||"",v.tienda||"",
+v.promotor||"",v.fecha||"",v.marca||"",v.modelo||""
+]);
 }
 
 const ws=XLSX.utils.aoa_to_sheet(data);
+ws["!cols"]=[
+{wch:14},{wch:16},{wch:22},{wch:24},{wch:20},
+{wch:26},{wch:30},{wch:28},{wch:18},{wch:16},{wch:18}
+];
+
 const wb=XLSX.utils.book_new();
 XLSX.utils.book_append_sheet(wb,ws,"FORMATO DIARIO");
 XLSX.writeFile(wb,"FORMATO_DIARIO_COMISIONES.xlsx");
