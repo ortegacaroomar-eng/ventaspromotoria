@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistema Ventas Telcel - Omar Ortega</title>
+<title>Sistema Ventas</title>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -12,40 +12,33 @@
 
 <style>
 body{
-margin:0;
-font-family:'Segoe UI',sans-serif;
+margin:0;font-family:'Segoe UI',sans-serif;color:white;
 background:linear-gradient(135deg,#001d3d,#003566,#000814);
-color:white;
-animation:fadeIn .6s ease;
+animation:fade .5s ease;
 }
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
 
 .hidden{display:none}
-
 .app{max-width:1000px;margin:auto;padding:20px}
 
 .card{
 background:rgba(255,255,255,.08);
 backdrop-filter:blur(10px);
-border-radius:15px;
-padding:20px;
-margin-bottom:15px;
-border:1px solid rgba(255,255,255,0.1);
-animation:slideUp .4s ease;
+border-radius:15px;padding:20px;margin-bottom:15px;
+border:1px solid rgba(255,255,255,.1);
+animation:up .4s ease;
 }
-@keyframes slideUp{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}
+@keyframes up{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}
 
 input,select{
 width:100%;padding:10px;margin-bottom:10px;
 border-radius:8px;border:none;
-background:rgba(255,255,255,.12);
-color:white;
+background:rgba(255,255,255,.12);color:white;
 }
 
 .btn{
-width:100%;padding:12px;border:none;
-border-radius:10px;font-weight:bold;
-cursor:pointer;margin-bottom:10px;
+width:100%;padding:12px;border:none;border-radius:10px;
+font-weight:bold;cursor:pointer;margin-bottom:10px;
 transition:.2s;
 }
 .btn:hover{transform:scale(1.03)}
@@ -59,16 +52,11 @@ gap:10px;margin-bottom:15px;flex-wrap:wrap;
 }
 
 .gps{
-flex:1;
-background:#000;
-border:1px solid #00b4d8;
-padding:10px;border-radius:10px;
-color:#00b4d8;font-size:12px;
+flex:1;background:#000;border:1px solid #00b4d8;
+padding:10px;border-radius:10px;color:#00b4d8;font-size:12px;
 }
 
-.quick-links{
-display:flex;gap:10px;flex-wrap:wrap;
-}
+.quick{display:flex;gap:10px;flex-wrap:wrap}
 
 table{
 width:100%;border-collapse:collapse;
@@ -78,21 +66,16 @@ th{background:#001d3d;color:white;padding:8px}
 td{padding:6px;border:1px solid #ddd}
 
 .login{
-max-width:350px;margin:60px auto;
-background:white;color:black;
-padding:30px;border-radius:20px;
-box-shadow:0 10px 25px rgba(0,0,0,.4);
-animation:pop .4s ease;
+max-width:350px;margin:60px auto;background:white;color:black;
+padding:30px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.4);
 }
-@keyframes pop{from{transform:scale(.9);opacity:0}to{transform:none;opacity:1}}
 </style>
 </head>
 <body>
 
 <!-- LOGIN -->
 <div id="loginBox" class="login">
-<h2 style="text-align:center;color:#003566">Acceso Promotores</h2>
-
+<h2 style="text-align:center;color:#003566">Acceso</h2>
 <input id="u" type="email" placeholder="Correo">
 <input id="p" type="password" placeholder="Contraseña">
 
@@ -109,42 +92,39 @@ animation:pop .4s ease;
 <div id="appBox" class="app hidden">
 
 <div class="topbar">
-
 <div class="gps">
 <i class="fa-solid fa-location-dot"></i>
-<b>Ubicación:</b>
-<span id="gpsTxt">Detectando...</span>
+<b>Ubicación:</b> <span id="gpsTxt">Detectando...</span>
 </div>
 
-<div class="quick-links">
+<div class="quick">
 <a href="https://app.payjoy.com/accounts/login?afterLogin=https://app.payjoy.com/merchant3?merchantId=199557" target="_blank">
-<button class="btn btn-secondary" style="width:auto">
-<i class="fa-solid fa-mobile-screen"></i> PayJoy
-</button>
+<button class="btn btn-secondary" style="width:auto">PayJoy</button>
 </a>
 
 <a href="https://registro.telcel.com/vinculatulinea/#/" target="_blank">
-<button class="btn btn-primary" style="width:auto">
-<i class="fa-solid fa-sim-card"></i> Vincular Línea
-</button>
+<button class="btn btn-primary" style="width:auto">Vincular Línea</button>
 </a>
 
-<button class="btn btn-danger" style="width:auto" onclick="logout()">
-<i class="fa-solid fa-power-off"></i>
-</button>
+<button class="btn btn-danger" style="width:auto" onclick="logout()">⏻</button>
 </div>
-
 </div>
 
 <form id="fReg">
 
 <div class="card">
-<label>Tipo Venta</label>
-<select id="tipo">
-<option>KIT</option>
-<option>CHIP</option>
-<option>PORTA</option>
-<option>RENUEVATE</option>
+<label>Tipo de Venta</label>
+<select id="tipo" onchange="cargarOpciones()" required>
+<option value="">Selecciona tipo...</option>
+<option value="KIT">KIT</option>
+<option value="CHIP">CHIP</option>
+<option value="PORTA">PORTABILIDAD</option>
+<option value="RENUEVA">RENUEVA</option>
+</select>
+
+<label>Detalle</label>
+<select id="detalle" required>
+<option value="">Primero elige tipo...</option>
 </select>
 
 <label>Número Celular</label>
@@ -182,9 +162,9 @@ animation:pop .4s ease;
 <table>
 <thead>
 <tr>
-<th>Celular</th><th>IMEI</th><th>ICCID</th>
-<th>Tipo</th><th>Modelo</th><th>Tienda</th>
-<th>Promotor</th><th>Acción</th>
+<th>Cel</th><th>Tipo</th><th>Detalle</th>
+<th>ICCID</th><th>IMEI</th><th>Modelo</th>
+<th>Tienda</th><th>Promotor</th><th></th>
 </tr>
 </thead>
 <tbody id="tabla"></tbody>
@@ -224,7 +204,7 @@ auth.createUserWithEmailAndPassword(u.value,p.value)
 
 function logout(){auth.signOut()}
 
-/* GPS con dirección */
+/* GPS */
 function gps(){
 if(!navigator.geolocation) return;
 navigator.geolocation.getCurrentPosition(async pos=>{
@@ -235,14 +215,38 @@ gpsTxt.innerText=d.display_name;
 });
 }
 
-/* Guardar ventas */
+/* Menú dinámico */
+function cargarOpciones(){
+const tipo = document.getElementById("tipo").value;
+const detalle = document.getElementById("detalle");
+
+const opciones = {
+KIT:["Kit Básico","Kit Promo","Kit Gama Media","Kit Gama Alta"],
+CHIP:["Chip Nuevo","Reposición Robo","Reposición Daño","Chip Express"],
+PORTA:["Porta Prepago","Porta Pospago","Porta + Equipo","Porta Express"],
+RENUEVA:["Renovación 12m","Renovación 18m","Renovación 24m","Renueva + Equipo"]
+};
+
+detalle.innerHTML='<option value="">Selecciona detalle...</option>';
+
+if(opciones[tipo]){
+opciones[tipo].forEach(op=>{
+let o=document.createElement("option");
+o.value=op;o.textContent=op;
+detalle.appendChild(o);
+});
+}
+}
+
+/* Guardar */
 fReg.onsubmit=e=>{
 e.preventDefault();
 const v={
 id:Date.now(),
-cel:tel.value,imei:imei.value,icc:icc.value,
-tipo:tipo.value,modelo:modelo.value,
-tienda:tiendaNombre.value,promotor:promotor.value
+cel:tel.value,tipo:tipo.value,detalle:detalle.value,
+icc:icc.value,imei:imei.value,
+modelo:modelo.value,tienda:tiendaNombre.value,
+promotor:promotor.value
 };
 let l=JSON.parse(localStorage.ventas||"[]");
 l.unshift(v);
@@ -255,8 +259,8 @@ function render(){
 let l=JSON.parse(localStorage.ventas||"[]");
 tabla.innerHTML=l.map(v=>`
 <tr>
-<td>${v.cel}</td><td>${v.imei||''}</td><td>${v.icc}</td>
-<td>${v.tipo}</td><td>${v.modelo||''}</td>
+<td>${v.cel}</td><td>${v.tipo}</td><td>${v.detalle}</td>
+<td>${v.icc}</td><td>${v.imei||''}</td><td>${v.modelo||''}</td>
 <td>${v.tienda}</td><td>${v.promotor}</td>
 <td><button onclick="del(${v.id})">🗑️</button></td>
 </tr>`).join('');
@@ -275,7 +279,7 @@ if(!l.length)return alert("Sin datos");
 const ws=XLSX.utils.json_to_sheet(l);
 const wb=XLSX.utils.book_new();
 XLSX.utils.book_append_sheet(wb,ws,"Ventas");
-XLSX.writeFile(wb,"Ventas_Omar_Ortega.xlsx");
+XLSX.writeFile(wb,"Ventas.xlsx");
 }
 </script>
 
