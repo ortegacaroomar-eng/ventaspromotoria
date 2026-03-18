@@ -11,84 +11,49 @@
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 
 <style>
-body{
-margin:0;font-family:'Segoe UI',sans-serif;color:white;
-background:linear-gradient(135deg,#001d3d,#003566,#000814);
-animation:fade .5s ease;
-}
+body{margin:0;font-family:'Segoe UI',sans-serif;color:white;
+background:linear-gradient(135deg,#001d3d,#003566,#000814);animation:fade .5s ease;}
 @keyframes fade{from{opacity:0}to{opacity:1}}
-
 .hidden{display:none}
 .app{max-width:1000px;margin:auto;padding:20px}
-
-.card{
-background:rgba(255,255,255,.08);
-backdrop-filter:blur(10px);
+.card{background:rgba(255,255,255,.08);backdrop-filter:blur(10px);
 border-radius:15px;padding:20px;margin-bottom:15px;
-border:1px solid rgba(255,255,255,.1);
-animation:up .4s ease;
-}
+border:1px solid rgba(255,255,255,.1);animation:up .4s ease;}
 @keyframes up{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}
-
-input,select{
-width:100%;padding:10px;margin-bottom:10px;
-border-radius:8px;border:none;
-background:rgba(255,255,255,.12);color:white;
-}
-
-.btn{
-width:100%;padding:12px;border:none;border-radius:10px;
-font-weight:bold;cursor:pointer;margin-bottom:10px;
-transition:.2s;
-}
+input,select{width:100%;padding:10px;margin-bottom:10px;border-radius:8px;border:none;
+background:rgba(255,255,255,.12);color:white;}
+.btn{width:100%;padding:12px;border:none;border-radius:10px;font-weight:bold;
+cursor:pointer;margin-bottom:10px;transition:.2s;}
 .btn:hover{transform:scale(1.03)}
 .btn-primary{background:#ffc300;color:#001d3d}
 .btn-secondary{background:#00b4d8;color:white}
 .btn-danger{background:#ff4d4d;color:white}
-
-.topbar{
-display:flex;justify-content:space-between;align-items:center;
-gap:10px;margin-bottom:15px;flex-wrap:wrap;
-}
-
-.gps{
-flex:1;background:#000;border:1px solid #00b4d8;
-padding:10px;border-radius:10px;color:#00b4d8;font-size:12px;
-}
-
+.topbar{display:flex;justify-content:space-between;align-items:center;
+gap:10px;margin-bottom:15px;flex-wrap:wrap;}
+.gps{flex:1;background:#000;border:1px solid #00b4d8;padding:10px;
+border-radius:10px;color:#00b4d8;font-size:12px;}
 .quick{display:flex;gap:10px;flex-wrap:wrap}
-
-table{
-width:100%;border-collapse:collapse;
-background:white;color:black;font-size:12px;
-}
+table{width:100%;border-collapse:collapse;background:white;color:black;font-size:12px;}
 th{background:#001d3d;color:white;padding:8px}
 td{padding:6px;border:1px solid #ddd}
-
-.login{
-max-width:350px;margin:60px auto;background:white;color:black;
-padding:30px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.4);
-}
+.login{max-width:350px;margin:60px auto;background:white;color:black;
+padding:30px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.4);}
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
 <div id="loginBox" class="login">
 <h2 style="text-align:center;color:#003566">Acceso</h2>
 <input id="u" type="email" placeholder="Correo">
 <input id="p" type="password" placeholder="Contraseña">
-
 <button class="btn btn-primary" onclick="login()">
 <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
 </button>
-
 <button class="btn btn-secondary" onclick="registrar()">
 <i class="fa-solid fa-user-plus"></i> Crear Cuenta Nueva
 </button>
 </div>
 
-<!-- APP -->
 <div id="appBox" class="app hidden">
 
 <div class="topbar">
@@ -101,53 +66,36 @@ padding:30px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.4);
 <a href="https://app.payjoy.com/accounts/login?afterLogin=https://app.payjoy.com/merchant3?merchantId=199557" target="_blank">
 <button class="btn btn-secondary" style="width:auto">PayJoy</button>
 </a>
-
 <a href="https://registro.telcel.com/vinculatulinea/#/" target="_blank">
 <button class="btn btn-primary" style="width:auto">Vincular Línea</button>
 </a>
-
 <button class="btn btn-danger" style="width:auto" onclick="logout()">⏻</button>
 </div>
 </div>
 
 <form id="fReg">
-
 <div class="card">
 <label>Tipo de Venta</label>
 <select id="tipo" required>
 <option value="">Selecciona tipo...</option>
-<option>KIT</option>
-<option>CHIP</option>
-<option>PORTABILIDAD</option>
-<option>RENUEVA</option>
+<option>KIT</option><option>CHIP</option>
+<option>PORTABILIDAD</option><option>RENUEVA</option>
 </select>
-
-<label>Número Celular</label>
-<input id="tel" required>
-
-<label>ICCID</label>
-<input id="icc" required>
-
-<label>IMEI</label>
-<input id="imei">
+<label>Número Celular</label><input id="tel" required>
+<label>ICCID</label><input id="icc" required>
+<label>IMEI</label><input id="imei">
 </div>
 
 <div class="card">
-<label>Marca</label>
-<input id="marca">
-<label>Modelo</label>
-<input id="modelo">
+<label>Marca</label><input id="marca">
+<label>Modelo</label><input id="modelo">
 </div>
 
 <div class="card">
-<label># Tienda</label>
-<input id="tienda" required>
-<label>Cadena</label>
-<input id="cadena" required>
-<label>Nombre Tienda</label>
-<input id="tiendaNombre" required>
-<label>Promotor</label>
-<input id="promotor" required>
+<label># Tienda</label><input id="tienda" required>
+<label>Cadena</label><input id="cadena" required>
+<label>Nombre Tienda</label><input id="tiendaNombre" required>
+<label>Promotor</label><input id="promotor" required>
 </div>
 
 <button class="btn btn-primary">Guardar Venta</button>
@@ -190,16 +138,13 @@ function login(){
 auth.signInWithEmailAndPassword(u.value,p.value)
 .catch(()=>alert("Datos incorrectos"));
 }
-
 function registrar(){
 auth.createUserWithEmailAndPassword(u.value,p.value)
 .then(()=>alert("Cuenta creada"))
 .catch(e=>alert(e.message));
 }
-
 function logout(){auth.signOut()}
 
-/* GPS */
 function gps(){
 if(!navigator.geolocation) return;
 navigator.geolocation.getCurrentPosition(async pos=>{
@@ -210,15 +155,21 @@ gpsTxt.innerText=d.display_name;
 });
 }
 
-/* Guardar */
 fReg.onsubmit=e=>{
 e.preventDefault();
 const v={
 id:Date.now(),
-cel:tel.value,tipo:tipo.value,
-icc:icc.value,imei:imei.value,
-modelo:modelo.value,tienda:tiendaNombre.value,
-promotor:promotor.value
+cel:tel.value,
+tipo:tipo.value,
+icc:icc.value,
+imei:imei.value,
+marca:marca.value,
+modelo:modelo.value,
+tiendaNum:tienda.value,
+cadena:cadena.value,
+tienda:tiendaNombre.value,
+promotor:promotor.value,
+fecha:new Date().toLocaleDateString()
 };
 let l=JSON.parse(localStorage.ventas||"[]");
 l.unshift(v);
@@ -247,12 +198,31 @@ render();
 }
 
 function excel(){
-let l=JSON.parse(localStorage.ventas||"[]");
-if(!l.length)return alert("Sin datos");
-const ws=XLSX.utils.json_to_sheet(l);
+let l = JSON.parse(localStorage.ventas || "[]");
+if(!l.length) return alert("Sin datos");
+
+const headers = [
+"NUM. CELULAR","IMEI","ICCID","Renuevate/ Kit/ Chip/ Porta",
+"#TIENDA / Determinante","SOLO NOMBRE DE LA CADENA",
+"SOLO NOMBRE DE TIENDA SIN CADENA","NOMBRE COMPLETO PROMOTOR",
+"FECHA DE ACTIVACION","MARCA","MODELO"
+];
+
+let data=[headers];
+
+for(let i=0;i<300;i++){
+const v=l[i]||{};
+data.push([
+v.cel||"",v.imei||"",v.icc||"",v.tipo||"",
+v.tiendaNum||"",v.cadena||"",v.tienda||"",
+v.promotor||"",v.fecha||"",v.marca||"",v.modelo||""
+]);
+}
+
+const ws=XLSX.utils.aoa_to_sheet(data);
 const wb=XLSX.utils.book_new();
-XLSX.utils.book_append_sheet(wb,ws,"Ventas");
-XLSX.writeFile(wb,"Ventas.xlsx");
+XLSX.utils.book_append_sheet(wb,ws,"Formato Diario");
+XLSX.writeFile(wb,"FORMATO_DIARIO_COMISIONES.xlsx");
 }
 </script>
 
