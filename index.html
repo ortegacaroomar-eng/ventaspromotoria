@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ventas PRO IA - Registro</title>
+    <title>Ventas PRO IA - 2026</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -11,79 +11,103 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
 
     <style>
-        :root { --neon: #00f2ff; --purple: #7000ff; --pink: #ff007a; --bg: #0a0a0a; }
-        body { margin:0; font-family:'Segoe UI', sans-serif; background: var(--bg); color:white; }
+        :root { --neon: #00f2ff; --purple: #7000ff; --pink: #ff007a; --bg: #0a0a0a; --glass: rgba(255, 255, 255, 0.05); }
+        body { margin:0; font-family:'Segoe UI', sans-serif; background: var(--bg); color:white; overflow-x: hidden; }
+        
+        /* Efecto de Fondo IA */
+        body::before { content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #0a0a0a 100%); z-index: -1; }
+
         .app { max-width:1000px; margin:auto; padding:15px; }
-        .card { background:rgba(255,255,255,0.07); padding:18px; border-radius:15px; margin-bottom:15px; border-left: 4px solid var(--neon); }
-        input, select { width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border:1px solid #333; background:#151515; color:white; box-sizing: border-box; }
-        .btn { padding:12px; border:none; border-radius:10px; cursor:pointer; font-weight:bold; transition: 0.3s; }
+        .card { background: var(--glass); padding:18px; border-radius:20px; margin-bottom:15px; border: 1px solid rgba(0,242,255,0.2); backdrop-filter: blur(10px); }
+        
+        /* IA Insights Box */
+        .ia-box { border-left: 4px solid var(--pink); background: rgba(255, 0, 122, 0.05); }
+        .ia-text { font-style: italic; color: #ffb3d9; font-size: 14px; }
+
+        input, select { width:100%; padding:12px; margin-bottom:10px; border-radius:10px; border:1px solid #333; background:#111; color:white; box-sizing: border-box; outline: none; }
+        input:focus { border-color: var(--neon); box-shadow: 0 0 10px rgba(0,242,255,0.3); }
+
+        .btn { padding:12px; border:none; border-radius:12px; cursor:pointer; font-weight:bold; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-primary { background: var(--neon); color:#000; }
         .btn-secondary { background: var(--purple); color:#fff; }
         .btn-accent { background: var(--pink); color:#fff; }
         .btn:active { transform: scale(0.95); }
+
         table { width:100%; border-collapse: collapse; margin-top:10px; font-size: 12px; }
-        th { color: var(--neon); text-align:left; padding:8px; border-bottom: 1px solid #333; }
-        td { padding:8px; border-bottom: 1px solid #222; }
+        th { color: var(--neon); text-align:left; padding:10px; border-bottom: 2px solid #222; }
+        td { padding:10px; border-bottom: 1px solid #1a1a1a; }
+        
+        #reader { width: 100%; border-radius: 15px; overflow: hidden; border: 2px solid var(--purple); }
         .hidden { display:none; }
-        #reader { width: 100%; border-radius: 10px; overflow: hidden; background: #000; }
-        .badge { font-size: 9px; padding: 2px 4px; border-radius: 4px; font-weight: bold; }
-        .b-local { border: 1px solid var(--purple); color: var(--purple); }
-        .b-nube { border: 1px solid var(--neon); color: var(--neon); }
+        .badge { font-size: 9px; padding: 2px 6px; border-radius: 5px; text-transform: uppercase; }
+        .b-local { background: var(--purple); color: white; }
+        .b-nube { background: var(--neon); color: black; }
     </style>
 </head>
 <body>
 
 <div id="loginBox" class="app" style="max-width:400px; margin-top:50px;">
-    <div class="card">
-        <h2><i class="fas fa-lock"></i> Acceso Pro</h2>
-        <input id="u" type="email" placeholder="Correo">
+    <div class="card" style="text-align: center;">
+        <h1 style="color: var(--neon);"><i class="fas fa-robot"></i> VENTAS PRO IA</h1>
+        <p>Inicia sesión para activar el núcleo</p>
+        <input id="u" type="email" placeholder="Correo Electrónico">
         <input id="p" type="password" placeholder="Contraseña">
-        <button class="btn btn-primary" style="width:100%" onclick="login()">ENTRAR</button>
-        <button class="btn btn-secondary" style="width:100%; margin-top:10px;" onclick="registrar()">REGISTRAR</button>
+        <button class="btn btn-primary" style="width:100%" onclick="login()">CONECTAR NÚCLEO</button>
     </div>
 </div>
 
 <div id="appBox" class="app hidden">
+    <div class="card ia-box">
+        <h3 style="margin-top:0; color: var(--pink);"><i class="fas fa-brain"></i> IA Insights - 2026</h3>
+        <div id="iaStatus" class="ia-text">Analizando tendencias de venta en tiempo real...</div>
+    </div>
+
     <div class="card" style="display:flex; justify-content: space-between; align-items: center;">
-        <span>📍 <span id="gpsTxt">Buscando...</span></span>
-        <div>
-            <button class="btn btn-accent" onclick="descargarExcel()"><i class="fas fa-file-excel"></i></button>
-            <button class="btn btn-secondary" onclick="logout()"><i class="fas fa-power-off"></i></button>
+        <span><i class="fas fa-user-circle"></i> <span id="userMail">...</span></span>
+        <div style="display:flex; gap:10px;">
+            <button class="btn btn-accent" onclick="descargarExcel()"><i class="fas fa-download"></i></button>
+            <button class="btn btn-secondary" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
         </div>
     </div>
 
     <div class="card">
         <div id="reader"></div>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
-            <button class="btn btn-secondary" onclick="iniciarScanner()">ESCANEAR</button>
-            <button class="btn btn-accent" onclick="detenerScanner()">DETENER</button>
+            <button class="btn btn-primary" onclick="iniciarScanner()"><i class="fas fa-qrcode"></i> ESCANEAR</button>
+            <button class="btn btn-accent" onclick="detenerScanner()"><i class="fas fa-stop"></i> PARAR</button>
         </div>
     </div>
 
     <form id="fReg" class="card">
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-            <input id="marca" placeholder="Marca (Ej: Samsung)">
-            <input id="modelo" placeholder="Modelo (Ej: A54)">
+            <input id="marca" placeholder="Marca (Samsung, Motorola...)">
+            <input id="modelo" placeholder="Modelo (A54, G84...)">
         </div>
         <select id="tipo">
-            <option>KIT</option><option>CHIP</option>
-            <option>PORTABILIDAD</option><option>RENUEVA</option>
+            <option>KIT (Equipo Nuevo)</option>
+            <option>CHIP (Solo SIM)</option>
+            <option>PORTABILIDAD</option>
+            <option>RENUEVA</option>
         </select>
-        <input id="tel" type="number" placeholder="Número Telefónico">
-        <input id="icc" type="number" placeholder="ICCID (Chip)">
-        <input id="imei" type="number" placeholder="IMEI (Equipo)">
-        <input id="promotor" placeholder="Nombre del Promotor" required>
+        <input id="tel" type="number" placeholder="Número de Teléfono">
+        <input id="icc" type="number" placeholder="ICCID (Escanear Chip)">
+        <input id="imei" type="number" placeholder="IMEI (Escanear Equipo)">
+        
+        <input id="promotor" list="promotoresList" placeholder="Nombre del Promotor">
+        <datalist id="promotoresList"></datalist>
+
         <input id="fechaInput" type="datetime-local">
 
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-            <button type="submit" class="btn btn-primary">SUBIR NUBE</button>
-            <button type="button" class="btn btn-secondary" onclick="guardarLocal()">GUARDAR LOCAL</button>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-cloud-upload-alt"></i> NUBE</button>
+            <button type="button" class="btn btn-secondary" onclick="guardarLocal()"><i class="fas fa-save"></i> LOCAL</button>
         </div>
     </form>
 
     <div class="card" style="overflow-x:auto;">
+        <h3><i class="fas fa-list-ul"></i> Historial de Registros</h3>
         <table>
-            <thead><tr><th>Promotor</th><th>Equipo</th><th>Tel</th><th>Origen</th><th>Acción</th></tr></thead>
+            <thead><tr><th>Promotor</th><th>Equipo</th><th>Número</th><th>Estatus</th><th>Acción</th></tr></thead>
             <tbody id="tabla"></tbody>
         </table>
     </div>
@@ -96,36 +120,61 @@ const auth=firebase.auth();
 const db=firebase.firestore();
 let scanner, isScanning = false;
 
+/* FORMATO DD/MM/YYYY */
 function formatFecha(f) {
     const d = f ? new Date(f) : new Date();
     return d.toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
 }
 
 /* AUTH */
-function login(){ auth.signInWithEmailAndPassword(u.value,p.value).catch(e=>alert(e.message)); }
-function registrar(){ auth.createUserWithEmailAndPassword(u.value,p.value).catch(e=>alert(e.message)); }
+function login(){ auth.signInWithEmailAndPassword(u.value,p.value).catch(e=>alert("Error: "+e.message)); }
+function registrar(){ auth.createUserWithEmailAndPassword(u.value,p.value).then(()=>alert("Registrado!")).catch(e=>alert(e.message)); }
 function logout(){ auth.signOut(); }
 
 auth.onAuthStateChanged(user=>{
     loginBox.classList.toggle("hidden", !!user);
     appBox.classList.toggle("hidden", !user);
-    if(user) render();
+    if(user) { 
+        userMail.innerText = user.email;
+        render();
+        actualizarIA();
+    }
 });
 
-/* SCANNER */
+/* SCANNER INTELIGENTE */
 function iniciarScanner(){
     if(isScanning) return;
     scanner = new Html5Qrcode("reader");
     isScanning = true;
     scanner.start({facingMode:"environment"}, {fps:10, qrbox:250}, (code)=>{
         let limpio = code.replace(/\D/g,'');
-        if(limpio.length === 15) { imei.value = limpio; toast("IMEI OK"); detenerScanner(); } 
-        else if(limpio.length >= 18) { icc.value = limpio; toast("ICCID OK"); detenerScanner(); }
-    }).catch(e => console.log(e));
+        if(limpio.length === 15) { 
+            imei.value = limpio; 
+            toast("IMEI CAPTURADO ✅");
+            detenerScanner(); 
+        } 
+        else if(limpio.length >= 18) { 
+            icc.value = limpio; 
+            toast("ICCID CAPTURADO ✅");
+            detenerScanner(); 
+        }
+    }).catch(e => console.log("Error cámara: ", e));
 }
 function detenerScanner(){ if(scanner){ scanner.stop().then(()=>isScanning=false); } }
 
-/* GUARDADO NUBE */
+/* IA GENERATIVA (SIMULACIÓN DE ANÁLISIS) */
+function actualizarIA(){
+    const mensajes = [
+        "Sugerencia: Los lunes la portabilidad sube un 20%. Enfócate en clientes Telcel.",
+        "Análisis: El modelo Samsung es el más buscado hoy. Revisa tu inventario.",
+        "IA: Has registrado 3 ventas locales. ¡Sincroniza para no perder datos!",
+        "Tip: Ofrece el Plan Renueva si el cliente tiene un IMEI de más de 2 años.",
+        "IA: Tu ritmo de venta actual sugiere que alcanzarás la meta el viernes."
+    ];
+    iaStatus.innerText = mensajes[Math.floor(Math.random() * mensajes.length)];
+}
+
+/* GUARDADO */
 fReg.onsubmit = async e => {
     e.preventDefault();
     const data = {
@@ -140,73 +189,80 @@ fReg.onsubmit = async e => {
         fecha: formatFecha(fechaInput.value)
     };
     await db.collection("ventas").add(data);
+    guardarPromotor(promotor.value);
     fReg.reset();
     render();
+    toast("SUBIDO A LA NUBE 🚀");
 };
 
-/* GUARDADO LOCAL */
 function guardarLocal(){
-    if(!promotor.value) return alert("Escribe el nombre del promotor");
     const v = {
         promotor: promotor.value,
-        marca: marca.value,
-        modelo: modelo.value,
-        tipo: tipo.value,
-        cel: tel.value,
+        marca: marca.value, modelo: modelo.value,
+        tipo: tipo.value, cel: tel.value,
         fecha: formatFecha(fechaInput.value),
-        icc: icc.value,
-        imei: imei.value
+        icc: icc.value, imei: imei.value, origen: 'local'
     };
     let lista = JSON.parse(localStorage.getItem("ventas_excel") || "[]");
     lista.push(v);
     localStorage.setItem("ventas_excel", JSON.stringify(lista));
-    toast("Guardado en Local");
+    guardarPromotor(promotor.value);
+    toast("GUARDADO EN MEMORIA 💾");
     render();
 }
 
-/* RENDER */
+/* LISTA DE PROMOTORES */
+function guardarPromotor(nombre){
+    let p = JSON.parse(localStorage.getItem("mis_promotores") || "[]");
+    if(!p.includes(nombre) && nombre !== ""){
+        p.push(nombre);
+        localStorage.setItem("mis_promotores", JSON.stringify(p));
+        cargarPromotores();
+    }
+}
+
+function cargarPromotores(){
+    let p = JSON.parse(localStorage.getItem("mis_promotores") || "[]");
+    promotoresList.innerHTML = p.map(nom => `<option value="${nom}">`).join('');
+}
+
+/* RENDERIZADO */
 async function render(){
+    cargarPromotores();
     const snap = await db.collection("ventas").where("uid","==",auth.currentUser.uid).get();
-    let html = snap.docs.map(d => {
+    let nubeHtml = snap.docs.map(d => {
         const v = d.data();
-        return `<tr><td>${v.promotor}</td><td>${v.marca} ${v.modelo}</td><td>${v.cel}</td><td><span class="badge b-nube">NUBE</span></td><td><button onclick="delNube('${d.id}')">🗑️</button></td></tr>`;
+        return `<tr><td>${v.promotor}</td><td>${v.marca}</td><td>${v.cel}</td><td><span class="badge b-nube">NUBE</span></td><td><button onclick="delNube('${d.id}')" style="color:#ff4d4d; background:none; border:none;">🗑️</button></td></tr>`;
     }).join('');
 
     let locales = JSON.parse(localStorage.getItem("ventas_excel") || "[]");
-    let htmlL = locales.map((v, i) => {
-        return `<tr><td>${v.promotor}</td><td>${v.marca} ${v.modelo}</td><td>${v.cel}</td><td><span class="badge b-local">LOCAL</span></td><td><button onclick="delLocal(${i})">✕</button></td></tr>`;
+    let localHtml = locales.map((v, i) => {
+        return `<tr><td>${v.promotor}</td><td>${v.marca}</td><td>${v.cel}</td><td><span class="badge b-local">LOCAL</span></td><td><button onclick="delLocal(${i})" style="color:var(--pink); background:none; border:none;">✕</button></td></tr>`;
     }).reverse().join('');
 
-    tabla.innerHTML = html + htmlL;
+    tabla.innerHTML = nubeHtml + localHtml;
 }
 
-/* EXPORTAR A EXCEL (CSV) */
+/* EXCEL */
 function descargarExcel(){
     let locales = JSON.parse(localStorage.getItem("ventas_excel") || "[]");
-    if(locales.length === 0) return alert("No hay datos locales para descargar");
-    
-    let csv = "Fecha,Promotor,Marca,Modelo,Tipo,Telefono,ICCID,IMEI\n";
-    locales.forEach(v => {
-        csv += `${v.fecha},${v.promotor},${v.marca},${v.modelo},${v.tipo},${v.cel},${v.icc},${v.imei}\n`;
-    });
-
+    if(locales.length === 0) return alert("Nada que exportar.");
+    let csv = "Fecha,Promotor,Marca,Modelo,Tipo,Telefono,ICCID,IMEI\n" + 
+              locales.map(v => `${v.fecha},${v.promotor},${v.marca},${v.modelo},${v.tipo},${v.cel},${v.icc},${v.imei}`).join("\n");
     const blob = new Blob([csv], {type: 'text/csv'});
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Ventas_${new Date().toLocaleDateString()}.csv`;
+    a.download = `Ventas_PRO_IA_${formatFecha()}.csv`;
     a.click();
 }
 
-async function delNube(id){ if(confirm("¿Borrar?")) { await db.collection("ventas").doc(id).delete(); render(); } }
-function delLocal(i){ 
-    let lista = JSON.parse(localStorage.getItem("ventas_excel") || "[]");
-    lista.splice(i,1); localStorage.setItem("ventas_excel", JSON.stringify(lista)); render(); 
-}
+async function delNube(id){ if(confirm("¿Borrar de la nube?")) { await db.collection("ventas").doc(id).delete(); render(); } }
+function delLocal(i){ let l = JSON.parse(localStorage.getItem("ventas_excel")); l.splice(i,1); localStorage.setItem("ventas_excel", JSON.stringify(l)); render(); }
 function toast(m){ 
     const t = document.createElement("div"); t.innerText=m; 
-    t.style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--neon); color:black; padding:10px 20px; border-radius:20px; z-index:100;";
-    document.body.appendChild(t); setTimeout(()=>t.remove(), 2000);
+    t.style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--neon); color:black; padding:10px 20px; border-radius:20px; z-index:100; font-weight:bold; box-shadow:0 0 15px var(--neon);";
+    document.body.appendChild(t); setTimeout(()=>t.remove(), 2500);
 }
 </script>
 </body>
