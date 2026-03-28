@@ -173,7 +173,17 @@ tabla.innerHTML=snap.docs.map(d=>{
 let v=d.data();
 tipos[v.tipo]++;
 data.push(v);
-return `<tr><td>${v.cel}</td><td>${v.tipo}</td><td>${v.icc}</td><td>${v.imei||""}</td><td>${v.fecha||""}</td><td><button onclick="del('${d.id}')">X</button></td></tr>`;
+return `<tr>
+<td>${v.cel}</td>
+<td>${v.tipo}</td>
+<td>${v.icc}</td>
+<td>${v.imei||""}</td>
+<td>${v.fecha||""}</td>
+<td>
+<button onclick="editar('${d.id}','${v.cel}','${v.icc}','${v.imei||""}','${v.fecha||""}')">✏️</button>
+<button onclick="del('${d.id}')">🗑️</button>
+</td>
+</tr>`;
 }).join('');
 
 total.innerText=data.length;
@@ -187,7 +197,51 @@ if(chart) chart.destroy();
 chart=new Chart(grafica,{type:'bar',data:{labels:Object.keys(tipos),datasets:[{data:Object.values(tipos)}]}});
 }
 
-async function del(id){await db.collection("ventas").doc(id).delete();render();}
+async function del(id){
+await db.collection("ventas").doc(id).delete();
+render();
+}
+
+/* EDITAR VENTA */
+function editar(id,cel,iccVal,imeiVal,fechaVal){
+tel.value=cel;
+icc.value=iccVal;
+imei.value=imeiVal;
+fecha.value=fechaVal;
+
+// cambiar botón a actualizar
+fReg.onsubmit=async e=>{
+e.preventDefault();
+await db.collection("ventas").doc(id).update({
+cel:tel.value,
+icc:icc.value,
+imei:imei.value,
+fecha:fecha.value || new Date().toLocaleDateString()
+});
+
+fReg.reset();
+restaurarFormulario();
+render();
+};
+}
+
+function restaurarFormulario(){
+fReg.onsubmit=async e=>{
+e.preventDefault();
+await db.collection("ventas").add({
+uid:auth.currentUser.uid,
+tipo:tipo.value,
+cel:tel.value,
+icc:icc.value,
+imei:imei.value,
+tienda:tienda.value,
+promotor:promotor.value,
+fecha:fecha.value || new Date().toLocaleDateString(),
+timestamp:Date.now()
+});
+fReg.reset();render();
+};
+}
 
 function buscarTabla(){
 let txt=buscar.value.toLowerCase();
