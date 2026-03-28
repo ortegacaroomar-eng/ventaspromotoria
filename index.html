@@ -3,193 +3,193 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistema Ventas PRO IA - Premium</title>
-
+<title>Ventas PRO IA - 2026</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://unpkg.com/html5-qrcode"></script>
 
 <style>
-body{margin:0;font-family:'Segoe UI';background:#050505;color:white}
-.app{max-width:1100px;margin:auto;padding:20px}
-.card{background:rgba(255,255,255,.05);padding:20px;border-radius:15px;margin-bottom:15px}
-input,select{width:100%;padding:10px;margin-bottom:10px;border-radius:8px;border:none;background:#111;color:white}
-.btn{padding:10px;border:none;border-radius:10px;cursor:pointer}
-.btn-primary{background:#00f2ff;color:#000}
-.btn-secondary{background:#7000ff;color:#fff}
-.btn-accent{background:#ff007a;color:#fff}
-.hidden{display:none}
-#reader{border:2px solid #00f2ff;border-radius:10px}
+    :root { --neon: #00f2ff; --purple: #7000ff; --pink: #ff007a; --bg: #0a0a0a; }
+    body { margin:0; font-family:'Segoe UI', sans-serif; background: var(--bg); color:white; }
+    .app { max-width:1000px; margin:auto; padding:15px; }
+    .card { background:rgba(255,255,255,0.07); padding:18px; border-radius:15px; margin-bottom:15px; border-left: 4px solid var(--neon); }
+    input, select { width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border:1px solid #333; background:#151515; color:white; box-sizing: border-box; }
+    .btn { padding:12px; border:none; border-radius:10px; cursor:pointer; font-weight:bold; transition: 0.3s; }
+    .btn-primary { background: var(--neon); color:#000; }
+    .btn-secondary { background: var(--purple); color:#fff; }
+    .btn-accent { background: var(--pink); color:#fff; }
+    .btn:active { transform: scale(0.95); }
+    table { width:100%; border-collapse: collapse; margin-top:10px; font-size: 14px; }
+    th { color: var(--neon); text-align:left; padding:10px; border-bottom: 1px solid #333; }
+    td { padding:10px; border-bottom: 1px solid #222; }
+    .hidden { display:none; }
+    #reader { width: 100%; border-radius: 10px; overflow: hidden; }
 </style>
 </head>
 <body>
 
-<div id="loginBox" class="card">
-<h2>Acceso</h2>
-<input id="u" type="email" placeholder="Correo">
-<input id="p" type="password" placeholder="Password">
-<button class="btn btn-primary" onclick="login()">Entrar</button>
-<button class="btn btn-secondary" onclick="registrar()">Registro</button>
+<div id="loginBox" class="app" style="max-width:400px; margin-top:50px;">
+    <div class="card">
+        <h2><i class="fas fa-lock"></i> Acceso Pro</h2>
+        <input id="u" type="email" placeholder="Correo">
+        <input id="p" type="password" placeholder="Contraseña">
+        <button class="btn btn-primary" style="width:100%" onclick="login()">ENTRAR</button>
+        <button class="btn btn-secondary" style="width:100%; margin-top:10px;" onclick="registrar()">REGISTRAR</button>
+    </div>
 </div>
 
 <div id="appBox" class="app hidden">
+    <div class="card" style="display:flex; justify-content: space-between; align-items: center;">
+        <span>📍 <span id="gpsTxt">Buscando...</span></span>
+        <div>
+            <button class="btn btn-secondary" onclick="sumarPayjoy()">PayJoy</button>
+            <button class="btn btn-primary" onclick="sumarRegistro()">Vincular</button>
+            <button class="btn btn-accent" onclick="logout()"><i class="fas fa-power-off"></i></button>
+        </div>
+    </div>
 
-<div class="card">
-📍 <span id="gpsTxt">GPS</span>
-<br><br>
-<button class="btn btn-secondary" onclick="sumarPayjoy()">PayJoy</button>
-<button class="btn btn-primary" onclick="sumarRegistro()">Vincular</button>
-<button class="btn btn-accent" onclick="logout()">Salir</button>
-</div>
+    <div class="card" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align:center;">
+        <div>Total: <b id="total">0</b></div>
+        <div>IA: <b id="prediccion">...</b></div>
+        <div>PayJoy: <b id="totalPayjoy">0</b></div>
+        <div>Reg: <b id="totalRegistro">0</b></div>
+    </div>
 
-<div class="card">
-Total: <span id="total">0</span><br>
-PayJoy: <span id="totalPayjoy">0</span><br>
-Reg: <span id="totalRegistro">0</span><br>
-IA: <span id="prediccion">...</span>
-</div>
+    <div class="card">
+        <h3><i class="fas fa-camera"></i> Escanear IMEI / ICC</h3>
+        <div id="reader"></div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
+            <button class="btn btn-secondary" onclick="iniciarScanner()">ESCANEAR</button>
+            <button class="btn btn-accent" onclick="detenerScanner()">DETENER</button>
+        </div>
+    </div>
 
-<div class="card">
-<canvas id="grafica"></canvas>
-</div>
+    <form id="fReg" class="card">
+        <select id="tipo">
+            <option>KIT</option><option>CHIP</option>
+            <option>PORTABILIDAD</option><option>RENUEVA</option>
+        </select>
+        <input id="tel" placeholder="Número de Teléfono">
+        <input id="icc" placeholder="ICCID (Chip)">
+        <input id="imei" placeholder="IMEI (Equipo)">
+        <input id="promotor" placeholder="Nombre Promotor">
+        <input id="fechaInput" type="datetime-local">
 
-<!-- 🔥 SCANNER -->
-<div class="card">
-<h3>📷 Scanner Inteligente</h3>
-<div id="reader"></div>
-<button class="btn btn-secondary" onclick="iniciarScanner()">Escanear</button>
-<button class="btn btn-accent" onclick="detenerScanner()">Detener</button>
-</div>
+        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px;">
+            <button type="submit" class="btn btn-primary">GUARDAR NUBE</button>
+            <button type="button" class="btn btn-secondary" onclick="guardarLocal()">LOCAL</button>
+        </div>
+    </form>
 
-<form id="fReg" class="card">
-<select id="tipo">
-<option>KIT</option>
-<option>CHIP</option>
-<option>PORTABILIDAD</option>
-<option>RENUEVA</option>
-</select>
-
-<input id="tel" placeholder="Tel">
-<input id="icc" placeholder="ICCID">
-<input id="imei" placeholder="IMEI">
-<input id="promotor" placeholder="Promotor">
-<input id="fecha" type="datetime-local">
-
-<button class="btn btn-primary">Guardar</button>
-</form>
-
-<table>
-<thead><tr><th>Tel</th><th>Tipo</th><th>ICC</th><th>Fecha</th></tr></thead>
-<tbody id="tabla"></tbody>
-</table>
-
+    <div class="card" style="overflow-x:auto;">
+        <table>
+            <thead><tr><th>Tel</th><th>Tipo</th><th>Fecha</th><th>Borrar</th></tr></thead>
+            <tbody id="tabla"></tbody>
+        </table>
+    </div>
 </div>
 
 <script>
-const firebaseConfig={apiKey:"AIzaSyD...",authDomain:"ventastelcel4029.firebaseapp.com",projectId:"ventastelcel4029"};
+const firebaseConfig={apiKey:"AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",authDomain:"ventastelcel4029.firebaseapp.com",projectId:"ventastelcel4029"};
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth();
 const db=firebase.firestore();
-
 let scanner;
 
-/* LOGIN */
-function login(){auth.signInWithEmailAndPassword(u.value,p.value)}
-function registrar(){auth.createUserWithEmailAndPassword(u.value,p.value)}
-function logout(){auth.signOut()}
+// --- FORMATO DD/MM/YYYY ---
+function formatFecha(fechaStr) {
+    const d = fechaStr ? new Date(fechaStr) : new Date();
+    return d.toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'}).replace(/\//g, '/');
+}
+
+/* AUTH */
+function login(){ auth.signInWithEmailAndPassword(u.value,p.value).catch(e=>alert(e.message)); }
+function registrar(){ auth.createUserWithEmailAndPassword(u.value,p.value).catch(e=>alert(e.message)); }
+function logout(){ auth.signOut(); }
 
 auth.onAuthStateChanged(user=>{
-loginBox.classList.toggle("hidden",!!user);
-appBox.classList.toggle("hidden",!user);
-if(user){render();gps();}
+    loginBox.classList.toggle("hidden", !!user);
+    appBox.classList.toggle("hidden", !user);
+    if(user){ render(); gps(); }
 });
 
-/* GPS */
-function gps(){
-navigator.geolocation.getCurrentPosition(p=>gpsTxt.innerText="Activo");
-}
-
-/* SCANNER */
+/* SCANNER CORREGIDO */
 function iniciarScanner(){
-scanner=new Html5Qrcode("reader");
-scanner.start({facingMode:"environment"},{fps:10,qrbox:250},
-(code)=>procesar(code));
+    scanner = new Html5Qrcode("reader");
+    scanner.start({facingMode:"environment"}, {fps:10, qrbox:250}, (code)=>{
+        let limpio = code.replace(/\D/g,'');
+        if(limpio.length >= 15 && limpio.length <= 17) { imei.value = limpio; toast("IMEI OK"); }
+        if(limpio.length >= 18) { icc.value = limpio; toast("ICCID OK"); }
+        if(navigator.vibrate) navigator.vibrate(50);
+    }).catch(err => console.error(err));
 }
 
-function detenerScanner(){
-if(scanner) scanner.stop();
-}
+function detenerScanner(){ if(scanner) scanner.stop(); }
 
-function procesar(code){
-let limpio=code.replace(/\D/g,'');
-
-if(limpio.length>=19){
-icc.value=limpio;
-alerta("ICCID detectado");
-}else{
-imei.value=limpio;
-alerta("IMEI detectado");
-}
-
-if(navigator.vibrate) navigator.vibrate(100);
-}
-
-/* ALERTA */
-function alerta(msg){
-let div=document.createElement("div");
-div.innerText=msg;
-div.style.position="fixed";
-div.style.bottom="20px";
-div.style.background="#00f2ff";
-div.style.color="#000";
-div.style.padding="10px";
-document.body.appendChild(div);
-setTimeout(()=>div.remove(),1500);
-}
-
-/* GUARDAR */
-fReg.onsubmit=async e=>{
-e.preventDefault();
-await db.collection("ventas").add({
-uid:auth.currentUser.uid,
-tipo:tipo.value,
-cel:tel.value,
-icc:icc.value,
-imei:imei.value,
-fecha:fecha.value || new Date().toISOString()
-});
-fReg.reset();
-render();
+/* GUARDADO */
+fReg.onsubmit = async e => {
+    e.preventDefault();
+    const data = {
+        uid: auth.currentUser.uid,
+        tipo: tipo.value,
+        cel: tel.value,
+        icc: icc.value,
+        imei: imei.value,
+        promotor: promotor.value,
+        fechaOriginal: fechaInput.value || new Date().toISOString(),
+        fechaFormateada: formatFecha(fechaInput.value)
+    };
+    await db.collection("ventas").add(data);
+    fReg.reset();
+    render();
 };
+
+function guardarLocal(){
+    const venta = {
+        cel: tel.value,
+        tipo: tipo.value,
+        fecha: formatFecha(fechaInput.value),
+        icc: icc.value
+    };
+    let lista = JSON.parse(localStorage.getItem("ventas_excel") || "[]");
+    lista.push(venta);
+    localStorage.setItem("ventas_excel", JSON.stringify(lista));
+    toast("Guardado en Local Storage");
+}
 
 /* RENDER */
 async function render(){
-let snap=await db.collection("ventas").get();
-tabla.innerHTML=snap.docs.map(d=>{
-let v=d.data();
-return `<tr>
-<td>${v.cel}</td>
-<td>${v.tipo}</td>
-<td>${v.icc}</td>
-<td>${new Date(v.fecha).toLocaleString()}</td>
-</tr>`;
-}).join('');
-total.innerText=snap.size;
-cargarContadores();
+    const snap = await db.collection("ventas").where("uid","==",auth.currentUser.uid).get();
+    tabla.innerHTML = snap.docs.map(d => {
+        const v = d.data();
+        return `<tr>
+            <td>${v.cel}</td>
+            <td>${v.tipo}</td>
+            <td>${v.fechaFormateada || formatFecha(v.fechaOriginal)}</td>
+            <td><button onclick="del('${d.id}')" style="background:none; border:none; color:#ff4d4d;">🗑️</button></td>
+        </tr>`;
+    }).join('');
+    total.innerText = snap.size;
+    cargarContadores();
 }
 
-/* CONTADORES */
-function sumarPayjoy(){localStorage.payjoy=(+localStorage.payjoy||0)+1;render();}
-function sumarRegistro(){localStorage.registro=(+localStorage.registro||0)+1;render();}
-function cargarContadores(){
-totalPayjoy.innerText=localStorage.payjoy||0;
-totalRegistro.innerText=localStorage.registro||0;
+async function del(id){ if(confirm("¿Borrar?")) { await db.collection("ventas").doc(id).delete(); render(); } }
+
+function gps(){ navigator.geolocation.getCurrentPosition(p=>gpsTxt.innerText="Activo", e=>gpsTxt.innerText="Off"); }
+function sumarPayjoy(){ localStorage.payjoy=(+localStorage.payjoy||0)+1; render(); }
+function sumarRegistro(){ localStorage.registro=(+localStorage.registro||0)+1; render(); }
+function cargarContadores(){ 
+    totalPayjoy.innerText=localStorage.payjoy||0; 
+    totalRegistro.innerText=localStorage.registro||0; 
+}
+function toast(m){ 
+    const t = document.createElement("div"); t.innerText=m; 
+    t.style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--neon); color:black; padding:10px 20px; border-radius:20px; z-index:100;";
+    document.body.appendChild(t); setTimeout(()=>t.remove(), 2000);
 }
 </script>
-
 </body>
 </html>
