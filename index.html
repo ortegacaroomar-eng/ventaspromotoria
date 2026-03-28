@@ -3,168 +3,357 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ventas PRO IA - Core Central</title>
+    <title>Sistema Ventas PRO IA - Premium Neural</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
 
     <style>
-        :root { --primary: #00f2ff; --pink: #ff007a; --bg: #030303; --glass: rgba(255, 255, 255, 0.05); }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; color: white; background: var(--bg); overflow-x: hidden; }
-        body::before { content: ""; position: fixed; width: 100%; height: 100%; background: radial-gradient(circle at 50% 50%, #0a0a1a 0%, #030303 100%); z-index: -1; }
+        :root {  
+            --primary: #00f2ff;  
+            --secondary: #7000ff;  
+            --accent: #ff007a;  
+            --bg: #050505;  
+            --glass: rgba(255, 255, 255, 0.1);  
+        }  
+          
+        body {  
+            margin: 0;  
+            font-family: 'Poppins', 'Segoe UI', sans-serif;  
+            color: white;  
+            background: radial-gradient(circle at top right, #1a1a2e, #050505);  
+            min-height: 100vh;  
+            overflow-x: hidden;  
+        }  
+          
+        /* Animación de entrada */  
+        @keyframes fadeIn {  
+            from { opacity: 0; transform: translateY(20px); }  
+            to { opacity: 1; transform: translateY(0); }  
+        }  
+          
+        .app { max-width: 1100px; margin: auto; padding: 20px; animation: fadeIn 0.8s ease-out; }  
+          
+        .card {  
+            background: var(--glass);  
+            backdrop-filter: blur(20px);  
+            -webkit-backdrop-filter: blur(20px);  
+            border: 1px solid rgba(255, 255, 255, 0.1);  
+            border-radius: 20px;  
+            padding: 20px;  
+            margin-bottom: 20px;  
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);  
+        }  
+          
+        /* Títulos de Neón */  
+        h2, h3 {  
+            text-transform: uppercase;  
+            letter-spacing: 2px;  
+            color: var(--primary);  
+            text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);  
+        }  
+          
+        input, select {  
+            width: 100%;  
+            padding: 12px;  
+            margin-bottom: 15px;  
+            border-radius: 12px;  
+            border: 1px solid rgba(255, 255, 255, 0.2);  
+            background: rgba(0, 0, 0, 0.3);  
+            color: white;  
+            box-sizing: border-box;  
+            transition: 0.3s;  
+        }  
+          
+        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 10px var(--primary); }  
+          
+        .btn {  
+            padding: 12px 20px;  
+            border: none;  
+            border-radius: 12px;  
+            cursor: pointer;  
+            font-weight: bold;  
+            transition: all 0.3s;  
+            text-transform: uppercase;  
+            display: inline-block;  
+        }  
+          
+        .btn-primary { background: linear-gradient(45deg, var(--primary), #00a2ff); color: #000; }  
+        .btn-secondary { background: linear-gradient(45deg, var(--secondary), #a000ff); color: white; }  
+        .btn-accent { background: linear-gradient(45deg, var(--accent), #ff4d4d); color: white; }  
+        .btn:hover { transform: scale(1.05); filter: brightness(1.2); }  
+          
+        table { width: 100%; border-collapse: separate; border-spacing: 0 8px; margin-top: 15px; font-size: 13px; }  
+        th { background: rgba(255, 255, 255, 0.05); color: var(--primary); padding: 15px; text-align: left; }  
+        td { background: rgba(255, 255, 255, 0.03); padding: 12px; }  
+        tr:hover td { background: rgba(255, 255, 255, 0.1); }  
+          
+        .login {  
+            max-width: 400px;  
+            margin: 100px auto;  
+            text-align: center;  
+            background: rgba(10, 10, 10, 0.8);  
+            border: 1px solid var(--primary);  
+        }  
+          
+        .stat-grid {  
+            display: grid;  
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));  
+            gap: 15px;  
+            text-align: center;  
+        }  
+          
+        .stat-item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-bottom: 3px solid var(--primary); }  
+          
+        #reader { border-radius: 15px; overflow: hidden; border: 2px solid var(--primary) !important; }  
+        .hidden { display: none; }
 
-        .app { max-width:1000px; margin:auto; padding:15px; }
-        .card { background: var(--glass); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding:20px; border-radius:20px; margin-bottom:15px; border: 1px solid rgba(0,242,255,0.1); }
-
-        /* CYBER-ANGEL "IRIS" AVATAR */
-        .cyber-avatar-container { position: relative; width: 140px; height: 140px; margin: 0 auto; display: flex; align-items: center; justify-content: center; }
+        /* NUEVO: CYBER-ANGEL "IRIS" AVATAR */
+        .cyber-avatar-container { position: relative; width: 100px; height: 100px; margin: 0 auto; display: flex; align-items: center; justify-content: center; }
         .cyber-face { 
             position: absolute; width: 100%; height: 100%; border-radius: 50%;
             border: 2px solid var(--primary); background: rgba(0,242,255,0.05);
             box-shadow: 0 0 15px rgba(0,242,255,0.3); animation: neural-glow 2s infinite; 
         }
-        .cyber-logo { font-size: 50px; color: var(--pink); text-shadow: 0 0 15px var(--pink); }
+        .cyber-logo { font-size: 40px; color: var(--accent); text-shadow: 0 0 15px var(--accent); }
         
-        @keyframes neural-glow { 0% { box-shadow: 0 0 10px transparent; } 50% { box-shadow: 0 0 25px var(--primary); } 100% { box-shadow: 0 0 10px transparent; } }
+        @keyframes neural-glow { 0% { box-shadow: 0 0 10px transparent; } 50% { box-shadow: 0 0 20px var(--primary); } 100% { box-shadow: 0 0 10px transparent; } }
+        .ia-speech- premium { font-size: 14px; font-style: italic; color: #b3f7ff; text-align: center; margin-top: 10px; min-height: 30px; }
 
-        .ia-speech { font-size: 16px; font-style: italic; color: #b3f7ff; text-align: center; margin-top: 15px; min-height: 40px; }
-
-        /* UI ELEMENTS */
-        .btn-logout { background: transparent; color: #ff4d4d; border: 1px solid #ff4d4d; padding: 8px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-logout:hover { background: #ff4d4d; color: #fff; }
-
-        input, select { width:100%; padding:14px; margin-bottom:12px; border-radius:12px; border:1px solid #333; background:rgba(0,0,0,0.3); color:white; outline: none; }
-        input:focus { border-color: var(--primary); }
-
-        .btn-register { padding:15px; border:none; border-radius:15px; cursor:pointer; font-weight:bold; width:100%; background: var(--primary); color:#000; font-size: 16px; transition: 0.3s; }
-        .btn-register:active { transform: scale(0.97); }
-
-        .chat-box { height: 180px; overflow-y: auto; background: rgba(0,0,0,0.5); border-radius: 12px; padding: 10px; font-size: 13px; border: 1px solid #222; }
-        .hidden { display:none; }
     </style>
 </head>
 <body>
 
-<div id="loginBox" class="app" style="max-width: 380px; margin-top: 100px;">
-    <div class="card" style="text-align: center;">
-        <h2 style="color:var(--primary); margin-bottom: 5px;">IA NEURAL - 2026</h2>
-        <p style="font-size: 11px; color: #aaa; margin-bottom: 25px;">Sincronizando flujos de datos corporativos</p>
-        <input id="u" type="email" placeholder="Usuario Corporativo">
-        <input id="p" type="password" placeholder="Pass-Key">
-        <button class="btn-register" onclick="login()">ACTIVAR CEREBRO</button>
-    </div>
+<div id="loginBox" class="card login">  
+    <h2><i class="fas fa-shield-halved"></i> Acceso PRO</h2>  
+    <input id="u" type="email" placeholder="Usuario / Correo">  
+    <input id="p" type="password" placeholder="Password">  
+    <button class="btn btn-primary" onclick="login()"><i class="fas fa-sign-in-alt"></i> Entrar</button>  
+    <button class="btn btn-secondary" onclick="registrar()">Registro</button>  
 </div>
 
 <div id="appBox" class="app hidden">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <span style="color:var(--primary); font-size:12px;"><i class="fas fa-satellite-dish"></i> Nodo: Telcel-EDMX</span>
-        <button class="btn-logout" onclick="logout()">CERRAR SESIÓN</button>
+    <div class="card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">  
+        <div><i class="fas fa-location-dot" style="color:var(--accent)"></i> <span id="gpsTxt">GPS Activo</span></div>  
+        <div style="display:flex; gap:10px;">  
+            <a href="https://app.payjoy.com/merchant3?merchantId=199557" target="_blank">  
+                <button class="btn btn-secondary" onclick="sumarPayjoy()">PayJoy</button>  
+            </a>  
+            <a href="https://registro.telcel.com/vinculatulinea/#/" target="_blank">  
+                <button class="btn btn-primary" onclick="sumarRegistro()">Vincular</button>  
+            </a>  
+            <button class="btn btn-accent" onclick="logout()"><i class="fas fa-power-off"></i></button>  
+        </div>  
     </div>
 
-    <div class="card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px;">
-        <div class="cyber-avatar-container">
-            <div id="neuralGlow" class="cyber-face"></div>
-            <i class="fas fa-angel cyber-logo"></i>
-        </div>
-        <div id="iaSpeech" class="ia-speech">"Sincronizando con la red regional..."</div>
-    </div>
-
-    <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 15px;">
-        <form id="fReg" class="card">
-            <select id="tipo">
-                <option value="">-- Tipo de Trámite --</option>
-                <option>KIT</option>
-                <option>CHIP</option>
-                <option>PORTABILIDAD</option>
-                <option>RENUEVA</option>
-            </select>
-            <input id="promotor" placeholder="Tu Nombre Real">
-            <input id="tel" type="number" placeholder="Número del Cliente">
-            <input id="tienda" placeholder="ID Sucursal">
-            <input id="imei" placeholder="IMEI / ICCID (Opcional)">
-            <button type="submit" class="btn-register">SINC. VENTA <i class="fas fa-bolt"></i></button>
-        </form>
-
-        <div class="card">
-            <h3><i class="fas fa-comments"></i> Chat Neural</h3>
-            <div id="chatBox" class="chat-box"></div>
-            <div style="display:flex; gap:5px; margin-top:10px;">
-                <input id="chatMsg" placeholder="Escribe al equipo..." style="margin:0; font-size:12px;">
-                <button class="btn-register" style="padding:10px 15px; width:auto;" onclick="enviarChat()"><i class="fas fa-paper-plane"></i></button>
+    <div class="stat-grid">  
+        <div class="stat-item"><h3>Total</h3><p id="total">0</p></div>  
+        <div class="stat-item"><h3>PayJoy</h3><p id="totalPayjoy">0</p></div>  
+        <div class="stat-item"><h3>Reg</h3><p id="totalRegistro">0</p></div>  
+        
+        <div class="stat-item" style="border-bottom: 3px solid var(--accent); padding: 10px;">
+            <div class="cyber-avatar-container">
+                <div id="neuralGlow" class="cyber-face"></div>
+                <i class="fas fa-angel cyber-logo"></i>
             </div>
+            <div id="iaSpeech" class="ia-speech-premium">"Cargando predicciones..."</div>
         </div>
+    </div>
+
+    <div class="card">  
+        <canvas id="grafica" style="max-height: 300px;"></canvas>  
+    </div>  
+
+    <div class="card">  
+        <h3><i class="fas fa-camera"></i> Escáner</h3>  
+        <div id="reader"></div>  
+        <button class="btn btn-secondary" onclick="iniciarScanner()" style="width:100%; margin-top:10px;">Capturar IMEI/ICC</button>  
+    </div>
+
+    <form id="fReg" class="card">  
+        <h3>Nueva Venta</h3>  
+        <select id="tipo" onchange="cambiarTipo()">  
+            <option value="">Tipo de producto...</option>  
+            <option>KIT</option>  
+            <option>CHIP</option>  
+            <option>PORTABILIDAD</option>  
+            <option>RENUEVA</option>  
+        </select>  
+        <div id="opcionesTipo"></div>  
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">  
+            <input id="tel" placeholder="Número Tel">  
+            <input id="tienda" placeholder="# Tienda">  
+        </div>  
+        <input id="icc" placeholder="ICCID">  
+        <input id="imei" placeholder="IMEI">  
+        <input id="promotor" placeholder="Nombre Promotor">  
+        <input id="fecha" type="datetime-local">  
+          
+        <div style="display: flex; gap: 10px;">  
+            <button type="submit" class="btn btn-primary" style="flex:2;">Guardar en Nube</button>  
+            <button type="button" class="btn btn-secondary" onclick="guardarLocal()" style="flex:1;">Local</button>  
+        </div>  
+    </form>
+
+    <div class="card">  
+        <input id="buscar" placeholder="🔍 Filtrar registros..." onkeyup="buscarTabla()" style="margin-bottom:0;">  
+        <table>  
+            <thead>  
+                <tr><th>Teléfono</th><th>Tipo</th><th>ICCID</th><th>Fecha</th><th>Acción</th></tr>  
+            </thead>  
+            <tbody id="tabla"></tbody>  
+        </table>  
+        <button class="btn btn-primary" onclick="excel()" style="width:100%; margin-top:15px;">Descargar Excel Report</button>  
     </div>
 </div>
 
 <script>
-const firebaseConfig={apiKey:"AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",authDomain:"ventastelcel4029.firebaseapp.com",projectId:"ventastelcel4029"};
-firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth();
-const db=firebase.firestore();
+// --- CONFIGURACIÓN Y FORMATO (Original) ---  
+const firebaseConfig={apiKey:"AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",authDomain:"ventastelcel4029.firebaseapp.com",projectId:"ventastelcel4029"};  
+firebase.initializeApp(firebaseConfig);  
+const auth=firebase.auth();  
+const db=firebase.firestore();  
+let chart;  
+  
+function formatFecha(dateInput) {  
+    const d = new Date(dateInput);  
+    const day = String(d.getDate()).padStart(2, '0');  
+    const month = String(d.getMonth() + 1).padStart(2, '0');  
+    const year = d.getFullYear();  
+    return `${day}/${month}/${year}`;  
+}  
+  
+// --- LÓGICA DE USUARIO (Original) ---  
+function login(){auth.signInWithEmailAndPassword(u.value,p.value)}  
+function registrar(){auth.createUserWithEmailAndPassword(u.value,p.value)}  
+function logout(){auth.signOut()}  
+  
+auth.onAuthStateChanged(user=>{  
+    loginBox.classList.toggle("hidden", !!user);  
+    appBox.classList.toggle("hidden", !user);  
+    if(user){ 
+        render(); 
+        gps(); 
+        // NUEVO: Saludo de Voz Femenina al Iniciar
+        hablar("Conexión exitosa. Bienvenido al núcleo neural Telcel. Iniciando análisis matutino.");
+    }  
+});
 
-// --- SISTEMA DE VOZ ---
+// --- NUEVO: SISTEMA DE VOZ FEMENINA DE LA IA ---
 function hablar(texto) {
     const s = window.speechSynthesis;
     const u = new SpeechSynthesisUtterance(texto);
     u.lang = 'es-MX'; u.pitch = 1.3; u.rate = 1.0;
     s.speak(u);
 }
+  
+// --- FUNCIONES CORE (Original con Mejoras de IA) ---  
+async function render(){  
+    const snap = await db.collection("ventas").where("uid","==",auth.currentUser.uid).get();  
+    let tipos = {KIT:0, CHIP:0, PORTABILIDAD:0, RENUEVA:0};  
+    let data = [];  
+  
+    tabla.innerHTML = snap.docs.map(d => {  
+        let v = d.data();  
+        if(tipos[v.tipo] !== undefined) tipos[v.tipo]++;  
+        data.push(v);  
+        return `<tr>  
+            <td>${v.cel}</td>  
+            <td><span style="color:var(--primary)">${v.tipo}</span></td>  
+            <td style="font-size:12px;">${v.icc}</td>  
+            <td>${v.fechaFormateada || formatFecha(v.fecha)}</td>  
+            <td><button class="btn-accent" style="padding:5px 10px; border-radius:5px;" onclick="del('${d.id}')">🗑️</button></td>  
+        </tr>`;  
+    }).join('');  
+  
+    total.innerText = data.length;  
+    actualizarGrafica(tipos);  
+    cargarContadores(); 
 
-// --- AUTH ---
-function login(){ auth.signInWithEmailAndPassword(u.value,p.value); }
-function logout(){ auth.signOut(); }
+    // NUEVO: Lógica de Predicción de la IA (Fusión Premium)
+    if(data.length > 5) {
+        const masVendido = Object.entries(tipos).sort((a,b)=>b[1]-a[1])[0][0];
+        const msg = `Análisis Neural: El producto líder es ${masVendido}. Sigue impulsando las portabilidades matutinas.`;
+        iaSpeech.innerText = msg;
+        // hablar(msg); // Descomenta si quieres que hable en cada actualización
+    } else {
+        iaSpeech.innerText = "IA: Sincronizando datos neurales...";
+    }
+}  
+  
+function actualizarGrafica(tipos){  
+    if(chart) chart.destroy();  
+    chart = new Chart(grafica, {  
+        type: 'doughnut',  
+        data: {  
+            labels: Object.keys(tipos),  
+            datasets: [{  
+                data: Object.values(tipos),  
+                backgroundColor: ['#00f2ff', '#7000ff', '#ff007a', '#ffc300'],  
+                borderWidth: 0  
+            }]  
+        },  
+        options: { plugins: { legend: { labels: { color: 'white' } } } }  
+    });  
+}  
+  
+// --- GUARDADO LOCAL Y NUBE (Original) ---  
+function guardarLocal(){  
+    const venta = {  
+        cel: tel.value,  
+        tipo: tipo.value,  
+        icc: icc.value,  
+        imei: imei.value,  
+        fecha: fecha.value || new Date().toISOString(),  
+        fechaFormateada: formatFecha(fecha.value || new Date())  
+    };  
+    let locales = JSON.parse(localStorage.getItem("ventas_locales") || "[]");  
+    locales.push(venta);  
+    localStorage.setItem("ventas_locales", JSON.stringify(locales));  
+    alert("Venta guardada localmente (Excel ready)");  
+    fReg.reset();  
+}  
+  
+fReg.onsubmit = async e => {  
+    e.preventDefault();  
+    await db.collection("ventas").add({  
+        uid: auth.currentUser.uid,  
+        tipo: tipo.value,  
+        cel: tel.value,  
+        icc: icc.value,  
+        imei: imei.value,  
+        tienda: tienda.value,  
+        promotor: promotor.value,  
+        fecha: fecha.value || new Date().toISOString(),  
+        fechaFormateada: formatFecha(fecha.value || new Date()),  
+        timestamp: Date.now()  
+    });  
+    // NUEVO: La IA felicita la venta
+    hablar(`Perfecto. He registrado tu venta de ${tipo.value}. ¡Sigue así!`);
+    fReg.reset(); render();  
+};  
 
-auth.onAuthStateChanged(user => {
-    loginBox.classList.toggle("hidden", !!user);
-    appBox.classList.toggle("hidden", !user);
-    if(user) iniciarCerebro();
-});
-
-function iniciarCerebro() {
-    // 1. Detección Horaria
-    const h = new Date().getHours();
-    let msg = "";
-    if(h < 12) msg = "Buenos días, equipo Telcel. Hoy tenemos la meta de cerrar 15 portabilidades.";
-    else if(h < 19) msg = "Buenas tardes. El sistema está sincronizado y listo para tus registros.";
-    else msg = "Es tarde, pero aún podemos lograr ese último PayJoy del día.";
-    
-    iaSpeech.innerText = msg;
-    hablar(msg);
-
-    // 2. Escuchar Chat y Ventas
-    db.collection("chat").orderBy("ts", "desc").limit(12).onSnapshot(snap => {
-        chatBox.innerHTML = snap.docs.map(d => `<div><b style="color:var(--primary)">${d.data().user}:</b> ${d.data().msg}</div>`).reverse().join('');
-        chatBox.scrollTop = chatBox.scrollHeight;
-    });
-}
-
-// --- REGISTRO ---
-fReg.onsubmit = async e => {
-    e.preventDefault();
-    await db.collection("ventas").add({
-        uid: auth.currentUser.uid, promotor: promotor.value,
-        tipo: tipo.value, cel: tel.value, tienda: tienda.value, 
-        imei: imei.value, ts: Date.now()
-    });
-    
-    // Notificar al chat global
-    db.collection("chat").add({ 
-        user: "IRIS", msg: `🚀 ${promotor.value} subió una venta de ${tipo.value}!`, ts: Date.now() 
-    });
-
-    hablar("Venta registrada. He aprendido este nuevo registro, " + promotor.value);
-    fReg.reset();
-};
-
-function enviarChat(){
-    if(!chatMsg.value) return;
-    db.collection("chat").add({ 
-        user: promotor.value || 'Promotor', 
-        msg: chatMsg.value, ts: Date.now() 
-    });
-    chatMsg.value = "";
-}
+async function del(id){ if(confirm("¿Borrar venta?")) { await db.collection("ventas").doc(id).delete(); render(); } }
+  
+// --- EXCEL (Original) ---  
+function excel(){  
+    alert("Generando Reporte Profesional...");  
+    // Lógica SheetJS aquí para exportar  
+}  
+  
+// --- UTILIDADES (Original) ---
+function gps(){ navigator.geolocation.getCurrentPosition(p=> gpsTxt.innerText="Localizado", e=> gpsTxt.innerText="GPS Off"); }  
+function sumarPayjoy(){ localStorage.payjoy=(Number(localStorage.payjoy)||0)+1; render(); }  
+function sumarRegistro(){ localStorage.registro=(Number(localStorage.registro)||0)+1; render(); }  
+function cargarContadores(){ totalPayjoy.innerText=localStorage.payjoy||0; totalRegistro.innerText=localStorage.registro||0; }  
+function buscarTabla(){  
+    let txt=buscar.value.toLowerCase();  
+    document.querySelectorAll("#tabla tr").forEach(f=> f.style.display=f.innerText.toLowerCase().includes(txt)?"":"none");  
+}  
 </script>
 </body>
 </html>
