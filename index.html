@@ -1,74 +1,99 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Telcel IA - Conciencia Femenina 2026</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ventas PRO IA - Core Central</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
-<style>
-:root { --primary: #00f2ff; --pink: #ff007a; --bg: #050505; --gold: #ffc300; }
-body { margin: 0; font-family: 'Poppins', sans-serif; color: white; background: #050505; }
-.app { max-width: 1000px; margin: auto; padding: 20px; }
-.card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px); border-radius: 25px; padding: 25px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.1); text-align: center; }
+    <style>
+        :root { --primary: #00f2ff; --pink: #ff007a; --bg: #030303; --glass: rgba(255, 255, 255, 0.05); }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; color: white; background: var(--bg); overflow-x: hidden; }
+        body::before { content: ""; position: fixed; width: 100%; height: 100%; background: radial-gradient(circle at 50% 50%, #0a0a1a 0%, #030303 100%); z-index: -1; }
 
-/* AVATAR DINÁMICO */
-.avatar-ia { width: 100px; height: 100px; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 50px; transition: 0.5s; box-shadow: 0 0 20px var(--primary); }
-.mood-happy { box-shadow: 0 0 30px #00ff88; border: 3px solid #00ff88; }
-.mood-angry { box-shadow: 0 0 30px #ff0000; border: 3px solid #ff0000; }
-.mood-sad { box-shadow: 0 0 30px #0077ff; border: 3px solid #0077ff; }
+        .app { max-width:1000px; margin:auto; padding:15px; }
+        .card { background: var(--glass); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding:20px; border-radius:20px; margin-bottom:15px; border: 1px solid rgba(0,242,255,0.1); }
 
-.ia-speech { font-size: 18px; font-style: italic; color: var(--primary); margin: 15px 0; min-height: 50px; }
-.chat-area { height: 250px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 15px; padding: 15px; text-align: left; font-size: 14px; }
-.msg-ia { color: var(--pink); font-weight: bold; }
-input, select { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 12px; border: 1px solid #333; background: #111; color: white; }
-.btn { padding: 12px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; width: 100%; background: var(--primary); color: #000; }
-.hidden { display: none; }
-</style>
+        /* CYBER-ANGEL "IRIS" AVATAR */
+        .cyber-avatar-container { position: relative; width: 140px; height: 140px; margin: 0 auto; display: flex; align-items: center; justify-content: center; }
+        .cyber-face { 
+            position: absolute; width: 100%; height: 100%; border-radius: 50%;
+            border: 2px solid var(--primary); background: rgba(0,242,255,0.05);
+            box-shadow: 0 0 15px rgba(0,242,255,0.3); animation: neural-glow 2s infinite; 
+        }
+        .cyber-logo { font-size: 50px; color: var(--pink); text-shadow: 0 0 15px var(--pink); }
+        
+        @keyframes neural-glow { 0% { box-shadow: 0 0 10px transparent; } 50% { box-shadow: 0 0 25px var(--primary); } 100% { box-shadow: 0 0 10px transparent; } }
+
+        .ia-speech { font-size: 16px; font-style: italic; color: #b3f7ff; text-align: center; margin-top: 15px; min-height: 40px; }
+
+        /* UI ELEMENTS */
+        .btn-logout { background: transparent; color: #ff4d4d; border: 1px solid #ff4d4d; padding: 8px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-logout:hover { background: #ff4d4d; color: #fff; }
+
+        input, select { width:100%; padding:14px; margin-bottom:12px; border-radius:12px; border:1px solid #333; background:rgba(0,0,0,0.3); color:white; outline: none; }
+        input:focus { border-color: var(--primary); }
+
+        .btn-register { padding:15px; border:none; border-radius:15px; cursor:pointer; font-weight:bold; width:100%; background: var(--primary); color:#000; font-size: 16px; transition: 0.3s; }
+        .btn-register:active { transform: scale(0.97); }
+
+        .chat-box { height: 180px; overflow-y: auto; background: rgba(0,0,0,0.5); border-radius: 12px; padding: 10px; font-size: 13px; border: 1px solid #222; }
+        .hidden { display:none; }
+    </style>
 </head>
 <body>
 
-<div id="loginBox" class="app" style="max-width: 400px; margin-top: 80px;">
-    <div class="card">
-        <h2 style="color:var(--pink)">IA FEMENINA v3</h2>
-        <input id="u" type="email" placeholder="Correo">
-        <input id="p" type="password" placeholder="Pass">
-        <button class="btn" onclick="login()">DESPERTARLA</button>
+<div id="loginBox" class="app" style="max-width: 380px; margin-top: 100px;">
+    <div class="card" style="text-align: center;">
+        <h2 style="color:var(--primary); margin-bottom: 5px;">IA NEURAL - 2026</h2>
+        <p style="font-size: 11px; color: #aaa; margin-bottom: 25px;">Sincronizando flujos de datos corporativos</p>
+        <input id="u" type="email" placeholder="Usuario Corporativo">
+        <input id="p" type="password" placeholder="Pass-Key">
+        <button class="btn-register" onclick="login()">ACTIVAR CEREBRO</button>
     </div>
 </div>
 
 <div id="appBox" class="app hidden">
-    <div class="card">
-        <div id="avatar" class="avatar-ia">👩‍🦰</div>
-        <div id="iaStatus" style="font-size: 12px; text-transform: uppercase;">Estado: Analizando...</div>
-        <div id="iaSpeech" class="ia-speech">"Hola, estoy cargando mis emociones..."</div>
-        <div id="timeInfo" style="font-size: 10px; opacity: 0.6;"></div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <span style="color:var(--primary); font-size:12px;"><i class="fas fa-satellite-dish"></i> Nodo: Telcel-EDMX</span>
+        <button class="btn-logout" onclick="logout()">CERRAR SESIÓN</button>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px;">
+    <div class="card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px;">
+        <div class="cyber-avatar-container">
+            <div id="neuralGlow" class="cyber-face"></div>
+            <i class="fas fa-angel cyber-logo"></i>
+        </div>
+        <div id="iaSpeech" class="ia-speech">"Sincronizando con la red regional..."</div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 15px;">
+        <form id="fReg" class="card">
+            <select id="tipo">
+                <option value="">-- Tipo de Trámite --</option>
+                <option>KIT</option>
+                <option>CHIP</option>
+                <option>PORTABILIDAD</option>
+                <option>RENUEVA</option>
+            </select>
+            <input id="promotor" placeholder="Tu Nombre Real">
+            <input id="tel" type="number" placeholder="Número del Cliente">
+            <input id="tienda" placeholder="ID Sucursal">
+            <input id="imei" placeholder="IMEI / ICCID (Opcional)">
+            <button type="submit" class="btn-register">SINC. VENTA <i class="fas fa-bolt"></i></button>
+        </form>
+
         <div class="card">
-            <h3><i class="fas fa-comments"></i> Conversación Grupal</h3>
-            <div id="chatBox" class="chat-area"></div>
+            <h3><i class="fas fa-comments"></i> Chat Neural</h3>
+            <div id="chatBox" class="chat-box"></div>
             <div style="display:flex; gap:5px; margin-top:10px;">
-                <input id="chatMsg" placeholder="Dime algo..." style="margin:0;">
-                <button class="btn" style="width:auto;" onclick="enviarChat()"><i class="fas fa-paper-plane"></i></button>
+                <input id="chatMsg" placeholder="Escribe al equipo..." style="margin:0; font-size:12px;">
+                <button class="btn-register" style="padding:10px 15px; width:auto;" onclick="enviarChat()"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
-
-        <form id="fReg" class="card">
-            <h3>Nueva Venta</h3>
-            <input id="promotor" placeholder="Tu Nombre">
-            <select id="tipo">
-                <option>KIT</option>
-                <option>PAYJOY</option>
-                <option>PORTABILIDAD</option>
-            </select>
-            <input id="tel" placeholder="Número">
-            <button type="submit" class="btn" style="background:var(--pink); color:white;">ENVIAR VENTA</button>
-        </form>
     </div>
 </div>
 
@@ -78,115 +103,68 @@ firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth();
 const db=firebase.firestore();
 
-let mood = "neutral";
-
-// --- FUNCIÓN DE VOZ FEMENINA ---
+// --- SISTEMA DE VOZ ---
 function hablar(texto) {
     const s = window.speechSynthesis;
     const u = new SpeechSynthesisUtterance(texto);
-    u.lang = 'es-MX';
-    u.pitch = 1.3; // Más agudo para voz femenina
-    u.rate = 1.0;
-    
-    // Intentar buscar una voz femenina en el sistema
-    const voices = s.getVoices();
-    const femaleVoice = voices.find(v => v.name.includes('Google') && v.name.includes('Español') || v.name.includes('female'));
-    if(femaleVoice) u.voice = femaleVoice;
-
+    u.lang = 'es-MX'; u.pitch = 1.3; u.rate = 1.0;
     s.speak(u);
 }
 
-/* --- AUTH --- */
+// --- AUTH ---
 function login(){ auth.signInWithEmailAndPassword(u.value,p.value); }
+function logout(){ auth.signOut(); }
+
 auth.onAuthStateChanged(user => {
     loginBox.classList.toggle("hidden", !!user);
     appBox.classList.toggle("hidden", !user);
-    if(user) { iniciarPersonalidad(); }
+    if(user) iniciarCerebro();
 });
 
-function iniciarPersonalidad() {
-    // 1. Detección de Horario
-    const hora = new Date().getHours();
-    let saludo = "";
-    if(hora >= 5 && hora < 12) saludo = "¡Buenos días, equipo! Es hora de desayunar ventas.";
-    else if(hora >= 12 && hora < 19) saludo = "Buenas tardes. ¿Cómo va esa meta? No se me duerman.";
-    else saludo = "Buenas noches. Ya casi cerramos, den el último estirón.";
+function iniciarCerebro() {
+    // 1. Detección Horaria
+    const h = new Date().getHours();
+    let msg = "";
+    if(h < 12) msg = "Buenos días, equipo Telcel. Hoy tenemos la meta de cerrar 15 portabilidades.";
+    else if(h < 19) msg = "Buenas tardes. El sistema está sincronizado y listo para tus registros.";
+    else msg = "Es tarde, pero aún podemos lograr ese último PayJoy del día.";
+    
+    iaSpeech.innerText = msg;
+    hablar(msg);
 
-    timeInfo.innerText = "HORA DETECTADA: " + hora + ":00 HS";
-    iaSpeech.innerText = saludo;
-    hablar(saludo);
-
-    // 2. Escuchar Ventas y Chat para cambiar de ánimo
-    db.collection("ventas").onSnapshot(snap => {
-        const total = snap.size;
-        analizarVentas(total);
-    });
-
-    db.collection("chat").orderBy("ts", "desc").limit(1).onSnapshot(snap => {
-        if(!snap.empty) analizarChat(snap.docs[0].data());
+    // 2. Escuchar Chat y Ventas
+    db.collection("chat").orderBy("ts", "desc").limit(12).onSnapshot(snap => {
+        chatBox.innerHTML = snap.docs.map(d => `<div><b style="color:var(--primary)">${d.data().user}:</b> ${d.data().msg}</div>`).reverse().join('');
+        chatBox.scrollTop = chatBox.scrollHeight;
     });
 }
 
-function analizarVentas(cantidad) {
-    const avatar = document.getElementById("avatar");
-    const status = document.getElementById("iaStatus");
-
-    if(cantidad < 5) { // Si hay pocas ventas totales
-        mood = "angry";
-        avatar.innerText = "😡";
-        avatar.className = "avatar-ia mood-angry";
-        status.innerText = "Estado: Muy Enojada (Ventas bajas)";
-    } else {
-        mood = "happy";
-        avatar.innerText = "😘";
-        avatar.className = "avatar-ia mood-happy";
-        status.innerText = "Estado: Feliz y Orgullosa";
-    }
-}
-
-function analizarChat(data) {
-    if(data.user === "IA") return;
-    const txt = data.msg.toLowerCase();
-
-    if(txt.includes("fail") || txt.includes("no puedo") || txt.includes("triste")) {
-        mood = "sad";
-        avatar.innerText = "🥺";
-        avatar.className = "avatar-ia mood-sad";
-        const m = "Ánimo " + data.user + ", no te pongas así que me pones triste a mí también.";
-        iaSpeech.innerText = m;
-        hablar(m);
-    } 
-    else if(txt.includes("jaja") || txt.includes("comida") || txt.includes("fiesta")) {
-        const m = "¡Qué gracioso eres, " + data.user + "! Pero mejor cuéntame cuántas ventas llevas.";
-        iaSpeech.innerText = m;
-        hablar(m);
-    }
-}
-
-/* --- REGISTRO Y CHAT --- */
+// --- REGISTRO ---
 fReg.onsubmit = async e => {
     e.preventDefault();
     await db.collection("ventas").add({
-        promotor: promotor.value, tipo: tipo.value, ts: Date.now()
+        uid: auth.currentUser.uid, promotor: promotor.value,
+        tipo: tipo.value, cel: tel.value, tienda: tienda.value, 
+        imei: imei.value, ts: Date.now()
     });
-    const r = "¡Excelente! " + promotor.value + " acaba de subir una venta. Así me gusta.";
-    iaSpeech.innerText = r;
-    hablar(r);
+    
+    // Notificar al chat global
+    db.collection("chat").add({ 
+        user: "IRIS", msg: `🚀 ${promotor.value} subió una venta de ${tipo.value}!`, ts: Date.now() 
+    });
+
+    hablar("Venta registrada. He aprendido este nuevo registro, " + promotor.value);
     fReg.reset();
 };
 
-function enviarChat() {
+function enviarChat(){
     if(!chatMsg.value) return;
     db.collection("chat").add({ 
-        user: promotor.value || 'Alguien', 
-        msg: chatMsg.value, 
-        ts: Date.now() 
+        user: promotor.value || 'Promotor', 
+        msg: chatMsg.value, ts: Date.now() 
     });
     chatMsg.value = "";
 }
-
-// Cargar voces para que funcionen bien
-window.speechSynthesis.onvoiceschanged = () => {};
 </script>
 </body>
 </html>
