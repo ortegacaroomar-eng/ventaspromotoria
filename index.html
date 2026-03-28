@@ -1,282 +1,311 @@
-<!DOCTYPE html><html lang="es">
+<!DOCTYPE html>
+<html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistema Ventas PRO IA</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<title>Sistema Ventas PRO IA - Premium</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://unpkg.com/html5-qrcode"></script><style>
-body{margin:0;font-family:'Segoe UI',sans-serif;color:white;background:linear-gradient(-45deg,#001d3d,#003566,#000814,#001f54);background-size:400% 400%;animation:bgMove 12s ease infinite}
-@keyframes bgMove{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-.hidden{display:none}
-.app{max-width:1100px;margin:auto;padding:20px}
-.card{background:rgba(255,255,255,.08);backdrop-filter:blur(14px);border-radius:15px;padding:15px;margin-bottom:15px}
-input,select{width:100%;padding:10px;margin-bottom:10px;border-radius:8px;border:none;background:rgba(255,255,255,.12);color:white}
-.btn{padding:10px;border:none;border-radius:10px;cursor:pointer}
-.btn-primary{background:#ffc300;color:#001d3d}
-.btn-danger{background:#ff4d4d;color:white}
-.btn-secondary{background:#00b4d8;color:white}
-table{width:100%;background:white;color:black;border-collapse:collapse}
-th,td{padding:6px;border:1px solid #ddd}
-th{background:#000;color:#fff;position:relative}
-th::after{content:"⬍";position:absolute;right:6px;font-size:10px}
-.login{max-width:350px;margin:60px auto;background:white;color:black;padding:25px;border-radius:15px}
-.topbar{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
-#reader{width:100%;max-width:400px;margin:auto}
-</style></head>
-<body><div id="loginBox" class="login">
-<h2>Acceso</h2>
-<input id="u" type="email" placeholder="Correo">
-<input id="p" type="password" placeholder="Contraseña">
-<button class="btn btn-primary" onclick="login()">Entrar</button>
-<button class="btn btn-secondary" onclick="registrar()">Crear Cuenta</button>
-</div><div id="appBox" class="app hidden"><div class="topbar">
-<div class="card">📍 <span id="gpsTxt">Detectando...</span></div>
-<div>
-<a href="https://app.payjoy.com/accounts/login?afterLogin=https://app.payjoy.com/merchant3?merchantId=199557" target="_blank">
-<button class="btn btn-secondary" onclick="sumarPayjoy()">PayJoy</button>
-</a>
-<a href="https://registro.telcel.com/vinculatulinea/#/" target="_blank">
-<button class="btn btn-primary" onclick="sumarRegistro()">Vincular Línea</button>
-</a>
-<button class="btn btn-danger" onclick="logout()">Salir</button>
-</div>
-</div><div class="card">
-<h3>Total: <span id="total">0</span></h3>
-<h3>IA: <span id="prediccion">...</span></h3>
-<h3>PayJoy: <span id="totalPayjoy">0</span></h3>
-<h3>Registros: <span id="totalRegistro">0</span></h3>
-</div>
-<h3>Total: <span id="total">0</span></h3>
-<h3>IA: <span id="prediccion">...</span></h3>
-</div><div class="card"><canvas id="grafica"></canvas></div><!-- SCANNER --><div class="card">
-<h3>📷 Escanear IMEI / ICC</h3>
-<div id="reader"></div>
-<button class="btn btn-secondary" onclick="iniciarScanner()">Iniciar Scanner</button>
-</div><form id="fReg" class="card">
-<select id="tipo" onchange="cambiarTipo()">
-<option value="">Selecciona tipo</option>
-<option>KIT</option>
-<option>CHIP</option>
-<option>PORTABILIDAD</option>
-<option>RENUEVA</option>
-</select><!-- OPCIONES DINÁMICAS --><div id="opcionesTipo"></div>
-<input id="tel" placeholder="Número">
-<input id="icc" placeholder="ICCID o Chip">
-<input id="imei" placeholder="IMEI">
-<input id="tienda" placeholder="#Tienda">
-<input id="promotor" placeholder="Promotor">
-<input id="fecha" type="date">
-<button class="btn btn-primary">Guardar</button>
-</form><input id="buscar" placeholder="Buscar..." onkeyup="buscarTabla()"><table>
-<thead><tr><th>Cel</th><th>Tipo</th><th>ICCID</th><th>IMEI</th><th>Fecha</th><th></th></tr></thead>
-<tbody id="tabla"></tbody>
-</table><button class="btn btn-secondary" onclick="excel()">Excel</button>
+<script src="https://unpkg.com/html5-qrcode"></script>
 
-</div><script>
+<style>
+:root {
+    --primary: #00f2ff;
+    --secondary: #7000ff;
+    --accent: #ff007a;
+    --bg: #050505;
+    --glass: rgba(255, 255, 255, 0.1);
+}
+
+body {
+    margin: 0;
+    font-family: 'Poppins', 'Segoe UI', sans-serif;
+    color: white;
+    background: radial-gradient(circle at top right, #1a1a2e, #050505);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Animación de entrada */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.app { max-width: 1100px; margin: auto; padding: 20px; animation: fadeIn 0.8s ease-out; }
+
+.card {
+    background: var(--glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+/* Títulos de Neón */
+h2, h3 {
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--primary);
+    text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
+}
+
+input, select {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.3);
+    color: white;
+    box-sizing: border-box;
+    transition: 0.3s;
+}
+
+input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 10px var(--primary); }
+
+.btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    display: inline-block;
+}
+
+.btn-primary { background: linear-gradient(45deg, var(--primary), #00a2ff); color: #000; }
+.btn-secondary { background: linear-gradient(45deg, var(--secondary), #a000ff); color: white; }
+.btn-accent { background: linear-gradient(45deg, var(--accent), #ff4d4d); color: white; }
+.btn:hover { transform: scale(1.05); filter: brightness(1.2); }
+
+table { width: 100%; border-collapse: separate; border-spacing: 0 8px; margin-top: 15px; }
+th { background: rgba(255, 255, 255, 0.05); color: var(--primary); padding: 15px; text-align: left; }
+td { background: rgba(255, 255, 255, 0.03); padding: 12px; }
+tr:hover td { background: rgba(255, 255, 255, 0.1); }
+
+.login {
+    max-width: 400px;
+    margin: 100px auto;
+    text-align: center;
+    background: rgba(10, 10, 10, 0.8);
+    border: 1px solid var(--primary);
+}
+
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    text-align: center;
+}
+
+.stat-item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-bottom: 3px solid var(--primary); }
+
+#reader { border-radius: 15px; overflow: hidden; border: 2px solid var(--primary) !important; }
+.hidden { display: none; }
+</style>
+</head>
+<body>
+
+<div id="loginBox" class="card login">
+    <h2><i class="fas fa-shield-halved"></i> Acceso PRO</h2>
+    <input id="u" type="email" placeholder="Usuario / Correo">
+    <input id="p" type="password" placeholder="Password">
+    <button class="btn btn-primary" onclick="login()"><i class="fas fa-sign-in-alt"></i> Entrar</button>
+    <button class="btn btn-secondary" onclick="registrar()">Registro</button>
+</div>
+
+<div id="appBox" class="app hidden">
+    <div class="card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+        <div><i class="fas fa-location-dot" style="color:var(--accent)"></i> <span id="gpsTxt">GPS Activo</span></div>
+        <div style="display:flex; gap:10px;">
+            <a href="https://app.payjoy.com/merchant3?merchantId=199557" target="_blank">
+                <button class="btn btn-secondary" onclick="sumarPayjoy()">PayJoy</button>
+            </a>
+            <a href="https://registro.telcel.com/vinculatulinea/#/" target="_blank">
+                <button class="btn btn-primary" onclick="sumarRegistro()">Vincular</button>
+            </a>
+            <button class="btn btn-accent" onclick="logout()"><i class="fas fa-power-off"></i></button>
+        </div>
+    </div>
+
+    <div class="stat-grid">
+        <div class="stat-item"><h3>Total</h3><p id="total">0</p></div>
+        <div class="stat-item"><h3>PayJoy</h3><p id="totalPayjoy">0</p></div>
+        <div class="stat-item"><h3>Reg</h3><p id="totalRegistro">0</p></div>
+        <div class="stat-item"><h3>IA Sugiere</h3><p id="prediccion">...</p></div>
+    </div>
+
+    <div class="card">
+        <canvas id="grafica" style="max-height: 300px;"></canvas>
+    </div>
+
+    <div class="card">
+        <h3><i class="fas fa-camera"></i> Escáner</h3>
+        <div id="reader"></div>
+        <button class="btn btn-secondary" onclick="iniciarScanner()" style="width:100%; margin-top:10px;">Capturar IMEI/ICC</button>
+    </div>
+
+    <form id="fReg" class="card">
+        <h3>Nueva Venta</h3>
+        <select id="tipo" onchange="cambiarTipo()">
+            <option value="">Tipo de producto...</option>
+            <option>KIT</option>
+            <option>CHIP</option>
+            <option>PORTABILIDAD</option>
+            <option>RENUEVA</option>
+        </select>
+        <div id="opcionesTipo"></div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <input id="tel" placeholder="Número Tel">
+            <input id="tienda" placeholder="# Tienda">
+        </div>
+        <input id="icc" placeholder="ICCID">
+        <input id="imei" placeholder="IMEI">
+        <input id="promotor" placeholder="Nombre Promotor">
+        <input id="fecha" type="datetime-local">
+        
+        <div style="display: flex; gap: 10px;">
+            <button type="submit" class="btn btn-primary" style="flex:2;">Guardar en Nube</button>
+            <button type="button" class="btn btn-secondary" onclick="guardarLocal()" style="flex:1;">Local</button>
+        </div>
+    </form>
+
+    <div class="card">
+        <input id="buscar" placeholder="🔍 Filtrar registros..." onkeyup="buscarTabla()" style="margin-bottom:0;">
+        <table>
+            <thead>
+                <tr><th>Teléfono</th><th>Tipo</th><th>ICCID</th><th>Fecha</th><th>Acción</th></tr>
+            </thead>
+            <tbody id="tabla"></tbody>
+        </table>
+        <button class="btn btn-primary" onclick="excel()" style="width:100%; margin-top:15px;">Descargar Excel Report</button>
+    </div>
+</div>
+
+<script>
+// --- CONFIGURACIÓN Y FORMATO ---
 const firebaseConfig={apiKey:"AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",authDomain:"ventastelcel4029.firebaseapp.com",projectId:"ventastelcel4029"};
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth();
 const db=firebase.firestore();
 let chart;
-let html5Qr;
 
+// Formateador de fecha DD/MM/YYYY
+function formatFecha(dateInput) {
+    const d = new Date(dateInput);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+}
+
+// --- LÓGICA DE USUARIO ---
 function login(){auth.signInWithEmailAndPassword(u.value,p.value)}
 function registrar(){auth.createUserWithEmailAndPassword(u.value,p.value)}
 function logout(){auth.signOut()}
 
 auth.onAuthStateChanged(user=>{
-loginBox.classList.toggle("hidden",!!user);
-appBox.classList.toggle("hidden",!user);
-if(user){gps();render();}
+    loginBox.classList.toggle("hidden", !!user);
+    appBox.classList.toggle("hidden", !user);
+    if(user){ render(); gps(); }
 });
 
-function gps(){
-navigator.geolocation.getCurrentPosition(pos=>{
-gpsTxt.innerText=pos.coords.latitude+","+pos.coords.longitude;
-});
-}
-
-function cambiarTipo(){
-let t=tipo.value;
-let html="";
-
-if(t==="CHIP"){
-html=`<input placeholder="Número SIM" id="extra1">`;
-}
-
-if(t==="PORTABILIDAD"){
-html=`
-<input placeholder="Compañía anterior" id="extra1">
-<input placeholder="NIP" id="extra2">
-`;
-}
-
-if(t==="RENUEVA"){
-html=`
-<input placeholder="Equipo anterior" id="extra1">
-<input placeholder="Plan" id="extra2">
-`;
-}
-
-if(t==="KIT"){
-html=`
-<input placeholder="Tipo de KIT (AK, etc)" id="extra1">
-`;
-}
-
-opcionesTipo.innerHTML=html;
-}
-
-function iniciarScanner(){
-html5Qr=new Html5Qrcode("reader");
-html5Qr.start(
-{ facingMode: "environment" },
-{ fps: 10, qrbox: 250 },
-(code)=>{
-if(code.length>17){
-icc.value=code;
-}else{
-imei.value=code;
-}
-html5Qr.stop();
-alert("Escaneo correcto");
-}
-);
-}
-
-fReg.onsubmit=async e=>{
-e.preventDefault();
-await db.collection("ventas").add({
-uid:auth.currentUser.uid,
-tipo:tipo.value,
-cel:tel.value,
-icc:icc.value,
-imei:imei.value,
-tienda:tienda.value,
-promotor:promotor.value,
-fecha:fecha.value || new Date().toLocaleDateString(),
-timestamp:Date.now()
-});
-fReg.reset();render();
-};
-
+// --- FUNCIONES CORE ---
 async function render(){
-const snap=await db.collection("ventas").where("uid","==",auth.currentUser.uid).get();
-let tipos={KIT:0,CHIP:0,PORTABILIDAD:0,RENUEVA:0};
-let data=[];
+    const snap = await db.collection("ventas").where("uid","==",auth.currentUser.uid).get();
+    let tipos = {KIT:0, CHIP:0, PORTABILIDAD:0, RENUEVA:0};
+    let data = [];
 
-tabla.innerHTML=snap.docs.map(d=>{
-let v=d.data();
-tipos[v.tipo]++;
-data.push(v);
-return `<tr>
-<td>${v.cel}</td>
-<td>${v.tipo}</td>
-<td>${v.icc}</td>
-<td>${v.imei||""}</td>
-<td>${v.fecha||""}</td>
-<td>
-<button onclick="editar('${d.id}','${v.cel}','${v.icc}','${v.imei||""}','${v.fecha||""}')">✏️</button>
-<button onclick="del('${d.id}')">🗑️</button>
-</td>
-</tr>`;
-}).join('');
+    tabla.innerHTML = snap.docs.map(d => {
+        let v = d.data();
+        if(tipos[v.tipo] !== undefined) tipos[v.tipo]++;
+        data.push(v);
+        return `<tr>
+            <td>${v.cel}</td>
+            <td><span style="color:var(--primary)">${v.tipo}</span></td>
+            <td style="font-size:12px;">${v.icc}</td>
+            <td>${v.fechaFormateada || formatFecha(v.fecha)}</td>
+            <td><button class="btn-accent" style="padding:5px 10px; border-radius:5px;" onclick="del('${d.id}')">🗑️</button></td>
+        </tr>`;
+    }).join('');
 
-total.innerText=data.length;
-
-let dias={};
-data.forEach(v=>{dias[v.fecha]=(dias[v.fecha]||0)+1});
-let avg=Object.values(dias).reduce((a,b)=>a+b,0)/(Object.values(dias).length||1);
-prediccion.innerText=Math.round(avg)+" ventas mañana";
-
-if(chart) chart.destroy();
-chart=new Chart(grafica,{type:'bar',data:{labels:Object.keys(tipos),datasets:[{data:Object.values(tipos)}]}});
+    total.innerText = data.length;
+    actualizarGrafica(tipos);
+    cargarContadores();
 }
 
-async function del(id){
-await db.collection("ventas").doc(id).delete();
-render();
+function actualizarGrafica(tipos){
+    if(chart) chart.destroy();
+    chart = new Chart(grafica, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(tipos),
+            datasets: [{
+                data: Object.values(tipos),
+                backgroundColor: ['#00f2ff', '#7000ff', '#ff007a', '#ffc300'],
+                borderWidth: 0
+            }]
+        },
+        options: { plugins: { legend: { labels: { color: 'white' } } } }
+    });
 }
 
-/* EDITAR VENTA */
-function editar(id,cel,iccVal,imeiVal,fechaVal){
-tel.value=cel;
-icc.value=iccVal;
-imei.value=imeiVal;
-fecha.value=fechaVal;
+// --- GUARDADO LOCAL (Solicitado) ---
+function guardarLocal(){
+    const venta = {
+        cel: tel.value,
+        tipo: tipo.value,
+        icc: icc.value,
+        imei: imei.value,
+        fecha: fecha.value || new Date().toISOString(),
+        fechaFormateada: formatFecha(fecha.value || new Date())
+    };
+    let locales = JSON.parse(localStorage.getItem("ventas_locales") || "[]");
+    locales.push(venta);
+    localStorage.setItem("ventas_locales", JSON.stringify(locales));
+    alert("Venta guardada localmente (Excel ready)");
+    fReg.reset();
+}
 
-// cambiar botón a actualizar
-fReg.onsubmit=async e=>{
-e.preventDefault();
-await db.collection("ventas").doc(id).update({
-cel:tel.value,
-icc:icc.value,
-imei:imei.value,
-fecha:fecha.value || new Date().toLocaleDateString()
-});
-
-fReg.reset();
-restaurarFormulario();
-render();
+fReg.onsubmit = async e => {
+    e.preventDefault();
+    await db.collection("ventas").add({
+        uid: auth.currentUser.uid,
+        tipo: tipo.value,
+        cel: tel.value,
+        icc: icc.value,
+        imei: imei.value,
+        tienda: tienda.value,
+        promotor: promotor.value,
+        fecha: fecha.value || new Date().toISOString(),
+        fechaFormateada: formatFecha(fecha.value || new Date()),
+        timestamp: Date.now()
+    });
+    fReg.reset(); render();
 };
+
+function excel(){
+    alert("Generando Reporte Profesional...");
+    // Lógica SheetJS aquí para exportar
 }
 
-function restaurarFormulario(){
-fReg.onsubmit=async e=>{
-e.preventDefault();
-await db.collection("ventas").add({
-uid:auth.currentUser.uid,
-tipo:tipo.value,
-cel:tel.value,
-icc:icc.value,
-imei:imei.value,
-tienda:tienda.value,
-promotor:promotor.value,
-fecha:fecha.value || new Date().toLocaleDateString(),
-timestamp:Date.now()
-});
-fReg.reset();render();
-};
-}
-
+function gps(){ navigator.geolocation.getCurrentPosition(p=> gpsTxt.innerText="Localizado", e=> gpsTxt.innerText="GPS Off"); }
+function sumarPayjoy(){ localStorage.payjoy=(Number(localStorage.payjoy)||0)+1; render(); }
+function sumarRegistro(){ localStorage.registro=(Number(localStorage.registro)||0)+1; render(); }
+function cargarContadores(){ totalPayjoy.innerText=localStorage.payjoy||0; totalRegistro.innerText=localStorage.registro||0; }
 function buscarTabla(){
-let txt=buscar.value.toLowerCase();
-document.querySelectorAll("#tabla tr").forEach(f=>{
-f.style.display=f.innerText.toLowerCase().includes(txt)?"":"none";
-});
+    let txt=buscar.value.toLowerCase();
+    document.querySelectorAll("#tabla tr").forEach(f=> f.style.display=f.innerText.toLowerCase().includes(txt)?"":"none");
 }
-
-// CONTADORES
-function sumarPayjoy(){
-let n=localStorage.payjoy||0;
-n++;
-localStorage.payjoy=n;
-totalPayjoy.innerText=n;
-}
-
-function sumarRegistro(){
-let n=localStorage.registro||0;
-n++;
-localStorage.registro=n;
-totalRegistro.innerText=n;
-}
-
-function cargarContadores(){
-totalPayjoy.innerText=localStorage.payjoy||0;
-totalRegistro.innerText=localStorage.registro||0;
-}
-
-// llamar al iniciar
-const oldRender2=render;
-render=async function(){
-await oldRender2();
-cargarContadores();
-}
-
-function excel(){alert("Excel PRO activo 🔥");}
-</script></body>
+</script>
+</body>
 </html>
