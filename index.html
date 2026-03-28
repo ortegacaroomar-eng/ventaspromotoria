@@ -3,200 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IRIS AI - Red Neural Telcel (Cortana Mode)</title>
+    <title>IRIS AI - Inteligencia de Ventas Regional</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 
     <style>
-        :root { 
-            --cyan-cortana: #00bfff; /* El azul distintivo de Cortana */
-            --dark-blue: #020210;
-            --glass: rgba(0, 191, 255, 0.05);
-        }
+        :root { --cortana: #00bfff; --bg: #010108; --glass: rgba(0, 191, 255, 0.08); }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; }
+        .app { max-width: 1200px; margin: auto; padding: 15px; }
+        .card { background: var(--glass); backdrop-filter: blur(25px); border-radius: 15px; padding: 20px; margin-bottom: 15px; border: 1px solid rgba(0,191,255,0.2); }
         
-        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--dark-blue); color: white; overflow-x: hidden; }
-        body::before { content: ""; position: fixed; width: 100%; height: 100%; background: radial-gradient(circle at 50% 50%, #0a0a20 0%, var(--dark-blue) 100%); z-index: -1; }
+        /* HALO CORTANA ANIMADO */
+        .halo-box { position: relative; width: 100px; height: 100px; margin: 0 auto 10px; display:flex; align-items:center; justify-content:center; }
+        .halo-ring { position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 2px solid transparent; border-top-color: var(--cortana); animation: spin 2s linear infinite; box-shadow: 0 0 15px var(--cortana); }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        .app { max-width: 1100px; margin: auto; padding: 20px; }
-        .card { background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 20px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(0, 191, 255, 0.15); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); }
-
-        /* NUEVO: AVATAR HOLOGRÁFICO ESTILO CORTANA */
-        .cortana-halo-container { position: relative; width: 120px; height: 120px; margin: 0 auto; display: flex; align-items: center; justify-content: center; }
-        .halo-visualizer { 
-            position: absolute; width: 100%; height: 100%; border-radius: 50%;
-            background: conic-gradient(from 0deg, transparent, var(--cyan-cortana), transparent 50%);
-            animation: rotate-halo 4s linear infinite, pulse-halo 2s ease-in-out infinite;
-            filter: blur(2px); opacity: 0.8;
-        }
-        .halo-inner { position: absolute; width: 90%; height: 90%; border-radius: 50%; background: var(--dark-blue); border: 1px solid rgba(0, 191, 255, 0.2); }
-        .halo-data { font-size: 10px; color: var(--cyan-cortana); text-transform: uppercase; letter-spacing: 1px; }
-
-        @keyframes rotate-halo { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @keyframes pulse-halo { 0% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); opacity: 0.8; } }
-
-        .ia-speech- premium { font-size: 15px; font-style: italic; color: #b3f7ff; text-align: center; margin-top: 15px; min-height: 40px; }
-
-        /* UI ELEMENTS */
-        .btn-nav { padding: 10px 20px; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; background: transparent; color: var(--cyan-cortana); border: 1px solid var(--cyan-cortana); display: flex; align-items: center; gap: 8px; font-size: 12px; }
-        .btn-nav:hover { background: var(--cyan-cortana); color: black; }
-
-        input, select { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 10px; border: 1px solid #333; background: rgba(0,0,0,0.3); color: white; outline: none; transition: 0.3s; }
-        input:focus { border-color: var(--cyan-cortana); box-shadow: 0 0 10px var(--cyan-cortana); }
-
-        .btn-sync { padding: 15px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; width: 100%; background: var(--cyan-cortana); color: black; font-size: 16px; text-transform: uppercase; }
-        .btn-sync:active { transform: scale(0.97); }
-
-        .chat-box { height: 200px; overflow-y: auto; background: rgba(0,0,0,0.5); border-radius: 15px; padding: 15px; font-size: 13px; border: 1px solid #222; }
-        table { width: 100%; border-collapse: separate; border-spacing: 0 8px; margin-top: 15px; font-size: 13px; }
-        th { color: var(--cyan-cortana); text-align:left; padding: 10px; }
-        td { background: rgba(255, 255, 255, 0.03); padding: 10px; }
+        .ia-speech { font-size: 14px; text-align: center; color: #b3f7ff; min-height: 45px; font-style: italic; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #333; background: #000; color: #fff; box-sizing: border-box; }
+        
+        .btn { padding: 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; width: 100%; }
+        .btn-cloud { background: var(--cortana); color: #000; }
+        .btn-local { background: #333; color: #fff; border: 1px solid var(--cortana); }
+        .btn-excel { background: #1D6F42; color: white; margin-top: 10px; }
+        
+        canvas { max-height: 300px; background: rgba(0,0,0,0.3); border-radius: 10px; padding: 10px; }
         .hidden { display: none; }
     </style>
 </head>
 <body>
 
-<div id="loginBox" class="app" style="max-width: 400px; margin-top: 100px;">
-    <div class="card" style="text-align: center; border: 2px solid var(--cyan-cortana);">
-        <h2 style="color: var(--cyan-cortana);">NÚCLEO NEURAL IRIS</h2>
+<div id="loginBox" class="app" style="max-width: 380px; margin-top: 100px;">
+    <div class="card" style="text-align:center;">
+        <h2 style="color:var(--cortana)">ACCESO NEURAL IRIS</h2>
         <input id="u" type="email" placeholder="Usuario Corporativo">
         <input id="p" type="password" placeholder="Pass-Key">
-        <button class="btn-sync" onclick="login()"><i class="fas fa-satellite-dish"></i> Despertar Red</button>
+        <button class="btn btn-cloud" onclick="login()">ACTIVAR CORTANA</button>
     </div>
 </div>
 
 <div id="appBox" class="app hidden">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <span style="color:var(--cyan-cortana); font-size:11px;"><i class="fas fa-shield-halved"></i> Estatus: Sincronizado</span>
-        <button class="btn-nav" onclick="logout()"><i class="fas fa-power-off"></i> Cerrar Sesión</button>
+    <div class="card" style="text-align: center;">
+        <div class="halo-box"><div class="halo-ring"></div><i class="fas fa-satellite-dish" style="color:var(--cortana)"></i></div>
+        <div id="iaSpeech" class="ia-speech">"Analizando flujo de ventas en tiempo real..."</div>
     </div>
 
-    <div class="card" style="padding: 30px;">
-        <div class="cortana-halo-container">
-            <div id="glow" class="halo-visualizer"></div>
-            <div class="halo-inner"></div>
-            <div class="halo-data">ESCUCHANDO</div>
+    <div class="grid">
+        <div class="card">
+            <h3 style="color:var(--cortana)"><i class="fas fa-trophy"></i> Ranking de Tiendas</h3>
+            <canvas id="graficaTiendas"></canvas>
+            <div id="iaConsejo" style="font-size: 12px; color: #00ffcc; margin-top: 15px; border-left: 2px solid var(--cortana); padding-left: 10px;"></div>
         </div>
-        <div id="iaSpeech" class="ia-speech-premium">"Iniciando flujo de datos regionales..."</div>
-    </div>
-
-    <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px;">
-        <form id="fReg" class="card">
-            <h3 style="margin-top:0; color:var(--cyan-cortana)"><i class="fas fa-cloud-upload-alt"></i> Nueva Venta</h3>
-            <select id="tipo" onchange="iaPayjoyCheck(this.value)">
-                <option value="">Selecciona tipo...</option>
-                <option>KIT</option><option>CHIP</option><option>PORTABILIDAD</option><option>RENUEVA</option><option value="PAYJOY">PAYJOY</option>
-            </select>
-            <input id="promotor" placeholder="Tu Nombre Real">
-            <input id="tel" type="number" placeholder="Celular del Cliente">
-            <input id="tienda" placeholder="ID Sucursal">
-            <input id="imei" placeholder="IMEI / ICCID">
-            <button type="submit" class="btn-sync">SUBIR REGISTRO</button>
-        </form>
 
         <div class="card">
-            <h3><i class="fas fa-comments"></i> Red de Promotores</h3>
-            <div id="chatBox" class="chat-box"></div>
-            <div style="display:flex; gap:5px; margin-top:10px;">
-                <input id="chatMsg" placeholder="Dime algo o un tip de venta..." style="margin:0; font-size:12px;">
-                <button class="btn-sync" style="padding:10px 15px; width:auto;" onclick="enviarChat()"><i class="fas fa-paper-plane"></i></button>
-            </div>
+            <form id="fReg">
+                <select id="tipo">
+                    <option>PORTABILIDAD</option><option>RENUEVA</option><option>KIT</option><option>CHIP</option><option>PAYJOY</option>
+                </select>
+                <div style="display:flex; gap:5px;">
+                    <input id="promotor" placeholder="Tu Nombre">
+                    <input id="tienda" placeholder="Tienda ID">
+                </div>
+                <input id="tel" type="number" placeholder="Celular Cliente">
+                <input id="imei" placeholder="IMEI / ICCID">
+                
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <button type="submit" class="btn btn-cloud">SUBIR NUBE <i class="fas fa-cloud"></i></button>
+                    <button type="button" onclick="guardarLocal()" class="btn btn-local">LOCAL <i class="fas fa-hard-drive"></i></button>
+                </div>
+            </form>
+            <button class="btn btn-excel" onclick="exportarExcel()"><i class="fas fa-file-excel"></i> DESCARGAR EXCEL LOCAL</button>
         </div>
-    </div>
-
-    <div class="card" style="overflow-x:auto;">
-        <h3><i class="fas fa-history"></i> Historial Global</h3>
-        <table>
-            <thead><tr><th>Promotor</th><th>Sucursal</th><th>Producto</th><th>Estatus</th></tr></thead>
-            <tbody id="tablaBody"></tbody>
-        </table>
     </div>
 </div>
 
 <script>
 const firebaseConfig={apiKey:"AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",authDomain:"ventastelcel4029.firebaseapp.com",projectId:"ventastelcel4029"};
 firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth();
 const db=firebase.firestore();
+const auth=firebase.auth();
+let miGrafica;
 
-// --- SISTEMA DE VOZ NEURAL (CORTANA STYLE) ---
-function hablar(texto) {
+// --- VOZ DE CORTANA EN TIEMPO REAL ---
+function hablar(t) {
     const s = window.speechSynthesis;
-    const u = new SpeechSynthesisUtterance(texto);
-    u.lang = 'es-MX'; // Español de México
-    // Cortana tiene un tono más profesional, pausado y ligeramente más bajo que el anime
-    u.pitch = 0.95; 
-    u.rate = 0.9;   // Un poco más lenta para sonar más "IA avanzada"
+    s.cancel(); // Detener voz anterior para evitar traslapes
+    const u = new SpeechSynthesisUtterance(t);
+    u.lang = 'es-MX'; u.pitch = 0.95; u.rate = 0.95;
     s.speak(u);
 }
 
-// --- AUTH ---
 function login(){ auth.signInWithEmailAndPassword(u.value,p.value); }
-function logout(){ auth.signOut(); }
-
 auth.onAuthStateChanged(user => {
     loginBox.classList.toggle("hidden", !!user);
     appBox.classList.toggle("hidden", !user);
-    if(user) { 
-        // Saludo oficial de Cortana
-        hablar("Hola, Jefe. El núcleo Iris está sincronizado. Estoy lista para asistirte con las ventas regionales.");
-        iniciarEcosistema();
+    if(user) {
+        hablar("Hola Jefe. Estoy conectada a la red regional. Iniciando análisis de competencia entre tiendas.");
+        iniciarAnalisisRegional();
     }
 });
 
-function iniciarEcosistema() {
-    // 1. Detección Horaria Inteligente
-    const h = new Date().getHours();
-    let msg = "";
-    if(h < 12) msg = "Buenos días, Jefe. He analizado el flujo matutino; recomiendo enfocar las portabilidades antes de mediodía.";
-    else if(h < 19) msg = "Buenas tardes. El sistema está activo y monitoreando las ventas PayJoy de la región.";
-    else msg = "Es tarde, pero aún detecto alto interés en KITs. Te sugiero un último esfuerzo.";
+function iniciarAnalisisRegional() {
+    // ESCUCHA ACTIVA DE VENTAS (CUALQUIER TIENDA)
+    db.collection("ventas").orderBy("ts", "desc").onSnapshot(snap => {
+        let rankingTiendas = {};
+        let productos = { "PORTABILIDAD":0, "RENUEVA":0, "KIT":0, "CHIP":0, "PAYJOY":0 };
+
+        snap.docs.forEach(d => {
+            const v = d.data();
+            // Lógica de Ranking
+            rankingTiendas[v.tienda] = (rankingTiendas[v.tienda] || 0) + 1;
+            // Lógica de Productos para consejos
+            if(productos[v.tipo] !== undefined) productos[v.tipo]++;
+        });
+
+        actualizarGrafica(rankingTiendas);
+        generarConsejosCortana(rankingTiendas, productos);
+        
+        // Alerta de Voz para Venta Nueva
+        if (!snap.empty && (Date.now() - snap.docs[0].data().ts < 5000)) {
+            const v = snap.docs[0].data();
+            hablar(`Nueva venta detectada. ${v.promotor} de la tienda ${v.tienda} ha registrado un ${v.tipo}. El ranking se está moviendo.`);
+        }
+    });
+}
+
+function generarConsejosCortana(tiendas, productos) {
+    const total = Object.values(productos).reduce((a,b)=>a+b, 0);
+    const topTienda = Object.entries(tiendas).sort((a,b)=>b[1]-a[1])[0];
+    const productoBajo = Object.entries(productos).sort((a,b)=>a[1]-b[1])[0][0];
+
+    let txt = `Jefe, la tienda ${topTienda[0]} lleva la delantera con ${topTienda[1]} ventas. `;
     
-    iaSpeech.innerText = msg;
-    hablar(msg);
+    // Consejos dinámicos según el producto más bajo
+    let tip = "";
+    if(productoBajo === "PORTABILIDAD") tip = "Detecto pocas Portabilidades. Recuerda al equipo que es el cierre más fácil: ¡el cliente no paga nada y se lleva el doble de beneficios!";
+    else if(productoBajo === "PAYJOY") tip = "El movimiento de PayJoy es lento. Sugiere ofrecerlo a clientes que buscan gama media con pagos semanales mínimos.";
+    else tip = "Buen ritmo general. Sugiero enfocarse en KITs para subir el promedio de comisión por equipo.";
 
-    // 2. Escuchar Chat y Ventas
-    db.collection("chat").orderBy("ts", "desc").limit(12).onSnapshot(snap => {
-        chatBox.innerHTML = snap.docs.map(d => `<div><b style="color:var(--cyan-cortana)">${d.data().user}:</b> ${d.data().msg}</div>`).reverse().join('');
-        chatBox.scrollTop = chatBox.scrollHeight;
-    });
+    iaSpeech.innerText = txt + tip;
+    iaConsejo.innerHTML = `<b>CONSEJO DE CORTANA:</b><br>${tip}`;
+}
 
-    db.collection("ventas").orderBy("ts", "desc").limit(10).onSnapshot(snap => {
-        tablaBody.innerHTML = snap.docs.map(d => `<tr><td>${d.data().promotor}</td><td>${d.data().tienda}</td><td>${d.data().tipo}</td><td style="color:var(--cyan-cortana)">NUBE</td></tr>`).join('');
+function actualizarGrafica(data) {
+    const ctx = document.getElementById('graficaTiendas').getContext('2d');
+    if(miGrafica) miGrafica.destroy();
+    
+    miGrafica = new Chart(ctx, {
+        type: 'horizontalBar',
+        data: {
+            labels: Object.keys(data),
+            datasets: [{
+                label: 'Ventas por Sucursal',
+                data: Object.values(data),
+                backgroundColor: 'rgba(0, 191, 255, 0.4)',
+                borderColor: '#00bfff',
+                borderWidth: 2
+            }]
+        },
+        options: { 
+            scales: { xAxes: [{ ticks: { beginAtZero: true, fontColor: 'white' } }], yAxes: [{ ticks: { fontColor: 'white' } }] },
+            legend: { labels: { fontColor: 'white' } }
+        }
     });
 }
 
-function iaPayjoyCheck(v){
-    if(v==="PAYJOY") {
-        const c = "Alerta: Para PayJoy, asegúrate de que el IMEI capturado coincida con la etiqueta de la caja.";
-        iaSpeech.innerText = `SOPORTE: ${c}`;
-        hablar(c);
-    }
+// --- LOCAL STORAGE & EXCEL (Se mantienen por seguridad) ---
+function guardarLocal() {
+    const v = { promotor: promotor.value, tipo: tipo.value, cel: tel.value, tienda: tienda.value, imei: imei.value, ts: Date.now() };
+    let locales = JSON.parse(localStorage.getItem("ventas_iris") || "[]");
+    locales.push(v);
+    localStorage.setItem("ventas_iris", JSON.stringify(locales));
+    hablar("Registro asegurado localmente, Jefe.");
+    alert("Guardado en Memoria Local");
 }
 
-/* --- REGISTRO --- */
+function exportarExcel() {
+    let locales = JSON.parse(localStorage.getItem("ventas_iris") || "[]");
+    if(locales.length === 0) return alert("No hay datos locales");
+    const ws = XLSX.utils.json_to_sheet(locales);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Reporte");
+    XLSX.writeFile(wb, "Reporte_Tiendas_Iris.xlsx");
+}
+
 fReg.onsubmit = async e => {
     e.preventDefault();
-    const data = {
-        uid: auth.currentUser.uid, promotor: promotor.value,
-        tipo: tipo.value, cel: tel.value, tienda: tienda.value, 
-        imei: imei.value, ts: Date.now()
-    };
-    await db.collection("ventas").add(data);
-    
-    db.collection("chat").add({ user: "IRIS", msg: `📢 Registro exitoso: ${promotor.value} subió un ${tipo.value}.`, ts: Date.now() });
-
-    hablar(`Excelente trabajo, ${promotor.value}. He sincronizado tu venta exitosamente.`);
+    await db.collection("ventas").add({
+        promotor: promotor.value, tipo: tipo.value, cel: tel.value,
+        tienda: tienda.value, imei: imei.value, ts: Date.now()
+    });
     fReg.reset();
 };
-
-function enviarChat(){
-    if(!chatMsg.value) return;
-    db.collection("chat").add({ user: promotor.value || 'Promotor', msg: chatMsg.value, ts: Date.now() });
-    chatMsg.value = "";
-}
 </script>
 </body>
 </html>
