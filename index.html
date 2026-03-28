@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sistema Ventas PRO IA - Premium</title>
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -13,299 +14,182 @@
 <script src="https://unpkg.com/html5-qrcode"></script>
 
 <style>
-:root {
-    --primary: #00f2ff;
-    --secondary: #7000ff;
-    --accent: #ff007a;
-    --bg: #050505;
-    --glass: rgba(255, 255, 255, 0.1);
-}
-
-body {
-    margin: 0;
-    font-family: 'Poppins', 'Segoe UI', sans-serif;
-    color: white;
-    background: radial-gradient(circle at top right, #1a1a2e, #050505);
-    min-height: 100vh;
-    overflow-x: hidden;
-}
-
-/* Animación de entrada */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.app { max-width: 1100px; margin: auto; padding: 20px; animation: fadeIn 0.8s ease-out; }
-
-.card {
-    background: var(--glass);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-}
-
-/* Títulos de Neón */
-h2, h3 {
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: var(--primary);
-    text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
-}
-
-input, select {
-    width: 100%;
-    padding: 12px;
-    margin-bottom: 15px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    background: rgba(0, 0, 0, 0.3);
-    color: white;
-    box-sizing: border-box;
-    transition: 0.3s;
-}
-
-input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 10px var(--primary); }
-
-.btn {
-    padding: 12px 20px;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: all 0.3s;
-    text-transform: uppercase;
-    display: inline-block;
-}
-
-.btn-primary { background: linear-gradient(45deg, var(--primary), #00a2ff); color: #000; }
-.btn-secondary { background: linear-gradient(45deg, var(--secondary), #a000ff); color: white; }
-.btn-accent { background: linear-gradient(45deg, var(--accent), #ff4d4d); color: white; }
-.btn:hover { transform: scale(1.05); filter: brightness(1.2); }
-
-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; margin-top: 15px; }
-th { background: rgba(255, 255, 255, 0.05); color: var(--primary); padding: 15px; text-align: left; }
-td { background: rgba(255, 255, 255, 0.03); padding: 12px; }
-tr:hover td { background: rgba(255, 255, 255, 0.1); }
-
-.login {
-    max-width: 400px;
-    margin: 100px auto;
-    text-align: center;
-    background: rgba(10, 10, 10, 0.8);
-    border: 1px solid var(--primary);
-}
-
-.stat-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 15px;
-    text-align: center;
-}
-
-.stat-item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-bottom: 3px solid var(--primary); }
-
-#reader { border-radius: 15px; overflow: hidden; border: 2px solid var(--primary) !important; }
-.hidden { display: none; }
+body{margin:0;font-family:'Segoe UI';background:#050505;color:white}
+.app{max-width:1100px;margin:auto;padding:20px}
+.card{background:rgba(255,255,255,.05);padding:20px;border-radius:15px;margin-bottom:15px}
+input,select{width:100%;padding:10px;margin-bottom:10px;border-radius:8px;border:none;background:#111;color:white}
+.btn{padding:10px;border:none;border-radius:10px;cursor:pointer}
+.btn-primary{background:#00f2ff;color:#000}
+.btn-secondary{background:#7000ff;color:#fff}
+.btn-accent{background:#ff007a;color:#fff}
+.hidden{display:none}
+#reader{border:2px solid #00f2ff;border-radius:10px}
 </style>
 </head>
 <body>
 
-<div id="loginBox" class="card login">
-    <h2><i class="fas fa-shield-halved"></i> Acceso PRO</h2>
-    <input id="u" type="email" placeholder="Usuario / Correo">
-    <input id="p" type="password" placeholder="Password">
-    <button class="btn btn-primary" onclick="login()"><i class="fas fa-sign-in-alt"></i> Entrar</button>
-    <button class="btn btn-secondary" onclick="registrar()">Registro</button>
+<div id="loginBox" class="card">
+<h2>Acceso</h2>
+<input id="u" type="email" placeholder="Correo">
+<input id="p" type="password" placeholder="Password">
+<button class="btn btn-primary" onclick="login()">Entrar</button>
+<button class="btn btn-secondary" onclick="registrar()">Registro</button>
 </div>
 
 <div id="appBox" class="app hidden">
-    <div class="card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
-        <div><i class="fas fa-location-dot" style="color:var(--accent)"></i> <span id="gpsTxt">GPS Activo</span></div>
-        <div style="display:flex; gap:10px;">
-            <a href="https://app.payjoy.com/merchant3?merchantId=199557" target="_blank">
-                <button class="btn btn-secondary" onclick="sumarPayjoy()">PayJoy</button>
-            </a>
-            <a href="https://registro.telcel.com/vinculatulinea/#/" target="_blank">
-                <button class="btn btn-primary" onclick="sumarRegistro()">Vincular</button>
-            </a>
-            <button class="btn btn-accent" onclick="logout()"><i class="fas fa-power-off"></i></button>
-        </div>
-    </div>
 
-    <div class="stat-grid">
-        <div class="stat-item"><h3>Total</h3><p id="total">0</p></div>
-        <div class="stat-item"><h3>PayJoy</h3><p id="totalPayjoy">0</p></div>
-        <div class="stat-item"><h3>Reg</h3><p id="totalRegistro">0</p></div>
-        <div class="stat-item"><h3>IA Sugiere</h3><p id="prediccion">...</p></div>
-    </div>
+<div class="card">
+📍 <span id="gpsTxt">GPS</span>
+<br><br>
+<button class="btn btn-secondary" onclick="sumarPayjoy()">PayJoy</button>
+<button class="btn btn-primary" onclick="sumarRegistro()">Vincular</button>
+<button class="btn btn-accent" onclick="logout()">Salir</button>
+</div>
 
-    <div class="card">
-        <canvas id="grafica" style="max-height: 300px;"></canvas>
-    </div>
+<div class="card">
+Total: <span id="total">0</span><br>
+PayJoy: <span id="totalPayjoy">0</span><br>
+Reg: <span id="totalRegistro">0</span><br>
+IA: <span id="prediccion">...</span>
+</div>
 
-    <div class="card">
-        <h3><i class="fas fa-camera"></i> Escáner</h3>
-        <div id="reader"></div>
-        <button class="btn btn-secondary" onclick="iniciarScanner()" style="width:100%; margin-top:10px;">Capturar IMEI/ICC</button>
-    </div>
+<div class="card">
+<canvas id="grafica"></canvas>
+</div>
 
-    <form id="fReg" class="card">
-        <h3>Nueva Venta</h3>
-        <select id="tipo" onchange="cambiarTipo()">
-            <option value="">Tipo de producto...</option>
-            <option>KIT</option>
-            <option>CHIP</option>
-            <option>PORTABILIDAD</option>
-            <option>RENUEVA</option>
-        </select>
-        <div id="opcionesTipo"></div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <input id="tel" placeholder="Número Tel">
-            <input id="tienda" placeholder="# Tienda">
-        </div>
-        <input id="icc" placeholder="ICCID">
-        <input id="imei" placeholder="IMEI">
-        <input id="promotor" placeholder="Nombre Promotor">
-        <input id="fecha" type="datetime-local">
-        
-        <div style="display: flex; gap: 10px;">
-            <button type="submit" class="btn btn-primary" style="flex:2;">Guardar en Nube</button>
-            <button type="button" class="btn btn-secondary" onclick="guardarLocal()" style="flex:1;">Local</button>
-        </div>
-    </form>
+<!-- 🔥 SCANNER -->
+<div class="card">
+<h3>📷 Scanner Inteligente</h3>
+<div id="reader"></div>
+<button class="btn btn-secondary" onclick="iniciarScanner()">Escanear</button>
+<button class="btn btn-accent" onclick="detenerScanner()">Detener</button>
+</div>
 
-    <div class="card">
-        <input id="buscar" placeholder="🔍 Filtrar registros..." onkeyup="buscarTabla()" style="margin-bottom:0;">
-        <table>
-            <thead>
-                <tr><th>Teléfono</th><th>Tipo</th><th>ICCID</th><th>Fecha</th><th>Acción</th></tr>
-            </thead>
-            <tbody id="tabla"></tbody>
-        </table>
-        <button class="btn btn-primary" onclick="excel()" style="width:100%; margin-top:15px;">Descargar Excel Report</button>
-    </div>
+<form id="fReg" class="card">
+<select id="tipo">
+<option>KIT</option>
+<option>CHIP</option>
+<option>PORTABILIDAD</option>
+<option>RENUEVA</option>
+</select>
+
+<input id="tel" placeholder="Tel">
+<input id="icc" placeholder="ICCID">
+<input id="imei" placeholder="IMEI">
+<input id="promotor" placeholder="Promotor">
+<input id="fecha" type="datetime-local">
+
+<button class="btn btn-primary">Guardar</button>
+</form>
+
+<table>
+<thead><tr><th>Tel</th><th>Tipo</th><th>ICC</th><th>Fecha</th></tr></thead>
+<tbody id="tabla"></tbody>
+</table>
+
 </div>
 
 <script>
-// --- CONFIGURACIÓN Y FORMATO ---
-const firebaseConfig={apiKey:"AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",authDomain:"ventastelcel4029.firebaseapp.com",projectId:"ventastelcel4029"};
+const firebaseConfig={apiKey:"AIzaSyD...",authDomain:"ventastelcel4029.firebaseapp.com",projectId:"ventastelcel4029"};
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth();
 const db=firebase.firestore();
-let chart;
 
-// Formateador de fecha DD/MM/YYYY
-function formatFecha(dateInput) {
-    const d = new Date(dateInput);
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
-    return `${day}/${month}/${year}`;
-}
+let scanner;
 
-// --- LÓGICA DE USUARIO ---
+/* LOGIN */
 function login(){auth.signInWithEmailAndPassword(u.value,p.value)}
 function registrar(){auth.createUserWithEmailAndPassword(u.value,p.value)}
 function logout(){auth.signOut()}
 
 auth.onAuthStateChanged(user=>{
-    loginBox.classList.toggle("hidden", !!user);
-    appBox.classList.toggle("hidden", !user);
-    if(user){ render(); gps(); }
+loginBox.classList.toggle("hidden",!!user);
+appBox.classList.toggle("hidden",!user);
+if(user){render();gps();}
 });
 
-// --- FUNCIONES CORE ---
-async function render(){
-    const snap = await db.collection("ventas").where("uid","==",auth.currentUser.uid).get();
-    let tipos = {KIT:0, CHIP:0, PORTABILIDAD:0, RENUEVA:0};
-    let data = [];
-
-    tabla.innerHTML = snap.docs.map(d => {
-        let v = d.data();
-        if(tipos[v.tipo] !== undefined) tipos[v.tipo]++;
-        data.push(v);
-        return `<tr>
-            <td>${v.cel}</td>
-            <td><span style="color:var(--primary)">${v.tipo}</span></td>
-            <td style="font-size:12px;">${v.icc}</td>
-            <td>${v.fechaFormateada || formatFecha(v.fecha)}</td>
-            <td><button class="btn-accent" style="padding:5px 10px; border-radius:5px;" onclick="del('${d.id}')">🗑️</button></td>
-        </tr>`;
-    }).join('');
-
-    total.innerText = data.length;
-    actualizarGrafica(tipos);
-    cargarContadores();
+/* GPS */
+function gps(){
+navigator.geolocation.getCurrentPosition(p=>gpsTxt.innerText="Activo");
 }
 
-function actualizarGrafica(tipos){
-    if(chart) chart.destroy();
-    chart = new Chart(grafica, {
-        type: 'doughnut',
-        data: {
-            labels: Object.keys(tipos),
-            datasets: [{
-                data: Object.values(tipos),
-                backgroundColor: ['#00f2ff', '#7000ff', '#ff007a', '#ffc300'],
-                borderWidth: 0
-            }]
-        },
-        options: { plugins: { legend: { labels: { color: 'white' } } } }
-    });
+/* SCANNER */
+function iniciarScanner(){
+scanner=new Html5Qrcode("reader");
+scanner.start({facingMode:"environment"},{fps:10,qrbox:250},
+(code)=>procesar(code));
 }
 
-// --- GUARDADO LOCAL (Solicitado) ---
-function guardarLocal(){
-    const venta = {
-        cel: tel.value,
-        tipo: tipo.value,
-        icc: icc.value,
-        imei: imei.value,
-        fecha: fecha.value || new Date().toISOString(),
-        fechaFormateada: formatFecha(fecha.value || new Date())
-    };
-    let locales = JSON.parse(localStorage.getItem("ventas_locales") || "[]");
-    locales.push(venta);
-    localStorage.setItem("ventas_locales", JSON.stringify(locales));
-    alert("Venta guardada localmente (Excel ready)");
-    fReg.reset();
+function detenerScanner(){
+if(scanner) scanner.stop();
 }
 
-fReg.onsubmit = async e => {
-    e.preventDefault();
-    await db.collection("ventas").add({
-        uid: auth.currentUser.uid,
-        tipo: tipo.value,
-        cel: tel.value,
-        icc: icc.value,
-        imei: imei.value,
-        tienda: tienda.value,
-        promotor: promotor.value,
-        fecha: fecha.value || new Date().toISOString(),
-        fechaFormateada: formatFecha(fecha.value || new Date()),
-        timestamp: Date.now()
-    });
-    fReg.reset(); render();
+function procesar(code){
+let limpio=code.replace(/\D/g,'');
+
+if(limpio.length>=19){
+icc.value=limpio;
+alerta("ICCID detectado");
+}else{
+imei.value=limpio;
+alerta("IMEI detectado");
+}
+
+if(navigator.vibrate) navigator.vibrate(100);
+}
+
+/* ALERTA */
+function alerta(msg){
+let div=document.createElement("div");
+div.innerText=msg;
+div.style.position="fixed";
+div.style.bottom="20px";
+div.style.background="#00f2ff";
+div.style.color="#000";
+div.style.padding="10px";
+document.body.appendChild(div);
+setTimeout(()=>div.remove(),1500);
+}
+
+/* GUARDAR */
+fReg.onsubmit=async e=>{
+e.preventDefault();
+await db.collection("ventas").add({
+uid:auth.currentUser.uid,
+tipo:tipo.value,
+cel:tel.value,
+icc:icc.value,
+imei:imei.value,
+fecha:fecha.value || new Date().toISOString()
+});
+fReg.reset();
+render();
 };
 
-function excel(){
-    alert("Generando Reporte Profesional...");
-    // Lógica SheetJS aquí para exportar
+/* RENDER */
+async function render(){
+let snap=await db.collection("ventas").get();
+tabla.innerHTML=snap.docs.map(d=>{
+let v=d.data();
+return `<tr>
+<td>${v.cel}</td>
+<td>${v.tipo}</td>
+<td>${v.icc}</td>
+<td>${new Date(v.fecha).toLocaleString()}</td>
+</tr>`;
+}).join('');
+total.innerText=snap.size;
+cargarContadores();
 }
 
-function gps(){ navigator.geolocation.getCurrentPosition(p=> gpsTxt.innerText="Localizado", e=> gpsTxt.innerText="GPS Off"); }
-function sumarPayjoy(){ localStorage.payjoy=(Number(localStorage.payjoy)||0)+1; render(); }
-function sumarRegistro(){ localStorage.registro=(Number(localStorage.registro)||0)+1; render(); }
-function cargarContadores(){ totalPayjoy.innerText=localStorage.payjoy||0; totalRegistro.innerText=localStorage.registro||0; }
-function buscarTabla(){
-    let txt=buscar.value.toLowerCase();
-    document.querySelectorAll("#tabla tr").forEach(f=> f.style.display=f.innerText.toLowerCase().includes(txt)?"":"none");
+/* CONTADORES */
+function sumarPayjoy(){localStorage.payjoy=(+localStorage.payjoy||0)+1;render();}
+function sumarRegistro(){localStorage.registro=(+localStorage.registro||0)+1;render();}
+function cargarContadores(){
+totalPayjoy.innerText=localStorage.payjoy||0;
+totalRegistro.innerText=localStorage.registro||0;
 }
 </script>
+
 </body>
 </html>
