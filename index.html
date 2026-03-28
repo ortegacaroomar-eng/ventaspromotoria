@@ -35,8 +35,21 @@ th::after{content:"⬍";position:absolute;right:6px;font-size:10px}
 <button class="btn btn-secondary" onclick="registrar()">Crear Cuenta</button>
 </div><div id="appBox" class="app hidden"><div class="topbar">
 <div class="card">📍 <span id="gpsTxt">Detectando...</span></div>
-<div><button class="btn btn-danger" onclick="logout()">Salir</button></div>
+<div>
+<a href="https://app.payjoy.com/accounts/login?afterLogin=https://app.payjoy.com/merchant3?merchantId=199557" target="_blank">
+<button class="btn btn-secondary" onclick="sumarPayjoy()">PayJoy</button>
+</a>
+<a href="https://registro.telcel.com/vinculatulinea/#/" target="_blank">
+<button class="btn btn-primary" onclick="sumarRegistro()">Vincular Línea</button>
+</a>
+<button class="btn btn-danger" onclick="logout()">Salir</button>
+</div>
 </div><div class="card">
+<h3>Total: <span id="total">0</span></h3>
+<h3>IA: <span id="prediccion">...</span></h3>
+<h3>PayJoy: <span id="totalPayjoy">0</span></h3>
+<h3>Registros: <span id="totalRegistro">0</span></h3>
+</div>
 <h3>Total: <span id="total">0</span></h3>
 <h3>IA: <span id="prediccion">...</span></h3>
 </div><div class="card"><canvas id="grafica"></canvas></div><!-- SCANNER --><div class="card">
@@ -44,20 +57,22 @@ th::after{content:"⬍";position:absolute;right:6px;font-size:10px}
 <div id="reader"></div>
 <button class="btn btn-secondary" onclick="iniciarScanner()">Iniciar Scanner</button>
 </div><form id="fReg" class="card">
-<select id="tipo">
+<select id="tipo" onchange="cambiarTipo()">
+<option value="">Selecciona tipo</option>
 <option>KIT</option>
 <option>CHIP</option>
 <option>PORTABILIDAD</option>
 <option>RENUEVA</option>
-</select>
+</select><!-- OPCIONES DINÁMICAS --><div id="opcionesTipo"></div>
 <input id="tel" placeholder="Número">
 <input id="icc" placeholder="ICCID o Chip">
 <input id="imei" placeholder="IMEI">
 <input id="tienda" placeholder="#Tienda">
 <input id="promotor" placeholder="Promotor">
+<input id="fecha" type="date">
 <button class="btn btn-primary">Guardar</button>
 </form><input id="buscar" placeholder="Buscar..." onkeyup="buscarTabla()"><table>
-<thead><tr><th>Cel</th><th>Tipo</th><th>ICCID</th><th>IMEI</th><th></th></tr></thead>
+<thead><tr><th>Cel</th><th>Tipo</th><th>ICCID</th><th>IMEI</th><th>Fecha</th><th></th></tr></thead>
 <tbody id="tabla"></tbody>
 </table><button class="btn btn-secondary" onclick="excel()">Excel</button>
 
@@ -83,6 +98,37 @@ function gps(){
 navigator.geolocation.getCurrentPosition(pos=>{
 gpsTxt.innerText=pos.coords.latitude+","+pos.coords.longitude;
 });
+}
+
+function cambiarTipo(){
+let t=tipo.value;
+let html="";
+
+if(t==="CHIP"){
+html=`<input placeholder="Número SIM" id="extra1">`;
+}
+
+if(t==="PORTABILIDAD"){
+html=`
+<input placeholder="Compañía anterior" id="extra1">
+<input placeholder="NIP" id="extra2">
+`;
+}
+
+if(t==="RENUEVA"){
+html=`
+<input placeholder="Equipo anterior" id="extra1">
+<input placeholder="Plan" id="extra2">
+`;
+}
+
+if(t==="KIT"){
+html=`
+<input placeholder="Tipo de KIT (AK, etc)" id="extra1">
+`;
+}
+
+opcionesTipo.innerHTML=html;
 }
 
 function iniciarScanner(){
@@ -112,7 +158,7 @@ icc:icc.value,
 imei:imei.value,
 tienda:tienda.value,
 promotor:promotor.value,
-fecha:new Date().toLocaleDateString(),
+fecha:fecha.value || new Date().toLocaleDateString(),
 timestamp:Date.now()
 });
 fReg.reset();render();
@@ -127,7 +173,7 @@ tabla.innerHTML=snap.docs.map(d=>{
 let v=d.data();
 tipos[v.tipo]++;
 data.push(v);
-return `<tr><td>${v.cel}</td><td>${v.tipo}</td><td>${v.icc}</td><td>${v.imei||""}</td><td><button onclick="del('${d.id}')">X</button></td></tr>`;
+return `<tr><td>${v.cel}</td><td>${v.tipo}</td><td>${v.icc}</td><td>${v.imei||""}</td><td>${v.fecha||""}</td><td><button onclick="del('${d.id}')">X</button></td></tr>`;
 }).join('');
 
 total.innerText=data.length;
@@ -148,6 +194,33 @@ let txt=buscar.value.toLowerCase();
 document.querySelectorAll("#tabla tr").forEach(f=>{
 f.style.display=f.innerText.toLowerCase().includes(txt)?"":"none";
 });
+}
+
+// CONTADORES
+function sumarPayjoy(){
+let n=localStorage.payjoy||0;
+n++;
+localStorage.payjoy=n;
+totalPayjoy.innerText=n;
+}
+
+function sumarRegistro(){
+let n=localStorage.registro||0;
+n++;
+localStorage.registro=n;
+totalRegistro.innerText=n;
+}
+
+function cargarContadores(){
+totalPayjoy.innerText=localStorage.payjoy||0;
+totalRegistro.innerText=localStorage.registro||0;
+}
+
+// llamar al iniciar
+const oldRender2=render;
+render=async function(){
+await oldRender2();
+cargarContadores();
 }
 
 function excel(){alert("Excel PRO activo 🔥");}
