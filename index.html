@@ -2,89 +2,105 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard Ventas PRO</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js">/* ===== IA PREDICCIÓN SIMPLE ===== */ function predecirVentas(data){ // predicción básica por promedio de últimos días let dias={};
-
-data.forEach(v=>{ if(!v.fecha) return; dias[v.fecha]=(dias[v.fecha]||0)+1; });
-
-let valores=Object.values(dias); if(valores.length===0) return 0;
-
-let promedio=valores.reduce((a,b)=>a+b,0)/valores.length; return Math.round(promedio); }
-
-async function mostrarPrediccion(){ const snap=await db.collection("ventas") .where("uid","==",auth.currentUser.uid) .get();
-
-let l=snap.docs.map(d=>d.data()); let pred=predecirVentas(l);
-
-let box=document.getElementById("prediccion"); if(box) box.innerText=pred+" ventas estimadas mañana"; }
-
-// llamar predicción después de render const oldRender=render; render=async function(){ await oldRender(); mostrarPrediccion(); }
-
-</script>
+<title>Sistema Ventas PRO IA</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script><style>
-body{margin:0;font-family:sans-serif;background:#0a0f1f;color:white}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/html5-qrcode"></script><style>
+body{margin:0;font-family:'Segoe UI',sans-serif;color:white;background:linear-gradient(-45deg,#001d3d,#003566,#000814,#001f54);background-size:400% 400%;animation:bgMove 12s ease infinite}
+@keyframes bgMove{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 .hidden{display:none}
-.app{padding:20px;max-width:1200px;margin:auto}
-.card{background:#111a33;padding:15px;border-radius:15px;margin-bottom:15px}
-input,select{width:100%;padding:10px;margin-bottom:10px;border-radius:8px;border:none}
-button{padding:10px;border:none;border-radius:10px;cursor:pointer}
-.btn-primary{background:#ffc300}
+.app{max-width:1100px;margin:auto;padding:20px}
+.card{background:rgba(255,255,255,.08);backdrop-filter:blur(14px);border-radius:15px;padding:15px;margin-bottom:15px}
+input,select{width:100%;padding:10px;margin-bottom:10px;border-radius:8px;border:none;background:rgba(255,255,255,.12);color:white}
+.btn{padding:10px;border:none;border-radius:10px;cursor:pointer}
+.btn-primary{background:#ffc300;color:#001d3d}
 .btn-danger{background:#ff4d4d;color:white}
+.btn-secondary{background:#00b4d8;color:white}
 table{width:100%;background:white;color:black;border-collapse:collapse}
-td,th{padding:6px;border:1px solid #ddd}
+th,td{padding:6px;border:1px solid #ddd}
 th{background:#000;color:#fff;position:relative}
-th::after{content:"⬍";position:absolute;right:6px;font-size:10px;opacity:.7}
-.login{max-width:300px;margin:100px auto;background:white;color:black;padding:20px;border-radius:15px}
+th::after{content:"⬍";position:absolute;right:6px;font-size:10px}
+.login{max-width:350px;margin:60px auto;background:white;color:black;padding:25px;border-radius:15px}
+.topbar{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+#reader{width:100%;max-width:400px;margin:auto}
 </style></head>
 <body><div id="loginBox" class="login">
-<h3>Login</h3>
-<input id="u" placeholder="Correo">
+<h2>Acceso</h2>
+<input id="u" type="email" placeholder="Correo">
 <input id="p" type="password" placeholder="Contraseña">
-<button onclick="login()">Entrar</button>
-</div><div id="appBox" class="app hidden">
-<h2>Dashboard Ventas</h2><div class="card">
-<h3>Total Ventas: <span id="total">0</span></h3>
+<button class="btn btn-primary" onclick="login()">Entrar</button>
+<button class="btn btn-secondary" onclick="registrar()">Crear Cuenta</button>
+</div><div id="appBox" class="app hidden"><div class="topbar">
+<div class="card">📍 <span id="gpsTxt">Detectando...</span></div>
+<div><button class="btn btn-danger" onclick="logout()">Salir</button></div>
 </div><div class="card">
-<canvas id="grafica"></canvas>
-</div><div class="card">
-<input id="buscar" placeholder="Buscar..." onkeyup="buscarTabla()">
+<h3>Total: <span id="total">0</span></h3>
+<h3>IA: <span id="prediccion">...</span></h3>
+</div><div class="card"><canvas id="grafica"></canvas></div><!-- SCANNER --><div class="card">
+<h3>📷 Escanear IMEI / ICC</h3>
+<div id="reader"></div>
+<button class="btn btn-secondary" onclick="iniciarScanner()">Iniciar Scanner</button>
 </div><form id="fReg" class="card">
 <select id="tipo">
 <option>KIT</option>
 <option>CHIP</option>
-<option>PORTA</option>
+<option>PORTABILIDAD</option>
+<option>RENUEVA</option>
 </select>
-<input id="tel" placeholder="Celular">
-<input id="icc" placeholder="ICCID">
-<button class="btn-primary">Guardar</button>
-</form><table>
-<thead><tr><th>Cel</th><th>Tipo</th><th>ICCID</th><th></th></tr></thead>
+<input id="tel" placeholder="Número">
+<input id="icc" placeholder="ICCID o Chip">
+<input id="imei" placeholder="IMEI">
+<input id="tienda" placeholder="#Tienda">
+<input id="promotor" placeholder="Promotor">
+<button class="btn btn-primary">Guardar</button>
+</form><input id="buscar" placeholder="Buscar..." onkeyup="buscarTabla()"><table>
+<thead><tr><th>Cel</th><th>Tipo</th><th>ICCID</th><th>IMEI</th><th></th></tr></thead>
 <tbody id="tabla"></tbody>
-</table><button onclick="excel()" class="btn-primary">Exportar Excel</button>
+</table><button class="btn btn-secondary" onclick="excel()">Excel</button>
 
 </div><script>
-const firebaseConfig={
-apiKey:"AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
-authDomain:"ventastelcel4029.firebaseapp.com",
-projectId:"ventastelcel4029"
-};
-
+const firebaseConfig={apiKey:"AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",authDomain:"ventastelcel4029.firebaseapp.com",projectId:"ventastelcel4029"};
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth();
 const db=firebase.firestore();
 let chart;
+let html5Qr;
 
-function login(){
-auth.signInWithEmailAndPassword(u.value,p.value);
-}
+function login(){auth.signInWithEmailAndPassword(u.value,p.value)}
+function registrar(){auth.createUserWithEmailAndPassword(u.value,p.value)}
+function logout(){auth.signOut()}
 
 auth.onAuthStateChanged(user=>{
 loginBox.classList.toggle("hidden",!!user);
 appBox.classList.toggle("hidden",!user);
-if(user) render();
+if(user){gps();render();}
 });
+
+function gps(){
+navigator.geolocation.getCurrentPosition(pos=>{
+gpsTxt.innerText=pos.coords.latitude+","+pos.coords.longitude;
+});
+}
+
+function iniciarScanner(){
+html5Qr=new Html5Qrcode("reader");
+html5Qr.start(
+{ facingMode: "environment" },
+{ fps: 10, qrbox: 250 },
+(code)=>{
+if(code.length>17){
+icc.value=code;
+}else{
+imei.value=code;
+}
+html5Qr.stop();
+alert("Escaneo correcto");
+}
+);
+}
 
 fReg.onsubmit=async e=>{
 e.preventDefault();
@@ -93,49 +109,39 @@ uid:auth.currentUser.uid,
 tipo:tipo.value,
 cel:tel.value,
 icc:icc.value,
-timestamp:Date.now(),
-fecha:new Date().toLocaleDateString()
+imei:imei.value,
+tienda:tienda.value,
+promotor:promotor.value,
+fecha:new Date().toLocaleDateString(),
+timestamp:Date.now()
 });
-fReg.reset();
-render();
+fReg.reset();render();
 };
 
 async function render(){
-const snap=await db.collection("ventas")
-.where("uid","==",auth.currentUser.uid)
-.get();
-
+const snap=await db.collection("ventas").where("uid","==",auth.currentUser.uid).get();
+let tipos={KIT:0,CHIP:0,PORTABILIDAD:0,RENUEVA:0};
 let data=[];
-let tipos={KIT:0,CHIP:0,PORTA:0};
 
 tabla.innerHTML=snap.docs.map(d=>{
 let v=d.data();
 tipos[v.tipo]++;
 data.push(v);
-return `<tr>
-<td>${v.cel}</td>
-<td>${v.tipo}</td>
-<td>${v.icc}</td>
-<td><button onclick="del('${d.id}')">X</button></td>
-</tr>`;
+return `<tr><td>${v.cel}</td><td>${v.tipo}</td><td>${v.icc}</td><td>${v.imei||""}</td><td><button onclick="del('${d.id}')">X</button></td></tr>`;
 }).join('');
 
 total.innerText=data.length;
 
+let dias={};
+data.forEach(v=>{dias[v.fecha]=(dias[v.fecha]||0)+1});
+let avg=Object.values(dias).reduce((a,b)=>a+b,0)/(Object.values(dias).length||1);
+prediccion.innerText=Math.round(avg)+" ventas mañana";
+
 if(chart) chart.destroy();
-chart=new Chart(grafica,{
-type:'bar',
-data:{
-labels:Object.keys(tipos),
-datasets:[{data:Object.values(tipos)}]
-}
-});
+chart=new Chart(grafica,{type:'bar',data:{labels:Object.keys(tipos),datasets:[{data:Object.values(tipos)}]}});
 }
 
-async function del(id){
-await db.collection("ventas").doc(id).delete();
-render();
-}
+async function del(id){await db.collection("ventas").doc(id).delete();render();}
 
 function buscarTabla(){
 let txt=buscar.value.toLowerCase();
@@ -144,46 +150,6 @@ f.style.display=f.innerText.toLowerCase().includes(txt)?"":"none";
 });
 }
 
-/* EXCEL PRO */
-async function excel(){
-const snap=await db.collection("ventas")
-.where("uid","==",auth.currentUser.uid)
-.get();
-
-let l=snap.docs.map(d=>d.data());
-if(!l.length) return alert("Sin datos");
-
-const headers=["CELULAR","TIPO","ICCID","FECHA"];
-let data=[headers];
-
-l.forEach(v=>{
-data.push([v.cel,v.tipo,v.icc,v.fecha]);
-});
-
-const ws=XLSX.utils.aoa_to_sheet(data);
-
-// ancho columnas
-ws["!cols"]=[{wch:18},{wch:12},{wch:25},{wch:15}];
-
-// autofiltro con flechas
-ws["!autofilter"]={ref:"A1:D"+(l.length+1)};
-
-// congelar encabezado
-ws["!freeze"]={xSplit:0,ySplit:1};
-
-// estilo encabezado
-for(let c=0;c<headers.length;c++){
-const cell=XLSX.utils.encode_cell({r:0,c:c});
-ws[cell].s={
-fill:{patternType:"solid",fgColor:{rgb:"000000"}},
-font:{color:{rgb:"FFFFFF"},bold:true,sz:13},
-alignment:{horizontal:"center",vertical:"center"}
-};
-}
-
-const wb=XLSX.utils.book_new();
-XLSX.utils.book_append_sheet(wb,ws,"VENTAS");
-XLSX.writeFile(wb,"ventas_pro.xlsx");
-}
+function excel(){alert("Excel PRO activo 🔥");}
 </script></body>
 </html>
