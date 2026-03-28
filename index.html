@@ -1,33 +1,34 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ventas PRO IA - 2026</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://unpkg.com/html5-qrcode"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ventas PRO IA - 2026</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
 
-<style>
-    :root { --neon: #00f2ff; --purple: #7000ff; --pink: #ff007a; --bg: #0a0a0a; }
-    body { margin:0; font-family:'Segoe UI', sans-serif; background: var(--bg); color:white; }
-    .app { max-width:1000px; margin:auto; padding:15px; }
-    .card { background:rgba(255,255,255,0.07); padding:18px; border-radius:15px; margin-bottom:15px; border-left: 4px solid var(--neon); }
-    input, select { width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border:1px solid #333; background:#151515; color:white; box-sizing: border-box; }
-    .btn { padding:12px; border:none; border-radius:10px; cursor:pointer; font-weight:bold; transition: 0.3s; }
-    .btn-primary { background: var(--neon); color:#000; }
-    .btn-secondary { background: var(--purple); color:#fff; }
-    .btn-accent { background: var(--pink); color:#fff; }
-    .btn:active { transform: scale(0.95); }
-    table { width:100%; border-collapse: collapse; margin-top:10px; font-size: 14px; }
-    th { color: var(--neon); text-align:left; padding:10px; border-bottom: 1px solid #333; }
-    td { padding:10px; border-bottom: 1px solid #222; }
-    .hidden { display:none; }
-    #reader { width: 100%; border-radius: 10px; overflow: hidden; }
-</style>
+    <style>
+        :root { --neon: #00f2ff; --purple: #7000ff; --pink: #ff007a; --bg: #0a0a0a; }
+        body { margin:0; font-family:'Segoe UI', sans-serif; background: var(--bg); color:white; }
+        .app { max-width:1000px; margin:auto; padding:15px; }
+        .card { background:rgba(255,255,255,0.07); padding:18px; border-radius:15px; margin-bottom:15px; border-left: 4px solid var(--neon); }
+        input, select { width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border:1px solid #333; background:#151515; color:white; box-sizing: border-box; }
+        .btn { padding:12px; border:none; border-radius:10px; cursor:pointer; font-weight:bold; transition: 0.3s; }
+        .btn-primary { background: var(--neon); color:#000; }
+        .btn-secondary { background: var(--purple); color:#fff; }
+        .btn-accent { background: var(--pink); color:#fff; }
+        .btn:active { transform: scale(0.95); }
+        table { width:100%; border-collapse: collapse; margin-top:10px; font-size: 13px; }
+        th { color: var(--neon); text-align:left; padding:10px; border-bottom: 1px solid #333; }
+        td { padding:10px; border-bottom: 1px solid #222; }
+        .hidden { display:none; }
+        #reader { width: 100%; border-radius: 10px; overflow: hidden; background: #000; }
+        .badge-local { color: var(--purple); font-weight: bold; font-size: 10px; border: 1px solid var(--purple); padding: 2px 5px; border-radius: 5px; }
+        .badge-nube { color: var(--neon); font-weight: bold; font-size: 10px; border: 1px solid var(--neon); padding: 2px 5px; border-radius: 5px; }
+    </style>
 </head>
 <body>
 
@@ -52,17 +53,16 @@
     </div>
 
     <div class="card" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align:center;">
-        <div>Total: <b id="total">0</b></div>
-        <div>IA: <b id="prediccion">...</b></div>
+        <div>Total General: <b id="total">0</b></div>
         <div>PayJoy: <b id="totalPayjoy">0</b></div>
-        <div>Reg: <b id="totalRegistro">0</b></div>
+        <div>Registros: <b id="totalRegistro">0</b></div>
     </div>
 
     <div class="card">
-        <h3><i class="fas fa-camera"></i> Escanear IMEI / ICC</h3>
+        <h3><i class="fas fa-camera"></i> Escáner IMEI / ICCID</h3>
         <div id="reader"></div>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
-            <button class="btn btn-secondary" onclick="iniciarScanner()">ESCANEAR</button>
+            <button class="btn btn-secondary" onclick="iniciarScanner()">INICIAR CÁMARA</button>
             <button class="btn btn-accent" onclick="detenerScanner()">DETENER</button>
         </div>
     </div>
@@ -72,37 +72,43 @@
             <option>KIT</option><option>CHIP</option>
             <option>PORTABILIDAD</option><option>RENUEVA</option>
         </select>
-        <input id="tel" placeholder="Número de Teléfono">
-        <input id="icc" placeholder="ICCID (Chip)">
-        <input id="imei" placeholder="IMEI (Equipo)">
+        <input id="tel" type="number" placeholder="Número de Teléfono">
+        <input id="icc" type="number" placeholder="ICCID (Chip)">
+        <input id="imei" type="number" placeholder="IMEI (Equipo)">
         <input id="promotor" placeholder="Nombre Promotor">
         <input id="fechaInput" type="datetime-local">
 
-        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px;">
-            <button type="submit" class="btn btn-primary">GUARDAR NUBE</button>
-            <button type="button" class="btn btn-secondary" onclick="guardarLocal()">LOCAL</button>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <button type="submit" class="btn btn-primary">SUBIR NUBE</button>
+            <button type="button" class="btn btn-secondary" onclick="guardarLocal()">GUARDAR LOCAL</button>
         </div>
     </form>
 
     <div class="card" style="overflow-x:auto;">
         <table>
-            <thead><tr><th>Tel</th><th>Tipo</th><th>Fecha</th><th>Borrar</th></tr></thead>
+            <thead><tr><th>Tel/ID</th><th>Tipo</th><th>Fecha</th><th>Acción</th></tr></thead>
             <tbody id="tabla"></tbody>
         </table>
     </div>
 </div>
 
 <script>
+// CONFIGURACIÓN FIREBASE
 const firebaseConfig={apiKey:"AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",authDomain:"ventastelcel4029.firebaseapp.com",projectId:"ventastelcel4029"};
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth();
 const db=firebase.firestore();
-let scanner;
 
-// --- FORMATO DD/MM/YYYY ---
+let scanner;
+let isScanning = false;
+
+// FORMATO DD/MM/YYYY
 function formatFecha(fechaStr) {
     const d = fechaStr ? new Date(fechaStr) : new Date();
-    return d.toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'}).replace(/\//g, '/');
+    const dia = String(d.getDate()).padStart(2, '0');
+    const mes = String(d.getMonth() + 1).padStart(2, '0');
+    const anio = d.getFullYear();
+    return `${dia}/${mes}/${anio}`;
 }
 
 /* AUTH */
@@ -116,20 +122,37 @@ auth.onAuthStateChanged(user=>{
     if(user){ render(); gps(); }
 });
 
-/* SCANNER CORREGIDO */
+/* ESCÁNER CON DISCRIMINACIÓN IMEI/ICCID */
 function iniciarScanner(){
+    if(isScanning) return;
     scanner = new Html5Qrcode("reader");
+    isScanning = true;
     scanner.start({facingMode:"environment"}, {fps:10, qrbox:250}, (code)=>{
         let limpio = code.replace(/\D/g,'');
-        if(limpio.length >= 15 && limpio.length <= 17) { imei.value = limpio; toast("IMEI OK"); }
-        if(limpio.length >= 18) { icc.value = limpio; toast("ICCID OK"); }
-        if(navigator.vibrate) navigator.vibrate(50);
+        
+        // Discriminación por longitud
+        if(limpio.length === 15) { 
+            imei.value = limpio; 
+            toast("IMEI DETECTADO ✅");
+            if(navigator.vibrate) navigator.vibrate(50);
+            detenerScanner(); // Pausa para confirmar
+        } 
+        else if(limpio.length >= 18 && limpio.length <= 20) { 
+            icc.value = limpio; 
+            toast("ICCID DETECTADO ✅");
+            if(navigator.vibrate) navigator.vibrate(50);
+            detenerScanner(); // Pausa para confirmar
+        }
     }).catch(err => console.error(err));
 }
 
-function detenerScanner(){ if(scanner) scanner.stop(); }
+function detenerScanner(){ 
+    if(scanner) {
+        scanner.stop().then(() => { isScanning = false; }).catch(e => console.log(e));
+    }
+}
 
-/* GUARDADO */
+/* GUARDADO NUBE */
 fReg.onsubmit = async e => {
     e.preventDefault();
     const data = {
@@ -144,40 +167,69 @@ fReg.onsubmit = async e => {
     };
     await db.collection("ventas").add(data);
     fReg.reset();
+    toast("Sincronizado con Nube");
     render();
 };
 
+/* GUARDADO LOCAL (EXCEL FORMAT) */
 function guardarLocal(){
     const venta = {
-        cel: tel.value,
+        cel: tel.value || "S/N",
         tipo: tipo.value,
         fecha: formatFecha(fechaInput.value),
-        icc: icc.value
+        icc: icc.value || "",
+        imei: imei.value || ""
     };
     let lista = JSON.parse(localStorage.getItem("ventas_excel") || "[]");
     lista.push(venta);
     localStorage.setItem("ventas_excel", JSON.stringify(lista));
-    toast("Guardado en Local Storage");
+    toast("Guardado en Memoria Local");
+    render();
 }
 
-/* RENDER */
+/* RENDERIZADO MIXTO */
 async function render(){
+    // 1. Cargar desde Nube
     const snap = await db.collection("ventas").where("uid","==",auth.currentUser.uid).get();
-    tabla.innerHTML = snap.docs.map(d => {
+    let nubeHtml = snap.docs.map(d => {
         const v = d.data();
         return `<tr>
-            <td>${v.cel}</td>
-            <td>${v.tipo}</td>
+            <td>${v.cel || 'ID:'+d.id.slice(0,4)}</td>
+            <td>${v.tipo} <span class="badge-nube">NUBE</span></td>
             <td>${v.fechaFormateada || formatFecha(v.fechaOriginal)}</td>
-            <td><button onclick="del('${d.id}')" style="background:none; border:none; color:#ff4d4d;">🗑️</button></td>
+            <td><button onclick="delNube('${d.id}')" style="background:none; border:none; color:#ff4d4d;">🗑️</button></td>
         </tr>`;
     }).join('');
-    total.innerText = snap.size;
+
+    // 2. Cargar desde Local
+    let locales = JSON.parse(localStorage.getItem("ventas_excel") || "[]");
+    let localHtml = locales.map((v, i) => {
+        return `<tr>
+            <td>${v.cel}</td>
+            <td>${v.tipo} <span class="badge-local">LOCAL</span></td>
+            <td>${v.fecha}</td>
+            <td><button onclick="delLocal(${i})" style="background:none; border:none; color:var(--pink);">✕</button></td>
+        </tr>`;
+    }).reverse().join('');
+
+    tabla.innerHTML = nubeHtml + localHtml;
+    total.innerText = snap.size + locales.length;
     cargarContadores();
 }
 
-async function del(id){ if(confirm("¿Borrar?")) { await db.collection("ventas").doc(id).delete(); render(); } }
+/* BORRADOS */
+async function delNube(id){ if(confirm("¿Borrar de la nube?")) { await db.collection("ventas").doc(id).delete(); render(); } }
 
+function delLocal(index) {
+    if(confirm("¿Eliminar registro local?")) {
+        let lista = JSON.parse(localStorage.getItem("ventas_excel") || "[]");
+        lista.splice(index, 1);
+        localStorage.setItem("ventas_excel", JSON.stringify(lista));
+        render();
+    }
+}
+
+/* UTILIDADES */
 function gps(){ navigator.geolocation.getCurrentPosition(p=>gpsTxt.innerText="Activo", e=>gpsTxt.innerText="Off"); }
 function sumarPayjoy(){ localStorage.payjoy=(+localStorage.payjoy||0)+1; render(); }
 function sumarRegistro(){ localStorage.registro=(+localStorage.registro||0)+1; render(); }
@@ -187,8 +239,8 @@ function cargarContadores(){
 }
 function toast(m){ 
     const t = document.createElement("div"); t.innerText=m; 
-    t.style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--neon); color:black; padding:10px 20px; border-radius:20px; z-index:100;";
-    document.body.appendChild(t); setTimeout(()=>t.remove(), 2000);
+    t.style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--neon); color:black; padding:10px 20px; border-radius:20px; z-index:100; font-weight:bold;";
+    document.body.appendChild(t); setTimeout(()=>t.remove(), 2500);
 }
 </script>
 </body>
