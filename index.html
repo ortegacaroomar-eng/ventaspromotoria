@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ventas PRO IA - 2026</title>
+    <title>Ventas PRO IA - Red Global 2026</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -11,254 +11,249 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
 
     <style>
-        :root { --neon: #00f2ff; --purple: #7000ff; --pink: #ff007a; --bg: #0a0a0a; --glass: rgba(255, 255, 255, 0.05); }
+        :root { --neon: #00f2ff; --purple: #7000ff; --pink: #ff007a; --gold: #ffd700; --bg: #0a0a0a; --online: #00ff88; }
         body { margin:0; font-family:'Segoe UI', sans-serif; background: var(--bg); color:white; overflow-x: hidden; }
-        
-        /* Efecto de Fondo IA */
         body::before { content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #0a0a0a 100%); z-index: -1; }
 
         .app { max-width:1000px; margin:auto; padding:15px; }
-        .card { background: var(--glass); padding:18px; border-radius:20px; margin-bottom:15px; border: 1px solid rgba(0,242,255,0.2); backdrop-filter: blur(10px); }
+        .card { background: rgba(255, 255, 255, 0.05); padding:18px; border-radius:20px; margin-bottom:15px; border: 1px solid rgba(0,242,255,0.2); backdrop-filter: blur(10px); }
         
-        /* IA Insights Box */
-        .ia-box { border-left: 4px solid var(--pink); background: rgba(255, 0, 122, 0.05); }
-        .ia-text { font-style: italic; color: #ffb3d9; font-size: 14px; }
+        /* IA & BENCHMARKING STYLE */
+        .ia-panel { border-top: 3px solid var(--online); background: rgba(0, 255, 136, 0.05); transition: 0.3s; }
+        .ia-alert { border: 2px solid var(--pink); background: rgba(255, 0, 122, 0.1); animation: glow 1.5s infinite alternate; }
+        @keyframes glow { from { box-shadow: 0 0 5px var(--pink); } to { box-shadow: 0 0 20px var(--pink); } }
+        
+        .chat-box { height: 150px; overflow-y: auto; background: rgba(0,0,0,0.6); border-radius: 12px; padding: 10px; font-size: 13px; border: 1px solid #222; margin-bottom: 10px; }
+        .rank-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #222; font-size: 14px; }
+        .fire-text { color: #ffae00; font-weight: bold; text-shadow: 0 0 8px #ff4500; }
 
         input, select { width:100%; padding:12px; margin-bottom:10px; border-radius:10px; border:1px solid #333; background:#111; color:white; box-sizing: border-box; outline: none; }
-        input:focus { border-color: var(--neon); box-shadow: 0 0 10px rgba(0,242,255,0.3); }
+        input:focus { border-color: var(--neon); }
 
         .btn { padding:12px; border:none; border-radius:12px; cursor:pointer; font-weight:bold; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-primary { background: var(--neon); color:#000; }
-        .btn-secondary { background: var(--purple); color:#fff; }
         .btn-accent { background: var(--pink); color:#fff; }
-        .btn:active { transform: scale(0.95); }
-
-        table { width:100%; border-collapse: collapse; margin-top:10px; font-size: 12px; }
-        th { color: var(--neon); text-align:left; padding:10px; border-bottom: 2px solid #222; }
-        td { padding:10px; border-bottom: 1px solid #1a1a1a; }
         
         #reader { width: 100%; border-radius: 15px; overflow: hidden; border: 2px solid var(--purple); }
         .hidden { display:none; }
-        .badge { font-size: 9px; padding: 2px 6px; border-radius: 5px; text-transform: uppercase; }
-        .b-local { background: var(--purple); color: white; }
-        .b-nube { background: var(--neon); color: black; }
     </style>
 </head>
 <body>
 
 <div id="loginBox" class="app" style="max-width:400px; margin-top:50px;">
     <div class="card" style="text-align: center;">
-        <h1 style="color: var(--neon);"><i class="fas fa-robot"></i> VENTAS PRO IA</h1>
-        <p>Inicia sesión para activar el núcleo</p>
-        <input id="u" type="email" placeholder="Correo Electrónico">
+        <h1 style="color: var(--neon);"><i class="fas fa-brain"></i> IA NETWORK</h1>
+        <p style="font-size: 12px; opacity: 0.7;">Conectando a la red de ventas 28/03/2026</p>
+        <input id="u" type="email" placeholder="Usuario / Email">
         <input id="p" type="password" placeholder="Contraseña">
-        <button class="btn btn-primary" style="width:100%" onclick="login()">CONECTAR NÚCLEO</button>
+        <button class="btn btn-primary" style="width:100%" onclick="login()">ACTIVAR NODO IA</button>
     </div>
 </div>
 
 <div id="appBox" class="app hidden">
-    <div class="card ia-box">
-        <h3 style="margin-top:0; color: var(--pink);"><i class="fas fa-brain"></i> IA Insights - 2026</h3>
-        <div id="iaStatus" class="ia-text">Analizando tendencias de venta en tiempo real...</div>
-    </div>
-
-    <div class="card" style="display:flex; justify-content: space-between; align-items: center;">
-        <span><i class="fas fa-user-circle"></i> <span id="userMail">...</span></span>
-        <div style="display:flex; gap:10px;">
-            <button class="btn btn-accent" onclick="descargarExcel()"><i class="fas fa-download"></i></button>
-            <button class="btn btn-secondary" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+    
+    <div id="iaPanel" class="card ia-panel">
+        <h4 style="margin:0; color: var(--online);"><i class="fas fa-chart-line"></i> INTELIGENCIA DE RED</h4>
+        <div id="iaMessage" style="font-size: 13px; margin: 10px 0; line-height: 1.4;">Analizando datos de todas las tiendas...</div>
+        <div style="display: flex; gap: 8px;">
+            <button class="btn" style="background:rgba(0,255,136,0.1); color:var(--online); font-size:10px; flex:1;" onclick="analizarCompetencia()">Comparar Tiendas</button>
+            <button class="btn" style="background:rgba(0,242,255,0.1); color:var(--neon); font-size:10px; flex:1;" onclick="consultarIAOnline()">Soporte Online</button>
         </div>
     </div>
 
-    <div class="card">
-        <div id="reader"></div>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
-            <button class="btn btn-primary" onclick="iniciarScanner()"><i class="fas fa-qrcode"></i> ESCANEAR</button>
-            <button class="btn btn-accent" onclick="detenerScanner()"><i class="fas fa-stop"></i> PARAR</button>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div class="card" style="border-top: 2px solid var(--gold);">
+            <h4 style="margin:0; color: var(--gold); font-size: 14px;"><i class="fas fa-crown"></i> TOP AGENTES</h4>
+            <div id="rankingList" style="margin-top:10px;"></div>
+        </div>
+        <div class="card">
+            <div id="chatBox" class="chat-box"></div>
+            <div style="display:flex; gap:5px;">
+                <input id="chatMsg" placeholder="Escribe..." style="margin:0; font-size:11px;">
+                <button class="btn btn-primary" onclick="enviarChat()"><i class="fas fa-paper-plane"></i></button>
+            </div>
         </div>
     </div>
 
     <form id="fReg" class="card">
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-            <input id="marca" placeholder="Marca (Samsung, Motorola...)">
-            <input id="modelo" placeholder="Modelo (A54, G84...)">
+            <input id="tienda" placeholder="Nombre de Tienda">
+            <input id="promotor" placeholder="Tu Nombre">
         </div>
-        <select id="tipo">
-            <option>KIT (Equipo Nuevo)</option>
-            <option>CHIP (Solo SIM)</option>
-            <option>PORTABILIDAD</option>
-            <option>RENUEVA</option>
+        <select id="tipo" onchange="iaPayjoyCheck(this.value)">
+            <option value="KIT">EQUIPO (KIT)</option>
+            <option value="PAYJOY">VENTA CON PAYJOY</option>
+            <option value="PORTA">PORTABILIDAD</option>
+            <option value="CHIP">SOLO CHIP</option>
         </select>
-        <input id="tel" type="number" placeholder="Número de Teléfono">
-        <input id="icc" type="number" placeholder="ICCID (Escanear Chip)">
-        <input id="imei" type="number" placeholder="IMEI (Escanear Equipo)">
+        <input id="tel" type="number" placeholder="Número del Cliente">
         
-        <input id="promotor" list="promotoresList" placeholder="Nombre del Promotor">
-        <datalist id="promotoresList"></datalist>
-
-        <input id="fechaInput" type="datetime-local">
-
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-            <button type="submit" class="btn btn-primary"><i class="fas fa-cloud-upload-alt"></i> NUBE</button>
-            <button type="button" class="btn btn-secondary" onclick="guardarLocal()"><i class="fas fa-save"></i> LOCAL</button>
+        <div id="reader"></div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin: 10px 0;">
+            <button type="button" class="btn btn-primary" onclick="iniciarScanner()"><i class="fas fa-barcode"></i> ESCANEAR</button>
+            <button type="button" class="btn btn-accent" onclick="detenerScanner()"><i class="fas fa-stop"></i> PARAR</button>
         </div>
+        
+        <input id="imei" placeholder="IMEI / ICCID (Vacío si es pendiente)">
+        <button type="submit" class="btn btn-primary" style="width:100%; background: var(--online);"><i class="fas fa-cloud-upload-alt"></i> REGISTRAR VENTA</button>
     </form>
-
-    <div class="card" style="overflow-x:auto;">
-        <h3><i class="fas fa-list-ul"></i> Historial de Registros</h3>
-        <table>
-            <thead><tr><th>Promotor</th><th>Equipo</th><th>Número</th><th>Estatus</th><th>Acción</th></tr></thead>
-            <tbody id="tabla"></tbody>
-        </table>
-    </div>
 </div>
 
 <script>
+// CONFIGURACIÓN FIREBASE
 const firebaseConfig={apiKey:"AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",authDomain:"ventastelcel4029.firebaseapp.com",projectId:"ventastelcel4029"};
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth();
 const db=firebase.firestore();
 let scanner, isScanning = false;
 
-/* FORMATO DD/MM/YYYY */
-function formatFecha(f) {
-    const d = f ? new Date(f) : new Date();
-    return d.toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
+/* AUTHENTICATION */
+function login(){ 
+    auth.signInWithEmailAndPassword(u.value,p.value).catch(e => alert("Acceso denegado: " + e.message)); 
 }
 
-/* AUTH */
-function login(){ auth.signInWithEmailAndPassword(u.value,p.value).catch(e=>alert("Error: "+e.message)); }
-function registrar(){ auth.createUserWithEmailAndPassword(u.value,p.value).then(()=>alert("Registrado!")).catch(e=>alert(e.message)); }
-function logout(){ auth.signOut(); }
-
-auth.onAuthStateChanged(user=>{
+auth.onAuthStateChanged(user => {
     loginBox.classList.toggle("hidden", !!user);
     appBox.classList.toggle("hidden", !user);
-    if(user) { 
-        userMail.innerText = user.email;
-        render();
-        actualizarIA();
-    }
+    if(user) iniciarSistemaIA();
 });
 
-/* SCANNER INTELIGENTE */
+/* SISTEMA IA CENTRAL */
+function iniciarSistemaIA(){
+    // Chat en tiempo real
+    db.collection("chat").orderBy("ts","desc").limit(12).onSnapshot(snap => {
+        chatBox.innerHTML = snap.docs.map(d => `<div><b>${d.data().user}:</b> ${d.data().msg}</div>`).reverse().join('');
+        chatBox.scrollTop = chatBox.scrollHeight;
+    });
+
+    // Ventas Globales (Ranking y Análisis de Tiendas)
+    db.collection("ventas_global").onSnapshot(snap => {
+        const ventas = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        actualizarRanking(ventas);
+        
+        // IA decide qué analizar
+        const pendientes = ventas.filter(v => v.uid === auth.currentUser.uid && !v.imei);
+        if(pendientes.length > 0) {
+            revisarPendientesIA(pendientes.length);
+        } else {
+            analizarCompetencia(ventas);
+        }
+    });
+}
+
+/* LÓGICA DE INTELIGENCIA DE VENTAS */
+function analizarCompetencia(ventasArr){
+    if(!ventasArr || ventasArr.length < 3) return;
+    
+    const miTienda = tienda.value || "tu sucursal";
+    const tiendasMap = {};
+    ventasArr.forEach(v => { tiendasMap[v.tienda] = (tiendasMap[v.tienda] || 0) + 1; });
+
+    const sortedTiendas = Object.entries(tiendasMap).sort((a,b) => b[1] - a[1]);
+    const tiendaLider = sortedTiendas[0];
+
+    // Buscar el producto más vendido en la red
+    const productos = ventasArr.map(v => v.tipo);
+    const topProd = productos.sort((a,b) => productos.filter(v=>v===a).length - productos.filter(v=>v===b).length).pop();
+
+    let msg = "";
+    if(tiendaLider[0] === miTienda) {
+        msg = `<b>IA:</b> ¡Tu tienda es la líder actual con ${tiendaLider[1]} ventas! <br> No descuides las <b>${topProd}</b>, están subiendo en otras zonas.`;
+    } else {
+        msg = `<b>IA:</b> La tienda <b>${tiendaLider[0]}</b> te supera por ${tiendaLider[1] - (tiendasMap[miTienda] || 0)} ventas. <br> Su éxito se basa en <b>${topProd}</b>. ¡Prueba ofrecerlo más!`;
+    }
+    
+    iaMessage.innerHTML = msg;
+    iaPanel.className = "card ia-panel";
+}
+
+function revisarPendientesIA(num){
+    iaMessage.innerHTML = `<b>ALERTA IA:</b> Tienes ${num} registros incompletos. <br> Sin el IMEI no se validará tu comisión. ¡Usa <b>*#06#</b> ya!`;
+    iaPanel.className = "card ia-alert";
+}
+
+function iaPayjoyCheck(val){
+    if(val === "PAYJOY"){
+        iaMessage.innerHTML = "<b>GUÍA PAYJOY:</b> Valida que el INE sea original. Si falla el biométrico, pide al cliente parpadear frente a la cámara.";
+    }
+}
+
+async function consultarIAOnline(){
+    const duda = prompt("¿Qué error técnico o duda de venta tienes?");
+    if(!duda) return;
+    iaMessage.innerText = "IA consultando en la red soluciones para: " + duda + "...";
+    
+    // Simulación de respuesta de red 2026
+    setTimeout(() => {
+        iaMessage.innerHTML = `<b>IA ONLINE:</b> Para '${duda}', la base de datos global recomienda verificar la versión 2.4 de la app de bloqueo y limpiar caché de red.`;
+    }, 2000);
+}
+
+/* RANKING Y REGISTRO */
+function actualizarRanking(ventas){
+    const conteo = {};
+    ventas.forEach(v => { conteo[v.promotor] = (conteo[v.promotor] || 0) + 1; });
+    const sorted = Object.entries(conteo).sort((a,b) => b[1] - a[1]).slice(0, 5);
+    
+    rankingList.innerHTML = sorted.map((e, i) => `
+        <div class="rank-item">
+            <span>#${i+1} ${e[0]} ${e[1] >= 3 ? '<span class="fire-text">🔥</span>' : ''}</span>
+            <b>${e[1]} pts</b>
+        </div>
+    `).join('');
+}
+
+fReg.onsubmit = async e => {
+    e.preventDefault();
+    if(!promotor.value || !tienda.value) return toast("Faltan datos");
+
+    const data = {
+        uid: auth.currentUser.uid,
+        promotor: promotor.value,
+        tienda: tienda.value,
+        tipo: tipo.value,
+        cel: tel.value,
+        imei: imei.value,
+        ts: Date.now()
+    };
+    
+    await db.collection("ventas_global").add(data);
+    
+    // Notificar al chat global
+    const aviso = imei.value ? `¡Nueva venta registrada!` : `¡Venta PENDIENTE de IMEI registrada! ⚠️`;
+    db.collection("chat").add({ 
+        user: "IA-BOT", 
+        msg: `${promotor.value} (${tienda.value}): ${aviso}`, 
+        ts: Date.now() 
+    });
+
+    fReg.reset();
+    toast("SUBIDO A LA RED ✅");
+};
+
+function enviarChat(){
+    if(!chatMsg.value) return;
+    db.collection("chat").add({ 
+        user: auth.currentUser.email.split('@')[0], 
+        msg: chatMsg.value, 
+        ts: Date.now() 
+    });
+    chatMsg.value = "";
+}
+
+/* SCANNER QR/BARCODE */
 function iniciarScanner(){
     if(isScanning) return;
     scanner = new Html5Qrcode("reader");
     isScanning = true;
-    scanner.start({facingMode:"environment"}, {fps:10, qrbox:250}, (code)=>{
-        let limpio = code.replace(/\D/g,'');
-        if(limpio.length === 15) { 
-            imei.value = limpio; 
-            toast("IMEI CAPTURADO ✅");
-            detenerScanner(); 
-        } 
-        else if(limpio.length >= 18) { 
-            icc.value = limpio; 
-            toast("ICCID CAPTURADO ✅");
-            detenerScanner(); 
-        }
-    }).catch(e => console.log("Error cámara: ", e));
+    scanner.start({facingMode:"environment"}, {fps:15, qrbox:250}, (code)=>{
+        let num = code.replace(/\D/g,'');
+        if(num.length === 15) { imei.value = num; toast("IMEI DETECTADO"); detenerScanner(); }
+        else if(num.length >= 18) { imei.value = num; toast("ICCID DETECTADO"); detenerScanner(); }
+    }).catch(e => console.log(e));
 }
 function detenerScanner(){ if(scanner){ scanner.stop().then(()=>isScanning=false); } }
 
-/* IA GENERATIVA (SIMULACIÓN DE ANÁLISIS) */
-function actualizarIA(){
-    const mensajes = [
-        "Sugerencia: Los lunes la portabilidad sube un 20%. Enfócate en clientes Telcel.",
-        "Análisis: El modelo Samsung es el más buscado hoy. Revisa tu inventario.",
-        "IA: Has registrado 3 ventas locales. ¡Sincroniza para no perder datos!",
-        "Tip: Ofrece el Plan Renueva si el cliente tiene un IMEI de más de 2 años.",
-        "IA: Tu ritmo de venta actual sugiere que alcanzarás la meta el viernes."
-    ];
-    iaStatus.innerText = mensajes[Math.floor(Math.random() * mensajes.length)];
-}
-
-/* GUARDADO */
-fReg.onsubmit = async e => {
-    e.preventDefault();
-    const data = {
-        uid: auth.currentUser.uid,
-        promotor: promotor.value,
-        marca: marca.value,
-        modelo: modelo.value,
-        tipo: tipo.value,
-        cel: tel.value,
-        icc: icc.value,
-        imei: imei.value,
-        fecha: formatFecha(fechaInput.value)
-    };
-    await db.collection("ventas").add(data);
-    guardarPromotor(promotor.value);
-    fReg.reset();
-    render();
-    toast("SUBIDO A LA NUBE 🚀");
-};
-
-function guardarLocal(){
-    const v = {
-        promotor: promotor.value,
-        marca: marca.value, modelo: modelo.value,
-        tipo: tipo.value, cel: tel.value,
-        fecha: formatFecha(fechaInput.value),
-        icc: icc.value, imei: imei.value, origen: 'local'
-    };
-    let lista = JSON.parse(localStorage.getItem("ventas_excel") || "[]");
-    lista.push(v);
-    localStorage.setItem("ventas_excel", JSON.stringify(lista));
-    guardarPromotor(promotor.value);
-    toast("GUARDADO EN MEMORIA 💾");
-    render();
-}
-
-/* LISTA DE PROMOTORES */
-function guardarPromotor(nombre){
-    let p = JSON.parse(localStorage.getItem("mis_promotores") || "[]");
-    if(!p.includes(nombre) && nombre !== ""){
-        p.push(nombre);
-        localStorage.setItem("mis_promotores", JSON.stringify(p));
-        cargarPromotores();
-    }
-}
-
-function cargarPromotores(){
-    let p = JSON.parse(localStorage.getItem("mis_promotores") || "[]");
-    promotoresList.innerHTML = p.map(nom => `<option value="${nom}">`).join('');
-}
-
-/* RENDERIZADO */
-async function render(){
-    cargarPromotores();
-    const snap = await db.collection("ventas").where("uid","==",auth.currentUser.uid).get();
-    let nubeHtml = snap.docs.map(d => {
-        const v = d.data();
-        return `<tr><td>${v.promotor}</td><td>${v.marca}</td><td>${v.cel}</td><td><span class="badge b-nube">NUBE</span></td><td><button onclick="delNube('${d.id}')" style="color:#ff4d4d; background:none; border:none;">🗑️</button></td></tr>`;
-    }).join('');
-
-    let locales = JSON.parse(localStorage.getItem("ventas_excel") || "[]");
-    let localHtml = locales.map((v, i) => {
-        return `<tr><td>${v.promotor}</td><td>${v.marca}</td><td>${v.cel}</td><td><span class="badge b-local">LOCAL</span></td><td><button onclick="delLocal(${i})" style="color:var(--pink); background:none; border:none;">✕</button></td></tr>`;
-    }).reverse().join('');
-
-    tabla.innerHTML = nubeHtml + localHtml;
-}
-
-/* EXCEL */
-function descargarExcel(){
-    let locales = JSON.parse(localStorage.getItem("ventas_excel") || "[]");
-    if(locales.length === 0) return alert("Nada que exportar.");
-    let csv = "Fecha,Promotor,Marca,Modelo,Tipo,Telefono,ICCID,IMEI\n" + 
-              locales.map(v => `${v.fecha},${v.promotor},${v.marca},${v.modelo},${v.tipo},${v.cel},${v.icc},${v.imei}`).join("\n");
-    const blob = new Blob([csv], {type: 'text/csv'});
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Ventas_PRO_IA_${formatFecha()}.csv`;
-    a.click();
-}
-
-async function delNube(id){ if(confirm("¿Borrar de la nube?")) { await db.collection("ventas").doc(id).delete(); render(); } }
-function delLocal(i){ let l = JSON.parse(localStorage.getItem("ventas_excel")); l.splice(i,1); localStorage.setItem("ventas_excel", JSON.stringify(l)); render(); }
 function toast(m){ 
     const t = document.createElement("div"); t.innerText=m; 
     t.style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--neon); color:black; padding:10px 20px; border-radius:20px; z-index:100; font-weight:bold; box-shadow:0 0 15px var(--neon);";
