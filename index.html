@@ -1,283 +1,125 @@
-<!DOCTYPE html>
-<html lang="es">
+<!DOCTYPE html><html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistema Ventas</title>
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<title>Dashboard Ventas PRO</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-
-<style>
-body{
-margin:0;font-family:'Segoe UI',sans-serif;color:white;
-background:linear-gradient(-45deg,#001d3d,#003566,#000814,#001f54);
-background-size:400% 400%;
-animation:bgMove 12s ease infinite, fade .6s ease;
-}
-@keyframes bgMove{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-@keyframes fade{from{opacity:0}to{opacity:1}}
-
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script><style>
+body{margin:0;font-family:sans-serif;background:#0a0f1f;color:white}
 .hidden{display:none}
-.app{max-width:1000px;margin:auto;padding:20px}
-
-.card{
-background:rgba(255,255,255,.08);
-backdrop-filter:blur(14px);
-border-radius:15px;
-padding:20px;
-margin-bottom:15px;
-border:1px solid rgba(255,255,255,.15);
-animation:cardIn .5s ease;
-transition:.3s;
-}
-.card:hover{transform:translateY(-4px);box-shadow:0 10px 25px rgba(0,0,0,.35)}
-@keyframes cardIn{from{transform:translateY(15px);opacity:0}to{transform:none;opacity:1}}
-
-input,select{
-width:100%;padding:10px;margin-bottom:10px;
-border-radius:8px;border:none;
-background:rgba(255,255,255,.12);color:white;
-}
-
-.btn{
-width:100%;padding:12px;border:none;border-radius:12px;
-font-weight:bold;cursor:pointer;margin-bottom:10px;
-transition:.2s;position:relative;overflow:hidden;
-}
-.btn:hover{transform:scale(1.05)}
-.btn:active{transform:scale(.97)}
-.btn-primary{background:#ffc300;color:#001d3d}
-.btn-secondary{background:#00b4d8;color:white}
+.app{padding:20px;max-width:1200px;margin:auto}
+.card{background:#111a33;padding:15px;border-radius:15px;margin-bottom:15px}
+input,select{width:100%;padding:10px;margin-bottom:10px;border-radius:8px;border:none}
+button{padding:10px;border:none;border-radius:10px;cursor:pointer}
+.btn-primary{background:#ffc300}
 .btn-danger{background:#ff4d4d;color:white}
-
-.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:15px;flex-wrap:wrap}
-.gps{flex:1;background:#000;border:1px solid #00b4d8;padding:10px;border-radius:10px;color:#00b4d8;font-size:12px}
-.quick{display:flex;gap:10px;flex-wrap:wrap}
-
-table{width:100%;border-collapse:collapse;background:white;color:black;font-size:12px}
-th{background:#001d3d;color:white;padding:8px}
-td{padding:6px;border:1px solid #ddd}
-tbody tr{animation:rowIn .35s ease}
-@keyframes rowIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-
-.login{
-max-width:350px;margin:60px auto;background:white;color:black;
-padding:30px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.4);
-}
-</style>
-</head>
-<body>
-
-<!-- LOGIN -->
-<div id="loginBox" class="login">
-<h2 style="text-align:center;color:#003566">Acceso</h2>
-<input id="u" type="email" placeholder="Correo">
+table{width:100%;background:white;color:black;border-collapse:collapse}
+td,th{padding:6px;border:1px solid #ddd}
+.login{max-width:300px;margin:100px auto;background:white;color:black;padding:20px;border-radius:15px}
+</style></head>
+<body><div id="loginBox" class="login">
+<h3>Login</h3>
+<input id="u" placeholder="Correo">
 <input id="p" type="password" placeholder="Contraseña">
-
-<button class="btn btn-primary" onclick="login()">
-<i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
-</button>
-
-<button class="btn btn-secondary" onclick="registrar()">
-<i class="fa-solid fa-user-plus"></i> Crear Cuenta Nueva
-</button>
-</div>
-
-<!-- APP -->
-<div id="appBox" class="app hidden">
-
-<div class="topbar">
-<div class="gps">
-<i class="fa-solid fa-location-dot"></i>
-<b>Ubicación:</b> <span id="gpsTxt">Detectando...</span>
-</div>
-
-<div class="quick">
-<a href="https://app.payjoy.com/accounts/login?afterLogin=https://app.payjoy.com/merchant3?merchantId=199557" target="_blank">
-<button class="btn btn-secondary" style="width:auto">PayJoy</button>
-</a>
-
-<a href="https://registro.telcel.com/vinculatulinea/#/" target="_blank">
-<button class="btn btn-primary" style="width:auto">Vincular Línea</button>
-</a>
-
-<button class="btn btn-danger" style="width:auto" onclick="logout()">⏻</button>
-</div>
-</div>
-
-<form id="fReg">
-
-<div class="card">
-<label>Tipo de Venta</label>
-<select id="tipo" required>
-<option value="">Selecciona tipo...</option>
+<button onclick="login()">Entrar</button>
+</div><div id="appBox" class="app hidden">
+<h2>Dashboard Ventas</h2><div class="card">
+<h3>Total Ventas: <span id="total">0</span></h3>
+</div><div class="card">
+<canvas id="grafica"></canvas>
+</div><div class="card">
+<input id="buscar" placeholder="Buscar..." onkeyup="buscarTabla()">
+</div><form id="fReg" class="card">
+<select id="tipo">
 <option>KIT</option>
 <option>CHIP</option>
-<option>PORTABILIDAD</option>
-<option>RENUEVA</option>
+<option>PORTA</option>
 </select>
-
-<label>Número Celular</label><input id="tel" required>
-<label>ICCID</label><input id="icc" required>
-<label>IMEI</label><input id="imei">
-</div>
-
-<div class="card">
-<label>Marca</label><input id="marca">
-<label>Modelo</label><input id="modelo">
-</div>
-
-<div class="card">
-<label># Tienda</label><input id="tienda" required>
-<label>Cadena</label><input id="cadena" required>
-<label>Nombre Tienda</label><input id="tiendaNombre" required>
-<label>Promotor</label><input id="promotor" required>
-</div>
-
-<button class="btn btn-primary">Guardar Venta</button>
-</form>
-
-<h3>Registros</h3>
-<table>
-<thead>
-<tr>
-<th>Cel</th><th>Tipo</th><th>ICCID</th>
-<th>IMEI</th><th>Modelo</th>
-<th>Tienda</th><th>Promotor</th><th></th>
-</tr>
-</thead>
+<input id="tel" placeholder="Celular">
+<input id="icc" placeholder="ICCID">
+<button class="btn-primary">Guardar</button>
+</form><table>
+<thead><tr><th>Cel</th><th>Tipo</th><th>ICCID</th><th></th></tr></thead>
 <tbody id="tabla"></tbody>
-</table>
-
-<button class="btn btn-secondary" onclick="excel()">
-<i class="fa-solid fa-file-excel"></i> Exportar Excel
-</button>
-
-</div>
-
-<script>
+</table></div><script>
 const firebaseConfig={
 apiKey:"AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
 authDomain:"ventastelcel4029.firebaseapp.com",
 projectId:"ventastelcel4029"
 };
+
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth();
+const db=firebase.firestore();
+let chart;
+
+function login(){
+auth.signInWithEmailAndPassword(u.value,p.value);
+}
 
 auth.onAuthStateChanged(user=>{
 loginBox.classList.toggle("hidden",!!user);
 appBox.classList.toggle("hidden",!user);
-if(user) gps();
+if(user) render();
 });
 
-function login(){
-auth.signInWithEmailAndPassword(u.value,p.value)
-.catch(()=>alert("Datos incorrectos"));
-}
-function registrar(){
-auth.createUserWithEmailAndPassword(u.value,p.value)
-.then(()=>alert("Cuenta creada"))
-.catch(e=>alert(e.message));
-}
-function logout(){auth.signOut()}
-
-/* GPS */
-function gps(){
-if(!navigator.geolocation) return;
-navigator.geolocation.getCurrentPosition(async pos=>{
-const {latitude,longitude}=pos.coords;
-const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
-const d=await r.json();
-gpsTxt.innerText=d.display_name;
-});
-}
-
-/* Guardar */
-fReg.onsubmit=e=>{
+fReg.onsubmit=async e=>{
 e.preventDefault();
-const v={
-id:Date.now(),
-cel:tel.value,tipo:tipo.value,icc:icc.value,imei:imei.value,
-marca:marca.value,modelo:modelo.value,
-tiendaNum:tienda.value,cadena:cadena.value,
-tienda:tiendaNombre.value,promotor:promotor.value,
-fecha:new Date().toLocaleDateString()
-};
-let l=JSON.parse(localStorage.ventas||"[]");
-l.unshift(v);
-localStorage.ventas=JSON.stringify(l);
-render();
+await db.collection("ventas").add({
+uid:auth.currentUser.uid,
+tipo:tipo.value,
+cel:tel.value,
+icc:icc.value,
+timestamp:Date.now()
+});
 fReg.reset();
+render();
 };
 
-function render(){
-let l=JSON.parse(localStorage.ventas||"[]");
-tabla.innerHTML=l.map(v=>`
-<tr>
-<td>${v.cel}</td><td>${v.tipo}</td>
-<td>${v.icc}</td><td>${v.imei||''}</td>
-<td>${v.modelo||''}</td>
-<td>${v.tienda}</td><td>${v.promotor}</td>
-<td><button onclick="del(${v.id})">🗑️</button></td>
-</tr>`).join('');
+async function render(){
+const snap=await db.collection("ventas")
+.where("uid","==",auth.currentUser.uid)
+.get();
+
+let data=[];
+let tipos={KIT:0,CHIP:0,PORTA:0};
+
+tabla.innerHTML=snap.docs.map(d=>{
+let v=d.data();
+tipos[v.tipo]++;
+data.push(v);
+return `<tr>
+<td>${v.cel}</td>
+<td>${v.tipo}</td>
+<td>${v.icc}</td>
+<td><button onclick="del('${d.id}')">X</button></td>
+</tr>`;
+}).join('');
+
+total.innerText=data.length;
+
+if(chart) chart.destroy();
+chart=new Chart(grafica,{
+type:'bar',
+data:{
+labels:Object.keys(tipos),
+datasets:[{data:Object.values(tipos)}]
 }
+});
+}
+
+async function del(id){
+await db.collection("ventas").doc(id).delete();
 render();
-
-function del(id){
-let l=JSON.parse(localStorage.ventas||"[]").filter(x=>x.id!=id);
-localStorage.ventas=JSON.stringify(l);
-render();
 }
 
-/* ===== EXCEL FORMATO PRO ===== */
-function excel(){
-let l = JSON.parse(localStorage.ventas || "[]");
-if(!l.length) return alert("Sin datos");
-
-const headers=[
-"NUM. CELULAR","IMEI","ICCID","Renuevate/ Kit/ Chip/Porta",
-"#TIENDA / Determinante","SOLO NOMBRE DE LA CADENA",
-"SOLO NOMBRE DE TIENDA SIN CADENA","NOMBRE COMPLETO PROMOTOR",
-"FECHA DE ACTIVACION","MARCA","MODELO"
-];
-
-let data=[headers];
-
-for(let i=0;i<500;i++){
-const v=l[i]||{};
-data.push([
-v.cel||"", v.imei||"", v.icc||"", v.tipo||"",
-v.tiendaNum||"", v.cadena||"", v.tienda||"",
-v.promotor||"", v.fecha||"", v.marca||"", v.modelo||""
-]);
+function buscarTabla(){
+let txt=buscar.value.toLowerCase();
+document.querySelectorAll("#tabla tr").forEach(f=>{
+f.style.display=f.innerText.toLowerCase().includes(txt)?"":"none";
+});
 }
-
-const ws=XLSX.utils.aoa_to_sheet(data);
-
-ws["!cols"]=[
-{wch:14},{wch:16},{wch:22},{wch:24},{wch:20},
-{wch:26},{wch:30},{wch:28},{wch:18},{wch:16},{wch:18}
-];
-
-ws["!autofilter"]={ref:"A1:K501"};
-
-for(let c=0;c<headers.length;c++){
-const cell=XLSX.utils.encode_cell({r:0,c:c});
-ws[cell].s={
-fill:{patternType:"solid",fgColor:{rgb:"000000"}},
-font:{color:{rgb:"FFFFFF"},bold:true},
-alignment:{horizontal:"center",vertical:"center"}
-};
-}
-
-const wb=XLSX.utils.book_new();
-XLSX.utils.book_append_sheet(wb,ws,"FORMATO DIARIO");
-XLSX.writeFile(wb,"FORMATO_DIARIO_COMISIONES.xlsx");
-}
-</script>
-
-</body>
-</html>
+</script></body>
+</
