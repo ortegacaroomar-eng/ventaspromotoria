@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ventas PRO IA - 2026</title>
+    <title>Ventas PRO IA - Registro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -21,13 +21,14 @@
         .btn-secondary { background: var(--purple); color:#fff; }
         .btn-accent { background: var(--pink); color:#fff; }
         .btn:active { transform: scale(0.95); }
-        table { width:100%; border-collapse: collapse; margin-top:10px; font-size: 13px; }
-        th { color: var(--neon); text-align:left; padding:10px; border-bottom: 1px solid #333; }
-        td { padding:10px; border-bottom: 1px solid #222; }
+        table { width:100%; border-collapse: collapse; margin-top:10px; font-size: 12px; }
+        th { color: var(--neon); text-align:left; padding:8px; border-bottom: 1px solid #333; }
+        td { padding:8px; border-bottom: 1px solid #222; }
         .hidden { display:none; }
         #reader { width: 100%; border-radius: 10px; overflow: hidden; background: #000; }
-        .badge-local { color: var(--purple); font-weight: bold; font-size: 10px; border: 1px solid var(--purple); padding: 2px 5px; border-radius: 5px; }
-        .badge-nube { color: var(--neon); font-weight: bold; font-size: 10px; border: 1px solid var(--neon); padding: 2px 5px; border-radius: 5px; }
+        .badge { font-size: 9px; padding: 2px 4px; border-radius: 4px; font-weight: bold; }
+        .b-local { border: 1px solid var(--purple); color: var(--purple); }
+        .b-nube { border: 1px solid var(--neon); color: var(--neon); }
     </style>
 </head>
 <body>
@@ -46,36 +47,32 @@
     <div class="card" style="display:flex; justify-content: space-between; align-items: center;">
         <span>📍 <span id="gpsTxt">Buscando...</span></span>
         <div>
-            <button class="btn btn-secondary" onclick="sumarPayjoy()">PayJoy</button>
-            <button class="btn btn-primary" onclick="sumarRegistro()">Vincular</button>
-            <button class="btn btn-accent" onclick="logout()"><i class="fas fa-power-off"></i></button>
+            <button class="btn btn-accent" onclick="descargarExcel()"><i class="fas fa-file-excel"></i></button>
+            <button class="btn btn-secondary" onclick="logout()"><i class="fas fa-power-off"></i></button>
         </div>
     </div>
 
-    <div class="card" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align:center;">
-        <div>Total General: <b id="total">0</b></div>
-        <div>PayJoy: <b id="totalPayjoy">0</b></div>
-        <div>Registros: <b id="totalRegistro">0</b></div>
-    </div>
-
     <div class="card">
-        <h3><i class="fas fa-camera"></i> Escáner IMEI / ICCID</h3>
         <div id="reader"></div>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
-            <button class="btn btn-secondary" onclick="iniciarScanner()">INICIAR CÁMARA</button>
+            <button class="btn btn-secondary" onclick="iniciarScanner()">ESCANEAR</button>
             <button class="btn btn-accent" onclick="detenerScanner()">DETENER</button>
         </div>
     </div>
 
     <form id="fReg" class="card">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <input id="marca" placeholder="Marca (Ej: Samsung)">
+            <input id="modelo" placeholder="Modelo (Ej: A54)">
+        </div>
         <select id="tipo">
             <option>KIT</option><option>CHIP</option>
             <option>PORTABILIDAD</option><option>RENUEVA</option>
         </select>
-        <input id="tel" type="number" placeholder="Número de Teléfono">
+        <input id="tel" type="number" placeholder="Número Telefónico">
         <input id="icc" type="number" placeholder="ICCID (Chip)">
         <input id="imei" type="number" placeholder="IMEI (Equipo)">
-        <input id="promotor" placeholder="Nombre Promotor">
+        <input id="promotor" placeholder="Nombre del Promotor" required>
         <input id="fechaInput" type="datetime-local">
 
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
@@ -86,29 +83,22 @@
 
     <div class="card" style="overflow-x:auto;">
         <table>
-            <thead><tr><th>Tel/ID</th><th>Tipo</th><th>Fecha</th><th>Acción</th></tr></thead>
+            <thead><tr><th>Promotor</th><th>Equipo</th><th>Tel</th><th>Origen</th><th>Acción</th></tr></thead>
             <tbody id="tabla"></tbody>
         </table>
     </div>
 </div>
 
 <script>
-// CONFIGURACIÓN FIREBASE
 const firebaseConfig={apiKey:"AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",authDomain:"ventastelcel4029.firebaseapp.com",projectId:"ventastelcel4029"};
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth();
 const db=firebase.firestore();
+let scanner, isScanning = false;
 
-let scanner;
-let isScanning = false;
-
-// FORMATO DD/MM/YYYY
-function formatFecha(fechaStr) {
-    const d = fechaStr ? new Date(fechaStr) : new Date();
-    const dia = String(d.getDate()).padStart(2, '0');
-    const mes = String(d.getMonth() + 1).padStart(2, '0');
-    const anio = d.getFullYear();
-    return `${dia}/${mes}/${anio}`;
+function formatFecha(f) {
+    const d = f ? new Date(f) : new Date();
+    return d.toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
 }
 
 /* AUTH */
@@ -119,128 +109,104 @@ function logout(){ auth.signOut(); }
 auth.onAuthStateChanged(user=>{
     loginBox.classList.toggle("hidden", !!user);
     appBox.classList.toggle("hidden", !user);
-    if(user){ render(); gps(); }
+    if(user) render();
 });
 
-/* ESCÁNER CON DISCRIMINACIÓN IMEI/ICCID */
+/* SCANNER */
 function iniciarScanner(){
     if(isScanning) return;
     scanner = new Html5Qrcode("reader");
     isScanning = true;
     scanner.start({facingMode:"environment"}, {fps:10, qrbox:250}, (code)=>{
         let limpio = code.replace(/\D/g,'');
-        
-        // Discriminación por longitud
-        if(limpio.length === 15) { 
-            imei.value = limpio; 
-            toast("IMEI DETECTADO ✅");
-            if(navigator.vibrate) navigator.vibrate(50);
-            detenerScanner(); // Pausa para confirmar
-        } 
-        else if(limpio.length >= 18 && limpio.length <= 20) { 
-            icc.value = limpio; 
-            toast("ICCID DETECTADO ✅");
-            if(navigator.vibrate) navigator.vibrate(50);
-            detenerScanner(); // Pausa para confirmar
-        }
-    }).catch(err => console.error(err));
+        if(limpio.length === 15) { imei.value = limpio; toast("IMEI OK"); detenerScanner(); } 
+        else if(limpio.length >= 18) { icc.value = limpio; toast("ICCID OK"); detenerScanner(); }
+    }).catch(e => console.log(e));
 }
-
-function detenerScanner(){ 
-    if(scanner) {
-        scanner.stop().then(() => { isScanning = false; }).catch(e => console.log(e));
-    }
-}
+function detenerScanner(){ if(scanner){ scanner.stop().then(()=>isScanning=false); } }
 
 /* GUARDADO NUBE */
 fReg.onsubmit = async e => {
     e.preventDefault();
     const data = {
         uid: auth.currentUser.uid,
+        promotor: promotor.value,
+        marca: marca.value,
+        modelo: modelo.value,
         tipo: tipo.value,
         cel: tel.value,
         icc: icc.value,
         imei: imei.value,
-        promotor: promotor.value,
-        fechaOriginal: fechaInput.value || new Date().toISOString(),
-        fechaFormateada: formatFecha(fechaInput.value)
+        fecha: formatFecha(fechaInput.value)
     };
     await db.collection("ventas").add(data);
     fReg.reset();
-    toast("Sincronizado con Nube");
     render();
 };
 
-/* GUARDADO LOCAL (EXCEL FORMAT) */
+/* GUARDADO LOCAL */
 function guardarLocal(){
-    const venta = {
-        cel: tel.value || "S/N",
+    if(!promotor.value) return alert("Escribe el nombre del promotor");
+    const v = {
+        promotor: promotor.value,
+        marca: marca.value,
+        modelo: modelo.value,
         tipo: tipo.value,
+        cel: tel.value,
         fecha: formatFecha(fechaInput.value),
-        icc: icc.value || "",
-        imei: imei.value || ""
+        icc: icc.value,
+        imei: imei.value
     };
     let lista = JSON.parse(localStorage.getItem("ventas_excel") || "[]");
-    lista.push(venta);
+    lista.push(v);
     localStorage.setItem("ventas_excel", JSON.stringify(lista));
-    toast("Guardado en Memoria Local");
+    toast("Guardado en Local");
     render();
 }
 
-/* RENDERIZADO MIXTO */
+/* RENDER */
 async function render(){
-    // 1. Cargar desde Nube
     const snap = await db.collection("ventas").where("uid","==",auth.currentUser.uid).get();
-    let nubeHtml = snap.docs.map(d => {
+    let html = snap.docs.map(d => {
         const v = d.data();
-        return `<tr>
-            <td>${v.cel || 'ID:'+d.id.slice(0,4)}</td>
-            <td>${v.tipo} <span class="badge-nube">NUBE</span></td>
-            <td>${v.fechaFormateada || formatFecha(v.fechaOriginal)}</td>
-            <td><button onclick="delNube('${d.id}')" style="background:none; border:none; color:#ff4d4d;">🗑️</button></td>
-        </tr>`;
+        return `<tr><td>${v.promotor}</td><td>${v.marca} ${v.modelo}</td><td>${v.cel}</td><td><span class="badge b-nube">NUBE</span></td><td><button onclick="delNube('${d.id}')">🗑️</button></td></tr>`;
     }).join('');
 
-    // 2. Cargar desde Local
     let locales = JSON.parse(localStorage.getItem("ventas_excel") || "[]");
-    let localHtml = locales.map((v, i) => {
-        return `<tr>
-            <td>${v.cel}</td>
-            <td>${v.tipo} <span class="badge-local">LOCAL</span></td>
-            <td>${v.fecha}</td>
-            <td><button onclick="delLocal(${i})" style="background:none; border:none; color:var(--pink);">✕</button></td>
-        </tr>`;
+    let htmlL = locales.map((v, i) => {
+        return `<tr><td>${v.promotor}</td><td>${v.marca} ${v.modelo}</td><td>${v.cel}</td><td><span class="badge b-local">LOCAL</span></td><td><button onclick="delLocal(${i})">✕</button></td></tr>`;
     }).reverse().join('');
 
-    tabla.innerHTML = nubeHtml + localHtml;
-    total.innerText = snap.size + locales.length;
-    cargarContadores();
+    tabla.innerHTML = html + htmlL;
 }
 
-/* BORRADOS */
-async function delNube(id){ if(confirm("¿Borrar de la nube?")) { await db.collection("ventas").doc(id).delete(); render(); } }
+/* EXPORTAR A EXCEL (CSV) */
+function descargarExcel(){
+    let locales = JSON.parse(localStorage.getItem("ventas_excel") || "[]");
+    if(locales.length === 0) return alert("No hay datos locales para descargar");
+    
+    let csv = "Fecha,Promotor,Marca,Modelo,Tipo,Telefono,ICCID,IMEI\n";
+    locales.forEach(v => {
+        csv += `${v.fecha},${v.promotor},${v.marca},${v.modelo},${v.tipo},${v.cel},${v.icc},${v.imei}\n`;
+    });
 
-function delLocal(index) {
-    if(confirm("¿Eliminar registro local?")) {
-        let lista = JSON.parse(localStorage.getItem("ventas_excel") || "[]");
-        lista.splice(index, 1);
-        localStorage.setItem("ventas_excel", JSON.stringify(lista));
-        render();
-    }
+    const blob = new Blob([csv], {type: 'text/csv'});
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Ventas_${new Date().toLocaleDateString()}.csv`;
+    a.click();
 }
 
-/* UTILIDADES */
-function gps(){ navigator.geolocation.getCurrentPosition(p=>gpsTxt.innerText="Activo", e=>gpsTxt.innerText="Off"); }
-function sumarPayjoy(){ localStorage.payjoy=(+localStorage.payjoy||0)+1; render(); }
-function sumarRegistro(){ localStorage.registro=(+localStorage.registro||0)+1; render(); }
-function cargarContadores(){ 
-    totalPayjoy.innerText=localStorage.payjoy||0; 
-    totalRegistro.innerText=localStorage.registro||0; 
+async function delNube(id){ if(confirm("¿Borrar?")) { await db.collection("ventas").doc(id).delete(); render(); } }
+function delLocal(i){ 
+    let lista = JSON.parse(localStorage.getItem("ventas_excel") || "[]");
+    lista.splice(i,1); localStorage.setItem("ventas_excel", JSON.stringify(lista)); render(); 
 }
 function toast(m){ 
     const t = document.createElement("div"); t.innerText=m; 
-    t.style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--neon); color:black; padding:10px 20px; border-radius:20px; z-index:100; font-weight:bold;";
-    document.body.appendChild(t); setTimeout(()=>t.remove(), 2500);
+    t.style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--neon); color:black; padding:10px 20px; border-radius:20px; z-index:100;";
+    document.body.appendChild(t); setTimeout(()=>t.remove(), 2000);
 }
 </script>
 </body>
