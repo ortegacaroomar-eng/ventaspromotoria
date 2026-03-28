@@ -3,9 +3,26 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard Ventas PRO</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js">/* ===== IA PREDICCIÓN SIMPLE ===== */ function predecirVentas(data){ // predicción básica por promedio de últimos días let dias={};
+
+data.forEach(v=>{ if(!v.fecha) return; dias[v.fecha]=(dias[v.fecha]||0)+1; });
+
+let valores=Object.values(dias); if(valores.length===0) return 0;
+
+let promedio=valores.reduce((a,b)=>a+b,0)/valores.length; return Math.round(promedio); }
+
+async function mostrarPrediccion(){ const snap=await db.collection("ventas") .where("uid","==",auth.currentUser.uid) .get();
+
+let l=snap.docs.map(d=>d.data()); let pred=predecirVentas(l);
+
+let box=document.getElementById("prediccion"); if(box) box.innerText=pred+" ventas estimadas mañana"; }
+
+// llamar predicción después de render const oldRender=render; render=async function(){ await oldRender(); mostrarPrediccion(); }
+
+</script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script><style>
 body{margin:0;font-family:sans-serif;background:#0a0f1f;color:white}
 .hidden{display:none}
@@ -17,6 +34,8 @@ button{padding:10px;border:none;border-radius:10px;cursor:pointer}
 .btn-danger{background:#ff4d4d;color:white}
 table{width:100%;background:white;color:black;border-collapse:collapse}
 td,th{padding:6px;border:1px solid #ddd}
+th{background:#000;color:#fff;position:relative}
+th::after{content:"⬍";position:absolute;right:6px;font-size:10px;opacity:.7}
 .login{max-width:300px;margin:100px auto;background:white;color:black;padding:20px;border-radius:15px}
 </style></head>
 <body><div id="loginBox" class="login">
@@ -43,7 +62,9 @@ td,th{padding:6px;border:1px solid #ddd}
 </form><table>
 <thead><tr><th>Cel</th><th>Tipo</th><th>ICCID</th><th></th></tr></thead>
 <tbody id="tabla"></tbody>
-</table></div><script>
+</table><button onclick="excel()" class="btn-primary">Exportar Excel</button>
+
+</div><script>
 const firebaseConfig={
 apiKey:"AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
 authDomain:"ventastelcel4029.firebaseapp.com",
@@ -72,7 +93,8 @@ uid:auth.currentUser.uid,
 tipo:tipo.value,
 cel:tel.value,
 icc:icc.value,
-timestamp:Date.now()
+timestamp:Date.now(),
+fecha:new Date().toLocaleDateString()
 });
 fReg.reset();
 render();
@@ -121,5 +143,47 @@ document.querySelectorAll("#tabla tr").forEach(f=>{
 f.style.display=f.innerText.toLowerCase().includes(txt)?"":"none";
 });
 }
+
+/* EXCEL PRO */
+async function excel(){
+const snap=await db.collection("ventas")
+.where("uid","==",auth.currentUser.uid)
+.get();
+
+let l=snap.docs.map(d=>d.data());
+if(!l.length) return alert("Sin datos");
+
+const headers=["CELULAR","TIPO","ICCID","FECHA"];
+let data=[headers];
+
+l.forEach(v=>{
+data.push([v.cel,v.tipo,v.icc,v.fecha]);
+});
+
+const ws=XLSX.utils.aoa_to_sheet(data);
+
+// ancho columnas
+ws["!cols"]=[{wch:18},{wch:12},{wch:25},{wch:15}];
+
+// autofiltro con flechas
+ws["!autofilter"]={ref:"A1:D"+(l.length+1)};
+
+// congelar encabezado
+ws["!freeze"]={xSplit:0,ySplit:1};
+
+// estilo encabezado
+for(let c=0;c<headers.length;c++){
+const cell=XLSX.utils.encode_cell({r:0,c:c});
+ws[cell].s={
+fill:{patternType:"solid",fgColor:{rgb:"000000"}},
+font:{color:{rgb:"FFFFFF"},bold:true,sz:13},
+alignment:{horizontal:"center",vertical:"center"}
+};
+}
+
+const wb=XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(wb,ws,"VENTAS");
+XLSX.writeFile(wb,"ventas_pro.xlsx");
+}
 </script></body>
-</
+</html>
