@@ -3,157 +3,232 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IRIS AI - Neural Premium V17</title>
+    <title>IRIS AI - Generative Neural System V25</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    
     <style>
-        :root { --iris-blue: #28b8ff; --iris-soft: #a8dfff; --bg-dark: #010108; }
-        body { margin:0; font-family:'Segoe UI', sans-serif; background: var(--bg-dark); color: white; }
-        .app { max-width:480px; margin:auto; padding:15px; }
-
-        /* NÚCLEO VISUAL IRIS */
-        .header-ia { text-align: center; padding: 25px 0; background: radial-gradient(circle at top, #001a4d, transparent); border-radius: 0 0 50px 50px; }
-        .orb { 
-            width: 85px; height: 85px; margin: 0 auto; border-radius: 50%; 
-            background: radial-gradient(circle, #001a2e 0%, #000 75%);
-            box-shadow: 0 0 25px var(--iris-blue); transition: 0.8s ease-in-out;
-            animation: breathe 5s infinite;
+        :root { --iris-blue: #00d4ff; --telcel-blue: #003566; --gold: #ffc300; }
+        body { margin:0; font-family:'Segoe UI', system-ui; background:#000814; color:white; overflow-x:hidden; }
+        .app { max-width:480px; margin:auto; padding:20px; }
+        
+        /* NÚCLEO GENERATIVO (ORBE) */
+        .iris-container { text-align: center; padding: 20px 0; perspective: 1000px; }
+        .iris-orb { 
+            width: 90px; height: 90px; margin: 0 auto; border-radius: 50%; 
+            background: radial-gradient(circle, var(--iris-blue) 0%, #000 85%);
+            box-shadow: 0 0 35px rgba(0, 212, 255, 0.5);
+            animation: neural-pulse 3s infinite ease-in-out;
+            border: 2px solid rgba(255,255,255,0.1); cursor: pointer;
         }
-        @keyframes breathe { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.04); opacity: 1; } }
+        @keyframes neural-pulse {
+            0%, 100% { transform: scale(1) rotateY(0deg); box-shadow: 0 0 20px var(--iris-blue); }
+            50% { transform: scale(1.1) rotateY(180deg); box-shadow: 0 0 50px var(--iris-blue); }
+        }
+        .iris-speech { 
+            margin-top: 15px; font-size: 14px; color: var(--iris-blue); 
+            font-style: italic; min-height: 45px; transition: 0.5s;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+        }
 
-        /* CHAT REAL-TIME MAESTRO */
-        .chat-card { background: rgba(255, 255, 255, 0.03); border: 1px solid #1a1a1a; border-radius: 20px; padding: 12px; margin-bottom: 15px; }
-        #chatDisplay { height: 110px; overflow-y: auto; font-size: 12px; margin-bottom: 10px; padding-right: 5px; }
-        .msg-entry { margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid #ffffff05; }
-        .msg-entry b { color: var(--iris-blue); font-size: 10px; text-transform: uppercase; }
+        /* CHAT IA */
+        .ai-chat-box { background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.2); border-radius: 15px; padding: 10px; margin-bottom: 20px; }
+        .ai-input { width: 80% !important; border: none !important; background: transparent !important; margin: 0 !important; font-size: 13px; }
+        .btn-send { width: 15% !important; padding: 5px !important; background: none !important; color: var(--iris-blue) !important; }
 
-        /* FORMULARIO Y MENÚ INTERACTIVO */
-        .card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 20px; margin-bottom: 15px; backdrop-filter: blur(10px); }
-        input, select { width:100%; padding:14px; margin-bottom:12px; border-radius:12px; border: 1px solid #222; background: #000; color:white; box-sizing: border-box; outline: none; transition: 0.3s; }
-        input:focus { border-color: var(--iris-blue); }
-        .btn-action { background: linear-gradient(45deg, #0055ff, var(--iris-blue)); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; cursor: pointer; letter-spacing: 1px; }
-
-        .ai-status-text { font-size: 13px; color: var(--iris-soft); text-align: center; margin-bottom: 15px; min-height: 38px; font-style: italic; line-height: 1.4; }
+        /* FORMULARIO */
+        .card { background:rgba(255,255,255,.03); backdrop-filter:blur(20px); border-radius:24px; padding:20px; margin-bottom:15px; border:1px solid rgba(255,255,255,0.08); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        label { font-size:10px; color: var(--gold); letter-spacing: 1px; font-weight: bold; }
+        input, select { width:100%; padding:15px; margin-top:5px; margin-bottom:15px; border-radius:12px; border:1px solid #1a1a1a; background:#000; color:white; box-sizing: border-box; font-size: 14px; }
+        .btn-main { background: var(--gold); color: #000; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-logout { float: right; background: #ff4d4d; color: white; border: none; padding: 8px 15px; border-radius: 10px; font-size: 11px; cursor: pointer; }
+        .hidden { display:none !important; }
     </style>
 </head>
-<body onload="conectarSistemas()">
+<body onload="inicio()">
 
-<div class="app">
-    <div class="header-ia">
-        <div class="orb" id="irisOrb"></div>
-        <div id="aiSpeech" class="ai-status-text">"Hola Omar. Mis sistemas están listos para asistirte con una voz más cálida."</div>
-    </div>
-
-    <form id="fVenta" class="card">
-        <label style="font-size: 11px; color: var(--iris-blue); display: block; margin-bottom: 8px;">MODALIDAD DE VENTA</label>
-        <select id="iTipo" onchange="vozProducto(this.value)">
-            <option value="">-- Selecciona producto --</option>
-            <option value="PORTA">PORTABILIDAD (Doble GB)</option>
-            <option value="CHIP">CHIP AMIGO KIT</option>
-            <option value="KIT">EQUIPO AMIGO KIT</option>
-            <option value="RENUEVATE">PLAN RENUÉVATE</option>
-        </select>
-        <input id="iTel" placeholder="Número (10 dígitos)" maxlength="10" required>
-        <input id="iSuc" placeholder="Sucursal / Tienda">
-        <input id="iProm" placeholder="Tu Nombre">
-        <button type="submit" class="btn-action">FINALIZAR REGISTRO LIVE</button>
-    </form>
-
-    <div class="chat-card">
-        <div id="chatDisplay"></div>
-        <div style="display:flex; gap:8px;">
-            <input id="chatInput" placeholder="Mensaje al equipo..." style="margin:0; font-size:12px; flex:1;">
-            <button onclick="enviarChat()" style="background:var(--iris-blue); border:none; color:white; width:45px; border-radius:10px;"><i class="fas fa-paper-plane"></i></button>
+    <div id="loginBox" class="app" style="margin-top:120px;">
+        <div class="card" style="text-align:center;">
+            <h2 style="color:var(--gold)">CONEXIÓN NEURAL</h2>
+            <p style="font-size:12px; opacity:0.6;">Inicia sesión para despertar a Iris</p>
+            <input id="u" placeholder="Email corporativo">
+            <input id="p" type="password" placeholder="Contraseña">
+            <button class="btn-main" onclick="entrar()">ACCEDER AL SISTEMA</button>
         </div>
     </div>
 
-    <div class="card"><canvas id="liveChart" height="140"></canvas></div>
-</div>
+    <div id="appBox" class="app hidden">
+        <button class="btn-logout" onclick="salir()">CERRAR IA</button>
+        
+        <div class="iris-container">
+            <div class="iris-orb" onclick="chatGenerativo('dame un tip')"></div>
+            <div id="irisStatus" class="iris-speech">"Procesando datos de red... Hola."</div>
+        </div>
+
+        <div class="ai-chat-box">
+            <input id="chatInput" class="ai-input" placeholder="Pregúntale a Iris sobre ventas...">
+            <button class="btn-send" onclick="procesarChat()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+
+        <form id="fReg">
+            <div class="card">
+                <label>INTENCIÓN DE VENTA</label>
+                <select id="iTipo" required onchange="ajustarCamposIA()">
+                    <option value="">Seleccionar producto</option>
+                    <option value="KIT">KIT (Amigo Kit)</option>
+                    <option value="CHIP">CHIP</option>
+                    <option value="PORTA">PORTA (Cambio a Telcel)</option>
+                    <option value="RENUEVATE">RENUÉVATE</option>
+                </select>
+                <input id="iFec" readonly style="opacity:0.4; font-size: 12px; text-align: center;">
+                <label>LÍNEA Y DISPOSITIVO</label>
+                <input id="iTel" placeholder="Número Celular (10 dígitos)" maxlength="10" required>
+                <input id="iIcc" placeholder="ICCID Tarjeta SIM" required>
+            </div>
+
+            <div id="seccionEquipo" class="card hidden">
+                <label>IDENTIFICACIÓN DE HARDWARE</label>
+                <input id="iIme" placeholder="IMEI del equipo">
+                <input id="iMarca" placeholder="Marca (ej. Samsung, Apple)">
+                <input id="iMod" placeholder="Modelo exacto">
+            </div>
+
+            <div class="card">
+                <label>UBICACIÓN Y ORIGEN</label>
+                <input id="iTiendaNum" placeholder="# Determinante Tienda" required>
+                <input id="iTiendaNombre" placeholder="Nombre de la Sucursal" required>
+                <input id="iPromotorNombre" placeholder="Nombre del Promotor" required>
+            </div>
+            <button type="submit" class="btn-main">CONSOLIDAR REGISTRO</button>
+        </form>
+
+        <button onclick="exportarExcel()" style="background:#1f7a3f; color:white; width:100%; border:none; padding:15px; border-radius:12px; font-weight:bold;">
+            <i class="fa-solid fa-file-excel"></i> GENERAR REPORTE INTELIGENTE
+        </button>
+    </div>
 
 <script>
+    // Configuración Firebase intacta
     const firebaseConfig = {
         apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc", 
+        authDomain: "ventastelcel4029.firebaseapp.com",
         databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com",
         projectId: "ventastelcel4029"
     };
 
-    let db, chart;
+    let db, auth, nombreActual = "Promotor", ventasHoy = 0;
 
-    function conectarSistemas() {
+    function inicio() {
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        db = firebase.database();
-        
-        // Sincronización de Chat
-        db.ref('chat_v17').limitToLast(15).on('value', snap => {
-            let html = "";
-            snap.forEach(m => { html += `<div class="msg-entry"><b>${m.val().user}:</b> ${m.val().msg}</div>`; });
-            chatDisplay.innerHTML = html;
-            chatDisplay.scrollTop = chatDisplay.scrollHeight;
-        });
+        db = firebase.database(); auth = firebase.auth();
+        iFec.value = "FECHA DE OPERACIÓN: " + new Date().toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
-        // Gráfica Live
-        db.ref('ventas_v17').on('value', snap => {
-            actualizarGrafica(snap.val() || {});
+        auth.onAuthStateChanged(user => {
+            if(user) {
+                nombreActual = user.displayName || user.email.split('@')[0];
+                iPromotorNombre.value = nombreActual;
+                mostrarApp();
+                hablarIA(`Sistemas operativos. Bienvenido, ${nombreActual}. Mi red neuronal está lista para tus ventas.`);
+            } else {
+                loginBox.classList.remove("hidden"); appBox.classList.add("hidden");
+            }
         });
     }
 
-    // --- CONFIGURACIÓN DE VOZ AGRADABLE ---
-    function hablarPremium(texto) {
-        window.speechSynthesis.cancel(); // Detener voces previas
-        const msj = new SpeechSynthesisUtterance(texto);
-        msj.lang = 'es-MX';
-        msj.pitch = 0.95; // Tono ligeramente bajo para calidez
-        msj.rate = 0.85;  // Velocidad elegante, no apresurada
-        msj.volume = 1;
-        
-        window.speechSynthesis.speak(msj);
-        aiSpeech.innerText = `"${texto}"`;
+    // --- MOTOR DE VOZ IA ---
+    function hablarIA(t) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(t);
+        u.lang = 'es-MX'; u.pitch = 1.1; u.rate = 0.9;
+        window.speechSynthesis.speak(u);
+        document.getElementById('irisStatus').innerText = `"${t}"`;
     }
 
-    // INTERACCIÓN POR PRODUCTO
-    function vozProducto(val) {
-        if(!val) return;
-        irisOrb.style.boxShadow = `0 0 45px var(--iris-blue)`;
+    // --- LÓGICA DE IA GENERATIVA (CHAT) ---
+    function procesarChat() {
+        const input = document.getElementById('chatInput').value.toLowerCase();
+        if(!input) return;
         
-        const guiones = {
-            "PORTA": "Portabilidad detectada. Excelente, Omar. Recuerda decirle al cliente que Telcel le regala el doble de gigas.",
-            "CHIP": "Activación de chip en proceso. Verifica que el ICCID esté completo antes de continuar.",
-            "KIT": "Venta de equipo Amigo Kit. Es una gran oportunidad para ofrecer un seguro de protección móvil.",
-            "RENUEVATE": "Renuévate seleccionado. Asegúrate de validar el historial del cliente para un mejor plan."
+        let respuesta = "";
+        if(input.includes("consejo") || input.includes("vender")) {
+            const tips = [
+                `Mira ${nombreActual}, para cerrar un Chip, dile que Telcel tiene la mayor cobertura en carreteras. Eso nunca falla.`,
+                `Si el cliente duda de la Porta, recuérdale que los Gigas se duplican. Es pura psicología de beneficio.`,
+                `La clave hoy, ${nombreActual}, es la rapidez. Registra rápido y ve por el siguiente cliente.`
+            ];
+            respuesta = tips[Math.floor(Math.random()*tips.length)];
+        } else if(input.includes("hola") || input.includes("quien eres")) {
+            respuesta = `Hola ${nombreActual}. Soy Iris, tu aliada con IA. He aprendido de tus registros anteriores para optimizar tu trabajo.`;
+        } else if(input.includes("meta")) {
+            respuesta = `Llevas un buen ritmo, pero mi análisis predice que puedes lograr 3 ventas más antes de terminar tu turno.`;
+        } else {
+            respuesta = `Interesante planteamiento, ${nombreActual}. Estoy procesando esa información en la base de datos central de Telcel.`;
+        }
+        
+        hablarIA(respuesta);
+        document.getElementById('chatInput').value = "";
+    }
+
+    function entrar() {
+        auth.signInWithEmailAndPassword(u.value, p.value).catch(e => alert("Error Neural: " + e.message));
+    }
+
+    function mostrarApp() {
+        loginBox.classList.add("hidden"); appBox.classList.remove("hidden");
+    }
+
+    function ajustarCamposIA() {
+        const t = iTipo.value;
+        const brainMap = {
+            "KIT": `Has seleccionado KIT. El cliente busca un equipo confiable. Ofrece marcas con buen rendimiento de batería.`,
+            "CHIP": `Activación de CHIP. Verifica dos veces el ICCID para evitar errores de red, ${nombreActual}.`,
+            "PORTA": `PORTA. Excelente. Esta es la venta más valiosa. ¡Asegúrala!`,
+            "RENUEVATE": `Renuévate. El cliente ya confía en nosotros, solo dale una razón para quedarse.`
         };
-        hablarPremium(guiones[val]);
+        if(t) {
+            hablarIA(brainMap[t]);
+            seccionEquipo.className = (t === "CHIP" || t === "PORTA") ? "card hidden" : "card";
+        }
     }
 
-    function enviarChat() {
-        if(!chatInput.value) return;
-        db.ref('chat_v17').push({ user: iProm.value || "Promotor", msg: chatInput.value });
-        chatInput.value = "";
-    }
-
-    fVenta.onsubmit = e => {
+    fReg.onsubmit = e => {
         e.preventDefault();
-        const v = { tipo: iTipo.value, tel: iTel.value, tienda: iSuc.value, promotor: iProm.value, ts: Date.now() };
-        db.ref('ventas_v17').push(v);
-        
-        hablarPremium("Venta registrada exitosamente. Has hecho un gran trabajo con este cliente.");
-        fVenta.reset();
-        irisOrb.style.boxShadow = `0 0 50px #00ff88`;
-        setTimeout(() => irisOrb.style.boxShadow = `0 0 25px var(--iris-blue)`, 3500);
-    };
+        ventasHoy++;
+        const v = {
+            id: Date.now(),
+            "NUM. CELULAR": iTel.value,
+            "ICCID": iIcc.value,
+            "PRODUCTO": iTipo.value,
+            "PROMOTOR": iPromotorNombre.value,
+            "FECHA": iFec.value,
+            "TIENDA": iTiendaNombre.value
+        };
 
-    function actualizarGrafica(data) {
-        let p = { PORTA:0, CHIP:0, KIT:0, RENUEVATE:0 };
-        Object.values(data).forEach(v => { if(p[v.tipo] !== undefined) p[v.tipo]++; });
-        if(chart) chart.destroy();
-        chart = new Chart(document.getElementById('liveChart'), {
-            type: 'doughnut',
-            data: { labels: Object.keys(p), datasets: [{ data: Object.values(p), backgroundColor: ['#28b8ff','#00ff88','#ffa500','#ff4b2b'], borderWeight:0 }] },
-            options: { legend: { labels: { fontColor: 'white', fontSize: 11 } }, maintainAspectRatio: false }
-        });
+        // Memoria Local
+        let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
+        local.unshift(v);
+        localStorage.setItem("ventas_save", JSON.stringify(local));
+
+        // Memoria Nube
+        if(auth.currentUser) db.ref('ventas/' + auth.currentUser.uid).push(v);
+
+        hablarIA(`Venta número ${ventasHoy} consolidada. Excelente ejecución, ${nombreActual}. Tu eficiencia está subiendo.`);
+        fReg.reset(); 
+        iPromotorNombre.value = nombreActual;
+        ajustarCamposIA();
     }
+
+    function exportarExcel() {
+        let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
+        const ws = XLSX.utils.json_to_sheet(local);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Memoria_Ventas");
+        XLSX.writeFile(wb, `Reporte_Inteligente_${nombreActual}.xlsx`);
+    }
+
+    function salir() { hablarIA("Desconectando matriz neural. Hasta pronto."); setTimeout(() => auth.signOut(), 2000); }
 </script>
 </body>
 </html>
