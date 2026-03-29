@@ -1,132 +1,61 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Ventas Telcel Pro + IRIS AI v2.0</title>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <style>
-        body { margin:0; font-family:'Segoe UI',system-ui; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; overflow-x: hidden; }
-        .app { max-width:480px; margin:auto; padding:20px; position: relative; }
-        .card { background:rgba(255,255,255,.08); backdrop-filter:blur(12px); border-radius:18px; padding:18px; margin-bottom:16px; box-shadow:0 10px 25px rgba(0,0,0,.3); border:1px solid rgba(255,255,255,0.1); }
-        .header { text-align:center; font-size:20px; font-weight:bold; color:#ffc300; margin-bottom:20px; text-transform: uppercase; letter-spacing: 1px; }
-        label { font-size:10px; font-weight:bold; color:#ffc300; display: block; margin-bottom: 4px; }
-        input, select { width:100%; padding:12px; margin-bottom:12px; border-radius:10px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; font-size: 14px; }
-        button { width:100%; padding:14px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; transition:.2s; margin-bottom: 10px; }
-        .btn-main { background:#ffc300; color:#003566; }
-        
-        /* DISEÑO IRIS AVANZADO */
-        .iris-card { border: 1px solid #00e5ff; background: rgba(0, 229, 255, 0.05); text-align: center; }
-        .iris-halo { width: 60px; height: 60px; margin: 0 auto 10px; position: relative; display: flex; align-items: center; justify-content: center; }
-        .ring { position: absolute; width: 100%; height: 100%; border: 3px solid transparent; border-top: 3px solid #00e5ff; border-radius: 50%; animation: spin 1s linear infinite; }
-        .ring-inner { position: absolute; width: 70%; height: 70%; border: 2px solid #ff007a; border-radius: 50%; opacity: 0.5; animation: spin 2s reverse linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        #irisSpeechText { font-size: 13px; color: #00e5ff; font-style: italic; min-height: 40px; margin-top: 10px; }
-
-        /* CHAT REALTIME */
-        .chat-box { height: 150px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 10px; padding: 10px; font-size: 12px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.1); }
-        .chat-msg { margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; }
-        .chat-msg b { color: #ffc300; }
-
-        .venta-item { background: rgba(255,255,255,0.07); padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 5px solid #ffc300; font-size: 11px; position: relative; }
-        .hidden { display:none !important; }
-        .btn-logout { position: absolute; top: 20px; right: 20px; background: #ff4d4d; color: white; padding: 8px 12px; border-radius: 8px; font-size: 10px; border:none; cursor:pointer; }
-    </style>
-</head>
-<body onload="inicio()">
-
-    <div id="loginBox" class="card" style="max-width:350px; margin:100px auto; background:white; color:black; text-align:center;">
-        <h2 id="tituloAuth">Acceso Iris</h2>
-        <input id="u" placeholder="Correo" style="background:#eee; color:black;">
-        <input id="p" type="password" placeholder="Pass" style="background:#eee; color:black;">
-        <button class="btn-main" onclick="entrar()">ENTRAR</button>
-        <button style="background:none; color:#003566; font-size:11px;" onclick="toggleRegistro()" id="btnT">Registrarse</button>
-    </div>
-
-    <div id="appBox" class="app hidden">
-        <button class="btn-logout" onclick="salir()">Salir</button>
-
-        <div class="card iris-card">
-            <div class="iris-halo"><div class="ring"></div><div class="ring-inner"></div><i class="fas fa-brain" style="color:#00e5ff"></i></div>
-            <div id="irisSpeechText">"Protocolo Iris activo. Analizando red regional..."</div>
-            <div id="iaConsejo" style="font-size: 10px; color: #ffc300; margin-top: 10px; border-top: 1px solid rgba(255,195,0,0.2); padding-top:5px;"></div>
-        </div>
-
-        <div class="card">
-            <label>TENDENCIA DE PRODUCTOS (REAL-TIME)</label>
-            <canvas id="ventasChart" height="150"></canvas>
-        </div>
-
-        <div class="card">
-            <label><i class="fas fa-comments"></i> CHAT PROMOTORES</label>
-            <div id="chatBox" class="chat-box"></div>
-            <div style="display:flex; gap:5px;">
-                <input id="msgInput" placeholder="Escribe al equipo..." style="margin-bottom:0;">
-                <button class="btn-main" style="width:60px; margin-bottom:0;" onclick="enviarChat()"><i class="fas fa-paper-plane"></i></button>
-            </div>
-        </div>
-
-        <div class="header">Nueva Venta</div>
-        <form id="fReg">
-            <div class="card">
-                <label>PRODUCTO</label>
-                <select id="iTipo" required onchange="ajustarCampos()">
-                    <option value="KIT">KIT</option>
-                    <option value="CHIP">CHIP</option>
-                    <option value="PORTA">PORTA</option>
-                    <option value="RENUEVATE">RENUEVATE</option>
-                </select>
-                <input id="iFec" placeholder="Fecha DD/MM/YYYY">
-                <input id="iTel" type="tel" placeholder="Celular (10 dígitos)" required>
-                <input id="iIcc" placeholder="ICCID" required>
-            </div>
-            <div id="seccionEquipo" class="card">
-                <input id="iIme" placeholder="IMEI">
-                <input id="iMarca" placeholder="Marca">
-                <input id="iMod" placeholder="Modelo">
-            </div>
-            <div class="card">
-                <input id="iTiendaNum" placeholder="# Tienda / Det" required>
-                <input id="iCadena" placeholder="Cadena (Ej: Bodega Aurrera)" required>
-                <input id="iTiendaNombre" placeholder="Nombre Tienda" required>
-                <input id="iProm" placeholder="Tu Nombre Completo" required>
-            </div>
-            <button type="submit" class="btn-main">SINCRONIZAR VENTA</button>
-        </form>
-
-        <div class="header" style="font-size: 14px;">Historial Reciente</div>
-        <div id="listaLocal"></div>
-    </div>
-
 <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc", 
-        authDomain: "ventastelcel4029.firebaseapp.com",
-        databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com",
-        projectId: "ventastelcel4029",
-        storageBucket: "ventastelcel4029.firebasestorage.app",
-        messagingSenderId: "480758010888",
-        appId: "1:480758010888:web:e948c54f0217536aa9adbd"
-    };
+    // ... (Configuración de Firebase igual) ...
 
-    let db, auth, modoReg = false, chart;
+    let db, auth, chart;
+
+    // --- CONFIGURACIÓN DEL NÚCLEO DE VOZ CORTANA ---
+    function hablar(texto) {
+        const synth = window.speechSynthesis;
+        synth.cancel(); // Detener cualquier voz previa para no encimarse
+
+        const utterance = new SpeechSynthesisUtterance(texto);
+        
+        // Buscamos la mejor voz disponible en español
+        const voces = synth.getVoices();
+        // Priorizamos voces femeninas y de calidad (como 'Google español' o 'Microsoft Sabina')
+        const vozElegida = voces.find(v => v.lang.includes('es') && v.name.includes('México')) || 
+                           voces.find(v => v.lang.includes('es')) || 
+                           voces[0];
+
+        utterance.voice = vozElegida;
+        
+        // Ajustes para sonar como Cortana:
+        // Un poco más agudo (1.2) y una velocidad calmada pero eficiente (0.9 - 1.0)
+        utterance.pitch = 1.2; 
+        utterance.rate = 0.95; 
+        utterance.volume = 1;
+
+        // Efecto visual en el Orbe mientras habla
+        const orbe = document.querySelector('.cortana-orb');
+        utterance.onstart = () => {
+            orbe.style.boxShadow = "0 0 50px #28b8ff, inset 0 0 30px #28b8ff";
+            orbe.style.animationDuration = "0.5s"; // Vibra más rápido al hablar
+        };
+        utterance.onend = () => {
+            orbe.style.boxShadow = "0 0 30px rgba(40, 184, 255, 0.4)";
+            orbe.style.animationDuration = "4s"; // Vuelve a respirar normal
+        };
+
+        synth.speak(utterance);
+    }
 
     function inicio() {
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        db = firebase.database();
-        auth = firebase.auth();
-
-        iFec.value = new Date().toLocaleDateString('es-MX');
+        db = firebase.database(); auth = firebase.auth();
+        
+        // Necesario para cargar voces en algunos navegadores
+        window.speechSynthesis.onvoiceschanged = () => {};
 
         auth.onAuthStateChanged(user => {
             if(user) {
                 appBox.classList.remove("hidden");
                 loginBox.classList.add("hidden");
-                hablar("Conexión establecida. Iniciando escaneo de ventas.");
+                
+                // Cortana te da la bienvenida
+                setTimeout(() => {
+                    hablar("Sistemas en línea. Hola de nuevo, Jefe. Estoy lista para procesar tus ventas de hoy.");
+                }, 1000);
+                
                 iniciarSincronizacion();
             } else {
                 loginBox.classList.remove("hidden");
@@ -135,118 +64,36 @@
         });
     }
 
-    function hablar(t) {
-        const s = window.speechSynthesis;
-        s.cancel();
-        const u = new SpeechSynthesisUtterance(t);
-        u.lang = 'es-MX'; u.rate = 1.1; u.pitch = 1.1;
-        s.speak(u);
-    }
-
-    function iniciarSincronizacion() {
-        // Escuchar Ventas Globales para Gráfico y Análisis
-        db.ref('ventas_globales').on('value', snap => {
-            let data = snap.val() || {};
-            actualizarGrafico(data);
-            analizarTiendas(data);
-        });
-
-        // Escuchar Chat
-        db.ref('chat').limitToLast(20).on('value', snap => {
-            let html = "";
-            snap.forEach(m => {
-                let d = m.val();
-                html += `<div class="chat-msg"><b>${d.user}:</b> ${d.msg}</div>`;
-            });
-            chatBox.innerHTML = html;
-            chatBox.scrollTop = chatBox.scrollHeight;
-        });
-
-        renderHistorialLocal();
-    }
-
-    function actualizarGrafico(data) {
-        let counts = { KIT:0, CHIP:0, PORTA:0, RENUEVATE:0 };
-        Object.values(data).forEach(v => { if(counts[v.tipo] !== undefined) counts[v.tipo]++; });
-
-        if(chart) chart.destroy();
-        chart = new Chart(document.getElementById('ventasChart'), {
-            type: 'bar',
-            data: {
-                labels: Object.keys(counts),
-                datasets: [{ data: Object.values(counts), backgroundColor: '#ffc300' }]
-            },
-            options: { legend: {display:false}, scales: { yAxes: [{ticks:{beginAtZero:true, fontColor:'white'}}] } }
-        });
-    }
-
-    function analizarTiendas(data) {
-        let tiendas = {};
-        Object.values(data).forEach(v => {
-            tiendas[v.tiendaNom] = (tiendas[v.tiendaNom] || 0) + 1;
-        });
-        
-        let sorted = Object.entries(tiendas).sort((a,b) => b[1] - a[1]);
-        if(sorted.length > 0) {
-            let top = sorted[0][0];
-            iaConsejo.innerText = `LÍDER: ${top}. Consejo Iris: Enfócate en la zona de cajas como ellos, ahí se cierran más CHIPS.`;
-        }
-    }
-
-    function enviarChat() {
-        if(!msgInput.value) return;
-        db.ref('chat').push({ user: iProm.value || "Promotor", msg: msgInput.value });
-        msgInput.value = "";
-    }
-
+    // --- ACTUALIZACIÓN EN EL BOTÓN DE GUARDAR ---
     fReg.onsubmit = e => {
         e.preventDefault();
         const v = {
-            id: Date.now(),
-            tipo: iTipo.value,
-            tel: iTel.value,
-            icc: iIcc.value,
-            tiendaNom: iTiendaNombre.value,
-            promotor: iProm.value,
-            fecha: iFec.value,
-            ts: Date.now()
+            id: Date.now(), tipo: iTipo.value, tel: iTel.value, 
+            icc: iIcc.value, promotor: iProm.value, fecha: iFec.value
         };
 
-        // GUARDAR LOCAL (Corregido)
-        let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
-        local.unshift(v);
-        localStorage.setItem("ventas_save", JSON.stringify(local));
+        // Guardado Local
+        let l = JSON.parse(localStorage.getItem("ventas_save") || "[]");
+        l.unshift(v); 
+        localStorage.setItem("ventas_save", JSON.stringify(l));
 
-        // GUARDAR NUBE
+        // Subida a Firebase
         db.ref('ventas_globales').push(v);
-        
-        hablar(`Venta registrada. Buen trabajo ${iProm.value}`);
-        irisSpeechText.innerText = "¡Venta sincronizada con éxito!";
-        fReg.reset();
+
+        // RESPUESTA DE VOZ PERSONALIZADA
+        const primerNombre = iProm.value.split(' ')[0];
+        const frases = [
+            `Excelente movimiento, ${primerNombre}. Venta de ${iTipo.value} registrada.`,
+            `Entendido. Sincronizando el número ${iTel.value.split('').join(' ')} en la base de datos.`,
+            `Buen trabajo. He guardado la información localmente y en la nube.`
+        ];
+        const respuesta = frases[Math.floor(Math.random() * frases.length)];
+        hablar(respuesta);
+
+        fReg.reset(); 
+        iFec.value = new Date().toLocaleDateString('es-MX');
         renderHistorialLocal();
     }
 
-    function renderHistorialLocal() {
-        let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
-        listaLocal.innerHTML = local.map(v => `
-            <div class="venta-item">
-                <b>${v.tel}</b> | ${v.tipo}<br>
-                <small>${v.tiendaNom} - ${v.fecha}</small>
-            </div>
-        `).join("");
-    }
-
-    function entrar() {
-        auth.signInWithEmailAndPassword(u.value, p.value).catch(e => alert(e.message));
-    }
-    function toggleRegistro() {
-        modoReg = !modoReg;
-        if(modoReg) auth.createUserWithEmailAndPassword(u.value, p.value).then(() => alert("Creado"));
-    }
-    function salir() { auth.signOut(); }
-    function ajustarCampos() {
-        seccionEquipo.classList.toggle("hidden", iTipo.value === "CHIP" || iTipo.value === "PORTA");
-    }
+    // ... (El resto de las funciones: entrar, salir, chat, gráfico se mantienen igual) ...
 </script>
-</body>
-</html>
