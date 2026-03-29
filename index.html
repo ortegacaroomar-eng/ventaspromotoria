@@ -1,280 +1,212 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IRIS AI PRO</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IRIS AI - Cyber Angel Offline-Ready</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --primary: #00e5ff; --accent: #ff007a; --bg: #02020a; --card: rgba(10, 10, 26, 0.9); }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; min-height: 100vh; }
+        .app { max-width: 1100px; margin: auto; padding: 15px; }
 
-<style>
-:root{
-    --primary:#00bfff;
-    --bg:#050510;
-    --card:#0c0c1a;
-}
+        /* HALO CIBERNÉTICO */
+        .cortana-core { position: relative; width: 140px; height: 140px; margin: 20px auto; display: flex; align-items: center; justify-content: center; }
+        .ring { position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 2px solid transparent; border-top: 3px solid var(--primary); border-bottom: 3px solid var(--accent); animation: spin 2s linear infinite; filter: drop-shadow(0 0 10px var(--primary)); }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-body{
-    margin:0;
-    font-family:'Segoe UI',sans-serif;
-    background:var(--bg);
-    color:white;
-}
-
-.app{
-    max-width:1200px;
-    margin:auto;
-    padding:15px;
-}
-
-.card{
-    background:var(--card);
-    border-radius:15px;
-    padding:20px;
-    margin-bottom:15px;
-    box-shadow:0 0 20px rgba(0,191,255,.1);
-}
-
-input,select{
-    width:100%;
-    padding:12px;
-    margin-bottom:10px;
-    border-radius:8px;
-    border:1px solid #222;
-    background:#000;
-    color:#fff;
-}
-
-button{
-    background:var(--primary);
-    border:none;
-    padding:14px;
-    border-radius:10px;
-    font-weight:bold;
-    cursor:pointer;
-}
-
-button:hover{opacity:.85}
-
-.grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:15px;
-}
-
-.hidden{display:none}
-
-.status{
-    font-size:12px;
-    color:#00ffcc;
-}
-
-.loader{
-    border:3px solid #111;
-    border-top:3px solid var(--primary);
-    border-radius:50%;
-    width:20px;height:20px;
-    animation:spin 1s linear infinite;
-    display:inline-block;
-}
-
-@keyframes spin{
-    to{transform:rotate(360deg)}
-}
-</style>
+        .card { background: var(--card); border-radius: 20px; padding: 25px; margin-bottom: 20px; border: 1px solid rgba(0, 229, 255, 0.2); box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
+        .ia-speech { text-align: center; color: var(--primary); font-size: 15px; min-height: 45px; text-shadow: 0 0 8px rgba(0, 229, 255, 0.5); }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 20px; }
+        input, select { width: 100%; padding: 14px; margin-bottom: 12px; border-radius: 10px; border: 1px solid #1a1a3a; background: #000; color: #fff; box-sizing: border-box; }
+        
+        button { background: linear-gradient(45deg, var(--primary), #008cff); color: #000; border: none; padding: 15px; border-radius: 10px; font-weight: bold; width: 100%; cursor: pointer; text-transform: uppercase; }
+        .offline-tag { font-size: 10px; color: #ff007a; display: none; margin-top: 5px; }
+    </style>
 </head>
-
 <body>
 
-<div id="loginBox" class="app" style="max-width:350px;margin-top:100px;">
-    <div class="card">
-        <h2 style="color:var(--primary)">IRIS AI LOGIN</h2>
-        <input id="u" placeholder="Correo">
-        <input id="p" type="password" placeholder="Contraseña">
-        <button onclick="login()">Entrar</button>
-        <div id="loginStatus" class="status"></div>
+<div id="loginBox" class="app" style="max-width:380px; margin-top:100px;">
+    <div class="card" style="text-align:center;">
+        <h2 style="color:var(--primary)">IRIS NUCLEUS</h2>
+        <input id="u" placeholder="Usuario">
+        <input id="p" type="password" placeholder="Pass">
+        <button onclick="login()">Despertar IA</button>
+        <div id="loginStatus" style="color:#00ffcc; font-size:12px; margin-top:10px;"></div>
     </div>
 </div>
 
 <div id="appBox" class="app hidden">
-
-    <div class="card">
-        <h3>🧠 IRIS Sistema Activo</h3>
-        <div id="iaSpeech" class="status"></div>
+    <div class="card" style="text-align:center;">
+        <div class="cortana-core">
+            <div class="ring"></div>
+            <i class="fas fa-microchip" style="font-size: 45px; color: var(--primary);"></i>
+        </div>
+        <div id="iaSpeech" class="ia-speech">"Sincronizando protocolos locales..."</div>
+        <div id="offlineAlert" class="offline-tag"><i class="fas fa-wifi-slash"></i> MODO OFFLINE ACTIVO</div>
     </div>
 
     <div class="grid">
-
         <div class="card">
-            <h3>📊 Rendimiento</h3>
+            <h3 style="color:var(--primary); margin-top:0;">📊 Inteligencia Regional</h3>
             <canvas id="graficaTiendas"></canvas>
-            <div id="iaAnalisis" class="status"></div>
+            <div id="iaAnalisis" style="margin-top:15px; font-size:13px; color:#00ffcc;"></div>
         </div>
 
         <div class="card">
             <form id="fReg">
-
                 <select id="tipo">
-                    <option>PORTABILIDAD</option>
-                    <option>RENUEVA</option>
-                    <option>KIT</option>
-                    <option>CHIP</option>
-                    <option>PAYJOY</option>
+                    <option>PORTABILIDAD</option><option>RENUEVA</option><option>KIT</option><option>CHIP</option><option>PAYJOY</option>
                 </select>
-
-                <input id="promotor" placeholder="Promotor">
-                <input id="tienda" placeholder="Tienda">
-
-                <input id="tel" placeholder="Celular">
-
-                <input id="codigo" placeholder="IMEI o ICCID">
-
-                <button type="submit">
-                    Guardar Registro
-                </button>
-
-                <div id="status" class="status"></div>
-
+                <input id="promotor" placeholder="Tu Nombre">
+                <input id="tienda" placeholder="Sucursal">
+                <input id="tel" type="number" placeholder="Celular Cliente">
+                <input id="codigo" placeholder="IMEI / ICCID">
+                <button type="submit">Subir Registro</button>
+                <div id="status" style="font-size:12px; margin-top:5px;"></div>
             </form>
         </div>
-
     </div>
-
 </div>
 
 <script>
-const firebaseConfig={
-    apiKey:"AIzaSyD4UK...",
-    authDomain:"ventastelcel4029.firebaseapp.com",
-    projectId:"ventastelcel4029"
-};
-
+const firebaseConfig = { apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc", authDomain: "ventastelcel4029.firebaseapp.com", projectId: "ventastelcel4029" };
 firebase.initializeApp(firebaseConfig);
-const db=firebase.firestore();
-const auth=firebase.auth();
-
+const db = firebase.firestore();
+const auth = firebase.auth();
 let chart;
 
-// VOZ
-function hablar(t){
-    const u=new SpeechSynthesisUtterance(t);
-    u.lang='es-MX';
-    speechSynthesis.cancel();
-    speechSynthesis.speak(u);
+// --- VOZ OFFLINE (SÍNTESIS LOCAL) ---
+function hablar(texto) {
+    const s = window.speechSynthesis;
+    s.cancel(); // Detener cualquier audio previo
+    
+    const u = new SpeechSynthesisUtterance(texto);
+    u.lang = 'es-MX';
+    u.pitch = 0.9;
+    u.rate = 1.0;
+
+    // Buscar la mejor voz femenina local disponible
+    const voces = s.getVoices();
+    const vozOptima = voces.find(v => v.name.includes('Sabina') || v.name.includes('Helena') || v.name.includes('Zira'));
+    if(vozOptima) u.voice = vozOptima;
+
+    s.speak(u);
 }
 
-// LOGIN
-function login(){
-    loginStatus.innerHTML='<span class="loader"></span> Conectando...';
-    auth.signInWithEmailAndPassword(u.value,p.value)
-    .catch(e=>{
-        loginStatus.innerText="Error: "+e.message;
-    });
+// Cargar voces al inicio (necesario en algunos navegadores)
+window.speechSynthesis.onvoiceschanged = () => { console.log("Voces locales cargadas."); };
+
+// --- LOGIN ---
+function login() {
+    loginStatus.innerText = "Conectando...";
+    auth.signInWithEmailAndPassword(u.value, p.value).catch(e => loginStatus.innerText = "Error: " + e.message);
 }
 
-auth.onAuthStateChanged(user=>{
-    loginBox.classList.toggle("hidden",!!user);
-    appBox.classList.toggle("hidden",!user);
-
-    if(user){
-        hablar("Sistema activado");
-        iniciar();
+auth.onAuthStateChanged(user => {
+    loginBox.classList.toggle("hidden", !!user);
+    appBox.classList.toggle("hidden", !user);
+    if(user) {
+        hablar("Protocolo de emergencia activado. Estoy lista para asistirte, con o sin internet.");
+        iniciarIA();
     }
 });
 
-// DETECTOR IMEI / ICCID
-function detectarCodigo(valor){
-    if(!valor) return "VACIO";
+// --- DETECTOR DE CONEXIÓN ---
+window.addEventListener('offline', () => {
+    offlineAlert.style.display = "block";
+    hablar("Conexión perdida. Guardando datos en el núcleo local.");
+});
 
-    if(valor.length===15) return "IMEI";
-    if(valor.length>=18 && valor.length<=22) return "ICCID";
+window.addEventListener('online', () => {
+    offlineAlert.style.display = "none";
+    hablar("Conexión restaurada. Sincronizando ventas pendientes.");
+});
 
-    return "DESCONOCIDO";
-}
+// --- INTELIGENCIA EN TIEMPO REAL ---
+function iniciarIA() {
+    db.collection("ventas").orderBy("ts", "desc").onSnapshot(snap => {
+        let tiendas = {};
+        let stats = {};
 
-// DATA
-function iniciar(){
-    db.collection("ventas").onSnapshot(snap=>{
-
-        let tiendas={};
-        let stats={};
-
-        snap.forEach(doc=>{
-            let v=doc.data();
-
-            tiendas[v.tienda]=(tiendas[v.tienda]||0)+1;
-
-            if(!stats[v.promotor]) stats[v.promotor]={total:0};
+        snap.forEach(doc => {
+            let v = doc.data();
+            tiendas[v.tienda] = (tiendas[v.tienda] || 0) + 1;
+            if(!stats[v.promotor]) stats[v.promotor] = { total: 0, top: "" };
             stats[v.promotor].total++;
         });
 
         renderChart(tiendas);
-        analizar(stats);
-    });
-}
-
-// ANALISIS
-function analizar(stats){
-    let top=Object.entries(stats)
-        .sort((a,b)=>b[1].total-a[1].total)[0];
-
-    if(!top) return;
-
-    let texto=`Top actual: ${top[0]} con ${top[1].total} ventas`;
-    iaAnalisis.innerText=texto;
-    iaSpeech.innerText=texto;
-}
-
-// CHART
-function renderChart(data){
-    const ctx=document.getElementById("graficaTiendas");
-
-    if(chart) chart.destroy();
-
-    chart=new Chart(ctx,{
-        type:"bar",
-        data:{
-            labels:Object.keys(data),
-            datasets:[{
-                data:Object.values(data)
-            }]
+        
+        // Alerta de Voz Inmediata (Solo si hay internet)
+        if (!snap.empty && navigator.onLine) {
+            const ultima = snap.docs[0].data();
+            if(Date.now() - ultima.ts < 4000) {
+                const msj = `Atención. ${ultima.promotor} registró un ${ultima.tipo}. El ranking regional se ha actualizado.`;
+                iaSpeech.innerText = msj;
+                hablar(msj);
+            }
         }
     });
 }
 
-// SUBMIT
-fReg.onsubmit=async e=>{
+function renderChart(data) {
+    const ctx = document.getElementById("graficaTiendas");
+    if(chart) chart.destroy();
+    chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: Object.keys(data),
+            datasets: [{
+                label: 'Ventas por Tienda',
+                data: Object.values(data),
+                backgroundColor: 'rgba(0, 229, 255, 0.3)',
+                borderColor: '#00e5ff',
+                borderWidth: 1
+            }]
+        },
+        options: { scales: { y: { beginAtZero: true, grid: { color: '#1a1a3a' } } } }
+    });
+}
+
+// --- REGISTRO CON RESPALDO ---
+fReg.onsubmit = async e => {
     e.preventDefault();
+    const data = {
+        promotor: promotor.value,
+        tienda: tienda.value,
+        tipo: tipo.value,
+        cel: tel.value,
+        codigo: codigo.value,
+        ts: Date.now()
+    };
 
-    status.innerHTML='<span class="loader"></span> Guardando...';
-
-    let tipoCodigo=detectarCodigo(codigo.value);
-
-    try{
-        await db.collection("ventas").add({
-            promotor:promotor.value,
-            tienda:tienda.value,
-            cel:tel.value,
-            codigo:codigo.value,
-            tipoCodigo:tipoCodigo,
-            tipo:tipo.value,
-            ts:Date.now()
-        });
-
-        status.innerText="Guardado ✔ ("+tipoCodigo+")";
-        hablar("Registro guardado correctamente");
-
+    if(!navigator.onLine) {
+        // Guardar local si no hay internet
+        let local = JSON.parse(localStorage.getItem("offline_v") || "[]");
+        local.push(data);
+        localStorage.setItem("offline_v", JSON.stringify(local));
+        status.innerText = "⚠ Guardado Local (Sin Internet)";
+        hablar(`Entendido, ${promotor.value}. He guardado tu venta localmente. La subiré cuando vuelvas a tener red.`);
         fReg.reset();
+        return;
+    }
 
-    }catch(err){
-        status.innerText="Error: "+err.message;
+    try {
+        await db.collection("ventas").add(data);
+        status.innerText = "✔ Sincronizado";
+        hablar(`Registro exitoso, ${promotor.value}. Sigue así.`);
+        fReg.reset();
+    } catch(err) {
+        status.innerText = "Error al subir.";
     }
 }
 </script>
-
 </body>
 </html>
