@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IRIS AI - NEURAL OMNI-SYSTEM V5</title>
+    <title>IRIS AI - Real-Time Engine</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -11,41 +11,36 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     
     <style>
-        :root { --iris-blue: #28b8ff; --iris-green: #00ff88; --iris-purple: #a855f7; --iris-red: #ff4b2b; --bg-dark: #010108; }
-        body { margin:0; font-family:'Segoe UI', sans-serif; background: var(--bg-dark); color: white; overflow-x: hidden; }
-        .app { max-width:480px; margin:auto; padding:20px; }
+        :root { --iris-blue: #28b8ff; --iris-green: #00ff88; --iris-red: #ff4b2b; --iris-purple: #a855f7; --iris-orange: #ff9f43; --bg-dark: #010108; }
+        body { margin:0; font-family:'Segoe UI', sans-serif; background: var(--bg-dark); color: white; }
+        .app { max-width:480px; margin:auto; padding:15px; position: relative; }
+        
+        .btn-exit { position: absolute; top: 10px; right: 10px; background: rgba(255,0,0,0.1); border: 1px solid red; color: white; padding: 5px 10px; border-radius: 10px; font-size: 11px; cursor: pointer; z-index: 100; }
 
         /* ORBE DINÁMICO */
-        .cortana-container { text-align: center; padding: 25px 0; perspective: 1000px; }
+        .cortana-container { text-align: center; padding: 15px 0; }
         .cortana-orb { 
-            width: 110px; height: 110px; margin: 0 auto; border-radius: 50%; 
+            width: 95px; height: 95px; margin: 0 auto; border-radius: 50%; 
             background: radial-gradient(circle, #001a2e 0%, #000 70%);
-            box-shadow: 0 0 35px var(--iris-blue); transition: all 0.6s ease;
-            animation: breathe 4s infinite; position: relative;
+            box-shadow: 0 0 30px var(--iris-blue); transition: all 0.6s ease;
+            animation: breathe 4s infinite;
         }
         @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
         
-        /* ESTADOS DE COLOR */
-        .status-success { box-shadow: 0 0 55px var(--iris-green) !important; }
-        .status-thinking { box-shadow: 0 0 55px var(--iris-purple) !important; }
-        .status-alert { box-shadow: 0 0 55px var(--iris-red) !important; }
-        .status-listening { box-shadow: 0 0 60px #fff !important; }
+        /* ESTADOS DE ÁNIMO / PTT */
+        .mood-happy { box-shadow: 0 0 50px var(--iris-green) !important; }
+        .mood-stress { box-shadow: 0 0 50px var(--iris-red) !important; }
+        .mood-ptt { box-shadow: 0 0 50px var(--iris-orange) !important; background: var(--iris-orange) !important; }
 
-        .card { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 15px; margin-bottom: 12px; backdrop-filter: blur(10px); }
-        .search-bar { background: rgba(255, 255, 255, 0.07); border-radius: 25px; padding: 10px 15px; display: flex; align-items: center; margin-bottom: 10px; }
-        .search-bar input { background: transparent; border: none; color: white; width: 100%; outline: none; margin-left: 10px; font-size: 13px; }
-
-        /* CHAT */
-        .chat-box { height: 130px; overflow-y: auto; font-size: 12px; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .chat-msg { margin-bottom: 6px; padding: 8px; background: rgba(255,255,255,0.05); border-radius: 8px; border-left: 3px solid var(--iris-blue); }
-        .chat-msg b { color: var(--iris-blue); display: block; font-size: 10px; }
-
-        .btn-action { background: var(--iris-blue); color: white; border: none; padding: 12px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; transition: 0.3s; }
-        .btn-ai { background: linear-gradient(45deg, #6366f1, #a855f7); margin-top: 5px; font-size: 11px; }
-        .btn-mic { width: 55px; height: 55px; border-radius: 50%; font-size: 20px; margin: 10px auto; display: block; background: white; border: none; }
+        .card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 15px; padding: 15px; margin-bottom: 10px; backdrop-filter: blur(8px); }
+        .btn-main { background: var(--iris-blue); color: white; border: none; padding: 14px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
         
-        input, select { width:100%; padding:12px; margin-bottom:10px; border-radius:10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.4); color:white; box-sizing: border-box; }
-        .ai-text { font-size: 12px; text-align: center; color: var(--iris-blue); min-height: 30px; font-style: italic; }
+        /* CHAT REALTIME */
+        .chat-box { height: 110px; overflow-y: auto; background: rgba(0,0,0,0.4); border-radius: 10px; padding: 10px; font-size: 12px; margin-bottom: 8px; border: 1px solid #222; }
+        .chat-entry { margin-bottom: 6px; border-bottom: 1px solid #ffffff05; padding-bottom: 3px; }
+        .chat-entry b { color: var(--iris-blue); }
+
+        input, select { width:100%; padding:12px; margin-bottom:10px; border-radius:10px; border: 1px solid #333; background: #000; color:white; box-sizing: border-box; }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -54,45 +49,50 @@
     <div id="loginBox" class="app" style="margin-top:100px;">
         <div class="card" style="text-align:center;">
             <div class="cortana-orb"></div>
-            <h2 style="letter-spacing: 2px;">IRIS NEURAL</h2>
-            <button onclick="entrar()" class="btn-action">CONECTAR SISTEMAS</button>
+            <h2 style="color:var(--iris-blue); letter-spacing: 2px;">IRIS LIVE</h2>
+            <input id="u" placeholder="Usuario">
+            <input id="p" type="password" placeholder="Clave">
+            <button class="btn-main" onclick="entrar()">SINCRO NIZAR</button>
         </div>
     </div>
 
     <div id="appBox" class="app hidden">
-        <div class="search-bar">
-            <i class="fas fa-search" style="color:var(--iris-blue)"></i>
-            <input id="qInput" placeholder="Consulta técnica..." onchange="ejecutarBusqueda()">
-        </div>
+        <button class="btn-exit" onclick="salir()">CERRAR</button>
 
         <div class="cortana-container">
             <div class="cortana-orb" id="mainOrb"></div>
-            <div class="ai-text" id="irisSpeech">"Red activa. ¿Listo para vender, Jefe?"</div>
+            <p id="irisSpeech" style="font-size:12px; color:var(--iris-blue); margin-top:12px; font-style:italic;">"Conexión neural estable. Datos en tiempo real."</p>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-bottom:15px;">
+            <button onclick="analizarVoz()" class="btn-main" style="background:#fff; color:#000; flex:1;"><i class="fas fa-microphone"></i> ÁNIMO</button>
+            <button onmousedown="startPTT()" onmouseup="stopPTT()" ontouchstart="startPTT()" ontouchend="stopPTT()" class="btn-main" style="background:var(--iris-orange); flex:1;"><i class="fas fa-walkie-talkie"></i> PTT</button>
         </div>
 
         <div class="card">
-            <button class="btn-mic" onclick="activarEscucha()"><i class="fas fa-microphone"></i></button>
-            <button class="btn-action btn-ai" onclick="generarEstrategiaIA()">ESTRATEGIA IA GENERATIVA</button>
+            <div style="text-align:center; font-size:10px; color:var(--iris-blue); margin-bottom:10px;">VENTAS GLOBALES (LIVE)</div>
+            <canvas id="cProds" height="130"></canvas>
         </div>
 
-        <div class="card"><canvas id="ventasChart" height="110"></canvas></div>
-
         <div class="card">
-            <div id="chatBox" class="chat-box"></div>
+            <div id="chatDisplay" class="chat-box"></div>
             <div style="display:flex; gap:5px;">
-                <input id="msgInput" placeholder="Chat regional..." style="margin-bottom:0;">
-                <button class="btn-action" style="width:50px; margin-bottom:0;" onclick="enviarChat()"><i class="fas fa-paper-plane"></i></button>
+                <input id="chatInput" placeholder="Chat regional..." style="margin:0;">
+                <button onclick="enviarChat()" style="background:var(--iris-blue); border:none; color:white; padding:10px; border-radius:8px;"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
 
-        <form id="fReg" class="card">
-            <input id="iTel" placeholder="Número Celular" maxlength="10" required>
+        <form id="fVenta" class="card">
             <select id="iTipo">
-                <option value="KIT">KIT</option><option value="CHIP">CHIP</option>
-                <option value="PORTA">PORTA</option><option value="RENUEVATE">RENUÉVATE</option>
+                <option value="CHIP">CHIP</option>
+                <option value="KIT">KIT</option>
+                <option value="PORTA">PORTABILIDAD</option>
+                <option value="RENUEVATE">RENUÉVATE</option>
             </select>
-            <input id="iProm" placeholder="Tu Nombre" required>
-            <button type="submit" class="btn-action">REGISTRAR VENTA</button>
+            <input id="iTel" placeholder="Número Celular" maxlength="10" required>
+            <input id="iTienda" placeholder="Tienda / Sucursal" required>
+            <input id="iProm" placeholder="Nombre Promotor" required>
+            <button type="submit" class="btn-main">GUARDAR VENTA LIVE</button>
         </form>
     </div>
 
@@ -104,95 +104,96 @@
         projectId: "ventastelcel4029"
     };
 
-    let db, auth, chart, ventasData = {};
+    let db, auth, chart;
 
     function inicio() {
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         db = firebase.database(); auth = firebase.auth();
-        auth.onAuthStateChanged(user => { 
-            if(user) { appBox.classList.remove("hidden"); loginBox.classList.add("hidden"); sincronizar(); } 
+        auth.onAuthStateChanged(user => {
+            if(user) { appBox.classList.remove("hidden"); loginBox.classList.add("hidden"); vincularSistemas(); }
+            else { loginBox.classList.remove("hidden"); appBox.classList.add("hidden"); }
         });
     }
 
-    // VOZ Y COLORES
-    function setIAState(estado, msj, color) {
-        mainOrb.className = "cortana-orb " + estado;
-        irisSpeech.innerText = `"${msj}"`;
-        irisSpeech.style.color = color;
-        const u = new SpeechSynthesisUtterance(msj);
-        u.lang = 'es-MX'; u.pitch = 1.3; window.speechSynthesis.speak(u);
+    // --- VÍNCULO EN TIEMPO REAL ---
+    function vincularSistemas() {
+        // Escucha de Ventas (Se actualiza cada vez que alguien guarda)
+        db.ref('ventas_realtime').on('value', snap => {
+            let p = { CHIP:0, KIT:0, PORTA:0, RENUEVATE:0 };
+            let total = 0;
+            snap.forEach(child => {
+                const v = child.val();
+                if(p[v.tipo] !== undefined) p[v.tipo]++;
+                total++;
+            });
+            actualizarGraficaLive(p);
+            irisSpeech.innerText = `Total Regional: ${total} ventas procesadas.`;
+        });
+
+        // Escucha de Chat (Se actualiza al instante)
+        db.ref('chat_realtime').limitToLast(12).on('value', snap => {
+            let html = "";
+            snap.forEach(m => { html += `<div class="chat-entry"><b>${m.val().user}:</b> ${m.val().msg}</div>`; });
+            chatDisplay.innerHTML = html; 
+            chatDisplay.scrollTop = chatDisplay.scrollHeight;
+        });
     }
 
-    // CHAT EN TIEMPO REAL
+    function actualizarGraficaLive(p) {
+        if(chart) chart.destroy();
+        chart = new Chart(document.getElementById('cProds'), {
+            type: 'doughnut',
+            data: { labels: Object.keys(p), datasets: [{ data: Object.values(p), backgroundColor: ['#28b8ff','#00ff88','#a855f7','#ff4b2b'], borderWeight:0 }] },
+            options: { legend: { labels: { fontColor: 'white', fontSize: 11 } }, animation: { duration: 500 } }
+        });
+    }
+
+    // --- FUNCIONES DE INTERACCIÓN ---
     function enviarChat() {
-        if(!msgInput.value) return;
-        db.ref('chat').push({ user: iProm.value || "Promotor", msg: msgInput.value });
-        msgInput.value = "";
+        if(!chatInput.value) return;
+        db.ref('chat_realtime').push({ user: iProm.value || "Promotor", msg: chatInput.value });
+        chatInput.value = "";
     }
 
-    function sincronizar() {
-        db.ref('ventas_globales').on('value', snap => {
-            ventasData = snap.val() || {};
-            actualizarGrafico(ventasData);
-        });
-        db.ref('chat').limitToLast(15).on('value', snap => {
-            let h = ""; snap.forEach(m => { h += `<div class="chat-msg"><b>${m.val().user}:</b> ${m.val().msg}</div>`; });
-            chatBox.innerHTML = h; chatBox.scrollTop = chatBox.scrollHeight;
-        });
-    }
+    function startPTT() { mainOrb.className = "cortana-orb mood-ptt"; irisSpeech.innerText = "TRANSMITIENDO..."; }
+    function stopPTT() { mainOrb.className = "cortana-orb"; irisSpeech.innerText = "SISTEMA EN ESPERA."; }
 
-    // IA GENERATIVA
-    function generarEstrategiaIA() {
-        setIAState("status-thinking", "Generando estrategia neural...", "var(--iris-purple)");
-        setTimeout(() => {
-            const r = ["La red 5G está fuerte, úsala como gancho.", "Hoy la gente busca Chips, ofrece el paquete de 100.", "Buen ritmo regional, ¡no aflojes Jefe!"][Math.floor(Math.random()*3)];
-            setIAState("", r, "var(--iris-blue)");
-        }, 1200);
-    }
-
-    // EMPATÍA DE VOZ
-    function activarEscucha() {
+    function analizarVoz() {
         const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
         const rec = new Rec(); rec.lang = 'es-MX';
-        rec.onstart = () => { mainOrb.className = "cortana-orb status-listening"; };
+        rec.onstart = () => { mainOrb.style.boxShadow = "0 0 40px white"; irisSpeech.innerText = "ESCUCHANDO ÁNIMO..."; };
         rec.onresult = (e) => {
             const t = e.results[0][0].transcript.toLowerCase();
-            if(t.includes("mal") || t.includes("cansado")) setIAState("status-alert", "Eres un guerrero, descansa 5 minutos y vuelve con todo.", "var(--iris-red)");
-            else if(t.includes("bien") || t.includes("feliz")) setIAState("status-success", "¡Esa energía es la que vende! ¡Dale!", "var(--iris-green)");
-            else setIAState("", "Te entiendo perfectamente.", "var(--iris-blue)");
+            if(t.includes("mal") || t.includes("cansado")) {
+                mainOrb.className = "cortana-orb mood-stress";
+                hablar("Omar, el cansancio es temporal, la gloria es eterna. ¡Ánimo con esa Porta!");
+            } else {
+                mainOrb.className = "cortana-orb mood-happy";
+                hablar("¡Esa es la actitud! Sigue así y dominarás el ranking hoy.");
+            }
         };
+        rec.onend = () => { setTimeout(() => mainOrb.className = "cortana-orb", 2000); };
         rec.start();
     }
 
-    // BUSCADOR
-    function ejecutarBusqueda() {
-        const q = qInput.value.toLowerCase();
-        setIAState("status-thinking", "Buscando en la red...", "var(--iris-purple)");
-        setTimeout(() => {
-            let r = q.includes("icc") ? "Son 19 dígitos y empieza con 8952." : "Interesante pregunta, Jefe.";
-            setIAState("", r, "var(--iris-blue)"); qInput.value = "";
-        }, 1000);
+    function hablar(msj) {
+        const u = new SpeechSynthesisUtterance(msj);
+        u.lang = 'es-MX'; window.speechSynthesis.speak(u);
+        irisSpeech.innerText = `"${msj}"`;
     }
 
-    function actualizarGrafico(data) {
-        let c = { KIT:0, CHIP:0, PORTA:0, RENUEVATE:0 };
-        Object.values(data).forEach(v => { if(c[v.tipo] !== undefined) c[v.tipo]++; });
-        if(chart) chart.destroy();
-        chart = new Chart(document.getElementById('ventasChart'), {
-            type: 'doughnut',
-            data: { labels: Object.keys(c), datasets: [{ data: Object.values(c), backgroundColor: ['#28b8ff', '#00ff88', '#a855f7', '#003b5c'], borderWeight: 0 }] },
-            options: { legend: { position: 'right', labels: { fontColor: 'white', fontSize: 10 } } }
-        });
-    }
-
-    fReg.onsubmit = e => {
+    // --- GUARDADO ---
+    fVenta.onsubmit = e => {
         e.preventDefault();
-        db.ref('ventas_globales').push({ tipo: iTipo.value, tel: iTel.value, promotor: iProm.value });
-        setIAState("status-success", "Venta registrada. ¡Eres un crack!", "var(--iris-green)");
-        fReg.reset();
-    };
+        db.ref('ventas_realtime').push({
+            tipo: iTipo.value, tel: iTel.value, tienda: iTienda.value, promotor: iProm.value, ts: Date.now()
+        });
+        hablar("Venta sincronizada.");
+        fVenta.reset();
+    }
 
-    function entrar() { auth.signInAnonymously(); }
+    function entrar() { auth.signInWithEmailAndPassword(u.value, p.value).catch(err => alert(err.message)); }
+    function salir() { auth.signOut(); }
 </script>
 </body>
 </html>
