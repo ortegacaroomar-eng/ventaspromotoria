@@ -1,172 +1,210 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IRIS AI - NEXUS EXPLORER V230</title>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    
-    <style>
-        :root { --iris: #00d4ff; --gold: #ffc300; --bg: #00040a; --alert: #ff0000; --web: #bc13fe; }
-        body { margin:0; font-family: 'Segoe UI', sans-serif; background:var(--bg); color:white; overflow-x:hidden; }
-        .app { max-width:480px; margin:auto; padding:15px; min-height:100vh; }
-        .card { background:rgba(255,255,255,0.03); border-radius:20px; padding:15px; margin-bottom:12px; border:1px solid rgba(0,212,255,0.1); }
-        
-        /* EL ÁNGEL AZUL (TU DISEÑO) */
-        .angel-container { position: relative; width: 140px; height: 140px; margin: 15px auto; display: flex; align-items: center; justify-content: center; }
-        .angel-img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 15px var(--iris)); animation: float 4s infinite ease-in-out; }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        
-        /* BUSCADOR DE INTERNET APARTE */
-        .web-search { border: 2px solid var(--web); background: rgba(188, 19, 254, 0.05); box-shadow: 0 0 15px rgba(188, 19, 254, 0.2); }
-        .web-input { background: #000; border: 1px solid var(--web); color: #e0b0ff; padding: 12px; border-radius: 10px; width: calc(100% - 50px); }
-        .btn-web { background: var(--web); color: white; width: 40px; border-radius: 10px; border: none; cursor: pointer; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IRIS IA EMPRESA</title>
 
-        /* RESULTADOS DE INTERNET */
-        #webResults { font-size: 11px; margin-top: 10px; color: #d199ff; border-top: 1px solid rgba(188, 19, 254, 0.3); padding-top: 8px; display: none; }
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-        /* ESTILOS GENERALES */
-        #status { text-align: center; font-size: 10px; color: var(--iris); margin-bottom: 10px; text-transform: uppercase; }
-        #chatBox { height: 120px; overflow-y: auto; background: rgba(0,0,0,0.6); border-radius: 15px; padding: 10px; font-size: 12px; border: 1px solid rgba(255,255,255,0.05); }
-        input, select, textarea { width: 100%; padding: 14px; margin-top: 8px; border-radius: 12px; border: 1px solid #222; background: #000; color: white; box-sizing: border-box; }
-        button { width: 100%; padding: 16px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
-        .btn-main { background: var(--iris); color: black; }
-        .btn-shame { background: var(--alert); color: white; font-size: 11px; }
-        .hidden { display: none !important; }
-    </style>
+<style>
+body{margin:0;background:#000814;color:white;font-family:'Segoe UI';}
+.app{max-width:480px;margin:auto;padding:15px;}
+.card{background:rgba(255,255,255,.08);padding:12px;border-radius:12px;margin-bottom:10px;text-align:center;}
+#angel{width:140px;animation:float 4s infinite;}
+@keyframes float{50%{transform:translateY(-10px);}}
+.alerta{animation:pulse .5s infinite alternate;}
+@keyframes pulse{0%{filter:drop-shadow(0 0 10px red);}100%{filter:drop-shadow(0 0 25px red);}}
+input,select{width:100%;padding:10px;margin-top:5px;background:#111;color:white;border:none;border-radius:8px;}
+button{width:100%;padding:10px;margin-top:8px;border:none;border-radius:8px;background:#ffc300;font-weight:bold;}
+</style>
 </head>
-<body onclick="activarEntidad()" onload="iniciarSistema()">
 
-    <div id="login" class="app" style="justify-content:center; display:flex; flex-direction:column;">
-        <div class="card" style="text-align:center;">
-            <h2 style="color:var(--gold)">NEXUS ORACLE</h2>
-            <input id="u" placeholder="Usuario/Email">
-            <input id="p" type="password" placeholder="Password">
-            <input id="tLog" placeholder="Tienda (Ej: Coppel)">
-            <button class="btn-main" onclick="entrar()">VINCULAR ÁNGEL</button>
-        </div>
-    </div>
+<body onload="inicio()">
 
-    <div id="main" class="app hidden">
-        <div class="angel-container">
-            <img src="https://i.ibb.co/Xf8X0vV/angel-blue-animated.png" id="angelImg" class="angel-img" alt="Iris">
-        </div>
-        <div id="status">"Sincronizada con el Procesador"</div>
+<div id="loginBox" class="app">
+<div class="card">
+<h2>Acceso</h2>
+<input id="u">
+<input id="p" type="password">
+<button onclick="entrar()">Entrar</button>
+</div>
+</div>
 
-        <div class="card web-search">
-            <label style="color:var(--web); font-size: 10px; font-weight: bold; letter-spacing: 1px;"> <i class="fas fa-globe"></i> BUSCADOR EXTERNO INTERNET</label>
-            <div style="display:flex; gap:5px; margin-top:8px;">
-                <input id="webIn" class="web-input" placeholder="Buscar en Google / Especificaciones..." style="margin:0;">
-                <button onclick="buscarInternet()" class="btn-web"><i class="fas fa-search"></i></button>
-            </div>
-            <div id="webResults"></div>
-        </div>
+<div id="appBox" class="app hidden">
 
-        <div class="card">
-            <label style="color:var(--iris); font-size: 10px; font-weight: bold;"> <i class="fas fa-comments"></i> CHAT DE RED NEXUS</label>
-            <div id="chatBox"></div>
-            <input id="chatIn" placeholder="Mensaje para el equipo..." onkeyup="if(event.key==='Enter') enviarChat()">
-        </div>
+<div class="card">
+<img id="angel" src="https://i.ibb.co/Xf8X0vV/angel-blue-animated.png">
+</div>
 
-        <div class="card" style="border-color:var(--alert);">
-            <label style="color:var(--alert); font-weight:bold; font-size:11px;">REGAÑO PÚBLICO (GRABACIÓN ACTIVA)</label>
-            <input id="imNum" placeholder="IMEI Pendiente">
-            <textarea id="imDef" placeholder="Defensa del promotor..."></textarea>
-            <button class="btn-shame" onclick="iniciarTestigo()">EXHIBIR CON AUDIO</button>
-        </div>
+<!-- IA CHAT -->
+<div class="card">
+<input id="iaInput" placeholder="Habla con IRIS..." onkeyup="if(event.key==='Enter') preguntarIA()">
+</div>
 
-        <form id="fVenta" class="card">
-            <select id="vTipo" required>
-                <option value="KIT">KIT AMIGO</option>
-                <option value="CHIP">CHIP</option>
-                <option value="PORTA">PORTABILIDAD</option>
-            </select>
-            <input id="vTel" placeholder="Número Celular" maxlength="10" required>
-            <button type="submit" class="btn-main">CONSOLIDAR VENTA</button>
-        </form>
+<!-- GRAFICA -->
+<div class="card">
+<canvas id="graficaVentas"></canvas>
+</div>
 
-        <button onclick="bajarExcel()" style="background:#1f7a3f; color:white; font-size:10px;">DESCARGAR EXCEL DD/MM/YYYY</button>
-    </div>
+<!-- FORM -->
+<form id="fReg" class="card">
+<select id="iTipo">
+<option>KIT</option>
+<option>CHIP</option>
+<option>PORTA</option>
+<option>RENUEVATE</option>
+</select>
+
+<input id="iTel" placeholder="Teléfono">
+
+<select id="imeiPendiente">
+<option value="no">OK</option>
+<option value="si">PENDIENTE</option>
+</select>
+
+<button>Guardar</button>
+</form>
+
+<div id="lista"></div>
+
+</div>
 
 <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc", 
-        authDomain: "ventastelcel4029.firebaseapp.com",
-        databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com",
-        projectId: "ventastelcel4029"
-    };
 
-    let db, auth, userNom, audioOK = false;
+// 🔥 CONFIG
+const firebaseConfig={
+apiKey:"TU_API_KEY",
+authDomain:"ventastelcel4029.firebaseapp.com",
+databaseURL:"https://ventastelcel4029-default-rtdb.firebaseio.com"
+};
 
-    function iniciarSistema() {
-        firebase.initializeApp(firebaseConfig);
-        db = firebase.database(); auth = firebase.auth();
-        auth.onAuthStateChanged(u => { if(u) { userNom = u.email.split('@')[0]; setup(); } });
-    }
+let db,auth,chart;
 
-    function hablar(t, modo = 'normal') {
-        window.speechSynthesis.cancel();
-        const m = new SpeechSynthesisUtterance(t);
-        m.lang = 'es-MX';
-        m.pitch = (modo === 'shame') ? 0.5 : 1.1;
-        window.speechSynthesis.speak(m);
-        status.innerText = `"${t}"`;
-    }
+function inicio(){
+firebase.initializeApp(firebaseConfig);
+db=firebase.database();
+auth=firebase.auth();
 
-    function activarEntidad() { if(!audioOK) { hablar("Buscador de red e internet sincronizados."); audioOK = true; } }
-    function entrar() { auth.signInWithEmailAndPassword(u.value, p.value).catch(e => alert(e.message)); }
-    function setup() { login.classList.add("hidden"); main.classList.remove("hidden"); escucharRed(); }
+auth.onAuthStateChanged(u=>{
+if(u){
+loginBox.classList.add("hidden");
+appBox.classList.remove("hidden");
+cargar();
+}
+});
+}
 
-    // --- BUSCADOR DE INTERNET (SEPARADO) ---
-    function buscarInternet() {
-        const q = webIn.value; if(!q) return;
-        webResults.style.display = "block";
-        webResults.innerHTML = "<i>Iris está escaneando la red externa...</i>";
-        hablar(`Buscando ${q} en internet.`);
+function entrar(){
+auth.signInWithEmailAndPassword(u.value,p.value);
+}
 
-        setTimeout(() => {
-            // Aquí simula la respuesta de IA Generativa conectada a internet
-            webResults.innerHTML = `<b>Nexus Explorer:</b><br>He encontrado que "${q}" tiene gran relevancia en el mercado actual de Telcel. Los precios sugeridos en red son competitivos.`;
-            hablar(`He finalizado la búsqueda de ${q}. Los datos están en pantalla.`);
-        }, 2000);
-    }
+// 🎙️ VOZ MÁS HUMANA
+function hablar(texto){
+let msg=new SpeechSynthesisUtterance(texto);
+msg.lang="es-MX";
+msg.rate=0.9;
+msg.pitch=1.2;
 
-    // --- CHAT DE EQUIPO ---
-    function enviarChat() {
-        const txt = chatIn.value; if(!txt) return;
-        db.ref('nexus_chat').push({ u: userNom, m: txt, ts: Date.now() });
-        chatIn.value = "";
-    }
+// intenta voz femenina
+let voces=speechSynthesis.getVoices();
+let voz=voces.find(v=>v.name.toLowerCase().includes("female"));
+if(voz) msg.voice=voz;
 
-    function escucharRed() {
-        db.ref('nexus_chat').limitToLast(5).on('child_added', s => {
-            const d = s.val();
-            chatBox.innerHTML += `<div><b style="color:var(--gold)">${d.u}:</b> ${d.m}</div>`;
-            chatBox.scrollTop = chatBox.scrollHeight;
-            if(d.u !== userNom) hablar(`${d.u} dice: ${d.m}`);
-        });
-    }
+speechSynthesis.speak(msg);
+}
 
-    // --- REGISTRO EXCEL ---
-    fVenta.onsubmit = e => {
-        e.preventDefault();
-        const v = { TEL: vTel.value, TIPO: vTipo.value, PROM: userNom, FECHA: new Date().toLocaleDateString('es-MX') };
-        let local = JSON.parse(localStorage.getItem('nexus_db') || "[]");
-        local.unshift(v); localStorage.setItem('nexus_db', JSON.stringify(local));
-        fVenta.reset(); hablar("Venta registrada.");
-    }
+// 🤖 IA REAL (conectar API)
+async function preguntarIA(){
 
-    function bajarExcel() {
-        const dbL = JSON.parse(localStorage.getItem('nexus_db') || "[]");
-        const ws = XLSX.utils.json_to_sheet(dbL);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Ventas");
-        XLSX.writeFile(wb, `Reporte_Nexus_${userNom}.xlsx`);
-    }
+let texto=iaInput.value;
+
+hablar("Pensando...");
+
+try{
+
+let res=await fetch("https://api.openai.com/v1/chat/completions",{
+method:"POST",
+headers:{
+"Content-Type":"application/json",
+"Authorization":"Bearer TU_API_KEY_AQUI"
+},
+body:JSON.stringify({
+model:"gpt-4o-mini",
+messages:[{role:"user",content:texto}]
+})
+});
+
+let data=await res.json();
+let respuesta=data.choices[0].message.content;
+
+hablar(respuesta);
+
+}catch(e){
+hablar("No tengo conexión con inteligencia avanzada");
+}
+
+iaInput.value="";
+}
+
+// 💾 GUARDAR
+fReg.onsubmit=e=>{
+e.preventDefault();
+
+let v={
+tel:iTel.value,
+tipo:iTipo.value,
+imei:imeiPendiente.value
+};
+
+let l=JSON.parse(localStorage.getItem("ventas")||"[]");
+l.unshift(v);
+localStorage.setItem("ventas",JSON.stringify(l));
+
+cargar();
+
+if(v.imei==="si"){
+hablar("Tienes IMEI pendiente… actívalo hoy");
+}
+}
+
+// 📊 GRAFICA
+function crearGrafica(data){
+
+let conteo={KIT:0,CHIP:0,PORTA:0,RENUEVATE:0};
+
+data.forEach(v=>conteo[v.tipo]++);
+
+let ctx=document.getElementById("graficaVentas");
+
+if(chart) chart.destroy();
+
+chart=new Chart(ctx,{
+type:"bar",
+data:{
+labels:Object.keys(conteo),
+datasets:[{
+label:"Ventas",
+data:Object.values(conteo)
+}]
+}
+});
+}
+
+// 📊 CARGAR
+function cargar(){
+
+let l=JSON.parse(localStorage.getItem("ventas")||"[]");
+
+lista.innerHTML=l.map(v=>`<div class="card">${v.tel} - ${v.tipo}</div>`).join("");
+
+crearGrafica(l);
+}
+
 </script>
 </body>
 </html>
