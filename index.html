@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IRIS Modo Dios</title>
+<title>IRIS Enterprise</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -37,11 +37,19 @@ button{width:100%;padding:12px;margin-top:8px;border:none;border-radius:10px;bac
 <!-- LOGIN -->
 <div id="loginBox" class="app">
 <div class="card">
-<div class="header" id="titulo">Iniciar Sesión</div>
-<input id="email">
-<input id="pass" type="password">
-<button onclick="authUser()">Entrar</button>
-<button onclick="toggleModo()" style="background:none;color:#ffc300;">Crear usuario</button>
+<div class="header" id="titulo">Acceso IRIS</div>
+
+<input id="email" placeholder="Correo">
+<input id="pass" type="password" placeholder="Contraseña">
+<input id="tienda" placeholder="Tienda">
+
+<select id="rol">
+<option value="promotor">Promotor</option>
+<option value="supervisor">Supervisor</option>
+</select>
+
+<button onclick="authUser()">Entrar / Registrar</button>
+
 </div>
 </div>
 
@@ -52,29 +60,25 @@ button{width:100%;padding:12px;margin-top:8px;border:none;border-radius:10px;bac
 <img id="angel" src="https://i.ibb.co/Xf8X0vV/angel-blue-animated.png">
 <div id="mano">👉</div>
 <div id="status">IRIS activa</div>
-
 <video id="cam" autoplay playsinline style="width:100%;border-radius:10px;margin-top:10px;"></video>
 </div>
 
-<!-- BUSCADOR -->
 <div class="card">
 <input id="webInput" placeholder="Buscar...">
 <button onclick="buscarWeb()">Buscar</button>
 </div>
 
-<!-- DASHBOARD -->
 <div class="card">
 <div id="topProm"></div>
-<div id="topTipo"></div>
+<div id="topTienda"></div>
 </div>
 
-<!-- GRAFICA -->
 <div class="card">
 <canvas id="grafica"></canvas>
 </div>
 
-<!-- FORM -->
 <form id="fReg" class="card">
+
 <select id="tipo">
 <option>KIT</option>
 <option>CHIP</option>
@@ -90,9 +94,9 @@ button{width:100%;padding:12px;margin-top:8px;border:none;border-radius:10px;bac
 </select>
 
 <button>Guardar Venta</button>
+
 </form>
 
-<!-- CHAT -->
 <div class="card">
 <input id="msg" placeholder="Mensaje..." onkeyup="if(event.key==='Enter') enviarChat()">
 <div id="chatBox"></div>
@@ -104,14 +108,15 @@ button{width:100%;padding:12px;margin-top:8px;border:none;border-radius:10px;bac
 
 <script>
 
-// CONFIG
-const firebaseConfig={
-apiKey:"AIzaSy...",
-authDomain:"ventastelcel4029.firebaseapp.com",
-databaseURL:"https://ventastelcel4029-default-rtdb.firebaseio.com"
+// CONFIG REAL
+const firebaseConfig = {
+apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
+authDomain: "ventastelcel4029.firebaseapp.com",
+databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com",
+projectId: "ventastelcel4029"
 };
 
-let db,auth,modoRegistro=false,chart;
+let db,auth,usuario={},chart;
 
 // INICIO
 function inicio(){
@@ -121,37 +126,59 @@ db=firebase.database();
 
 auth.onAuthStateChanged(u=>{
 if(u){
+cargarUsuario(u.uid);
+}
+});
+}
+
+// LOGIN / REGISTRO
+function authUser(){
+
+let e=email.value.trim();
+let p=pass.value.trim();
+
+if(!e || !p) return alert("Completa datos");
+
+auth.signInWithEmailAndPassword(e,p)
+.then(()=>{})
+.catch(()=>{
+
+// REGISTRO AUTOMATICO
+auth.createUserWithEmailAndPassword(e,p)
+.then(res=>{
+
+db.ref("usuarios/"+res.user.uid).set({
+email:e,
+tienda:tienda.value,
+rol:rol.value
+});
+
+})
+.catch(err=>alert(err.message));
+
+});
+
+}
+
+// CARGAR USUARIO
+function cargarUsuario(uid){
+
+db.ref("usuarios/"+uid).once("value",snap=>{
+usuario=snap.val();
+
 loginBox.classList.add("hidden");
 appBox.classList.remove("hidden");
 
-hablar("Sistema activado");
+iniciarCamara();
+hablar("Bienvenido "+usuario.rol);
 
 cargar();
 escucharChat();
 escucharAlertas();
 escucharVentas();
 
-iniciarCamara();
-
 setInterval(cerebroIRIS,60000);
-setInterval(personalidad,120000);
-setInterval(detectarPresencia,20000);
-}
 });
-}
-
-// LOGIN
-function toggleModo(){
-modoRegistro=!modoRegistro;
-titulo.innerText=modoRegistro?"Crear Usuario":"Iniciar Sesión";
-}
-
-function authUser(){
-if(modoRegistro){
-auth.createUserWithEmailAndPassword(email.value,pass.value);
-}else{
-auth.signInWithEmailAndPassword(email.value,pass.value);
-}
 }
 
 // VOZ
@@ -163,64 +190,62 @@ speechSynthesis.speak(m);
 status.innerText=t;
 }
 
-// BUSCAR
-function buscarWeb(){
-window.open("https://www.google.com/search?q="+webInput.value);
-}
-
-// GUARDAR
+// GUARDAR VENTA
 fReg.onsubmit=e=>{
 e.preventDefault();
 
 let v={
 tel:tel.value,
 tipo:tipo.value,
-promotor:auth.currentUser.email,
-imei:imei.value
+imei:imei.value,
+promotor:usuario.email,
+tienda:usuario.tienda
 };
-
-let l=JSON.parse(localStorage.getItem("ventas")||"[]");
-l.unshift(v);
-localStorage.setItem("ventas",JSON.stringify(l));
 
 db.ref("ventas").push(v);
 
 anunciarVenta(v);
-
 cargar();
 }
 
-// CARGAR
+// CARGAR DATOS
 function cargar(){
-let l=JSON.parse(localStorage.getItem("ventas")||"[]");
 
-lista.innerHTML=l.map(v=>`<div class="card">${v.tel} - ${v.tipo}</div>`).join("");
+db.ref("ventas").once("value",snap=>{
+let data=snap.val()||{};
+let arr=Object.values(data);
 
-dashboard(l);
-grafica(l);
+lista.innerHTML=arr.map(v=>`<div class="card">${v.tel} - ${v.tipo}</div>`).join("");
+
+dashboard(arr);
+grafica(arr);
+});
 }
 
 // DASHBOARD
 function dashboard(l){
-let prom={},tipo={};
+
+let prom={},tienda={};
 
 l.forEach(v=>{
 prom[v.promotor]=(prom[v.promotor]||0)+1;
-tipo[v.tipo]=(tipo[v.tipo]||0)+1;
+tienda[v.tienda]=(tienda[v.tienda]||0)+1;
 });
 
 function top(o){return Object.entries(o).sort((a,b)=>b[1]-a[1])[0];}
 
-let t1=top(prom);
-let t2=top(tipo);
+let p=top(prom);
+let t=top(tienda);
 
-topProm.innerText=t1?`Top: ${t1[0]} (${t1[1]})`:"";
-topTipo.innerText=t2?`Más vendido: ${t2[0]}`:"";
+topProm.innerText=p?`Top Promotor: ${p[0]}`:"";
+topTienda.innerText=t?`Top Tienda: ${t[0]}`:"";
 }
 
 // GRAFICA
 function grafica(l){
+
 let c={KIT:0,CHIP:0,PORTA:0,RENUEVATE:0};
+
 l.forEach(v=>c[v.tipo]++);
 
 let ctx=document.getElementById("grafica");
@@ -235,18 +260,22 @@ data:{labels:Object.keys(c),datasets:[{data:Object.values(c)}]}
 
 // IA
 function cerebroIRIS(){
-let ventas=JSON.parse(localStorage.getItem("ventas")||"[]");
-let pendientes=ventas.filter(v=>v.imei==="si");
+
+db.ref("ventas").once("value",snap=>{
+let l=Object.values(snap.val()||{});
+let pendientes=l.filter(v=>v.imei==="si");
 
 if(pendientes.length>0){
 let p=pendientes[Math.floor(Math.random()*pendientes.length)];
 reganarGlobal(p.promotor);
 }
+});
 }
 
 // REGAÑO
 function reganarGlobal(nombre){
-let msg=`${nombre} tiene IMEIs pendientes, actívalos hoy`;
+
+let msg=`${nombre} debe IMEIs pendientes`;
 
 hablar(msg,"serio");
 
@@ -261,6 +290,19 @@ mano.style.display="none";
 db.ref("alertas").push({msg});
 }
 
+// CHAT
+function enviarChat(){
+db.ref("chat").push({u:usuario.email,m:msg.value});
+msg.value="";
+}
+
+function escucharChat(){
+db.ref("chat").on("child_added",s=>{
+let d=s.val();
+chatBox.innerHTML+=`<div><b>${d.u}:</b> ${d.m}</div>`;
+});
+}
+
 // ALERTAS
 function escucharAlertas(){
 db.ref("alertas").on("child_added",s=>{
@@ -270,9 +312,7 @@ hablar(s.val().msg,"serio");
 
 // VENTAS
 function anunciarVenta(v){
-let nombre=v.promotor.split("@")[0];
-let msg=`${nombre} registró una venta`;
-
+let msg=`${v.promotor} hizo venta`;
 hablar(msg);
 db.ref("ventas_alertas").push({msg});
 }
@@ -283,43 +323,6 @@ hablar(s.val().msg);
 });
 }
 
-// PERSONALIDAD
-function personalidad(){
-let l=JSON.parse(localStorage.getItem("ventas")||"[]");
-
-if(l.length===0){
-hablar("No hay ventas");
-}else if(l.length>5){
-hablar("Buen trabajo equipo");
-}
-}
-
-// CHAT
-function enviarChat(){
-db.ref("chat").push({u:auth.currentUser.email,m:msg.value});
-msg.value="";
-}
-
-function escucharChat(){
-db.ref("chat").on("child_added",s=>{
-let d=s.val();
-chatBox.innerHTML+=`<div><b>${d.u}:</b> ${d.m}</div>`;
-responderIA(d.m);
-});
-}
-
-function responderIA(m){
-m=m.toLowerCase();
-
-if(m.includes("ventas")){
-hablar("Las portabilidades son clave");
-}else if(m.includes("ayuda")){
-hablar("Ofrece beneficios al cliente");
-}else{
-hablar("Mensaje recibido");
-}
-}
-
 // CAMARA
 async function iniciarCamara(){
 try{
@@ -328,23 +331,9 @@ cam.srcObject=stream;
 }catch(e){}
 }
 
-// PRESENCIA
-function detectarPresencia(){
-if(Math.random()>0.5){
-reaccionCoqueta();
-}
-}
-
-// COQUETEO
-function reaccionCoqueta(){
-let frases=[
-"Oye… mírame",
-"Concéntrate",
-"Te estoy viendo",
-"No te distraigas"
-];
-
-hablar(frases[Math.floor(Math.random()*frases.length)]);
+// BUSCAR
+function buscarWeb(){
+window.open("https://google.com/search?q="+webInput.value);
 }
 
 </script>
