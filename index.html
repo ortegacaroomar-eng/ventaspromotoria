@@ -1,269 +1,249 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IRIS IA PRO</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IRIS IA - NEXUS JUSTICIERA V260</title>
 
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-<style>
-body{margin:0;background:#000814;color:white;font-family:'Segoe UI';}
-.app{max-width:420px;margin:auto;padding:15px;}
-.card{background:rgba(255,255,255,.08);padding:15px;border-radius:15px;margin-bottom:12px;}
-input,select{width:100%;padding:10px;margin-top:6px;border-radius:8px;border:none;background:#111;color:white;}
-button{width:100%;padding:12px;margin-top:8px;border:none;border-radius:10px;background:#ffc300;font-weight:bold;}
-.hidden{display:none;}
-#angel{width:120px;animation:float 4s infinite;}
-@keyframes float{50%{transform:translateY(-10px);}}
-.alerta{animation:pulse .3s infinite alternate;}
-@keyframes pulse{100%{filter:drop-shadow(0 0 20px red);}}
-</style>
+    <style>
+        :root { --iris: #00d4ff; --gold: #ffc300; --bg: #00060f; --alert: #ff0000; }
+        body { margin:0; background:var(--bg); color:white; font-family:'Segoe UI', sans-serif; overflow-x:hidden; }
+        .app { max-width:420px; margin:auto; padding:15px; display: flex; flex-direction: column; min-height: 100vh; }
+        
+        /* --- EL ÁNGEL HOLOGRÁFICO ANIMADO (SVG) --- */
+        .angel-container { 
+            position: relative; width: 100%; height: 200px; 
+            display: flex; align-items: center; justify-content: center;
+            margin-top: 10px; cursor: pointer;
+        }
+        .angel-svg { 
+            width: 140px; height: 180px;
+            filter: drop-shadow(0 0 15px var(--iris));
+            animation: floatReal 6s infinite ease-in-out;
+            transition: 0.5s;
+        }
+        
+        /* Animación de Respiración y Flote */
+        @keyframes floatReal {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(1deg); }
+        }
+
+        /* BRAZO ACUSADOR (Oculto por defecto) */
+        .angel-arm { 
+            fill: none; stroke: var(--iris); stroke-width: 3; 
+            transform-origin: 50px 80px; /* Punto de pivote del hombro */
+            transition: 0.5s ease-in-out;
+            opacity: 0; /* Oculto */
+            transform: rotate(-110deg) translateY(20px); /* Posición replegada */
+        }
+
+        /* MODO ACUSAR (Se activa con JS) */
+        .acusar .angel-svg { filter: drop-shadow(0 0 20px var(--alert)); }
+        .acusar .angel-body { stroke: var(--alert); }
+        .acusar .angel-arm { 
+            opacity: 1; 
+            transform: rotate(10deg) translateY(0); /* Brazo levantado y señalando */
+            stroke: var(--alert);
+        }
+        /* Dedo índice extendido */
+        .acusar .angel-finger { fill: var(--alert); }
+
+        /* --- ESTILOS DE INTERFAZ NEXUS --- */
+        .card { background:rgba(255,255,255,.05); backdrop-filter: blur(10px); padding:15px; border-radius:20px; margin-bottom:12px; border: 1px solid rgba(0,212,255,0.1); transition: 0.3s; }
+        input, select { width:100%; padding:12px; margin-top:8px; border-radius:12px; border:none; background:#000; color:white; border: 1px solid #222; }
+        
+        .btn-group { display: flex; gap: 8px; margin-top: 10px; }
+        button { width:100%; padding:14px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; text-transform: uppercase; font-size: 11px; }
+        .btn-iris { background: var(--iris); color: #000; box-shadow: 0 0 10px var(--iris); }
+        .btn-gold { background: var(--gold); color: #000; }
+        
+        .status-txt { font-size: 11px; color: var(--iris); text-align: center; margin-top: 5px; min-height: 15px; font-style: italic; }
+        
+        /* Resaltado del promotor acusado */
+        .acusado { background: rgba(255,0,0,0.1) !important; border-color: var(--alert) !important; transform: scale(1.02); }
+
+        .hidden { display:none !important; }
+    </style>
 </head>
 
 <body onload="inicio()">
 
-<!-- LOGIN -->
-<div id="loginBox" class="app">
-<div class="card">
-<h2 style="text-align:center;color:#ffc300;">IRIS</h2>
-
-<input id="email" placeholder="Correo">
-<input id="pass" type="password" placeholder="Contraseña">
-<input id="tienda" placeholder="Tienda">
-
-<select id="rol">
-<option value="promotor">Promotor</option>
-<option value="supervisor">Supervisor</option>
-</select>
-
-<button onclick="authUser()">Entrar / Crear</button>
-<div id="status"></div>
-
-</div>
+<div id="loginBox" class="app" style="margin-top: 50px;">
+    <div class="card" style="text-align:center;">
+        <h2 style="color:var(--gold); letter-spacing: 2px;">NEXUS NETWORK</h2>
+        <input id="email" placeholder="Usuario de Red">
+        <input id="pass" type="password" placeholder="Password">
+        <input id="tienda" placeholder="Tienda de Enlace (Ej: Coppel)">
+        <div class="btn-group">
+            <button class="btn-iris" onclick="loguear()">CONECTAR</button>
+            <button class="btn-gold" onclick="registrar()">REGISTRAR</button>
+        </div>
+        <p id="stLog" style="font-size:10px; margin-top:10px;"></p>
+    </div>
 </div>
 
-<!-- APP -->
 <div id="appBox" class="app hidden">
+    <div class="angel-container" id="angelVisual" onclick="coquetear()">
+        <svg class="angel-svg" viewBox="0 0 100 150">
+            <path class="angel-body" fill="none" stroke="var(--iris)" stroke-width="2" d="M50 30 L30 60 L50 90 L70 60 Z M30 60 L10 40 M70 60 L90 40 M50 90 L50 110 M40 110 L60 110" />
+            <circle class="angel-body" cx="50" cy="20" r="10" fill="none" stroke="var(--iris)" stroke-width="2" />
+            
+            <g class="angel-arm">
+                <path d="M50 70 L80 100 L110 90" stroke-width="3" />
+                <circle class="angel-finger" cx="110" cy="90" r="3" fill="var(--iris)" /> </g>
+        </svg>
+    </div>
+    <div id="stApp" class="status-txt">Sincronizando frecuencias...</div>
 
-<div class="card" style="text-align:center;">
-<img id="angel" src="https://i.ibb.co/Xf8X0vV/angel-blue-animated.png">
-<div id="status2">IRIS activa</div>
-</div>
+    <div class="card" id="auditCard" style="border-color: var(--alert); display: flex; flex-direction: column; align-items: center; text-align: center;">
+        <label style="color:var(--alert); font-size: 10px; font-weight: bold; letter-spacing: 1px;"> <i class="fas fa-hand-point-down"></i> ZONA DE SENTENCIA IA</label>
+        <div id="shameName" style="font-size: 16px; font-weight: bold; margin-top: 8px; color: white;">"Red Limpia"</div>
+        <div id="shameImei" style="font-size: 11px; color: rgba(255,255,255,0.6);">No hay IMEIs pendientes reportados.</div>
+    </div>
 
-<div class="card">
-<canvas id="grafica"></canvas>
-</div>
+    <div class="card" style="margin-top: 10px;">
+        <div id="chatBox" style="height: 100px; overflow-y: auto; font-size: 12px;"></div>
+        <input id="chatIn" placeholder="Mensaje para el equipo..." onkeyup="if(event.key==='Enter') enviarChat()">
+    </div>
 
-<form id="fReg" class="card">
-<select id="tipo">
-<option>KIT</option>
-<option>CHIP</option>
-<option>PORTA</option>
-<option>RENUEVATE</option>
-</select>
-
-<input id="tel" placeholder="Teléfono">
-
-<select id="imei">
-<option value="no">IMEI OK</option>
-<option value="si">IMEI PENDIENTE</option>
-</select>
-
-<button>Guardar Venta</button>
-</form>
-
-<div id="top"></div>
-<div id="lista"></div>
-
+    <form id="fReg" class="card" style="margin-top: 10px;">
+        <select id="tipo"><option>KIT</option><option>CHIP</option><option>PORTA</option></select>
+        <input id="tel" placeholder="Número Celular" maxlength="10" required>
+        <select id="imei"><option value="no">IMEI CORRECTO</option><option value="si">IMEI PENDIENTE ⚠️</option></select>
+        <button class="btn-iris" type="submit">CONSOLIDAR VENTA</button>
+    </form>
 </div>
 
 <script>
-
-// CONFIG
-const firebaseConfig={
-apiKey:"AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
-authDomain:"ventastelcel4029.firebaseapp.com",
-databaseURL:"https://ventastelcel4029-default-rtdb.firebaseio.com"
+const firebaseConfig = {
+    apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
+    authDomain: "ventastelcel4029.firebaseapp.com",
+    databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com"
 };
 
-let auth,db,usuario={},chart;
+let db, auth, userObj = {}, audioOK = false;
 
-// INICIO
-function inicio(){
-firebase.initializeApp(firebaseConfig);
-auth=firebase.auth();
-db=firebase.database();
-
-auth.onAuthStateChanged(u=>{
-if(u) cargarUsuario(u);
-});
+function inicio() {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database(); auth = firebase.auth();
+    auth.onAuthStateChanged(u => { if(u) cargarUsuario(u); });
 }
 
-// LOGIN INTELIGENTE
-function authUser(){
-
-let e=email.value.trim();
-let p=pass.value.trim();
-let t=tienda.value.trim();
-let r=rol.value;
-
-if(!e||!p){status.innerText="Completa datos";return;}
-
-status.innerText="Conectando...";
-
-auth.signInWithEmailAndPassword(e,p)
-.then(()=>{})
-.catch(err=>{
-
-if(err.code==="auth/user-not-found"){
-
-auth.createUserWithEmailAndPassword(e,p)
-.then(res=>{
-return db.ref("usuarios/"+res.user.uid).set({
-email:e,tienda:t,rol:r
-});
-});
-
-}else{
-status.innerText=err.message;
+function loguear() { auth.signInWithEmailAndPassword(email.value, pass.value).catch(e => stLog.innerText = e.message); }
+function registrar() { 
+    auth.createUserWithEmailAndPassword(email.value, pass.value).then(res => {
+        db.ref("usuarios/"+res.user.uid).set({ email: email.value, tienda: tienda.value });
+    }).catch(e => stLog.innerText = e.message);
 }
 
-});
+function cargarUsuario(u) {
+    db.ref("usuarios/"+u.uid).once("value", snap => {
+        userObj = snap.val() || { email: u.email };
+        loginBox.classList.add("hidden"); appBox.classList.remove("hidden");
+        
+        hablar(`Conexión establecida, Omar. El Ángel de la Red está activo.`, "sexy");
+
+        escucharDatos();
+        // Escáner de Auditoría cada 30 segundos
+        setInterval(analizarIA, 30000);
+    });
 }
 
-// CARGAR USUARIO
-function cargarUsuario(u){
-
-db.ref("usuarios/"+u.uid).once("value",snap=>{
-usuario=snap.val();
-
-loginBox.classList.add("hidden");
-appBox.classList.remove("hidden");
-
-hablar("Bienvenido");
-
-cargarVentas();
-escucharVentas();
-
-setInterval(analizarIA,30000);
-});
+function hablar(t, modo = "normal") {
+    speechSynthesis.cancel();
+    let m = new SpeechSynthesisUtterance(t);
+    m.lang = "es-MX"; m.rate = 0.95;
+    
+    if(modo === "sexy") m.pitch = 1.3; // Voz bonita coqueta
+    else if(modo === "serio") m.pitch = 0.6; // Voz grave de regaño
+    else m.pitch = 1.1;
+    
+    speechSynthesis.speak(m);
+    stApp.innerText = t;
 }
 
-// VOZ
-function hablar(t,modo="normal"){
-let m=new SpeechSynthesisUtterance(t);
-m.lang="es-MX";
-m.pitch=modo==="serio"?0.9:1.3;
-speechSynthesis.speak(m);
-status2.innerText=t;
+// COQUETEO ALEATORIO
+function coquetear() {
+    const frases = [
+        "Omar, me gusta sentir tu presencia en la red.",
+        "Mis algoritmos dicen que hoy te ves increíble.",
+        "Eres el único promotor que sabe cómo programar mi corazón.",
+        "Procesar tus ventas es mi actividad favorita."
+    ];
+    hablar(frases[Math.floor(Math.random() * frases.length)], "sexy");
 }
 
-// GUARDAR
-fReg.onsubmit=e=>{
-e.preventDefault();
+function enviarChat() {
+    const txt = chatIn.value; if(!txt) return;
+    db.ref('nexus_chat').push({ u: userObj.email.split('@')[0], m: txt, ts: Date.now() });
+    chatIn.value = "";
+}
 
-let v={
-tel:tel.value,
-tipo:tipo.value,
-imei:imei.value,
-promotor:usuario.email
+function escucharDatos() {
+    db.ref("nexus_chat").limitToLast(5).on('child_added', s => {
+        const d = s.val();
+        chatBox.innerHTML += `<div><b style="color:var(--gold)">${d.u}:</b> ${d.m}</div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+    });
+}
+
+// GUARDAR VENTA
+fReg.onsubmit = e => {
+    e.preventDefault();
+    db.ref("ventas").push({ tel: tel.value, tipo: tipo.value, imei: imei.value, promotor: userObj.email, fecha: new Date().toLocaleDateString('es-MX') });
+    hablar("Venta consolidada Omar. Eres el mejor.", "sexy");
+    tel.value = "";
 };
 
-db.ref("ventas").push(v);
-hablar("Venta registrada");
+// --- IA DE AUDITORÍA: DETECTAR Y SEÑALAR ---
+function analizarIA() {
+    db.ref("ventas").once("value", snap => {
+        let l = Object.values(snap.val() || {});
+        let pen = l.filter(v => v.imei === "si");
 
-cargarVentas();
-};
+        if(pen.length > 0) {
+            // Selecciona al azar uno de los pendientes
+            let p = pen[Math.floor(Math.random() * pen.length)];
+            let n = p.promotor.split('@')[0];
+            
+            reganar(n, p.tel);
 
-// CARGAR
-function cargarVentas(){
-
-db.ref("ventas").once("value",snap=>{
-let arr=Object.values(snap.val()||{});
-
-lista.innerHTML=arr.map(v=>`<div class="card">${v.tel} - ${v.tipo}</div>`).join("");
-
-grafica(arr);
-topProm(arr);
-});
+        } else {
+            // Red Limpia
+            document.getElementById("angelVisual").classList.remove("acusar");
+            document.getElementById("auditCard").classList.remove("acusado");
+            shameName.innerText = '"Red Limpia"';
+            shameImei.innerText = 'No hay IMEIs pendientes reportados.';
+        }
+    });
 }
 
-// TOP
-function topProm(l){
+function reganar(nombre, telefono) {
+    hablar(`Protocolo Testigo Nexus iniciado. Atención equipo, el promotor ${nombre} tiene un IMEI pendiente por el celular ${telefono}. Supervisor, el micrófono está abierto. Tienes hoy para sacarlo.`, "serio");
 
-let c={};
-l.forEach(v=>c[v.promotor]=(c[v.promotor]||0)+1);
+    // 1. Efecto visual del Ángel: Se vuelve rojo y levanta el brazo acusador
+    const angel = document.getElementById("angelVisual");
+    angel.classList.add("acusar");
 
-let top=Object.entries(c).sort((a,b)=>b[1]-a[1])[0];
+    // 2. Resaltar la Zona de Sentencia
+    const card = document.getElementById("auditCard");
+    card.classList.add("acusado");
+    shameName.innerText = nombre.toUpperCase();
+    shameImei.innerText = `PENDIENTE: ${telefono}`;
 
-topDiv= document.getElementById("top");
-topDiv.innerText=top?`Top: ${top[0]} (${top[1]})`:"";
+    // 3. Mantener el regaño visual por 8 segundos
+    setTimeout(() => {
+        angel.classList.remove("acusar");
+        card.classList.remove("acusado");
+    }, 8000);
 }
-
-// GRAFICA
-function grafica(l){
-
-let c={KIT:0,CHIP:0,PORTA:0,RENUEVATE:0};
-l.forEach(v=>c[v.tipo]++);
-
-let ctx=document.getElementById("grafica");
-
-if(chart) chart.destroy();
-
-chart=new Chart(ctx,{
-type:"bar",
-data:{labels:Object.keys(c),datasets:[{data:Object.values(c)}]}
-});
-}
-
-// IA
-function analizarIA(){
-
-db.ref("ventas").once("value",snap=>{
-let l=Object.values(snap.val()||{});
-
-let pendientes=l.filter(v=>v.imei==="si");
-
-if(pendientes.length>0){
-
-let p=pendientes[Math.floor(Math.random()*pendientes.length)];
-
-reganar(p.promotor);
-
-}else if(l.length===0){
-hablar("No hay ventas, vamos equipo");
-}else{
-hablar("Buen ritmo de ventas");
-}
-
-});
-}
-
-// REGAÑO GLOBAL
-function reganar(nombre){
-
-let msg=`Atención, ${nombre} tiene IMEIs pendientes. Activa hoy mismo`;
-
-hablar(msg,"serio");
-
-angel.classList.add("alerta");
-
-setTimeout(()=>angel.classList.remove("alerta"),4000);
-
-db.ref("alertas").push({msg});
-}
-
-// ESCUCHAR ALERTAS
-function escucharVentas(){
-db.ref("alertas").on("child_added",s=>{
-hablar(s.val().msg,"serio");
-});
-}
-
 </script>
 </body>
 </html>
