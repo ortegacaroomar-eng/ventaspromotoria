@@ -3,92 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IRIS AI - NEURAL NEXUS V30</title>
+    <title>IRIS AI - HARDWARE RADAR V50</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        :root { --iris: #00d4ff; --gold: #ffc300; --bg: #000814; }
+        :root { --iris: #00d4ff; --gold: #ffc300; --bg: #000814; --alert: #ff4d4d; }
         body { margin:0; font-family:'Segoe UI', sans-serif; background:var(--bg); color:white; }
         .app { max-width:480px; margin:auto; padding:20px; }
         .card { background:rgba(255,255,255,.05); backdrop-filter:blur(15px); border-radius:20px; padding:18px; margin-bottom:15px; border:1px solid rgba(0,212,255,0.2); }
         
-        /* ORBE IRIS */
-        .iris-head { text-align: center; margin-bottom: 20px; cursor: pointer; }
         .iris-orb { 
             width: 80px; height: 80px; margin: 0 auto 10px; border-radius: 50%; 
             background: radial-gradient(circle, var(--iris) 0%, #000 85%);
-            box-shadow: 0 0 30px var(--iris); animation: pulse 3s infinite;
+            box-shadow: 0 0 30px var(--iris); animation: pulse 3s infinite; cursor: pointer;
         }
-        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } }
-        .iris-status { font-size: 13px; color: var(--iris); font-style: italic; min-height: 40px; text-shadow: 0 0 5px #000; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        .iris-status { font-size: 13px; color: var(--iris); font-style: italic; text-align: center; min-height: 45px; }
 
         input, select { width:100%; padding:14px; margin-bottom:10px; border-radius:12px; border:1px solid #222; background:#000; color:white; box-sizing: border-box; }
-        button { width:100%; padding:15px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; margin-bottom:10px; }
+        button { width:100%; padding:15px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; }
         .btn-main { background: var(--gold); color: #000; }
-        .btn-ia { background: transparent; color: var(--iris); border: 1px solid var(--iris); font-size: 12px; }
+        .btn-alert { background: var(--alert); color: white; margin-top: 10px; font-size: 12px; }
         
-        .venta-item { background: rgba(0,212,255,0.05); padding: 12px; border-radius: 12px; margin-bottom: 10px; border-left: 4px solid var(--gold); font-size: 11px; }
+        /* NOTIFICACIONES EN VIVO */
+        #alertBox { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); width: 90%; z-index: 1000; display: none; }
+        .alert-card { background: var(--alert); color: white; padding: 15px; border-radius: 12px; box-shadow: 0 0 20px rgba(255,77,77,0.5); text-align: center; font-size: 12px; font-weight: bold; animation: slideDown 0.5s; }
+        @keyframes slideDown { from { top: -100px; } to { top: 10px; } }
+
         .hidden { display:none !important; }
     </style>
 </head>
 <body onload="inicio()">
 
-    <div id="loginBox" class="app" style="margin-top:100px; text-align:center;">
-        <div class="card">
-            <h2 style="color:var(--gold)">CONEXIÓN IRIS</h2>
+    <div id="alertBox"></div>
+
+    <div id="loginBox" class="app" style="margin-top:50px;">
+        <div class="card" style="text-align:center;">
+            <h2 style="color:var(--gold)">NEXUS LOGIN</h2>
             <input id="u" placeholder="Correo">
             <input id="p" type="password" placeholder="Password">
-            <button class="btn-main" onclick="entrar()">ACTIVAR IA</button>
+            <input id="tiendaLogin" placeholder="Nombre de Tienda">
+            <input id="detLogin" placeholder="Determinante ID">
+            <button class="btn-main" onclick="entrar()">INICIAR SISTEMA</button>
         </div>
     </div>
 
     <div id="appBox" class="app hidden">
-        <div class="iris-head" onclick="hablarIA('Sistemas activos, Omar. ¿Qué quieres saber?')">
+        <div class="iris-head" onclick="hablarIA('Escaneando inventario y tendencias...')">
             <div class="iris-orb"></div>
-            <div id="irisStatus" class="iris-status">"Conectada a la red global..."</div>
+            <div id="irisStatus" class="iris-status">"Sincronizando con la red global..."</div>
         </div>
 
-        <div class="card">
-            <label style="font-size:10px; color:var(--iris)">CONSULTA GLOBAL E INTERPROMOTOR</label>
-            <input id="chatIA" placeholder="Pregunta sobre otros promotores o consejos...">
-            <button class="btn-ia" onclick="procesarIA()"><i class="fas fa-brain"></i> CONSULTAR CEREBRO IRIS</button>
+        <div class="card" style="border-color: var(--alert);">
+            <label style="color:var(--alert); font-size: 10px; font-weight: bold;">ALERTA DE HARDWARE</label>
+            <input id="imeiPendiente" placeholder="Escribe el IMEI pendiente aquí...">
+            <button class="btn-alert" onclick="reportarImeiGlobal()">
+                <i class="fas fa-exclamation-triangle"></i> REPORTAR IMEI PENDIENTE A TODOS
+            </button>
         </div>
 
         <form id="fReg">
             <div class="card">
                 <select id="iTipo" required onchange="ajustarCampos()">
-                    <option value="">Seleccionar Producto</option>
+                    <option value="">Producto</option>
                     <option value="KIT">KIT</option>
                     <option value="CHIP">CHIP</option>
                     <option value="PORTA">PORTA</option>
                     <option value="RENUEVATE">RENUEVATE</option>
                 </select>
-                <input id="iFec" readonly>
                 <input id="iTel" placeholder="Número Celular" maxlength="10" required>
                 <input id="iIcc" placeholder="ICCID" required>
             </div>
 
-            <div id="seccionEquipo" class="card hidden">
+            <div id="seccionEquipo" class="card">
+                <label style="color:var(--iris); font-size: 9px;">DETALLES DEL EQUIPO</label>
                 <input id="iIme" placeholder="IMEI">
-                <input id="iMarca" placeholder="Marca">
+                <input id="iMarca" placeholder="Marca (Ej: Samsung, Xiaomi)" oninput="analizarMarcas()">
                 <input id="iMod" placeholder="Modelo">
             </div>
 
             <div class="card">
-                <input id="iTiendaNombre" placeholder="Tienda" required>
-                <input id="iProm" placeholder="Nombre Promotor" required>
+                <input id="iTiendaNombre" placeholder="Tienda" readonly style="opacity:0.6">
+                <input id="iProm" placeholder="Promotor" readonly style="opacity:0.6">
             </div>
-            <button type="submit" class="btn-main">REGISTRAR VENTA</button>
+            <button type="submit" class="btn-main">GUARDAR Y REPORTAR</button>
         </form>
 
-        <button onclick="exportarExcel()" style="background:#1f7a3f; color:white;">DESCARGAR EXCEL</button>
-        
-        <h3 style="font-size:14px; color:var(--gold)">HISTORIAL LOCAL RECIENTE</h3>
-        <div id="listaLocal"></div>
-        <button onclick="salir()" style="background:#ff4d4d; color:white; font-size:11px; margin-top:20px;">DESCONECTAR</button>
+        <button onclick="exportarExcel()" style="background:#1f7a3f; color:white; width:100%; border:none; padding:12px; border-radius:10px; margin-top:10px;">
+            <i class="fa-solid fa-file-excel"></i> REPORTE EXCEL
+        </button>
+        <button onclick="salir()" style="background:transparent; color:white; font-size:10px; border:none; margin-top:15px; width:100%;">CERRAR SESIÓN</button>
     </div>
 
 <script>
@@ -99,78 +106,103 @@
         projectId: "ventastelcel4029"
     };
 
-    let db, auth, nombreUser = "";
+    let db, auth, nombreUser = "", tiendaActual = "";
 
     function inicio() {
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         db = firebase.database(); auth = firebase.auth();
-        iFec.value = new Date().toLocaleDateString('es-MX');
 
         auth.onAuthStateChanged(user => {
             if(user) {
                 nombreUser = user.displayName || user.email.split('@')[0];
+                tiendaActual = tiendaLogin.value || "Tienda Nexus";
                 iProm.value = nombreUser;
+                iTiendaNombre.value = tiendaActual;
                 mostrarApp();
-                setTimeout(() => hablarIA(`Bienvenido Omar. He sincronizado la base de datos y la red global para ti.`), 1000);
+                
+                // PREGUNTA INICIAL IA
+                setTimeout(() => {
+                    hablarIA(`Hola ${nombreUser}. Antes de empezar, ¿tienes algún IMEI pendiente por activar? Si es así, súbelo en el recuadro rojo.`);
+                }, 1500);
+
+                // ESCUCHAR ALERTAS GLOBALES
+                db.ref('alertas_imei').on('limitToLast', 1, (snap) => {
+                    snap.forEach(alerta => {
+                        const data = alerta.val();
+                        if(data.nombre !== nombreUser) {
+                            lanzarAlertaVisual(`¡ATENCIÓN! El promotor ${data.nombre} en ${data.tienda} reporta un IMEI PENDIENTE: ${data.imei}`);
+                            hablarIA(`Alerta global. El promotor ${data.nombre} tiene un reporte de hardware pendiente.`);
+                        }
+                    });
+                });
             } else {
                 loginBox.classList.remove("hidden"); appBox.classList.add("hidden");
             }
         });
     }
 
-    // --- VOZ DE IRIS MEJORADA ---
     function hablarIA(texto) {
         window.speechSynthesis.cancel();
         const msg = new SpeechSynthesisUtterance(texto);
-        msg.lang = 'es-MX'; msg.pitch = 1.1; msg.rate = 0.9;
+        msg.lang = 'es-MX'; msg.pitch = 1.1; msg.rate = 0.95;
         window.speechSynthesis.speak(msg);
         document.getElementById('irisStatus').innerText = `"${texto}"`;
     }
 
-    // --- IA GENERATIVA: INTERNET + PROMOTORES ---
-    function procesarIA() {
-        const query = document.getElementById('chatIA').value.toLowerCase();
-        if(!query) return;
+    function reportarImeiGlobal() {
+        const imei = document.getElementById('imeiPendiente').value;
+        if(!imei) return hablarIA("Omar, necesito el número de IMEI para reportarlo.");
 
-        if(query.includes("promotor") || query.includes("vende") || query.includes("quién va")) {
-            hablarIA("Escaneando registros en la nube... Dame un segundo.");
-            db.ref('ventas').once('value', (snap) => {
-                let reporte = {};
-                snap.forEach(user => {
-                    user.forEach(venta => {
-                        let p = venta.val().PROMOTOR || "Desconocido";
-                        reporte[p] = (reporte[p] || 0) + 1;
-                    });
-                });
-                
-                let resumen = "He encontrado los siguientes datos: ";
-                for(let p in reporte) { resumen += `${p} lleva ${reporte[p]} ventas. `; }
-                hablarIA(resumen);
-            });
-        } else {
-            // IA GLOBAL (Simulada con base de conocimientos de Internet)
-            const respuestasIA = [
-                "Según las tendencias de psicología de ventas, el 70% de las personas compran por emoción. Enfócate en los beneficios, no solo en el precio.",
-                "En internet se dice que la perseverancia supera al talento. Sigue ofreciendo ese Chip, Omar.",
-                "Dato tecnológico: La red 5G que vendes es actualmente la más rápida de México. Úsalo como argumento de cierre.",
-                "Consejo de vida: Un promotor exitoso no vende productos, vende soluciones de comunicación."
-            ];
-            hablarIA(respuestasIA[Math.floor(Math.random()*respuestasIA.length)]);
-        }
-        document.getElementById('chatIA').value = "";
+        const alerta = {
+            imei: imei,
+            nombre: nombreUser,
+            tienda: tiendaActual,
+            fecha: new Date().toLocaleString()
+        };
+
+        db.ref('alertas_imei').push(alerta);
+        hablarIA(`Entendido. He reportado el IMEI ${imei} a toda la red de promotores inmediatamente.`);
+        document.getElementById('imeiPendiente').value = "";
     }
 
-    function entrar() { auth.signInWithEmailAndPassword(u.value, p.value).catch(e => alert(e.message)); }
+    function analizarMarcas() {
+        db.ref('ventas').once('value', (snap) => {
+            let marcas = {};
+            snap.forEach(user => {
+                user.forEach(venta => {
+                    let m = venta.val().MARCA;
+                    if(m) {
+                        m = m.toUpperCase();
+                        marcas[m] = (marcas[m] || 0) + 1;
+                    }
+                });
+            });
+            
+            let topMarca = Object.keys(marcas).reduce((a, b) => marcas[a] > marcas[b] ? a : b, "...");
+            document.getElementById('irisStatus').innerText = `Análisis: La marca más vendida es ${topMarca}.`;
+        });
+    }
+
+    function lanzarAlertaVisual(msj) {
+        const box = document.getElementById('alertBox');
+        box.innerHTML = `<div class="alert-card">${msj}</div>`;
+        box.style.display = "block";
+        setTimeout(() => { box.style.display = "none"; }, 8000);
+    }
+
+    function entrar() { 
+        if(!tiendaLogin.value) return alert("Ingresa tu tienda");
+        auth.signInWithEmailAndPassword(u.value, p.value).catch(e => alert(e.message)); 
+    }
 
     function mostrarApp() {
         loginBox.classList.add("hidden"); appBox.classList.remove("hidden");
-        renderLocal();
     }
 
     function ajustarCampos() {
         const t = iTipo.value;
-        if(t) hablarIA(`Has seleccionado ${t}. Excelente elección.`);
         seccionEquipo.className = (t === "CHIP" || t === "PORTA") ? "card hidden" : "card";
+        if(t === "KIT" || t === "RENUEVATE") hablarIA(`Registrando equipo. No olvides validar el IMEI.`);
     }
 
     fReg.onsubmit = e => {
@@ -181,41 +213,13 @@
             ICCID: iIcc.value,
             PRODUCTO: iTipo.value,
             PROMOTOR: iProm.value,
-            FECHA: iFec.value,
+            MARCA: iMarca.value,
             TIENDA: iTiendaNombre.value
         };
 
-        // GUARDADO LOCAL REAL (Persistence Check)
-        let local = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-        local.unshift(v);
-        localStorage.setItem("ventas_omar", JSON.stringify(local));
-
-        // GUARDADO NUBE
         if(auth.currentUser) db.ref('ventas/' + auth.currentUser.uid).push(v);
-
-        hablarIA(`Venta de ${v.PRODUCTO} guardada localmente y sincronizada. ¡Eres grande, ${nombreUser}!`);
-        fReg.reset(); iProm.value = nombreUser;
-        renderLocal();
-    }
-
-    function renderLocal() {
-        const lista = document.getElementById("listaLocal");
-        let local = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-        lista.innerHTML = local.length === 0 ? "<p>No hay registros locales aún.</p>" : 
-        local.slice(0, 5).map(v => `
-            <div class="venta-item">
-                <b>${v.TEL}</b> - ${v.PRODUCTO} <br>
-                <small>${v.FECHA} | ${v.TIENDA}</small>
-            </div>
-        `).join("");
-    }
-
-    function exportarExcel() {
-        let local = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-        const ws = XLSX.utils.json_to_sheet(local);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Ventas");
-        XLSX.writeFile(wb, `Ventas_${nombreUser}.xlsx`);
+        hablarIA(`Venta guardada. Analizando tendencia de marca.`);
+        fReg.reset(); iProm.value = nombreUser; iTiendaNombre.value = tiendaActual;
     }
 
     function salir() { auth.signOut(); }
