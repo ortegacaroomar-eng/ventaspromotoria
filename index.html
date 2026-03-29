@@ -13,42 +13,26 @@
 
     <style>
         :root { --iris: #00d4ff; --gold: #ffc300; --bg: #00050a; --alert: #ff2222; }
-        body { margin:0; background:var(--bg); color:white; font-family:'Segoe UI', sans-serif; overflow:hidden; }
+        body { margin:0; background:var(--bg); color:white; font-family:'Segoe UI', sans-serif; overflow-x:hidden; }
+        .app-container { max-width:420px; margin:auto; min-height:100vh; display:flex; flex-direction:column; padding:15px; box-sizing:border-box; }
         
-        .app-container { max-width:420px; margin:auto; height:100vh; display:flex; flex-direction:column; padding:15px; box-sizing:border-box; overflow-y:auto; }
-        
-        /* --- EL ÁNGEL SUPREMO (SVG ANIMADO) --- */
-        .angel-stage { position: relative; width: 100%; height: 220px; display: flex; justify-content: center; align-items: center; }
-        .angel-svg { width: 160px; filter: drop-shadow(0 0 15px var(--iris)); transition: 0.5s; animation: float 4s infinite ease-in-out; }
-        
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-        
-        /* Alas animadas */
-        .wing { fill: rgba(0, 212, 255, 0.2); stroke: var(--iris); stroke-width: 1; animation: flap 3s infinite ease-in-out; transform-origin: center; }
-        @keyframes flap { 0%, 100% { transform: scaleX(1); } 50% { transform: scaleX(1.2) rotate(2deg); } }
-
-        /* Brazo Acusador */
-        #pointingArm { opacity: 0; transform: rotate(-90deg); transform-origin: 50px 75px; transition: 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); stroke: var(--iris); stroke-width: 3; fill:none; }
-        
-        /* MODO ALERTA */
-        .crisis .angel-svg { filter: drop-shadow(0 0 25px var(--alert)); }
-        .crisis .wing { stroke: var(--alert); fill: rgba(255,0,0,0.1); }
-        .crisis #pointingArm { opacity: 1; transform: rotate(15deg); stroke: var(--alert); }
-        .crisis .halo { stroke: var(--alert); animation: pulse 0.5s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 100% { opacity: 0.3; } }
-
-        /* INTERFAZ */
-        .card { background:rgba(255,255,255,0.06); backdrop-filter:blur(15px); border-radius:24px; padding:18px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1); }
-        input, select { width:100%; padding:14px; margin-top:8px; border-radius:14px; border:1px solid #222; background:#000; color:white; font-size:14px; }
-        button { width:100%; padding:15px; border:none; border-radius:14px; font-weight:bold; cursor:pointer; text-transform:uppercase; transition:0.3s; }
+        /* DISEÑO DE ACCESO SIMPLIFICADO */
+        .card { background:rgba(255,255,255,0.06); backdrop-filter:blur(15px); border-radius:24px; padding:20px; border:1px solid rgba(255,255,255,0.1); }
+        input { width:100%; padding:15px; margin-top:10px; border-radius:12px; border:1px solid #333; background:#000; color:white; box-sizing:border-box; }
+        button { width:100%; padding:16px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; text-transform:uppercase; margin-top:15px; }
         .btn-main { background:var(--iris); color:#000; box-shadow: 0 4px 15px rgba(0,212,255,0.3); }
-        .btn-sec { background:transparent; color:var(--gold); border:1px solid var(--gold); margin-top:10px; }
         
-        #stMsg { font-size:12px; text-align:center; color:var(--iris); margin:10px 0; min-height:18px; font-style:italic; }
-        .hidden { display:none !important; }
+        /* EL ÁNGEL ANIMADO */
+        .angel-stage { position: relative; width: 100%; height: 250px; display: flex; justify-content: center; align-items: center; margin: 10px 0; }
+        .angel-svg { width: 180px; filter: drop-shadow(0 0 15px var(--iris)); animation: float 4s infinite ease-in-out; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        
+        #pointingArm { opacity: 0; transform: rotate(-90deg); transform-origin: 50px 75px; transition: 0.6s; stroke: var(--iris); stroke-width: 3; fill:none; }
+        .crisis #pointingArm { opacity: 1; transform: rotate(15deg); stroke: var(--alert); }
+        .crisis .angel-svg { filter: drop-shadow(0 0 25px var(--alert)); }
 
-        /* Lista de ventas compacta */
-        .v-row { display:flex; justify-content:space-between; font-size:12px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
+        .hidden { display:none !important; }
+        #stMsg { font-size:12px; text-align:center; color:var(--iris); margin-top:15px; }
     </style>
 </head>
 <body>
@@ -56,173 +40,112 @@
 <div class="app-container">
     
     <div id="loginSection">
-        <div class="card" style="margin-top:40px; text-align:center;">
+        <div class="card" style="margin-top:50px; text-align:center;">
             <h1 style="color:var(--gold); margin:0;">NEXUS PRIME</h1>
-            <p style="font-size:10px; letter-spacing:2px; color:var(--iris);">INTELIGENCIA ARTIFICIAL DE RED</p>
+            <p style="font-size:10px; color:var(--iris); letter-spacing:1px;">V280 • ACCESO DIRECTO</p>
             
             <input id="email" type="email" placeholder="Correo Electrónico">
             <input id="pass" type="password" placeholder="Contraseña">
-            <input id="tienda" placeholder="Tienda (Ej: Coppel Centro)">
             
-            <button class="btn-main" style="margin-top:20px;" onclick="doLogin()">VINCULAR CEREBRO</button>
-            <button class="btn-sec" onclick="doRegister()">CREAR NUEVA ENTIDAD</button>
-            <div id="stMsg">Esperando credenciales...</div>
+            <button class="btn-main" onclick="doLogin()">VINCULAR CEREBRO</button>
+            <div id="stMsg">Listo para conectar</div>
         </div>
     </div>
 
     <div id="mainSection" class="hidden">
         <div class="angel-stage" id="angelStage" onclick="touchIris()">
             <svg class="angel-svg" viewBox="0 0 100 150">
-                <circle class="halo" cx="50" cy="20" r="12" fill="none" stroke="var(--iris)" stroke-width="1.5" />
-                <path class="wing" d="M30 50 Q 0 20 10 70 Z" />
-                <path class="wing" d="M70 50 Q 100 20 90 70 Z" />
+                <circle cx="50" cy="20" r="12" fill="none" stroke="var(--iris)" stroke-width="1" />
+                <path d="M30 50 Q 0 20 10 70 Z" fill="rgba(0,212,255,0.1)" stroke="var(--iris)" />
+                <path d="M70 50 Q 100 20 90 70 Z" fill="rgba(0,212,255,0.1)" stroke="var(--iris)" />
                 <path d="M50 35 L35 70 L50 105 L65 70 Z" fill="none" stroke="var(--iris)" stroke-width="2" />
                 <circle cx="50" cy="25" r="8" fill="none" stroke="var(--iris)" stroke-width="2" />
-                <g id="pointingArm">
-                    <path d="M55 65 L85 85 L110 85" />
-                    <circle cx="112" cy="85" r="3" fill="var(--alert)" />
-                </g>
+                <g id="pointingArm"><path d="M55 65 L85 85 L110 85" /><circle cx="112" cy="85" r="3" fill="var(--alert)" /></g>
             </svg>
         </div>
-        <div id="irisTalk" class="status-txt" style="text-align:center; font-size:12px; color:var(--iris); margin-bottom:15px;">Iniciando protocolos...</div>
+        
+        <div id="irisTalk" style="text-align:center; font-size:13px; color:var(--iris); margin-bottom:20px;">Sincronizado</div>
 
-        <div class="card" id="shameZone" style="border-color:var(--alert); text-align:center;">
-            <div id="shameTitle" style="color:var(--alert); font-weight:bold; font-size:14px;">RED SIN FALLOS</div>
-            <div id="shameDetail" style="font-size:11px; opacity:0.7;">Escaneando IMEIs en tiempo real...</div>
+        <div class="card" id="shameZone" style="border-color:var(--alert); text-align:center; margin-bottom:15px;">
+            <div id="shameTitle" style="color:var(--alert); font-weight:bold;">RED OPERATIVA</div>
+            <div id="shameDetail" style="font-size:11px; opacity:0.6;">Sin alertas de IMEI.</div>
         </div>
 
         <form id="vForm" class="card">
-            <div style="display:flex; gap:8px;">
-                <select id="vTipo" style="margin:0;"><option>KIT</option><option>PORTA</option><option>CHIP</option></select>
-                <input id="vTel" placeholder="Teléfono" maxlength="10" style="margin:0;">
-            </div>
-            <select id="vImei"><option value="no">IMEI OK</option><option value="si">IMEI PENDIENTE ⚠️</option></select>
-            <button class="btn-main" type="submit" style="margin-top:10px;">REGISTRAR VENTA</button>
+            <input id="vTel" placeholder="Número de Teléfono" maxlength="10">
+            <select id="vTipo" style="margin-top:10px; width:100%; padding:12px; border-radius:10px; background:#000; color:white;">
+                <option>KIT</option><option>PORTA</option><option>CHIP</option>
+            </select>
+            <select id="vImei" style="margin-top:10px; width:100%; padding:12px; border-radius:10px; background:#000; color:white;">
+                <option value="no">IMEI OK</option><option value="si">IMEI PENDIENTE</option>
+            </select>
+            <button class="btn-main" type="submit">GUARDAR VENTA</button>
         </form>
-
-        <div id="topList" class="card" style="font-size:12px; color:var(--gold);"></div>
-        <div id="recentBox" class="card"></div>
-        
-        <button onclick="location.reload()" style="background:none; color:rgba(255,255,255,0.3); font-size:10px;">DESCONECTAR SISTEMA</button>
     </div>
-
 </div>
 
 <script>
-// CONFIGURACIÓN DE FIREBASE
 const config = {
     apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
     authDomain: "ventastelcel4029.firebaseapp.com",
-    databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com",
-    projectId: "ventastelcel4029"
+    databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com"
 };
 
-let db, auth, activeUser = {};
+let db, auth;
 
 function inicio() {
-    if (!firebase.apps.length) firebase.initializeApp(config);
+    firebase.initializeApp(config);
     db = firebase.database();
     auth = firebase.auth();
-
-    auth.onAuthStateChanged(u => {
-        if (u) {
-            db.ref("usuarios/" + u.uid).once("value", s => {
-                activeUser = s.val() || { email: u.email, tienda: "General" };
-                showApp();
-            });
-        }
-    });
+    auth.onAuthStateChanged(u => { if(u) showApp(); });
 }
 
-// LOGIN Y REGISTRO
 function doLogin() {
-    stMsg.innerText = "Sincronizando...";
-    auth.signInWithEmailAndPassword(email.value, pass.value).catch(e => stMsg.innerText = "Error: Datos incorrectos");
-}
-
-function doRegister() {
-    if(!email.value || !tienda.value) return stMsg.innerText = "Correo y Tienda obligatorios";
-    auth.createUserWithEmailAndPassword(email.value, pass.value).then(res => {
-        db.ref("usuarios/" + res.user.uid).set({ email: email.value, tienda: tienda.value });
-    }).catch(e => stMsg.innerText = e.message);
+    stMsg.innerText = "Entrando...";
+    auth.signInWithEmailAndPassword(email.value, pass.value).catch(e => {
+        // Si no existe, intenta registrarlo automáticamente
+        auth.createUserWithEmailAndPassword(email.value, pass.value).catch(err => stMsg.innerText = "Error de acceso");
+    });
 }
 
 function showApp() {
     loginSection.classList.add("hidden");
     mainSection.classList.remove("hidden");
-    hablar(`Hola Omar. Soy Iris. He vinculado tu dispositivo a la red de ${activeUser.tienda}.`, "sexy");
-    initListeners();
-    setInterval(scanNetwork, 30000);
+    hablar("Acceso concedido Omar. El Ángel está contigo.", "sexy");
+    setInterval(scan, 30000);
 }
 
-// VOZ DE IRIS
-function hablar(t, modo = "normal") {
+function hablar(t, modo) {
     speechSynthesis.cancel();
     const m = new SpeechSynthesisUtterance(t);
     m.lang = "es-MX";
-    m.pitch = (modo === "sexy") ? 1.3 : (modo === "alert") ? 0.6 : 1.1;
-    m.rate = 0.95;
+    m.pitch = (modo === "sexy") ? 1.3 : 0.8;
     speechSynthesis.speak(m);
     irisTalk.innerText = t;
 }
 
-function touchIris() {
-    const frases = ["Omar, me gusta cuando interactúas conmigo.", "Estoy vigilando la red por ti.", "¿Necesitas algo más de mi parte?", "Hoy te veo muy productivo."];
-    hablar(frases[Math.floor(Math.random()*frases.length)], "sexy");
-}
-
-// DATOS
-vForm.onsubmit = e => {
-    e.preventDefault();
-    if(vTel.value.length < 10) return hablar("El número está incompleto, Omar.");
-    
-    db.ref("ventas").push({
-        tel: vTel.value, tipo: vTipo.value, imei: vImei.value,
-        u: activeUser.email.split('@')[0], t: activeUser.tienda, ts: Date.now()
-    });
-    
-    vTel.value = "";
-    hablar("Venta registrada. Sigue así.", "sexy");
-};
-
-function initListeners() {
-    db.ref("ventas").limitToLast(10).on("value", s => {
-        const data = Object.values(s.val() || {}).reverse();
-        recentBox.innerHTML = "<b>MOVIMIENTOS DE RED:</b><br>";
-        data.forEach(v => {
-            recentBox.innerHTML += `<div class="v-row"><span>${v.tel}</span><b>${v.tipo}</b><span>${v.u}</span></div>`;
-        });
-    });
-}
-
-// --- IA DE ESCANEO Y SEÑALAMIENTO ---
-function scanNetwork() {
+function scan() {
     db.ref("ventas").once("value", s => {
-        const ventas = Object.values(s.val() || {});
-        const pen = ventas.filter(v => v.imei === "si");
-
+        const pen = Object.values(s.val() || {}).filter(v => v.imei === "si");
         if(pen.length > 0) {
-            const infractor = pen[Math.floor(Math.random()*pen.length)];
-            activarAlerta(infractor.u, infractor.tel);
+            const inf = pen[0];
+            document.getElementById("angelStage").classList.add("crisis");
+            shameTitle.innerText = "¡ALERTA DE IMEI!";
+            shameDetail.innerText = "Revisa el registro de " + inf.tel;
+            hablar("Omar, detecto un fallo. Mira hacia donde señalo.", "alert");
         } else {
-            desactivarAlerta();
+            document.getElementById("angelStage").classList.remove("crisis");
+            shameTitle.innerText = "RED LIMPIA";
         }
     });
 }
 
-function activarAlerta(nombre, tel) {
-    document.getElementById("angelStage").classList.add("crisis");
-    shameTitle.innerText = `¡ATENCIÓN: ${nombre.toUpperCase()}!`;
-    shameDetail.innerText = `IMEI PENDIENTE EN TEL: ${tel}`;
-    hablar(`Protocolo de advertencia. El promotor ${nombre} tiene un IMEI pendiente. Lo estoy señalando ante todo el equipo.`, "alert");
-}
-
-function desactivarAlerta() {
-    document.getElementById("angelStage").classList.remove("crisis");
-    shameTitle.innerText = "RED LIMPIA";
-    shameTitle.style.color = "var(--iris)";
-    shameDetail.innerText = "Todos los IMEIs están al corriente.";
-}
+vForm.onsubmit = e => {
+    e.preventDefault();
+    db.ref("ventas").push({ tel: vTel.value, tipo: vTipo.value, imei: vImei.value, ts: Date.now() });
+    vTel.value = "";
+    hablar("Venta registrada perfectamente.", "sexy");
+};
 
 inicio();
 </script>
