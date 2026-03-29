@@ -3,24 +3,55 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IRIS IA EMPRESA</title>
+
+<title>Sistema Ventas PRO</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{margin:0;background:#000814;color:white;font-family:'Segoe UI';}
-.app{max-width:480px;margin:auto;padding:15px;}
-.card{background:rgba(255,255,255,.08);padding:12px;border-radius:12px;margin-bottom:10px;text-align:center;}
-#angel{width:140px;animation:float 4s infinite;}
-@keyframes float{50%{transform:translateY(-10px);}}
-.alerta{animation:pulse .5s infinite alternate;}
-@keyframes pulse{0%{filter:drop-shadow(0 0 10px red);}100%{filter:drop-shadow(0 0 25px red);}}
-input,select{width:100%;padding:10px;margin-top:5px;background:#111;color:white;border:none;border-radius:8px;}
-button{width:100%;padding:10px;margin-top:8px;border:none;border-radius:8px;background:#ffc300;font-weight:bold;}
+body{
+margin:0;
+font-family:'Segoe UI';
+background:linear-gradient(135deg,#001d3d,#003566,#000814);
+color:white;
+}
+
+.app{max-width:480px;margin:auto;padding:20px;}
+
+.card{
+background:rgba(255,255,255,.08);
+border-radius:16px;
+padding:15px;
+margin-bottom:15px;
+backdrop-filter:blur(10px);
+}
+
+input,select{
+width:100%;
+padding:12px;
+margin-top:6px;
+border-radius:10px;
+border:none;
+background:rgba(255,255,255,.1);
+color:white;
+}
+
+button{
+width:100%;
+padding:14px;
+margin-top:10px;
+border:none;
+border-radius:12px;
+background:#ffc300;
+font-weight:bold;
+}
+
+.header{text-align:center;font-weight:bold;color:#ffc300;margin-bottom:15px;}
+
+#chatBox{max-height:120px;overflow:auto;font-size:12px;}
 </style>
 </head>
 
@@ -29,7 +60,7 @@ button{width:100%;padding:10px;margin-top:8px;border:none;border-radius:8px;back
 <div id="loginBox" class="app">
 <div class="card">
 <h2>Acceso</h2>
-<input id="u">
+<input id="u" placeholder="Correo">
 <input id="p" type="password">
 <button onclick="entrar()">Entrar</button>
 </div>
@@ -37,37 +68,49 @@ button{width:100%;padding:10px;margin-top:8px;border:none;border-radius:8px;back
 
 <div id="appBox" class="app hidden">
 
+<div class="header">CONTROL DE VENTAS</div>
+
+<!-- BUSCADOR -->
 <div class="card">
-<img id="angel" src="https://i.ibb.co/Xf8X0vV/angel-blue-animated.png">
+<input id="webInput" placeholder="Buscar en internet...">
+<button onclick="buscarWeb()">Buscar</button>
 </div>
 
-<!-- IA CHAT -->
+<!-- DASHBOARD -->
 <div class="card">
-<input id="iaInput" placeholder="Habla con IRIS..." onkeyup="if(event.key==='Enter') preguntarIA()">
+<div id="topProm"></div>
+<div id="topMarca"></div>
 </div>
 
 <!-- GRAFICA -->
 <div class="card">
-<canvas id="graficaVentas"></canvas>
+<canvas id="grafica"></canvas>
+</div>
+
+<!-- CHAT -->
+<div class="card">
+<input id="chatMsg" placeholder="Mensaje..." onkeyup="if(event.key==='Enter') enviarChat()">
+<div id="chatBox"></div>
 </div>
 
 <!-- FORM -->
 <form id="fReg" class="card">
+
 <select id="iTipo">
-<option>KIT</option>
-<option>CHIP</option>
-<option>PORTA</option>
-<option>RENUEVATE</option>
+<option value="KIT">KIT</option>
+<option value="CHIP">CHIP</option>
+<option value="PORTA">PORTA</option>
+<option value="RENUEVATE">RENUEVATE</option>
 </select>
 
 <input id="iTel" placeholder="Teléfono">
 
 <select id="imeiPendiente">
-<option value="no">OK</option>
-<option value="si">PENDIENTE</option>
+<option value="no">IMEI OK</option>
+<option value="si">IMEI PENDIENTE</option>
 </select>
 
-<button>Guardar</button>
+<button>Guardar Venta</button>
 </form>
 
 <div id="lista"></div>
@@ -76,9 +119,9 @@ button{width:100%;padding:10px;margin-top:8px;border:none;border-radius:8px;back
 
 <script>
 
-// 🔥 CONFIG
+// FIREBASE
 const firebaseConfig={
-apiKey:"TU_API_KEY",
+apiKey:"AIzaSy...",
 authDomain:"ventastelcel4029.firebaseapp.com",
 databaseURL:"https://ventastelcel4029-default-rtdb.firebaseio.com"
 };
@@ -94,7 +137,11 @@ auth.onAuthStateChanged(u=>{
 if(u){
 loginBox.classList.add("hidden");
 appBox.classList.remove("hidden");
+
 cargar();
+escucharChat();
+
+setInterval(consejoIA,90000);
 }
 });
 }
@@ -103,83 +150,104 @@ function entrar(){
 auth.signInWithEmailAndPassword(u.value,p.value);
 }
 
-// 🎙️ VOZ MÁS HUMANA
-function hablar(texto){
-let msg=new SpeechSynthesisUtterance(texto);
-msg.lang="es-MX";
-msg.rate=0.9;
-msg.pitch=1.2;
+// VOZ MEJORADA
+function hablar(t,modo="normal"){
 
-// intenta voz femenina
+speechSynthesis.cancel();
+
+let m=new SpeechSynthesisUtterance(t);
+m.lang="es-MX";
+m.rate=0.9;
+m.pitch=modo==="serio"?0.9:1.2;
+
 let voces=speechSynthesis.getVoices();
-let voz=voces.find(v=>v.name.toLowerCase().includes("female"));
-if(voz) msg.voice=voz;
+let voz=voces.find(v=>v.lang.includes("es"));
 
-speechSynthesis.speak(msg);
+if(voz) m.voice=voz;
+
+speechSynthesis.speak(m);
 }
 
-// 🤖 IA REAL (conectar API)
-async function preguntarIA(){
+// BUSCADOR REAL
+function buscarWeb(){
+let q=webInput.value;
+if(!q) return;
 
-let texto=iaInput.value;
-
-hablar("Pensando...");
-
-try{
-
-let res=await fetch("https://api.openai.com/v1/chat/completions",{
-method:"POST",
-headers:{
-"Content-Type":"application/json",
-"Authorization":"Bearer TU_API_KEY_AQUI"
-},
-body:JSON.stringify({
-model:"gpt-4o-mini",
-messages:[{role:"user",content:texto}]
-})
-});
-
-let data=await res.json();
-let respuesta=data.choices[0].message.content;
-
-hablar(respuesta);
-
-}catch(e){
-hablar("No tengo conexión con inteligencia avanzada");
+hablar("Buscando en internet");
+window.open("https://www.google.com/search?q="+encodeURIComponent(q));
 }
 
-iaInput.value="";
-}
-
-// 💾 GUARDAR
+// GUARDAR
 fReg.onsubmit=e=>{
 e.preventDefault();
 
 let v={
 tel:iTel.value,
 tipo:iTipo.value,
-imei:imeiPendiente.value
+promotor:auth.currentUser.email,
+marca:iTipo.value,
+imeiPendiente:imeiPendiente.value
 };
 
 let l=JSON.parse(localStorage.getItem("ventas")||"[]");
 l.unshift(v);
 localStorage.setItem("ventas",JSON.stringify(l));
 
+db.ref("ventas").push(v);
+
+hablar("Venta registrada");
+
 cargar();
-
-if(v.imei==="si"){
-hablar("Tienes IMEI pendiente… actívalo hoy");
-}
 }
 
-// 📊 GRAFICA
-function crearGrafica(data){
+// CARGAR
+function cargar(){
+
+let l=JSON.parse(localStorage.getItem("ventas")||"[]");
+
+lista.innerHTML=l.map(v=>`
+<div class="card">
+${v.tel} - ${v.tipo}
+</div>
+`).join("");
+
+dashboard(l);
+pintarGrafica();
+}
+
+// DASHBOARD
+function dashboard(l){
+
+let prom={},marca={};
+
+l.forEach(v=>{
+prom[v.promotor]=(prom[v.promotor]||0)+1;
+marca[v.marca]=(marca[v.marca]||0)+1;
+});
+
+function top(o){
+return Object.entries(o).sort((a,b)=>b[1]-a[1])[0];
+}
+
+let t1=top(prom);
+let t2=top(marca);
+
+topProm.innerText=t1?`Top Promotor: ${t1[0]} (${t1[1]})`:"";
+topMarca.innerText=t2?`Marca líder: ${t2[0]} (${t2[1]})`:"";
+}
+
+// GRAFICA
+function pintarGrafica(){
+
+let l=JSON.parse(localStorage.getItem("ventas")||"[]");
 
 let conteo={KIT:0,CHIP:0,PORTA:0,RENUEVATE:0};
 
-data.forEach(v=>conteo[v.tipo]++);
+l.forEach(v=>{
+conteo[v.tipo]=(conteo[v.tipo]||0)+1;
+});
 
-let ctx=document.getElementById("graficaVentas");
+let ctx=document.getElementById("grafica");
 
 if(chart) chart.destroy();
 
@@ -195,14 +263,33 @@ data:Object.values(conteo)
 });
 }
 
-// 📊 CARGAR
-function cargar(){
+// IA CONSEJOS
+function consejoIA(){
 
 let l=JSON.parse(localStorage.getItem("ventas")||"[]");
 
-lista.innerHTML=l.map(v=>`<div class="card">${v.tel} - ${v.tipo}</div>`).join("");
+if(l.length<3) return;
 
-crearGrafica(l);
+let portas=l.filter(v=>v.tipo==="PORTA").length;
+
+if(portas<2){
+hablar("Equipo, enfoquen ventas en portabilidad");
+}else{
+hablar("Buen trabajo, sigan así");
+}
+}
+
+// CHAT
+function enviarChat(){
+db.ref("chat").push({u:auth.currentUser.email,m:chatMsg.value});
+chatMsg.value="";
+}
+
+function escucharChat(){
+db.ref("chat").limitToLast(10).on("child_added",s=>{
+let d=s.val();
+chatBox.innerHTML+=`<div><b>${d.u}:</b> ${d.m}</div>`;
+});
 }
 
 </script>
