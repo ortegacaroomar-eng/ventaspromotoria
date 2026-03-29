@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IRIS Enterprise FIX</title>
+<title>IRIS IA PRO</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -14,12 +14,13 @@
 body{margin:0;background:#000814;color:white;font-family:'Segoe UI';}
 .app{max-width:420px;margin:auto;padding:15px;}
 .card{background:rgba(255,255,255,.08);padding:15px;border-radius:15px;margin-bottom:12px;}
-.header{text-align:center;color:#ffc300;font-weight:bold;}
 input,select{width:100%;padding:10px;margin-top:6px;border-radius:8px;border:none;background:#111;color:white;}
 button{width:100%;padding:12px;margin-top:8px;border:none;border-radius:10px;background:#ffc300;font-weight:bold;}
 .hidden{display:none;}
 #angel{width:120px;animation:float 4s infinite;}
 @keyframes float{50%{transform:translateY(-10px);}}
+.alerta{animation:pulse .3s infinite alternate;}
+@keyframes pulse{100%{filter:drop-shadow(0 0 20px red);}}
 </style>
 </head>
 
@@ -28,8 +29,7 @@ button{width:100%;padding:12px;margin-top:8px;border:none;border-radius:10px;bac
 <!-- LOGIN -->
 <div id="loginBox" class="app">
 <div class="card">
-
-<div class="header">Acceso IRIS</div>
+<h2 style="text-align:center;color:#ffc300;">IRIS</h2>
 
 <input id="email" placeholder="Correo">
 <input id="pass" type="password" placeholder="Contraseña">
@@ -40,8 +40,8 @@ button{width:100%;padding:12px;margin-top:8px;border:none;border-radius:10px;bac
 <option value="supervisor">Supervisor</option>
 </select>
 
-<button onclick="login()">Entrar</button>
-<button onclick="registro()" style="background:#00c853;">Crear cuenta</button>
+<button onclick="authUser()">Entrar / Crear</button>
+<div id="status"></div>
 
 </div>
 </div>
@@ -51,12 +51,7 @@ button{width:100%;padding:12px;margin-top:8px;border:none;border-radius:10px;bac
 
 <div class="card" style="text-align:center;">
 <img id="angel" src="https://i.ibb.co/Xf8X0vV/angel-blue-animated.png">
-<div id="status">IRIS activa</div>
-</div>
-
-<div class="card">
-<input id="webInput" placeholder="Buscar...">
-<button onclick="buscarWeb()">Buscar</button>
+<div id="status2">IRIS activa</div>
 </div>
 
 <div class="card">
@@ -81,21 +76,21 @@ button{width:100%;padding:12px;margin-top:8px;border:none;border-radius:10px;bac
 <button>Guardar Venta</button>
 </form>
 
+<div id="top"></div>
 <div id="lista"></div>
 
 </div>
 
 <script>
 
-// CONFIG REAL
-const firebaseConfig = {
-apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
-authDomain: "ventastelcel4029.firebaseapp.com",
-databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com",
-projectId: "ventastelcel4029"
+// CONFIG
+const firebaseConfig={
+apiKey:"AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
+authDomain:"ventastelcel4029.firebaseapp.com",
+databaseURL:"https://ventastelcel4029-default-rtdb.firebaseio.com"
 };
 
-let db,auth,usuario={},chart;
+let auth,db,usuario={},chart;
 
 // INICIO
 function inicio(){
@@ -104,85 +99,70 @@ auth=firebase.auth();
 db=firebase.database();
 
 auth.onAuthStateChanged(u=>{
-if(u){
-cargarUsuario(u.uid);
-}
+if(u) cargarUsuario(u);
 });
 }
 
-// LOGIN
-function login(){
-
-let e=email.value.trim();
-let p=pass.value.trim();
-
-if(!e || !p){
-alert("Completa datos");
-return;
-}
-
-auth.signInWithEmailAndPassword(e,p)
-.then(()=>{
-hablar("Bienvenido");
-})
-.catch(err=>{
-alert("Error: "+err.message);
-});
-}
-
-// REGISTRO
-function registro(){
+// LOGIN INTELIGENTE
+function authUser(){
 
 let e=email.value.trim();
 let p=pass.value.trim();
 let t=tienda.value.trim();
 let r=rol.value;
 
-if(!e || !p || !t){
-alert("Completa todo");
-return;
-}
+if(!e||!p){status.innerText="Completa datos";return;}
+
+status.innerText="Conectando...";
+
+auth.signInWithEmailAndPassword(e,p)
+.then(()=>{})
+.catch(err=>{
+
+if(err.code==="auth/user-not-found"){
 
 auth.createUserWithEmailAndPassword(e,p)
 .then(res=>{
 return db.ref("usuarios/"+res.user.uid).set({
-email:e,
-tienda:t,
-rol:r
+email:e,tienda:t,rol:r
 });
-})
-.then(()=>{
-hablar("Usuario creado");
-})
-.catch(err=>{
-alert("Error: "+err.message);
+});
+
+}else{
+status.innerText=err.message;
+}
+
 });
 }
 
 // CARGAR USUARIO
-function cargarUsuario(uid){
+function cargarUsuario(u){
 
-db.ref("usuarios/"+uid).once("value",snap=>{
+db.ref("usuarios/"+u.uid).once("value",snap=>{
 usuario=snap.val();
 
 loginBox.classList.add("hidden");
 appBox.classList.remove("hidden");
 
-hablar("Bienvenido "+usuario.rol);
+hablar("Bienvenido");
 
-cargar();
+cargarVentas();
+escucharVentas();
+
+setInterval(analizarIA,30000);
 });
 }
 
 // VOZ
-function hablar(t){
+function hablar(t,modo="normal"){
 let m=new SpeechSynthesisUtterance(t);
 m.lang="es-MX";
+m.pitch=modo==="serio"?0.9:1.3;
 speechSynthesis.speak(m);
-status.innerText=t;
+status2.innerText=t;
 }
 
-// GUARDAR VENTA
+// GUARDAR
 fReg.onsubmit=e=>{
 e.preventDefault();
 
@@ -190,35 +170,44 @@ let v={
 tel:tel.value,
 tipo:tipo.value,
 imei:imei.value,
-promotor:usuario.email,
-tienda:usuario.tienda
+promotor:usuario.email
 };
 
 db.ref("ventas").push(v);
+hablar("Venta registrada");
 
-hablar("Venta guardada");
-
-cargar();
-}
+cargarVentas();
+};
 
 // CARGAR
-function cargar(){
+function cargarVentas(){
 
 db.ref("ventas").once("value",snap=>{
-let data=snap.val()||{};
-let arr=Object.values(data);
+let arr=Object.values(snap.val()||{});
 
 lista.innerHTML=arr.map(v=>`<div class="card">${v.tel} - ${v.tipo}</div>`).join("");
 
 grafica(arr);
+topProm(arr);
 });
+}
+
+// TOP
+function topProm(l){
+
+let c={};
+l.forEach(v=>c[v.promotor]=(c[v.promotor]||0)+1);
+
+let top=Object.entries(c).sort((a,b)=>b[1]-a[1])[0];
+
+topDiv= document.getElementById("top");
+topDiv.innerText=top?`Top: ${top[0]} (${top[1]})`:"";
 }
 
 // GRAFICA
 function grafica(l){
 
 let c={KIT:0,CHIP:0,PORTA:0,RENUEVATE:0};
-
 l.forEach(v=>c[v.tipo]++);
 
 let ctx=document.getElementById("grafica");
@@ -231,9 +220,48 @@ data:{labels:Object.keys(c),datasets:[{data:Object.values(c)}]}
 });
 }
 
-// BUSCAR
-function buscarWeb(){
-window.open("https://google.com/search?q="+webInput.value);
+// IA
+function analizarIA(){
+
+db.ref("ventas").once("value",snap=>{
+let l=Object.values(snap.val()||{});
+
+let pendientes=l.filter(v=>v.imei==="si");
+
+if(pendientes.length>0){
+
+let p=pendientes[Math.floor(Math.random()*pendientes.length)];
+
+reganar(p.promotor);
+
+}else if(l.length===0){
+hablar("No hay ventas, vamos equipo");
+}else{
+hablar("Buen ritmo de ventas");
+}
+
+});
+}
+
+// REGAÑO GLOBAL
+function reganar(nombre){
+
+let msg=`Atención, ${nombre} tiene IMEIs pendientes. Activa hoy mismo`;
+
+hablar(msg,"serio");
+
+angel.classList.add("alerta");
+
+setTimeout(()=>angel.classList.remove("alerta"),4000);
+
+db.ref("alertas").push({msg});
+}
+
+// ESCUCHAR ALERTAS
+function escucharVentas(){
+db.ref("alertas").on("child_added",s=>{
+hablar(s.val().msg,"serio");
+});
 }
 
 </script>
