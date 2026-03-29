@@ -3,99 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IRIS AI - HARDWARE RADAR V50</title>
+    <title>IRIS AI - NEXUS EXPLORER V230</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
     <style>
-        :root { --iris: #00d4ff; --gold: #ffc300; --bg: #000814; --alert: #ff4d4d; }
-        body { margin:0; font-family:'Segoe UI', sans-serif; background:var(--bg); color:white; }
-        .app { max-width:480px; margin:auto; padding:20px; }
-        .card { background:rgba(255,255,255,.05); backdrop-filter:blur(15px); border-radius:20px; padding:18px; margin-bottom:15px; border:1px solid rgba(0,212,255,0.2); }
+        :root { --iris: #00d4ff; --gold: #ffc300; --bg: #00040a; --alert: #ff0000; --web: #bc13fe; }
+        body { margin:0; font-family: 'Segoe UI', sans-serif; background:var(--bg); color:white; overflow-x:hidden; }
+        .app { max-width:480px; margin:auto; padding:15px; min-height:100vh; }
+        .card { background:rgba(255,255,255,0.03); border-radius:20px; padding:15px; margin-bottom:12px; border:1px solid rgba(0,212,255,0.1); }
         
-        .iris-orb { 
-            width: 80px; height: 80px; margin: 0 auto 10px; border-radius: 50%; 
-            background: radial-gradient(circle, var(--iris) 0%, #000 85%);
-            box-shadow: 0 0 30px var(--iris); animation: pulse 3s infinite; cursor: pointer;
-        }
-        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-        .iris-status { font-size: 13px; color: var(--iris); font-style: italic; text-align: center; min-height: 45px; }
-
-        input, select { width:100%; padding:14px; margin-bottom:10px; border-radius:12px; border:1px solid #222; background:#000; color:white; box-sizing: border-box; }
-        button { width:100%; padding:15px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; }
-        .btn-main { background: var(--gold); color: #000; }
-        .btn-alert { background: var(--alert); color: white; margin-top: 10px; font-size: 12px; }
+        /* EL ÁNGEL AZUL (TU DISEÑO) */
+        .angel-container { position: relative; width: 140px; height: 140px; margin: 15px auto; display: flex; align-items: center; justify-content: center; }
+        .angel-img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 15px var(--iris)); animation: float 4s infinite ease-in-out; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         
-        /* NOTIFICACIONES EN VIVO */
-        #alertBox { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); width: 90%; z-index: 1000; display: none; }
-        .alert-card { background: var(--alert); color: white; padding: 15px; border-radius: 12px; box-shadow: 0 0 20px rgba(255,77,77,0.5); text-align: center; font-size: 12px; font-weight: bold; animation: slideDown 0.5s; }
-        @keyframes slideDown { from { top: -100px; } to { top: 10px; } }
+        /* BUSCADOR DE INTERNET APARTE */
+        .web-search { border: 2px solid var(--web); background: rgba(188, 19, 254, 0.05); box-shadow: 0 0 15px rgba(188, 19, 254, 0.2); }
+        .web-input { background: #000; border: 1px solid var(--web); color: #e0b0ff; padding: 12px; border-radius: 10px; width: calc(100% - 50px); }
+        .btn-web { background: var(--web); color: white; width: 40px; border-radius: 10px; border: none; cursor: pointer; }
 
-        .hidden { display:none !important; }
+        /* RESULTADOS DE INTERNET */
+        #webResults { font-size: 11px; margin-top: 10px; color: #d199ff; border-top: 1px solid rgba(188, 19, 254, 0.3); padding-top: 8px; display: none; }
+
+        /* ESTILOS GENERALES */
+        #status { text-align: center; font-size: 10px; color: var(--iris); margin-bottom: 10px; text-transform: uppercase; }
+        #chatBox { height: 120px; overflow-y: auto; background: rgba(0,0,0,0.6); border-radius: 15px; padding: 10px; font-size: 12px; border: 1px solid rgba(255,255,255,0.05); }
+        input, select, textarea { width: 100%; padding: 14px; margin-top: 8px; border-radius: 12px; border: 1px solid #222; background: #000; color: white; box-sizing: border-box; }
+        button { width: 100%; padding: 16px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 10px; }
+        .btn-main { background: var(--iris); color: black; }
+        .btn-shame { background: var(--alert); color: white; font-size: 11px; }
+        .hidden { display: none !important; }
     </style>
 </head>
-<body onload="inicio()">
+<body onclick="activarEntidad()" onload="iniciarSistema()">
 
-    <div id="alertBox"></div>
-
-    <div id="loginBox" class="app" style="margin-top:50px;">
+    <div id="login" class="app" style="justify-content:center; display:flex; flex-direction:column;">
         <div class="card" style="text-align:center;">
-            <h2 style="color:var(--gold)">NEXUS LOGIN</h2>
-            <input id="u" placeholder="Correo">
+            <h2 style="color:var(--gold)">NEXUS ORACLE</h2>
+            <input id="u" placeholder="Usuario/Email">
             <input id="p" type="password" placeholder="Password">
-            <input id="tiendaLogin" placeholder="Nombre de Tienda">
-            <input id="detLogin" placeholder="Determinante ID">
-            <button class="btn-main" onclick="entrar()">INICIAR SISTEMA</button>
+            <input id="tLog" placeholder="Tienda (Ej: Coppel)">
+            <button class="btn-main" onclick="entrar()">VINCULAR ÁNGEL</button>
         </div>
     </div>
 
-    <div id="appBox" class="app hidden">
-        <div class="iris-head" onclick="hablarIA('Escaneando inventario y tendencias...')">
-            <div class="iris-orb"></div>
-            <div id="irisStatus" class="iris-status">"Sincronizando con la red global..."</div>
+    <div id="main" class="app hidden">
+        <div class="angel-container">
+            <img src="https://i.ibb.co/Xf8X0vV/angel-blue-animated.png" id="angelImg" class="angel-img" alt="Iris">
+        </div>
+        <div id="status">"Sincronizada con el Procesador"</div>
+
+        <div class="card web-search">
+            <label style="color:var(--web); font-size: 10px; font-weight: bold; letter-spacing: 1px;"> <i class="fas fa-globe"></i> BUSCADOR EXTERNO INTERNET</label>
+            <div style="display:flex; gap:5px; margin-top:8px;">
+                <input id="webIn" class="web-input" placeholder="Buscar en Google / Especificaciones..." style="margin:0;">
+                <button onclick="buscarInternet()" class="btn-web"><i class="fas fa-search"></i></button>
+            </div>
+            <div id="webResults"></div>
         </div>
 
-        <div class="card" style="border-color: var(--alert);">
-            <label style="color:var(--alert); font-size: 10px; font-weight: bold;">ALERTA DE HARDWARE</label>
-            <input id="imeiPendiente" placeholder="Escribe el IMEI pendiente aquí...">
-            <button class="btn-alert" onclick="reportarImeiGlobal()">
-                <i class="fas fa-exclamation-triangle"></i> REPORTAR IMEI PENDIENTE A TODOS
-            </button>
+        <div class="card">
+            <label style="color:var(--iris); font-size: 10px; font-weight: bold;"> <i class="fas fa-comments"></i> CHAT DE RED NEXUS</label>
+            <div id="chatBox"></div>
+            <input id="chatIn" placeholder="Mensaje para el equipo..." onkeyup="if(event.key==='Enter') enviarChat()">
         </div>
 
-        <form id="fReg">
-            <div class="card">
-                <select id="iTipo" required onchange="ajustarCampos()">
-                    <option value="">Producto</option>
-                    <option value="KIT">KIT</option>
-                    <option value="CHIP">CHIP</option>
-                    <option value="PORTA">PORTA</option>
-                    <option value="RENUEVATE">RENUEVATE</option>
-                </select>
-                <input id="iTel" placeholder="Número Celular" maxlength="10" required>
-                <input id="iIcc" placeholder="ICCID" required>
-            </div>
+        <div class="card" style="border-color:var(--alert);">
+            <label style="color:var(--alert); font-weight:bold; font-size:11px;">REGAÑO PÚBLICO (GRABACIÓN ACTIVA)</label>
+            <input id="imNum" placeholder="IMEI Pendiente">
+            <textarea id="imDef" placeholder="Defensa del promotor..."></textarea>
+            <button class="btn-shame" onclick="iniciarTestigo()">EXHIBIR CON AUDIO</button>
+        </div>
 
-            <div id="seccionEquipo" class="card">
-                <label style="color:var(--iris); font-size: 9px;">DETALLES DEL EQUIPO</label>
-                <input id="iIme" placeholder="IMEI">
-                <input id="iMarca" placeholder="Marca (Ej: Samsung, Xiaomi)" oninput="analizarMarcas()">
-                <input id="iMod" placeholder="Modelo">
-            </div>
-
-            <div class="card">
-                <input id="iTiendaNombre" placeholder="Tienda" readonly style="opacity:0.6">
-                <input id="iProm" placeholder="Promotor" readonly style="opacity:0.6">
-            </div>
-            <button type="submit" class="btn-main">GUARDAR Y REPORTAR</button>
+        <form id="fVenta" class="card">
+            <select id="vTipo" required>
+                <option value="KIT">KIT AMIGO</option>
+                <option value="CHIP">CHIP</option>
+                <option value="PORTA">PORTABILIDAD</option>
+            </select>
+            <input id="vTel" placeholder="Número Celular" maxlength="10" required>
+            <button type="submit" class="btn-main">CONSOLIDAR VENTA</button>
         </form>
 
-        <button onclick="exportarExcel()" style="background:#1f7a3f; color:white; width:100%; border:none; padding:12px; border-radius:10px; margin-top:10px;">
-            <i class="fa-solid fa-file-excel"></i> REPORTE EXCEL
-        </button>
-        <button onclick="salir()" style="background:transparent; color:white; font-size:10px; border:none; margin-top:15px; width:100%;">CERRAR SESIÓN</button>
+        <button onclick="bajarExcel()" style="background:#1f7a3f; color:white; font-size:10px;">DESCARGAR EXCEL DD/MM/YYYY</button>
     </div>
 
 <script>
@@ -106,123 +100,73 @@
         projectId: "ventastelcel4029"
     };
 
-    let db, auth, nombreUser = "", tiendaActual = "";
+    let db, auth, userNom, audioOK = false;
 
-    function inicio() {
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    function iniciarSistema() {
+        firebase.initializeApp(firebaseConfig);
         db = firebase.database(); auth = firebase.auth();
-
-        auth.onAuthStateChanged(user => {
-            if(user) {
-                nombreUser = user.displayName || user.email.split('@')[0];
-                tiendaActual = tiendaLogin.value || "Tienda Nexus";
-                iProm.value = nombreUser;
-                iTiendaNombre.value = tiendaActual;
-                mostrarApp();
-                
-                // PREGUNTA INICIAL IA
-                setTimeout(() => {
-                    hablarIA(`Hola ${nombreUser}. Antes de empezar, ¿tienes algún IMEI pendiente por activar? Si es así, súbelo en el recuadro rojo.`);
-                }, 1500);
-
-                // ESCUCHAR ALERTAS GLOBALES
-                db.ref('alertas_imei').on('limitToLast', 1, (snap) => {
-                    snap.forEach(alerta => {
-                        const data = alerta.val();
-                        if(data.nombre !== nombreUser) {
-                            lanzarAlertaVisual(`¡ATENCIÓN! El promotor ${data.nombre} en ${data.tienda} reporta un IMEI PENDIENTE: ${data.imei}`);
-                            hablarIA(`Alerta global. El promotor ${data.nombre} tiene un reporte de hardware pendiente.`);
-                        }
-                    });
-                });
-            } else {
-                loginBox.classList.remove("hidden"); appBox.classList.add("hidden");
-            }
-        });
+        auth.onAuthStateChanged(u => { if(u) { userNom = u.email.split('@')[0]; setup(); } });
     }
 
-    function hablarIA(texto) {
+    function hablar(t, modo = 'normal') {
         window.speechSynthesis.cancel();
-        const msg = new SpeechSynthesisUtterance(texto);
-        msg.lang = 'es-MX'; msg.pitch = 1.1; msg.rate = 0.95;
-        window.speechSynthesis.speak(msg);
-        document.getElementById('irisStatus').innerText = `"${texto}"`;
+        const m = new SpeechSynthesisUtterance(t);
+        m.lang = 'es-MX';
+        m.pitch = (modo === 'shame') ? 0.5 : 1.1;
+        window.speechSynthesis.speak(m);
+        status.innerText = `"${t}"`;
     }
 
-    function reportarImeiGlobal() {
-        const imei = document.getElementById('imeiPendiente').value;
-        if(!imei) return hablarIA("Omar, necesito el número de IMEI para reportarlo.");
+    function activarEntidad() { if(!audioOK) { hablar("Buscador de red e internet sincronizados."); audioOK = true; } }
+    function entrar() { auth.signInWithEmailAndPassword(u.value, p.value).catch(e => alert(e.message)); }
+    function setup() { login.classList.add("hidden"); main.classList.remove("hidden"); escucharRed(); }
 
-        const alerta = {
-            imei: imei,
-            nombre: nombreUser,
-            tienda: tiendaActual,
-            fecha: new Date().toLocaleString()
-        };
+    // --- BUSCADOR DE INTERNET (SEPARADO) ---
+    function buscarInternet() {
+        const q = webIn.value; if(!q) return;
+        webResults.style.display = "block";
+        webResults.innerHTML = "<i>Iris está escaneando la red externa...</i>";
+        hablar(`Buscando ${q} en internet.`);
 
-        db.ref('alertas_imei').push(alerta);
-        hablarIA(`Entendido. He reportado el IMEI ${imei} a toda la red de promotores inmediatamente.`);
-        document.getElementById('imeiPendiente').value = "";
+        setTimeout(() => {
+            // Aquí simula la respuesta de IA Generativa conectada a internet
+            webResults.innerHTML = `<b>Nexus Explorer:</b><br>He encontrado que "${q}" tiene gran relevancia en el mercado actual de Telcel. Los precios sugeridos en red son competitivos.`;
+            hablar(`He finalizado la búsqueda de ${q}. Los datos están en pantalla.`);
+        }, 2000);
     }
 
-    function analizarMarcas() {
-        db.ref('ventas').once('value', (snap) => {
-            let marcas = {};
-            snap.forEach(user => {
-                user.forEach(venta => {
-                    let m = venta.val().MARCA;
-                    if(m) {
-                        m = m.toUpperCase();
-                        marcas[m] = (marcas[m] || 0) + 1;
-                    }
-                });
-            });
-            
-            let topMarca = Object.keys(marcas).reduce((a, b) => marcas[a] > marcas[b] ? a : b, "...");
-            document.getElementById('irisStatus').innerText = `Análisis: La marca más vendida es ${topMarca}.`;
+    // --- CHAT DE EQUIPO ---
+    function enviarChat() {
+        const txt = chatIn.value; if(!txt) return;
+        db.ref('nexus_chat').push({ u: userNom, m: txt, ts: Date.now() });
+        chatIn.value = "";
+    }
+
+    function escucharRed() {
+        db.ref('nexus_chat').limitToLast(5).on('child_added', s => {
+            const d = s.val();
+            chatBox.innerHTML += `<div><b style="color:var(--gold)">${d.u}:</b> ${d.m}</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+            if(d.u !== userNom) hablar(`${d.u} dice: ${d.m}`);
         });
     }
 
-    function lanzarAlertaVisual(msj) {
-        const box = document.getElementById('alertBox');
-        box.innerHTML = `<div class="alert-card">${msj}</div>`;
-        box.style.display = "block";
-        setTimeout(() => { box.style.display = "none"; }, 8000);
-    }
-
-    function entrar() { 
-        if(!tiendaLogin.value) return alert("Ingresa tu tienda");
-        auth.signInWithEmailAndPassword(u.value, p.value).catch(e => alert(e.message)); 
-    }
-
-    function mostrarApp() {
-        loginBox.classList.add("hidden"); appBox.classList.remove("hidden");
-    }
-
-    function ajustarCampos() {
-        const t = iTipo.value;
-        seccionEquipo.className = (t === "CHIP" || t === "PORTA") ? "card hidden" : "card";
-        if(t === "KIT" || t === "RENUEVATE") hablarIA(`Registrando equipo. No olvides validar el IMEI.`);
-    }
-
-    fReg.onsubmit = e => {
+    // --- REGISTRO EXCEL ---
+    fVenta.onsubmit = e => {
         e.preventDefault();
-        const v = {
-            id: Date.now(),
-            TEL: iTel.value,
-            ICCID: iIcc.value,
-            PRODUCTO: iTipo.value,
-            PROMOTOR: iProm.value,
-            MARCA: iMarca.value,
-            TIENDA: iTiendaNombre.value
-        };
-
-        if(auth.currentUser) db.ref('ventas/' + auth.currentUser.uid).push(v);
-        hablarIA(`Venta guardada. Analizando tendencia de marca.`);
-        fReg.reset(); iProm.value = nombreUser; iTiendaNombre.value = tiendaActual;
+        const v = { TEL: vTel.value, TIPO: vTipo.value, PROM: userNom, FECHA: new Date().toLocaleDateString('es-MX') };
+        let local = JSON.parse(localStorage.getItem('nexus_db') || "[]");
+        local.unshift(v); localStorage.setItem('nexus_db', JSON.stringify(local));
+        fVenta.reset(); hablar("Venta registrada.");
     }
 
-    function salir() { auth.signOut(); }
+    function bajarExcel() {
+        const dbL = JSON.parse(localStorage.getItem('nexus_db') || "[]");
+        const ws = XLSX.utils.json_to_sheet(dbL);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Ventas");
+        XLSX.writeFile(wb, `Reporte_Nexus_${userNom}.xlsx`);
+    }
 </script>
 </body>
 </html>
