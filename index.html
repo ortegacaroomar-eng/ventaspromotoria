@@ -3,75 +3,32 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>IRIS Sistema PRO</title>
+<title>IRIS Modo Dios</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{
-margin:0;
-font-family:'Segoe UI';
-background:#000814;
-color:white;
-}
+body{margin:0;background:#000814;color:white;font-family:'Segoe UI';}
+.app{max-width:420px;margin:auto;padding:15px;}
+.card{background:rgba(255,255,255,.08);padding:15px;border-radius:15px;margin-bottom:12px;}
+.header{text-align:center;color:#ffc300;font-weight:bold;}
 
-.app{max-width:480px;margin:auto;padding:15px;}
+input,select{width:100%;padding:10px;margin-top:6px;border-radius:8px;border:none;background:#111;color:white;}
+button{width:100%;padding:12px;margin-top:8px;border:none;border-radius:10px;background:#ffc300;font-weight:bold;}
 
-.card{
-background:rgba(255,255,255,.05);
-border-radius:15px;
-padding:15px;
-margin-bottom:12px;
-}
-
-/* ANGEL */
-.angel-box{text-align:center;}
-#angel{
-width:130px;
-animation:flotar 4s infinite ease-in-out;
-transition:.3s;
-}
-@keyframes flotar{
-50%{transform:translateY(-10px);}
-}
-
-.hablando{animation:hablar .2s infinite;}
-@keyframes hablar{50%{transform:scale(1.05);}}
-
-.alerta{
-filter:drop-shadow(0 0 15px red);
-animation:pulso .4s infinite alternate;
-}
-@keyframes pulso{
-100%{filter:drop-shadow(0 0 30px red);}
-}
-
-input,select{
-width:100%;
-padding:12px;
-margin-top:6px;
-border-radius:10px;
-border:none;
-background:#111;
-color:white;
-}
-
-button{
-width:100%;
-padding:14px;
-margin-top:10px;
-border:none;
-border-radius:10px;
-background:#ffc300;
-font-weight:bold;
-}
-
-#chatBox{max-height:120px;overflow:auto;font-size:12px;}
 .hidden{display:none;}
+
+#angel{width:120px;animation:float 4s infinite;}
+@keyframes float{50%{transform:translateY(-10px);}}
+
+.alerta{animation:pulse .4s infinite alternate;}
+@keyframes pulse{100%{filter:drop-shadow(0 0 25px red);}}
+
+#mano{display:none;font-size:40px;text-align:center;}
+#chatBox{max-height:120px;overflow:auto;font-size:12px;}
 </style>
 </head>
 
@@ -80,32 +37,35 @@ font-weight:bold;
 <!-- LOGIN -->
 <div id="loginBox" class="app">
 <div class="card">
-<h2>Acceso</h2>
-<input id="u">
-<input id="p" type="password">
-<button onclick="entrar()">Entrar</button>
+<div class="header" id="titulo">Iniciar Sesión</div>
+<input id="email">
+<input id="pass" type="password">
+<button onclick="authUser()">Entrar</button>
+<button onclick="toggleModo()" style="background:none;color:#ffc300;">Crear usuario</button>
 </div>
 </div>
 
 <!-- APP -->
 <div id="appBox" class="app hidden">
 
-<!-- ANGEL -->
-<div class="card angel-box">
+<div class="card" style="text-align:center;">
 <img id="angel" src="https://i.ibb.co/Xf8X0vV/angel-blue-animated.png">
-<div id="status">IRIS lista</div>
+<div id="mano">👉</div>
+<div id="status">IRIS activa</div>
+
+<video id="cam" autoplay playsinline style="width:100%;border-radius:10px;margin-top:10px;"></video>
 </div>
 
 <!-- BUSCADOR -->
 <div class="card">
-<input id="webInput" placeholder="Buscar en internet...">
+<input id="webInput" placeholder="Buscar...">
 <button onclick="buscarWeb()">Buscar</button>
 </div>
 
 <!-- DASHBOARD -->
 <div class="card">
 <div id="topProm"></div>
-<div id="topMarca"></div>
+<div id="topTipo"></div>
 </div>
 
 <!-- GRAFICA -->
@@ -113,25 +73,18 @@ font-weight:bold;
 <canvas id="grafica"></canvas>
 </div>
 
-<!-- CHAT -->
-<div class="card">
-<input id="chatMsg" placeholder="Mensaje..." onkeyup="if(event.key==='Enter') enviarChat()">
-<div id="chatBox"></div>
-</div>
-
 <!-- FORM -->
 <form id="fReg" class="card">
-
-<select id="iTipo">
-<option value="KIT">KIT</option>
-<option value="CHIP">CHIP</option>
-<option value="PORTA">PORTA</option>
-<option value="RENUEVATE">RENUEVATE</option>
+<select id="tipo">
+<option>KIT</option>
+<option>CHIP</option>
+<option>PORTA</option>
+<option>RENUEVATE</option>
 </select>
 
-<input id="iTel" placeholder="Teléfono">
+<input id="tel" placeholder="Teléfono">
 
-<select id="imeiPendiente">
+<select id="imei">
 <option value="no">IMEI OK</option>
 <option value="si">IMEI PENDIENTE</option>
 </select>
@@ -139,72 +92,80 @@ font-weight:bold;
 <button>Guardar Venta</button>
 </form>
 
+<!-- CHAT -->
+<div class="card">
+<input id="msg" placeholder="Mensaje..." onkeyup="if(event.key==='Enter') enviarChat()">
+<div id="chatBox"></div>
+</div>
+
 <div id="lista"></div>
 
 </div>
 
 <script>
 
-// FIREBASE
+// CONFIG
 const firebaseConfig={
 apiKey:"AIzaSy...",
 authDomain:"ventastelcel4029.firebaseapp.com",
 databaseURL:"https://ventastelcel4029-default-rtdb.firebaseio.com"
 };
 
-let db,auth,chart;
+let db,auth,modoRegistro=false,chart;
 
+// INICIO
 function inicio(){
 firebase.initializeApp(firebaseConfig);
-db=firebase.database();
 auth=firebase.auth();
+db=firebase.database();
 
 auth.onAuthStateChanged(u=>{
 if(u){
 loginBox.classList.add("hidden");
 appBox.classList.remove("hidden");
 
-hablar("Sistema listo");
+hablar("Sistema activado");
 
 cargar();
 escucharChat();
+escucharAlertas();
+escucharVentas();
 
-setInterval(consejoIA,90000);
-setInterval(revisarIMEI,60000);
+iniciarCamara();
+
+setInterval(cerebroIRIS,60000);
+setInterval(personalidad,120000);
+setInterval(detectarPresencia,20000);
 }
 });
 }
 
-function entrar(){
-auth.signInWithEmailAndPassword(u.value,p.value);
+// LOGIN
+function toggleModo(){
+modoRegistro=!modoRegistro;
+titulo.innerText=modoRegistro?"Crear Usuario":"Iniciar Sesión";
 }
 
-// VOZ + ANIMACIÓN
+function authUser(){
+if(modoRegistro){
+auth.createUserWithEmailAndPassword(email.value,pass.value);
+}else{
+auth.signInWithEmailAndPassword(email.value,pass.value);
+}
+}
+
+// VOZ
 function hablar(t,modo="normal"){
-
-speechSynthesis.cancel();
-
 let m=new SpeechSynthesisUtterance(t);
 m.lang="es-MX";
-m.rate=0.9;
 m.pitch=modo==="serio"?0.9:1.2;
-
-angel.classList.add("hablando");
-
-m.onend=()=>angel.classList.remove("hablando");
-
 speechSynthesis.speak(m);
-
 status.innerText=t;
 }
 
-// BUSCADOR
+// BUSCAR
 function buscarWeb(){
-let q=webInput.value;
-if(!q) return;
-
-hablar("Buscando en internet");
-window.open("https://www.google.com/search?q="+encodeURIComponent(q));
+window.open("https://www.google.com/search?q="+webInput.value);
 }
 
 // GUARDAR
@@ -212,11 +173,10 @@ fReg.onsubmit=e=>{
 e.preventDefault();
 
 let v={
-tel:iTel.value,
-tipo:iTipo.value,
+tel:tel.value,
+tipo:tipo.value,
 promotor:auth.currentUser.email,
-marca:iTipo.value,
-imeiPendiente:imeiPendiente.value
+imei:imei.value
 };
 
 let l=JSON.parse(localStorage.getItem("ventas")||"[]");
@@ -225,55 +185,43 @@ localStorage.setItem("ventas",JSON.stringify(l));
 
 db.ref("ventas").push(v);
 
-hablar("Venta registrada");
+anunciarVenta(v);
 
 cargar();
 }
 
 // CARGAR
 function cargar(){
-
 let l=JSON.parse(localStorage.getItem("ventas")||"[]");
 
-lista.innerHTML=l.map(v=>`
-<div class="card">${v.tel} - ${v.tipo}</div>
-`).join("");
+lista.innerHTML=l.map(v=>`<div class="card">${v.tel} - ${v.tipo}</div>`).join("");
 
 dashboard(l);
-pintarGrafica();
+grafica(l);
 }
 
 // DASHBOARD
 function dashboard(l){
-
-let prom={},marca={};
+let prom={},tipo={};
 
 l.forEach(v=>{
 prom[v.promotor]=(prom[v.promotor]||0)+1;
-marca[v.marca]=(marca[v.marca]||0)+1;
+tipo[v.tipo]=(tipo[v.tipo]||0)+1;
 });
 
-function top(o){
-return Object.entries(o).sort((a,b)=>b[1]-a[1])[0];
-}
+function top(o){return Object.entries(o).sort((a,b)=>b[1]-a[1])[0];}
 
 let t1=top(prom);
-let t2=top(marca);
+let t2=top(tipo);
 
-topProm.innerText=t1?`Top Promotor: ${t1[0]} (${t1[1]})`:"";
-topMarca.innerText=t2?`Marca líder: ${t2[0]} (${t2[1]})`:"";
+topProm.innerText=t1?`Top: ${t1[0]} (${t1[1]})`:"";
+topTipo.innerText=t2?`Más vendido: ${t2[0]}`:"";
 }
 
 // GRAFICA
-function pintarGrafica(){
-
-let l=JSON.parse(localStorage.getItem("ventas")||"[]");
-
-let conteo={KIT:0,CHIP:0,PORTA:0,RENUEVATE:0};
-
-l.forEach(v=>{
-conteo[v.tipo]=(conteo[v.tipo]||0)+1;
-});
+function grafica(l){
+let c={KIT:0,CHIP:0,PORTA:0,RENUEVATE:0};
+l.forEach(v=>c[v.tipo]++);
 
 let ctx=document.getElementById("grafica");
 
@@ -281,63 +229,122 @@ if(chart) chart.destroy();
 
 chart=new Chart(ctx,{
 type:"bar",
-data:{
-labels:Object.keys(conteo),
-datasets:[{
-label:"Ventas",
-data:Object.values(conteo)
-}]
-}
+data:{labels:Object.keys(c),datasets:[{data:Object.values(c)}]}
 });
 }
 
-// IA CONSEJOS
-function consejoIA(){
-
-let l=JSON.parse(localStorage.getItem("ventas")||"[]");
-
-if(l.length<3) return;
-
-let portas=l.filter(v=>v.tipo==="PORTA").length;
-
-if(portas<2){
-hablar("Enfoquen ventas en portabilidad");
-}else{
-hablar("Buen trabajo equipo");
-}
-}
-
-// 😈 IMEI ALERTA
-function revisarIMEI(){
-
-let l=JSON.parse(localStorage.getItem("ventas")||"[]");
-
-let pendientes=l.filter(v=>v.imeiPendiente==="si");
+// IA
+function cerebroIRIS(){
+let ventas=JSON.parse(localStorage.getItem("ventas")||"[]");
+let pendientes=ventas.filter(v=>v.imei==="si");
 
 if(pendientes.length>0){
+let p=pendientes[Math.floor(Math.random()*pendientes.length)];
+reganarGlobal(p.promotor);
+}
+}
+
+// REGAÑO
+function reganarGlobal(nombre){
+let msg=`${nombre} tiene IMEIs pendientes, actívalos hoy`;
+
+hablar(msg,"serio");
 
 angel.classList.add("alerta");
-
-hablar("Atención, hay IMEIs pendientes, actívenlos hoy","serio");
+mano.style.display="block";
 
 setTimeout(()=>{
 angel.classList.remove("alerta");
+mano.style.display="none";
 },5000);
 
+db.ref("alertas").push({msg});
+}
+
+// ALERTAS
+function escucharAlertas(){
+db.ref("alertas").on("child_added",s=>{
+hablar(s.val().msg,"serio");
+});
+}
+
+// VENTAS
+function anunciarVenta(v){
+let nombre=v.promotor.split("@")[0];
+let msg=`${nombre} registró una venta`;
+
+hablar(msg);
+db.ref("ventas_alertas").push({msg});
+}
+
+function escucharVentas(){
+db.ref("ventas_alertas").on("child_added",s=>{
+hablar(s.val().msg);
+});
+}
+
+// PERSONALIDAD
+function personalidad(){
+let l=JSON.parse(localStorage.getItem("ventas")||"[]");
+
+if(l.length===0){
+hablar("No hay ventas");
+}else if(l.length>5){
+hablar("Buen trabajo equipo");
 }
 }
 
 // CHAT
 function enviarChat(){
-db.ref("chat").push({u:auth.currentUser.email,m:chatMsg.value});
-chatMsg.value="";
+db.ref("chat").push({u:auth.currentUser.email,m:msg.value});
+msg.value="";
 }
 
 function escucharChat(){
-db.ref("chat").limitToLast(10).on("child_added",s=>{
+db.ref("chat").on("child_added",s=>{
 let d=s.val();
 chatBox.innerHTML+=`<div><b>${d.u}:</b> ${d.m}</div>`;
+responderIA(d.m);
 });
+}
+
+function responderIA(m){
+m=m.toLowerCase();
+
+if(m.includes("ventas")){
+hablar("Las portabilidades son clave");
+}else if(m.includes("ayuda")){
+hablar("Ofrece beneficios al cliente");
+}else{
+hablar("Mensaje recibido");
+}
+}
+
+// CAMARA
+async function iniciarCamara(){
+try{
+let stream=await navigator.mediaDevices.getUserMedia({video:true});
+cam.srcObject=stream;
+}catch(e){}
+}
+
+// PRESENCIA
+function detectarPresencia(){
+if(Math.random()>0.5){
+reaccionCoqueta();
+}
+}
+
+// COQUETEO
+function reaccionCoqueta(){
+let frases=[
+"Oye… mírame",
+"Concéntrate",
+"Te estoy viendo",
+"No te distraigas"
+];
+
+hablar(frases[Math.floor(Math.random()*frases.length)]);
 }
 
 </script>
