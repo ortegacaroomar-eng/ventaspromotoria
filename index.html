@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Sistema Ventas PRO</title>
+<title>IRIS Sistema PRO</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -15,18 +15,39 @@
 body{
 margin:0;
 font-family:'Segoe UI';
-background:linear-gradient(135deg,#001d3d,#003566,#000814);
+background:#000814;
 color:white;
 }
 
-.app{max-width:480px;margin:auto;padding:20px;}
+.app{max-width:480px;margin:auto;padding:15px;}
 
 .card{
-background:rgba(255,255,255,.08);
-border-radius:16px;
+background:rgba(255,255,255,.05);
+border-radius:15px;
 padding:15px;
-margin-bottom:15px;
-backdrop-filter:blur(10px);
+margin-bottom:12px;
+}
+
+/* ANGEL */
+.angel-box{text-align:center;}
+#angel{
+width:130px;
+animation:flotar 4s infinite ease-in-out;
+transition:.3s;
+}
+@keyframes flotar{
+50%{transform:translateY(-10px);}
+}
+
+.hablando{animation:hablar .2s infinite;}
+@keyframes hablar{50%{transform:scale(1.05);}}
+
+.alerta{
+filter:drop-shadow(0 0 15px red);
+animation:pulso .4s infinite alternate;
+}
+@keyframes pulso{
+100%{filter:drop-shadow(0 0 30px red);}
 }
 
 input,select{
@@ -35,7 +56,7 @@ padding:12px;
 margin-top:6px;
 border-radius:10px;
 border:none;
-background:rgba(255,255,255,.1);
+background:#111;
 color:white;
 }
 
@@ -44,31 +65,36 @@ width:100%;
 padding:14px;
 margin-top:10px;
 border:none;
-border-radius:12px;
+border-radius:10px;
 background:#ffc300;
 font-weight:bold;
 }
 
-.header{text-align:center;font-weight:bold;color:#ffc300;margin-bottom:15px;}
-
 #chatBox{max-height:120px;overflow:auto;font-size:12px;}
+.hidden{display:none;}
 </style>
 </head>
 
 <body onload="inicio()">
 
+<!-- LOGIN -->
 <div id="loginBox" class="app">
 <div class="card">
 <h2>Acceso</h2>
-<input id="u" placeholder="Correo">
+<input id="u">
 <input id="p" type="password">
 <button onclick="entrar()">Entrar</button>
 </div>
 </div>
 
+<!-- APP -->
 <div id="appBox" class="app hidden">
 
-<div class="header">CONTROL DE VENTAS</div>
+<!-- ANGEL -->
+<div class="card angel-box">
+<img id="angel" src="https://i.ibb.co/Xf8X0vV/angel-blue-animated.png">
+<div id="status">IRIS lista</div>
+</div>
 
 <!-- BUSCADOR -->
 <div class="card">
@@ -138,10 +164,13 @@ if(u){
 loginBox.classList.add("hidden");
 appBox.classList.remove("hidden");
 
+hablar("Sistema listo");
+
 cargar();
 escucharChat();
 
 setInterval(consejoIA,90000);
+setInterval(revisarIMEI,60000);
 }
 });
 }
@@ -150,7 +179,7 @@ function entrar(){
 auth.signInWithEmailAndPassword(u.value,p.value);
 }
 
-// VOZ MEJORADA
+// VOZ + ANIMACIÓN
 function hablar(t,modo="normal"){
 
 speechSynthesis.cancel();
@@ -160,15 +189,16 @@ m.lang="es-MX";
 m.rate=0.9;
 m.pitch=modo==="serio"?0.9:1.2;
 
-let voces=speechSynthesis.getVoices();
-let voz=voces.find(v=>v.lang.includes("es"));
+angel.classList.add("hablando");
 
-if(voz) m.voice=voz;
+m.onend=()=>angel.classList.remove("hablando");
 
 speechSynthesis.speak(m);
+
+status.innerText=t;
 }
 
-// BUSCADOR REAL
+// BUSCADOR
 function buscarWeb(){
 let q=webInput.value;
 if(!q) return;
@@ -206,9 +236,7 @@ function cargar(){
 let l=JSON.parse(localStorage.getItem("ventas")||"[]");
 
 lista.innerHTML=l.map(v=>`
-<div class="card">
-${v.tel} - ${v.tipo}
-</div>
+<div class="card">${v.tel} - ${v.tipo}</div>
 `).join("");
 
 dashboard(l);
@@ -273,9 +301,29 @@ if(l.length<3) return;
 let portas=l.filter(v=>v.tipo==="PORTA").length;
 
 if(portas<2){
-hablar("Equipo, enfoquen ventas en portabilidad");
+hablar("Enfoquen ventas en portabilidad");
 }else{
-hablar("Buen trabajo, sigan así");
+hablar("Buen trabajo equipo");
+}
+}
+
+// 😈 IMEI ALERTA
+function revisarIMEI(){
+
+let l=JSON.parse(localStorage.getItem("ventas")||"[]");
+
+let pendientes=l.filter(v=>v.imeiPendiente==="si");
+
+if(pendientes.length>0){
+
+angel.classList.add("alerta");
+
+hablar("Atención, hay IMEIs pendientes, actívenlos hoy","serio");
+
+setTimeout(()=>{
+angel.classList.remove("alerta");
+},5000);
+
 }
 }
 
