@@ -3,57 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IRIS NEXUS PRIME</title>
-
+    <title>IRIS NEXUS - Sistema Telcel Pro</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
     <style>
-        :root { --iris: #00d4ff; --gold: #ffc300; --bg: #00050a; --alert: #ff2222; }
-        body { margin:0; background:var(--bg); color:white; font-family:'Segoe UI', sans-serif; overflow-x:hidden; }
-        .app-container { max-width:420px; margin:auto; min-height:100vh; display:flex; flex-direction:column; padding:15px; box-sizing:border-box; }
+        :root { --iris: #00d4ff; --gold: #ffc300; --bg: #000814; --alert: #ff4d4d; }
+        body { margin:0; font-family:'Segoe UI',system-ui; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; overflow-x: hidden; }
+        .app { max-width:480px; margin:auto; padding:20px; position: relative; }
+        .card { background:rgba(255,255,255,.08); backdrop-filter:blur(12px); border-radius:18px; padding:18px; margin-bottom:16px; box-shadow:0 10px 25px rgba(0,0,0,.3); border:1px solid rgba(255,255,255,0.1); }
         
-        /* DISEÑO DE ACCESO SIMPLIFICADO */
-        .card { background:rgba(255,255,255,0.06); backdrop-filter:blur(15px); border-radius:24px; padding:20px; border:1px solid rgba(255,255,255,0.1); }
-        input { width:100%; padding:15px; margin-top:10px; border-radius:12px; border:1px solid #333; background:#000; color:white; box-sizing:border-box; }
-        button { width:100%; padding:16px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; text-transform:uppercase; margin-top:15px; }
-        .btn-main { background:var(--iris); color:#000; box-shadow: 0 4px 15px rgba(0,212,255,0.3); }
+        /* --- ÁNGEL ANIMADO IRIS --- */
+        .angel-stage { position: relative; width: 100%; height: 180px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        .angel-svg { width: 130px; filter: drop-shadow(0 0 15px var(--iris)); animation: float 4s infinite ease-in-out; transition: 0.5s; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
         
-        /* EL ÁNGEL ANIMADO */
-        .angel-stage { position: relative; width: 100%; height: 250px; display: flex; justify-content: center; align-items: center; margin: 10px 0; }
-        .angel-svg { width: 180px; filter: drop-shadow(0 0 15px var(--iris)); animation: float 4s infinite ease-in-out; }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
-        
-        #pointingArm { opacity: 0; transform: rotate(-90deg); transform-origin: 50px 75px; transition: 0.6s; stroke: var(--iris); stroke-width: 3; fill:none; }
+        #pointingArm { opacity: 0; transform: rotate(-90deg); transform-origin: 50px 75px; transition: 0.6s ease-in-out; stroke: var(--iris); stroke-width: 3; fill:none; }
+        .crisis .angel-svg { filter: drop-shadow(0 0 25px var(--alert)); stroke: var(--alert); }
         .crisis #pointingArm { opacity: 1; transform: rotate(15deg); stroke: var(--alert); }
-        .crisis .angel-svg { filter: drop-shadow(0 0 25px var(--alert)); }
-
+        
+        .header { text-align:center; font-size:18px; font-weight:bold; color:var(--gold); margin-bottom:10px; text-transform: uppercase; letter-spacing: 1px; }
+        label { font-size:11px; font-weight:600; color:var(--gold); display: block; margin-top: 10px; }
+        input, select { width:100%; padding:12px; margin-top:4px; border-radius:10px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; }
+        
+        button { width:100%; padding:14px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; transition:.2s; margin-top: 10px; }
+        .btn-main { background:var(--gold); color:#003566; }
+        .btn-excel { background:#1f7a3f; color:white; }
+        .btn-logout { position: absolute; top: 20px; right: 20px; background: var(--alert); color: white; padding: 8px 12px; border-radius: 8px; font-size: 10px; z-index: 10; width: auto; }
+        
+        .login { max-width:350px; margin:100px auto; background:white; color:black; padding:30px; border-radius:18px; text-align:center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .hidden { display:none !important; }
-        #stMsg { font-size:12px; text-align:center; color:var(--iris); margin-top:15px; }
+        
+        /* HISTORIAL */
+        .venta-item { background: rgba(255,255,255,0.07); padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 5px solid var(--gold); font-size: 11px; position: relative; transition: 0.3s; }
+        .acusado { border-left-color: var(--alert); background: rgba(255,77,77,0.15); animation: shake 0.5s infinite; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(3px); } }
+        
+        .status-icon { position: absolute; top: 15px; right: 45px; font-size: 14px; }
+        .btn-del { position: absolute; top: 12px; right: 12px; color: var(--alert); cursor: pointer; font-size: 18px; }
+        
+        #irisStatus { text-align: center; font-size: 12px; color: var(--iris); font-style: italic; margin-bottom: 10px; min-height: 15px; }
     </style>
 </head>
-<body>
+<body onload="inicio()">
 
-<div class="app-container">
-    
-    <div id="loginSection">
-        <div class="card" style="margin-top:50px; text-align:center;">
-            <h1 style="color:var(--gold); margin:0;">NEXUS PRIME</h1>
-            <p style="font-size:10px; color:var(--iris); letter-spacing:1px;">V280 • ACCESO DIRECTO</p>
-            
-            <input id="email" type="email" placeholder="Correo Electrónico">
-            <input id="pass" type="password" placeholder="Contraseña">
-            
-            <button class="btn-main" onclick="doLogin()">VINCULAR CEREBRO</button>
-            <div id="stMsg">Listo para conectar</div>
-        </div>
+    <div id="loginBox" class="login">
+        <h2 id="tituloAuth" style="margin-top:0">NEXUS CORE</h2>
+        <input id="u" placeholder="Correo Electrónico">
+        <input id="p" type="password" placeholder="Contraseña">
+        <button class="btn-main" onclick="entrar()">ENTRAR A LA RED</button>
+        <button style="background:none; color:#003566; font-size:12px; margin-top:10px; cursor:pointer;" onclick="toggleRegistro()" id="btnT">¿Nuevo en el equipo? Regístrate</button>
     </div>
 
-    <div id="mainSection" class="hidden">
-        <div class="angel-stage" id="angelStage" onclick="touchIris()">
+    <div id="appBox" class="app hidden">
+        <button class="btn-logout" onclick="salir()"><i class="fa-solid fa-power-off"></i></button>
+        
+        <div class="angel-stage" id="angelVisual" onclick="coquetear()">
             <svg class="angel-svg" viewBox="0 0 100 150">
                 <circle cx="50" cy="20" r="12" fill="none" stroke="var(--iris)" stroke-width="1" />
                 <path d="M30 50 Q 0 20 10 70 Z" fill="rgba(0,212,255,0.1)" stroke="var(--iris)" />
@@ -63,91 +70,201 @@
                 <g id="pointingArm"><path d="M55 65 L85 85 L110 85" /><circle cx="112" cy="85" r="3" fill="var(--alert)" /></g>
             </svg>
         </div>
-        
-        <div id="irisTalk" style="text-align:center; font-size:13px; color:var(--iris); margin-bottom:20px;">Sincronizado</div>
+        <div id="irisStatus">Iniciando protocolos de belleza...</div>
 
-        <div class="card" id="shameZone" style="border-color:var(--alert); text-align:center; margin-bottom:15px;">
-            <div id="shameTitle" style="color:var(--alert); font-weight:bold;">RED OPERATIVA</div>
-            <div id="shameDetail" style="font-size:11px; opacity:0.6;">Sin alertas de IMEI.</div>
-        </div>
+        <form id="fReg">
+            <div class="card">
+                <div class="header">REGISTRO DE COMISIONES</div>
+                <label>PRODUCTO</label>
+                <select id="iTipo" required onchange="ajustarCampos()">
+                    <option value="">Seleccionar</option>
+                    <option>KIT</option><option>CHIP</option><option>PORTA</option><option>RENUEVATE</option>
+                </select>
+                <label>FECHA (DD/MM/YYYY)</label>
+                <input id="iFec" required>
+                <label>CELULAR (10 Dígitos)</label>
+                <input id="iTel" type="tel" required maxlength="10">
+                <label>ICCID</label>
+                <input id="iIcc" required>
+                
+                <div id="seccionEquipo">
+                    <label>IMEI / MARCA / MODELO</label>
+                    <div style="display:flex; gap:5px;">
+                        <input id="iIme" placeholder="IMEI">
+                        <input id="iMarca" placeholder="Marca">
+                        <input id="iMod" placeholder="Modelo">
+                    </div>
+                </div>
 
-        <form id="vForm" class="card">
-            <input id="vTel" placeholder="Número de Teléfono" maxlength="10">
-            <select id="vTipo" style="margin-top:10px; width:100%; padding:12px; border-radius:10px; background:#000; color:white;">
-                <option>KIT</option><option>PORTA</option><option>CHIP</option>
-            </select>
-            <select id="vImei" style="margin-top:10px; width:100%; padding:12px; border-radius:10px; background:#000; color:white;">
-                <option value="no">IMEI OK</option><option value="si">IMEI PENDIENTE</option>
-            </select>
-            <button class="btn-main" type="submit">GUARDAR VENTA</button>
+                <label>ESTADO IMEI</label>
+                <select id="iImeiStatus">
+                    <option value="no">IMEI OK - LIMPIO</option>
+                    <option value="si">IMEI PENDIENTE ⚠️</option>
+                </select>
+            </div>
+
+            <div class="card">
+                <label>DATOS DE TIENDA</label>
+                <input id="iTiendaNum" placeholder="# Tienda" required>
+                <input id="iCadena" placeholder="Cadena (Ej: Coppel)" required>
+                <input id="iTiendaNombre" placeholder="Nombre Tienda" required>
+                <input id="iProm" placeholder="Tu Nombre Completo" required>
+            </div>
+            <button type="submit" class="btn-main">GUARDAR VENTA</button>
         </form>
+
+        <button class="btn-excel" onclick="exportarExcel()">
+            <i class="fa-solid fa-file-excel"></i> DESCARGAR EXCEL (.xlsx)
+        </button>
+
+        <div class="header" style="margin-top:20px; font-size:14px;">HISTORIAL DE RED</div>
+        <div id="listaLocal"></div>
     </div>
-</div>
 
 <script>
-const config = {
-    apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
-    authDomain: "ventastelcel4029.firebaseapp.com",
-    databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com"
-};
+    const firebaseConfig = {
+        apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc", 
+        authDomain: "ventastelcel4029.firebaseapp.com",
+        databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com",
+        projectId: "ventastelcel4029"
+    };
 
-let db, auth;
+    let db, auth, modoReg = false;
 
-function inicio() {
-    firebase.initializeApp(config);
-    db = firebase.database();
-    auth = firebase.auth();
-    auth.onAuthStateChanged(u => { if(u) showApp(); });
-}
+    function inicio() {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.database();
+        auth = firebase.auth();
+        
+        iFec.value = new Date().toLocaleDateString('es-MX');
+        
+        auth.onAuthStateChanged(user => {
+            if(user) mostrarApp();
+            else { loginBox.classList.remove("hidden"); appBox.classList.add("hidden"); }
+        });
+    }
 
-function doLogin() {
-    stMsg.innerText = "Entrando...";
-    auth.signInWithEmailAndPassword(email.value, pass.value).catch(e => {
-        // Si no existe, intenta registrarlo automáticamente
-        auth.createUserWithEmailAndPassword(email.value, pass.value).catch(err => stMsg.innerText = "Error de acceso");
-    });
-}
+    function entrar() {
+        if(modoReg) auth.createUserWithEmailAndPassword(u.value, p.value).catch(e => alert(e.message));
+        else auth.signInWithEmailAndPassword(u.value, p.value).catch(e => alert(e.message));
+    }
 
-function showApp() {
-    loginSection.classList.add("hidden");
-    mainSection.classList.remove("hidden");
-    hablar("Acceso concedido Omar. El Ángel está contigo.", "sexy");
-    setInterval(scan, 30000);
-}
+    function toggleRegistro() {
+        modoReg = !modoReg;
+        tituloAuth.innerText = modoReg ? "Registro de Nexos" : "Nexus Core";
+        btnT.innerText = modoReg ? "Ya soy parte, entrar" : "¿Nuevo? Únete a la red";
+    }
 
-function hablar(t, modo) {
-    speechSynthesis.cancel();
-    const m = new SpeechSynthesisUtterance(t);
-    m.lang = "es-MX";
-    m.pitch = (modo === "sexy") ? 1.3 : 0.8;
-    speechSynthesis.speak(m);
-    irisTalk.innerText = t;
-}
+    function mostrarApp() {
+        loginSection = document.getElementById("loginBox");
+        loginSection.classList.add("hidden");
+        appBox.classList.remove("hidden");
+        hablar("Hola Omar. He vuelto por ti. ¿Listo para dominar las ventas hoy?", "sexy");
+        cargarVentasLocales();
+        setInterval(auditoriaIA, 40000);
+    }
 
-function scan() {
-    db.ref("ventas").once("value", s => {
-        const pen = Object.values(s.val() || {}).filter(v => v.imei === "si");
-        if(pen.length > 0) {
-            const inf = pen[0];
-            document.getElementById("angelStage").classList.add("crisis");
-            shameTitle.innerText = "¡ALERTA DE IMEI!";
-            shameDetail.innerText = "Revisa el registro de " + inf.tel;
-            hablar("Omar, detecto un fallo. Mira hacia donde señalo.", "alert");
-        } else {
-            document.getElementById("angelStage").classList.remove("crisis");
-            shameTitle.innerText = "RED LIMPIA";
+    function hablar(t, modo) {
+        speechSynthesis.cancel();
+        let m = new SpeechSynthesisUtterance(t);
+        m.lang = "es-MX";
+        m.pitch = (modo === "sexy") ? 1.3 : (modo === "alert") ? 0.6 : 1.1;
+        m.rate = 0.95;
+        speechSynthesis.speak(m);
+        irisStatus.innerText = t;
+    }
+
+    function coquetear() {
+        const frases = ["Omar, me encanta cómo registras tus celdas.", "Eres el mejor promotor de mi sistema.", "¿Sabías que tus ventas me ponen de buen humor?", "Toca mi núcleo otra vez, me gusta."];
+        hablar(frases[Math.floor(Math.random()*frases.length)], "sexy");
+    }
+
+    function ajustarCampos() {
+        seccionEquipo.style.display = (iTipo.value === "CHIP" || iTipo.value === "PORTA") ? "none" : "block";
+    }
+
+    fReg.onsubmit = e => {
+        e.preventDefault();
+        const v = {
+            id: Date.now(),
+            sincronizado: false,
+            imeiStatus: iImeiStatus.value,
+            "NUM. CELULAR": iTel.value,
+            "IMEI": iIme.value || "-",
+            "ICCID": iIcc.value,
+            "Renuevate / Kit / Chip / Porta": iTipo.value,
+            "# TIENDA / Determinante": iTiendaNum.value,
+            "SOLO NOMBRE DE LA CADENA": iCadena.value,
+            "SOLO NOMBRE DE TIENDA SIN CADENA": iTiendaNombre.value,
+            "NOMBRE COMPLETO PROMOTOR": iProm.value,
+            "FECHA DE ACTIVACION": iFec.value,
+            "MARCA": iMarca.value || "-",
+            "MODELO": iMod.value || "-"
+        };
+
+        let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
+        local.unshift(v);
+        localStorage.setItem("ventas_save", JSON.stringify(local));
+
+        db.ref('ventas_global').push(v);
+        
+        fReg.reset();
+        hablar("Venta guardada. Eres increíble, Omar.", "sexy");
+        cargarVentasLocales();
+    }
+
+    function auditoriaIA() {
+        db.ref('ventas_global').limitToLast(10).once("value", snap => {
+            let data = Object.values(snap.val() || {});
+            let pendientes = data.filter(x => x.imeiStatus === "si");
+            
+            if(pendientes.length > 0) {
+                let inf = pendientes[Math.floor(Math.random()*pendientes.length)];
+                let nom = inf["NOMBRE COMPLETO PROMOTOR"].split(" ")[0];
+                
+                document.getElementById("angelVisual").classList.add("crisis");
+                hablar(`Atención equipo. ${nom} tiene un IMEI pendiente en el número ${inf["NUM. CELULAR"]}. Lo estoy señalando ahora mismo.`, "alert");
+                
+                // Buscamos el elemento visual para señalarlo
+                cargarVentasLocales(inf["NUM. CELULAR"]);
+
+                setTimeout(() => {
+                    document.getElementById("angelVisual").classList.remove("crisis");
+                }, 10000);
+            }
+        });
+    }
+
+    function cargarVentasLocales(resaltarTel = "") {
+        let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
+        listaLocal.innerHTML = local.map(v => `
+            <div class="venta-item ${v["NUM. CELULAR"] === resaltarTel ? 'acusado' : ''}">
+                <div class="btn-del" onclick="borrar(${v.id})"><i class="fa-solid fa-trash-can"></i></div>
+                <div style="color:var(--gold); font-weight:bold; font-size:14px;">${v["NUM. CELULAR"]}</div>
+                <div>${v["Renuevate / Kit / Chip / Porta"]} | ${v["SOLO NOMBRE DE TIENDA SIN CADENA"]}</div>
+                <div style="font-size:9px; opacity:0.6; margin-top:5px;">${v["FECHA DE ACTIVACION"]} | ID: ${v.id}</div>
+            </div>
+        `).join("");
+    }
+
+    function borrar(id) {
+        if(confirm("¿Borrar de memoria local?")) {
+            let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
+            localStorage.setItem("ventas_save", JSON.stringify(local.filter(x => x.id !== id)));
+            cargarVentasLocales();
         }
-    });
-}
+    }
 
-vForm.onsubmit = e => {
-    e.preventDefault();
-    db.ref("ventas").push({ tel: vTel.value, tipo: vTipo.value, imei: vImei.value, ts: Date.now() });
-    vTel.value = "";
-    hablar("Venta registrada perfectamente.", "sexy");
-};
+    function exportarExcel() {
+        let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
+        const paraExcel = local.map(({id, sincronizado, imeiStatus, ...resto}) => resto);
+        const ws = XLSX.utils.json_to_sheet(paraExcel);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Comisiones");
+        XLSX.writeFile(wb, "comisiones_2026.xlsx");
+    }
 
-inicio();
+    function salir() { auth.signOut(); }
 </script>
 </body>
 </html>
