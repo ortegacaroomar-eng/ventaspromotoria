@@ -9,54 +9,48 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 
 <style>
-body { margin:0; font-family:'Segoe UI'; background:linear-gradient(135deg,#001d3d,#003566,#000814); color:white; }
+body{margin:0;font-family:'Segoe UI';background:#001d3d;color:white;}
+.hidden{display:none;}
 
 /* LOGIN */
-.login-box {
-display:flex; justify-content:center; align-items:center;
-height:100vh;
+.login-box{display:flex;justify-content:center;align-items:center;height:100vh;}
+.login-card{background:rgba(255,255,255,.08);padding:30px;border-radius:15px;width:300px;text-align:center;}
+
+input,select{width:100%;padding:10px;margin-bottom:10px;border-radius:8px;border:none;}
+button{width:100%;padding:12px;border:none;border-radius:10px;background:#ffc300;font-weight:bold;cursor:pointer;margin-top:5px;}
+
+.card{background:rgba(255,255,255,.08);padding:15px;margin:15px;border-radius:12px;}
+
+table{width:100%;background:white;color:black;}
+th{background:black;color:white;}
+td{border:1px solid #ccc;padding:6px;}
+
+.pendiente{color:red;font-weight:bold;}
+
+/* 🔵 HALO */
+#halo{
+position:fixed;
+bottom:20px;
+right:20px;
+width:90px;
+height:90px;
+border-radius:50%;
+border:4px solid #00b4d8;
+box-shadow:0 0 20px #00b4d8;
+animation:respirar 3s infinite;
+transition:.3s;
 }
 
-.login-card {
-background:rgba(255,255,255,.08);
-padding:30px; border-radius:15px;
-width:300px; text-align:center;
-box-shadow:0 10px 40px rgba(0,0,0,0.6);
+@keyframes respirar{
+0%{transform:scale(1);}
+50%{transform:scale(1.1);}
+100%{transform:scale(1);}
 }
 
-input,select {
-width:100%; padding:10px;
-margin-bottom:10px;
-border-radius:8px;
-border:none;
-}
+.hablando{border-color:#00ff88 !important;box-shadow:0 0 30px #00ff88;}
+.alerta{border-color:#ff4d4d !important;box-shadow:0 0 30px #ff4d4d;}
+.ventas{border-color:#00ffff !important;box-shadow:0 0 30px #00ffff;}
 
-button {
-width:100%; padding:12px;
-border:none;
-border-radius:10px;
-background:#ffc300;
-font-weight:bold;
-cursor:pointer;
-}
-
-.card {
-background:rgba(255,255,255,.08);
-padding:15px; border-radius:12px;
-margin:15px;
-}
-
-table {
-width:100%; background:white; color:black;
-border-collapse: collapse;
-}
-
-th { background:black; color:white; padding:8px; }
-td { padding:8px; border:1px solid #ccc; }
-
-.pendiente { color:red; font-weight:bold; }
-
-.hidden { display:none; }
 </style>
 </head>
 
@@ -65,40 +59,32 @@ td { padding:8px; border:1px solid #ccc; }
 <!-- LOGIN -->
 <div id="loginBox" class="login-box">
 <div class="login-card">
+
 <h2>TELEDATA IA</h2>
+
 <input id="u" placeholder="Correo">
 <input id="p" type="password" placeholder="Contraseña">
-<button onclick="manejarAuth()">Entrar</button>
+
+<button onclick="login()">Entrar</button>
+<button onclick="registrar()" style="background:#003566;color:white;">
+Registrar usuario
+</button>
+
 </div>
 </div>
 
 <!-- APP -->
 <div id="appBox" class="hidden">
 
-<!-- IMEIs -->
+<div class="card">
+📍 <span id="gps">Detectando ubicación...</span>
+</div>
+
 <div class="card">
 <h3>⚠️ IMEIs Pendientes</h3>
 <div id="imeiPendientes"></div>
 </div>
 
-<!-- IA -->
-<div class="card">
-<h3>🧠 IA Aprendizaje</h3>
-<div id="iaAprendizaje"></div>
-<div id="dashboardIA" style="margin-top:10px;"></div>
-</div>
-
-<!-- ASISTENTE -->
-<div class="card">
-<h3>🗣️ Asistente</h3>
-<button onclick="asistenteVenta()">Atender cliente</button>
-<button onclick="explicarProducto('KIT')">KIT</button>
-<button onclick="explicarProducto('CHIP')">CHIP</button>
-<button onclick="explicarProducto('PORTA')">PORTA</button>
-<button onclick="explicarProducto('RENUEVATE')">RENUEVATE</button>
-</div>
-
-<!-- FORM -->
 <div class="card">
 <select id="iTipo">
 <option>KIT</option>
@@ -111,47 +97,46 @@ td { padding:8px; border:1px solid #ccc; }
 <input id="iIme" placeholder="IMEI">
 <input id="iProm" placeholder="Promotor">
 
-<button onclick="guardar()">Guardar Venta</button>
+<button onclick="guardar()">Guardar</button>
 </div>
 
-<!-- TABLA -->
 <div class="card">
 <table>
-<thead>
-<tr>
-<th>Teléfono</th>
-<th>Tipo</th>
-<th>IMEI</th>
-<th>Promotor</th>
-</tr>
-</thead>
+<thead><tr><th>Tel</th><th>Tipo</th><th>IMEI</th><th>Promotor</th></tr></thead>
 <tbody id="tabla"></tbody>
 </table>
 </div>
 
-<button onclick="salir()">Cerrar sesión</button>
-
 </div>
+
+<!-- HALO -->
+<div id="halo" onclick="activarIA()"></div>
+
+<!-- CAMARA -->
+<video id="cam" autoplay style="display:none;"></video>
 
 <script>
 
-// 🔥 CONFIG REAL
-const firebaseConfig = {
-apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
-authDomain: "ventastelcel4029.firebaseapp.com"
+// FIREBASE
+const firebaseConfig={
+apiKey:"AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
+authDomain:"ventastelcel4029.firebaseapp.com"
 };
 
 let auth;
+let ventasPrevias=0;
 
-// INICIO
 function inicio(){
+
 firebase.initializeApp(firebaseConfig);
-auth = firebase.auth();
+auth=firebase.auth();
 
 auth.onAuthStateChanged(user=>{
 if(user){
 loginBox.classList.add("hidden");
 appBox.classList.remove("hidden");
+gps();
+camara();
 cargar();
 }else{
 loginBox.classList.remove("hidden");
@@ -161,28 +146,40 @@ appBox.classList.add("hidden");
 }
 
 // LOGIN
-function manejarAuth(){
-
-let email = u.value;
-let pass = p.value;
-
-if(!email || !pass){
-alert("Llena los campos");
-return;
+function login(){
+auth.signInWithEmailAndPassword(u.value,p.value)
+.catch(e=>alert(e.message));
 }
 
-auth.signInWithEmailAndPassword(email, pass)
-.catch(err=>{
-if(err.code==="auth/user-not-found"){
-auth.createUserWithEmailAndPassword(email, pass)
-.then(()=>alert("Usuario creado"));
-}else{
-alert(err.message);
+// REGISTRO
+function registrar(){
+auth.createUserWithEmailAndPassword(u.value,p.value)
+.then(()=>alert("Usuario creado"))
+.catch(e=>alert(e.message));
 }
+
+// GPS
+function gps(){
+navigator.geolocation.watchPosition(p=>{
+gps.innerText=`${p.coords.latitude.toFixed(5)}, ${p.coords.longitude.toFixed(5)}`;
 });
 }
 
-function salir(){auth.signOut();}
+// CAMARA + MOVIMIENTO
+function camara(){
+navigator.mediaDevices.getUserMedia({video:true})
+.then(stream=>{
+cam.srcObject=stream;
+
+// movimiento suave tipo seguimiento
+setInterval(()=>{
+let x=(Math.random()*40)-20;
+let y=(Math.random()*40)-20;
+halo.style.transform=`translate(${x}px,${y}px)`;
+},800);
+
+});
+}
 
 // GUARDAR
 function guardar(){
@@ -207,85 +204,52 @@ function cargar(){
 
 let l=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
 
-// TABLA
 tabla.innerHTML=l.map(v=>`
 <tr>
 <td>${v.tel}</td>
 <td>${v.tipo}</td>
-<td class="${v.imei==="N/A"?'pendiente':''}">${v.imei}</td>
+<td class="${v.imei==='N/A'?'pendiente':''}">${v.imei}</td>
 <td>${v.prom}</td>
 </tr>
 `).join("");
 
-// IMEIs
 let pendientes=l.filter(v=>v.imei==="N/A");
 
 imeiPendientes.innerHTML=pendientes.length
-? pendientes.map(v=>`<div class="pendiente">${v.prom} - ${v.tel}</div>`).join("")
-: "Sin pendientes";
+? pendientes.map(v=>`<div class="pendiente">${v.prom}</div>`).join("")
+:"Sin pendientes";
 
-// IA
-actualizarIA();
+// 🎨 COLORES IA
+halo.classList.remove("alerta","ventas");
+
+if(pendientes.length>0){
+halo.classList.add("alerta");
 }
 
-// 🧠 IA + DASHBOARD
-function actualizarIA(){
-
-let ventas=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
-
-if(!ventas.length){
-iaAprendizaje.innerHTML="Sin datos";
-dashboardIA.innerHTML="";
-return;
+if(l.length>ventasPrevias){
+halo.classList.add("ventas");
+hablar("Nueva venta registrada");
+setTimeout(()=>halo.classList.remove("ventas"),1500);
 }
 
-let total=ventas.length;
-let pendientes=ventas.filter(x=>x.imei==="N/A").length;
-
-let productos={}, promotores={};
-
-ventas.forEach(v=>{
-productos[v.tipo]=(productos[v.tipo]||0)+1;
-promotores[v.prom]=(promotores[v.prom]||0)+1;
-});
-
-let mejorProducto=Object.entries(productos).sort((a,b)=>b[1]-a[1])[0];
-let mejorPromotor=Object.entries(promotores).sort((a,b)=>b[1]-a[1])[0];
-let peorPromotor=Object.entries(promotores).sort((a,b)=>a[1]-b[1])[0];
-
-iaAprendizaje.innerHTML=`Ventas: ${total}<br>IMEIs: ${pendientes}`;
-
-dashboardIA.innerHTML=`
-🏆 Mejor: ${mejorPromotor[0]}<br>
-📉 Bajo: ${peorPromotor[0]}<br>
-🔥 Top: ${mejorProducto[0]}
-`;
-
-if(pendientes>0) hablar(`Hay ${pendientes} IMEIs pendientes`);
-if(total%5===0) hablar(`Llevan ${total} ventas`);
-if(peorPromotor[1]<2) hablar(`${peorPromotor[0]} mejora tus ventas`);
+ventasPrevias=l.length;
 }
 
 // VOZ
 function hablar(t){
+halo.classList.add("hablando");
+
 let m=new SpeechSynthesisUtterance(t);
 m.lang="es-MX";
+
+m.onend=()=>halo.classList.remove("hablando");
+
 speechSynthesis.speak(m);
 }
 
-// ASISTENTE
-function asistenteVenta(){
-hablar("Hola, soy tu asistente. Te ayudo a elegir la mejor opción.");
-}
-
-function explicarProducto(t){
-let m={
-KIT:"Incluye línea nueva con beneficios.",
-CHIP:"Activa rápido tu línea.",
-PORTA:"Conserva tu número y mejora plan.",
-RENUEVATE:"Cambia equipo con promoción."
-};
-hablar(m[t]);
+// ACTIVAR IA
+function activarIA(){
+hablar("Hola, estoy lista para ayudarte.");
 }
 
 </script>
