@@ -8,8 +8,6 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
 <style>
 body { margin:0; font-family:'Segoe UI'; background:linear-gradient(135deg,#001d3d,#003566,#000814); color:white; }
 
@@ -23,6 +21,7 @@ height:100vh;
 background:rgba(255,255,255,.08);
 padding:30px; border-radius:15px;
 width:300px; text-align:center;
+box-shadow:0 10px 40px rgba(0,0,0,0.6);
 }
 
 input,select {
@@ -37,6 +36,8 @@ width:100%; padding:12px;
 border:none;
 border-radius:10px;
 background:#ffc300;
+font-weight:bold;
+cursor:pointer;
 }
 
 .card {
@@ -80,15 +81,16 @@ td { padding:8px; border:1px solid #ccc; }
 <div id="imeiPendientes"></div>
 </div>
 
-<!-- IA APRENDIZAJE -->
+<!-- IA -->
 <div class="card">
 <h3>🧠 IA Aprendizaje</h3>
 <div id="iaAprendizaje"></div>
+<div id="dashboardIA" style="margin-top:10px;"></div>
 </div>
 
 <!-- ASISTENTE -->
 <div class="card">
-<h3>🗣️ Asistente de Ventas</h3>
+<h3>🗣️ Asistente</h3>
 <button onclick="asistenteVenta()">Atender cliente</button>
 <button onclick="explicarProducto('KIT')">KIT</button>
 <button onclick="explicarProducto('CHIP')">CHIP</button>
@@ -106,7 +108,6 @@ td { padding:8px; border:1px solid #ccc; }
 </select>
 
 <input id="iTel" placeholder="Teléfono">
-<input id="iIcc" placeholder="ICCID">
 <input id="iIme" placeholder="IMEI">
 <input id="iProm" placeholder="Promotor">
 
@@ -134,20 +135,21 @@ td { padding:8px; border:1px solid #ccc; }
 
 <script>
 
-// FIREBASE
-const firebaseConfig={
-apiKey:"AIzaSy...",
-authDomain:"ventastelcel4029.firebaseapp.com"
+// 🔥 CONFIG REAL
+const firebaseConfig = {
+apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
+authDomain: "ventastelcel4029.firebaseapp.com"
 };
 
 let auth;
 
+// INICIO
 function inicio(){
 firebase.initializeApp(firebaseConfig);
-auth=firebase.auth();
+auth = firebase.auth();
 
-auth.onAuthStateChanged(u=>{
-if(u){
+auth.onAuthStateChanged(user=>{
+if(user){
 loginBox.classList.add("hidden");
 appBox.classList.remove("hidden");
 cargar();
@@ -160,9 +162,23 @@ appBox.classList.add("hidden");
 
 // LOGIN
 function manejarAuth(){
-auth.signInWithEmailAndPassword(u.value,p.value)
-.catch(()=>{
-auth.createUserWithEmailAndPassword(u.value,p.value);
+
+let email = u.value;
+let pass = p.value;
+
+if(!email || !pass){
+alert("Llena los campos");
+return;
+}
+
+auth.signInWithEmailAndPassword(email, pass)
+.catch(err=>{
+if(err.code==="auth/user-not-found"){
+auth.createUserWithEmailAndPassword(email, pass)
+.then(()=>alert("Usuario creado"));
+}else{
+alert(err.message);
+}
 });
 }
 
@@ -208,12 +224,46 @@ imeiPendientes.innerHTML=pendientes.length
 ? pendientes.map(v=>`<div class="pendiente">${v.prom} - ${v.tel}</div>`).join("")
 : "Sin pendientes";
 
-if(pendientes.length){
-hablar(`Hay ${pendientes.length} IMEIs pendientes`);
-}
-
 // IA
 actualizarIA();
+}
+
+// 🧠 IA + DASHBOARD
+function actualizarIA(){
+
+let ventas=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
+
+if(!ventas.length){
+iaAprendizaje.innerHTML="Sin datos";
+dashboardIA.innerHTML="";
+return;
+}
+
+let total=ventas.length;
+let pendientes=ventas.filter(x=>x.imei==="N/A").length;
+
+let productos={}, promotores={};
+
+ventas.forEach(v=>{
+productos[v.tipo]=(productos[v.tipo]||0)+1;
+promotores[v.prom]=(promotores[v.prom]||0)+1;
+});
+
+let mejorProducto=Object.entries(productos).sort((a,b)=>b[1]-a[1])[0];
+let mejorPromotor=Object.entries(promotores).sort((a,b)=>b[1]-a[1])[0];
+let peorPromotor=Object.entries(promotores).sort((a,b)=>a[1]-b[1])[0];
+
+iaAprendizaje.innerHTML=`Ventas: ${total}<br>IMEIs: ${pendientes}`;
+
+dashboardIA.innerHTML=`
+🏆 Mejor: ${mejorPromotor[0]}<br>
+📉 Bajo: ${peorPromotor[0]}<br>
+🔥 Top: ${mejorProducto[0]}
+`;
+
+if(pendientes>0) hablar(`Hay ${pendientes} IMEIs pendientes`);
+if(total%5===0) hablar(`Llevan ${total} ventas`);
+if(peorPromotor[1]<2) hablar(`${peorPromotor[0]} mejora tus ventas`);
 }
 
 // VOZ
@@ -233,49 +283,9 @@ let m={
 KIT:"Incluye línea nueva con beneficios.",
 CHIP:"Activa rápido tu línea.",
 PORTA:"Conserva tu número y mejora plan.",
-RENUEVATE:"Cambia tu equipo con promo."
+RENUEVATE:"Cambia equipo con promoción."
 };
 hablar(m[t]);
-}
-
-// =====================
-// 🧠 IA APRENDIZAJE
-// =====================
-function entrenarIA(){
-
-let v=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
-
-let data={
-total:v.length,
-productos:{},
-promotores:{},
-pendientes:0
-};
-
-v.forEach(x=>{
-data.productos[x.tipo]=(data.productos[x.tipo]||0)+1;
-data.promotores[x.prom]=(data.promotores[x.prom]||0)+1;
-if(x.imei==="N/A") data.pendientes++;
-});
-
-localStorage.setItem("ia_data",JSON.stringify(data));
-}
-
-function actualizarIA(){
-
-entrenarIA();
-
-let d=JSON.parse(localStorage.getItem("ia_data")||"{}");
-
-if(!d.total){
-iaAprendizaje.innerHTML="Sin datos";
-return;
-}
-
-iaAprendizaje.innerHTML=`
-Ventas: ${d.total}<br>
-IMEIs pendientes: ${d.pendientes}
-`;
 }
 
 </script>
