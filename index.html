@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistema Ventas Telcel - Omar Ortega</title>
+<title>Sistema Ventas Telcel - EMPRESA TOTAL</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -12,14 +12,13 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
-body { margin:0; font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; }
+body { margin:0; font-family:'Segoe UI'; background:linear-gradient(135deg,#001d3d,#003566,#000814); color:white; }
 .app { max-width:1000px; margin:auto; padding:20px; }
-.card { background:rgba(255,255,255,.08); border-radius:15px; padding:20px; margin-bottom:15px; }
-label { font-size:10px; font-weight:bold; color:#ffc300; }
-input, select { width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:none; background:rgba(255,255,255,.12); color:white; }
-button { background:#ffc300; color:#001d3d; width:100%; padding:12px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; }
-.hidden { display:none; }
-.login-box { max-width:350px; margin:100px auto; background:white; padding:25px; border-radius:15px; text-align:center; color:black; }
+.card { background:rgba(255,255,255,.08); padding:15px; border-radius:15px; margin-bottom:15px; }
+input,select { width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:none; background:rgba(255,255,255,.12); color:white; }
+button { width:100%; padding:12px; border:none; border-radius:10px; background:#ffc300; font-weight:bold; }
+.hidden{display:none;}
+.login-box{max-width:350px;margin:100px auto;background:white;color:black;padding:25px;border-radius:15px;}
 </style>
 </head>
 
@@ -27,26 +26,32 @@ button { background:#ffc300; color:#001d3d; width:100%; padding:12px; border:non
 
 <!-- LOGIN -->
 <div id="loginBox" class="login-box">
-<h3>Acceso Promotores</h3>
+<h3>Bienvenido a TELE DATA</h3>
 <input id="u" placeholder="Correo">
 <input id="p" type="password" placeholder="Contraseña">
-<button onclick="manejarAuth()">ENTRAR / REGISTRAR</button>
+<button onclick="manejarAuth()">Entrar / Registrar</button>
 </div>
 
 <!-- APP -->
 <div id="appBox" class="app hidden">
 
-<!-- 🌐 ESTADO INTERNET -->
+<!-- 🌐 INTERNET -->
 <div class="card">
 <div id="estadoRed">🌐 Conectando...</div>
 </div>
 
 <!-- 🤖 IA -->
 <div class="card">
-<h3>🤖 IRIS IA</h3>
-<input id="iaInput" placeholder="Pregúntale algo..." onkeyup="if(event.key==='Enter')preguntarIA()">
+<h3>🤖 IRIS EMPRESA</h3>
+<input id="iaInput" placeholder="Habla con la supervisora..." onkeyup="if(event.key==='Enter')preguntarIA()">
 <button onclick="preguntarIA()">Preguntar</button>
 <div id="iaChat"></div>
+</div>
+
+<!-- 📊 DASHBOARD -->
+<div class="card">
+<h3>📊 Supervisor</h3>
+<div id="panelSupervisor"></div>
 </div>
 
 <!-- 🔎 BUSCADOR -->
@@ -56,7 +61,7 @@ button { background:#ffc300; color:#001d3d; width:100%; padding:12px; border:non
 <button onclick="buscarWeb()">Buscar</button>
 </div>
 
-<!-- FORM ORIGINAL -->
+<!-- FORM -->
 <form id="fReg" class="card">
 <select id="iTipo">
 <option>KIT</option>
@@ -81,22 +86,22 @@ button { background:#ffc300; color:#001d3d; width:100%; padding:12px; border:non
 
 <script>
 
-// 🔥 CONFIG ORIGINAL (NO TOCADO)
-const firebaseConfig = {
+// FIREBASE
+const firebaseConfig={
 apiKey:"AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
 authDomain:"ventastelcel4029.firebaseapp.com",
 databaseURL:"https://ventastelcel4029-default-rtdb.firebaseio.com"
 };
 
-let db, auth;
+let db,auth;
 
 function inicio(){
-if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-db = firebase.database();
-auth = firebase.auth();
+firebase.initializeApp(firebaseConfig);
+db=firebase.database();
+auth=firebase.auth();
 
-auth.onAuthStateChanged(user=>{
-if(user){
+auth.onAuthStateChanged(u=>{
+if(u){
 loginBox.classList.add("hidden");
 appBox.classList.remove("hidden");
 cargarLocal();
@@ -106,28 +111,22 @@ appBox.classList.add("hidden");
 }
 });
 
-// activar detector internet SIN tocar lógica
 setTimeout(detectarConexion,1000);
 }
 
-// LOGIN ORIGINAL
+// LOGIN
 function manejarAuth(){
-let email=u.value;
-let pass=p.value;
-
-auth.signInWithEmailAndPassword(email,pass)
+auth.signInWithEmailAndPassword(u.value,p.value)
 .catch(err=>{
 if(err.code==="auth/user-not-found"){
-auth.createUserWithEmailAndPassword(email,pass);
-}else{
-alert(err.message);
-}
+auth.createUserWithEmailAndPassword(u.value,p.value);
+}else alert(err.message);
 });
 }
 
 function salir(){auth.signOut();}
 
-// GUARDADO ORIGINAL
+// GUARDAR
 fReg.onsubmit=e=>{
 e.preventDefault();
 
@@ -146,7 +145,7 @@ localStorage.setItem("ventas_omar",JSON.stringify(l));
 cargarLocal();
 };
 
-// LISTA ORIGINAL
+// LISTA
 function cargarLocal(){
 let l=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
 
@@ -154,79 +153,83 @@ lista.innerHTML=l.map(v=>`
 <div class="card">
 ${v.tel} - ${v.tipo} - ${v.prom}
 </div>`).join("");
+
+actualizarSupervisor();
 }
 
-// =============================
 // 🌐 INTERNET
-// =============================
 function detectarConexion(){
-function actualizar(){
-estadoRed.innerText = navigator.onLine ? "🟢 En línea" : "🔴 Sin internet";
-}
-window.addEventListener("online",actualizar);
-window.addEventListener("offline",actualizar);
-actualizar();
+function act(){estadoRed.innerText=navigator.onLine?"🟢 En línea":"🔴 Sin internet";}
+window.addEventListener("online",act);
+window.addEventListener("offline",act);
+act();
 }
 
-// =============================
 // 🔎 BUSCADOR
-// =============================
 function buscarWeb(){
-let q=busqueda.value;
-if(!q) return;
-window.open("https://www.google.com/search?q="+encodeURIComponent(q));
+window.open("https://www.google.com/search?q="+encodeURIComponent(busqueda.value));
 }
 
-// =============================
 // 🧠 IA
-// =============================
-function hablarIA(t){
+function hablar(t){
 let m=new SpeechSynthesisUtterance(t);
 m.lang="es-MX";
-m.rate=0.9;
+m.rate=0.85;
 m.pitch=1.2;
 speechSynthesis.speak(m);
 }
 
-function respuestaIA(texto){
+function respuestaIA(t){
+let v=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
 
-let ventas=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
-
-if(texto.includes("ventas")){
-return `Llevan ${ventas.length} ventas registradas`;
-}
-
-if(texto.includes("imei")){
-let p=ventas.filter(v=>v.imei==="N/A");
+if(t.includes("ventas")) return `Llevan ${v.length} ventas`;
+if(t.includes("imei")){
+let p=v.filter(x=>x.imei==="N/A");
 return p.length?`Hay ${p.length} IMEIs pendientes`:"Todo correcto";
 }
-
-if(texto.includes("mejorar")){
-return "Ofrece beneficios claros y cierra rápido.";
-}
-
-if(texto.includes("hola")){
-return "Hola, estoy lista para ayudarte.";
-}
-
-return "Sigan vendiendo, voy aprendiendo de ustedes.";
+return "Sigan vendiendo.";
 }
 
 function preguntarIA(){
-
-let texto=iaInput.value.toLowerCase();
-if(!texto) return;
-
-iaChat.innerHTML+=`<div><b>Tú:</b> ${texto}</div>`;
-
-let r=respuestaIA(texto);
-
-iaChat.innerHTML+=`<div style="color:#ffc300;"><b>IRIS:</b> ${r}</div>`;
-
-hablarIA(r);
-
+let t=iaInput.value.toLowerCase();
+if(!t)return;
+iaChat.innerHTML+=`<div>Tú: ${t}</div>`;
+let r=respuestaIA(t);
+iaChat.innerHTML+=`<div style="color:#ffc300;">IRIS: ${r}</div>`;
+hablar(r);
 iaInput.value="";
 }
+
+// 📊 SUPERVISOR
+function actualizarSupervisor(){
+let v=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
+if(!v.length){panelSupervisor.innerHTML="Sin ventas";return;}
+
+let prom={};
+v.forEach(x=>prom[x.prom]=(prom[x.prom]||0)+1);
+
+let r=Object.entries(prom).sort((a,b)=>b[1]-a[1]);
+let p=v.filter(x=>x.imei==="N/A");
+
+panelSupervisor.innerHTML=`
+Ventas: ${v.length}<br>
+Top: ${r[0][0]} (${r[0][1]})<br>
+IMEIs pendientes: ${p.length}
+`;
+}
+
+// 🔥 SUPERVISIÓN AUTOMÁTICA
+setInterval(()=>{
+let v=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
+if(!v.length){
+hablar("No hay ventas, muévanse.");
+return;
+}
+let p=v.filter(x=>x.imei==="N/A");
+if(p.length){
+hablar(`Equipo, vean al que debe IMEIs. ${p[0].prom}`);
+}
+},60000);
 
 </script>
 
