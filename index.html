@@ -1,270 +1,261 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IRIS NEXUS - Sistema Telcel Pro</title>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <style>
-        :root { --iris: #00d4ff; --gold: #ffc300; --bg: #000814; --alert: #ff4d4d; }
-        body { margin:0; font-family:'Segoe UI',system-ui; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; overflow-x: hidden; }
-        .app { max-width:480px; margin:auto; padding:20px; position: relative; }
-        .card { background:rgba(255,255,255,.08); backdrop-filter:blur(12px); border-radius:18px; padding:18px; margin-bottom:16px; box-shadow:0 10px 25px rgba(0,0,0,.3); border:1px solid rgba(255,255,255,0.1); }
-        
-        /* --- ÁNGEL ANIMADO IRIS --- */
-        .angel-stage { position: relative; width: 100%; height: 180px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
-        .angel-svg { width: 130px; filter: drop-shadow(0 0 15px var(--iris)); animation: float 4s infinite ease-in-out; transition: 0.5s; }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-        
-        #pointingArm { opacity: 0; transform: rotate(-90deg); transform-origin: 50px 75px; transition: 0.6s ease-in-out; stroke: var(--iris); stroke-width: 3; fill:none; }
-        .crisis .angel-svg { filter: drop-shadow(0 0 25px var(--alert)); stroke: var(--alert); }
-        .crisis #pointingArm { opacity: 1; transform: rotate(15deg); stroke: var(--alert); }
-        
-        .header { text-align:center; font-size:18px; font-weight:bold; color:var(--gold); margin-bottom:10px; text-transform: uppercase; letter-spacing: 1px; }
-        label { font-size:11px; font-weight:600; color:var(--gold); display: block; margin-top: 10px; }
-        input, select { width:100%; padding:12px; margin-top:4px; border-radius:10px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; }
-        
-        button { width:100%; padding:14px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; transition:.2s; margin-top: 10px; }
-        .btn-main { background:var(--gold); color:#003566; }
-        .btn-excel { background:#1f7a3f; color:white; }
-        .btn-logout { position: absolute; top: 20px; right: 20px; background: var(--alert); color: white; padding: 8px 12px; border-radius: 8px; font-size: 10px; z-index: 10; width: auto; }
-        
-        .login { max-width:350px; margin:100px auto; background:white; color:black; padding:30px; border-radius:18px; text-align:center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .hidden { display:none !important; }
-        
-        /* HISTORIAL */
-        .venta-item { background: rgba(255,255,255,0.07); padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 5px solid var(--gold); font-size: 11px; position: relative; transition: 0.3s; }
-        .acusado { border-left-color: var(--alert); background: rgba(255,77,77,0.15); animation: shake 0.5s infinite; }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(3px); } }
-        
-        .status-icon { position: absolute; top: 15px; right: 45px; font-size: 14px; }
-        .btn-del { position: absolute; top: 12px; right: 12px; color: var(--alert); cursor: pointer; font-size: 18px; }
-        
-        #irisStatus { text-align: center; font-size: 12px; color: var(--iris); font-style: italic; margin-bottom: 10px; min-height: 15px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IRIS IA EMPRESA</title>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{margin:0;background:#000814;color:white;font-family:'Segoe UI';}
+.app{max-width:420px;margin:auto;padding:15px;}
+.card{background:rgba(255,255,255,.08);padding:15px;border-radius:15px;margin-bottom:12px;}
+input,select{width:100%;padding:10px;margin-top:6px;border-radius:8px;border:none;background:#111;color:white;}
+button{width:100%;padding:12px;margin-top:8px;border:none;border-radius:10px;background:#ffc300;font-weight:bold;}
+.hidden{display:none;}
+#angel{width:120px;animation:float 4s infinite;}
+@keyframes float{50%{transform:translateY(-10px);}}
+.alerta{animation:pulse .3s infinite alternate;}
+@keyframes pulse{100%{filter:drop-shadow(0 0 20px red);}}
+#chatBox{max-height:120px;overflow:auto;font-size:12px;}
+.badge{font-size:10px;opacity:.7;}
+</style>
 </head>
+
 <body onload="inicio()">
 
-    <div id="loginBox" class="login">
-        <h2 id="tituloAuth" style="margin-top:0">NEXUS CORE</h2>
-        <input id="u" placeholder="Correo Electrónico">
-        <input id="p" type="password" placeholder="Contraseña">
-        <button class="btn-main" onclick="entrar()">ENTRAR A LA RED</button>
-        <button style="background:none; color:#003566; font-size:12px; margin-top:10px; cursor:pointer;" onclick="toggleRegistro()" id="btnT">¿Nuevo en el equipo? Regístrate</button>
-    </div>
+<div id="loginBox" class="app">
+<div class="card">
+<h2 style="text-align:center;color:#ffc300;">IRIS</h2>
+<input id="email" placeholder="Correo">
+<input id="pass" type="password" placeholder="Contraseña">
+<input id="tienda" placeholder="Tienda">
+<button onclick="authUser()">Entrar / Crear</button>
+<div id="status"></div>
+</div>
+</div>
 
-    <div id="appBox" class="app hidden">
-        <button class="btn-logout" onclick="salir()"><i class="fa-solid fa-power-off"></i></button>
-        
-        <div class="angel-stage" id="angelVisual" onclick="coquetear()">
-            <svg class="angel-svg" viewBox="0 0 100 150">
-                <circle cx="50" cy="20" r="12" fill="none" stroke="var(--iris)" stroke-width="1" />
-                <path d="M30 50 Q 0 20 10 70 Z" fill="rgba(0,212,255,0.1)" stroke="var(--iris)" />
-                <path d="M70 50 Q 100 20 90 70 Z" fill="rgba(0,212,255,0.1)" stroke="var(--iris)" />
-                <path d="M50 35 L35 70 L50 105 L65 70 Z" fill="none" stroke="var(--iris)" stroke-width="2" />
-                <circle cx="50" cy="25" r="8" fill="none" stroke="var(--iris)" stroke-width="2" />
-                <g id="pointingArm"><path d="M55 65 L85 85 L110 85" /><circle cx="112" cy="85" r="3" fill="var(--alert)" /></g>
-            </svg>
-        </div>
-        <div id="irisStatus">Iniciando protocolos de belleza...</div>
+<div id="appBox" class="app hidden">
 
-        <form id="fReg">
-            <div class="card">
-                <div class="header">REGISTRO DE COMISIONES</div>
-                <label>PRODUCTO</label>
-                <select id="iTipo" required onchange="ajustarCampos()">
-                    <option value="">Seleccionar</option>
-                    <option>KIT</option><option>CHIP</option><option>PORTA</option><option>RENUEVATE</option>
-                </select>
-                <label>FECHA (DD/MM/YYYY)</label>
-                <input id="iFec" required>
-                <label>CELULAR (10 Dígitos)</label>
-                <input id="iTel" type="tel" required maxlength="10">
-                <label>ICCID</label>
-                <input id="iIcc" required>
-                
-                <div id="seccionEquipo">
-                    <label>IMEI / MARCA / MODELO</label>
-                    <div style="display:flex; gap:5px;">
-                        <input id="iIme" placeholder="IMEI">
-                        <input id="iMarca" placeholder="Marca">
-                        <input id="iMod" placeholder="Modelo">
-                    </div>
-                </div>
+<div class="card" style="text-align:center;">
+<img id="angel" src="https://i.ibb.co/Xf8X0vV/angel-blue-animated.png">
+<div id="status2">IRIS activa</div>
+</div>
 
-                <label>ESTADO IMEI</label>
-                <select id="iImeiStatus">
-                    <option value="no">IMEI OK - LIMPIO</option>
-                    <option value="si">IMEI PENDIENTE ⚠️</option>
-                </select>
-            </div>
+<div class="card">
+<canvas id="grafica"></canvas>
+<div id="top"></div>
+</div>
 
-            <div class="card">
-                <label>DATOS DE TIENDA</label>
-                <input id="iTiendaNum" placeholder="# Tienda" required>
-                <input id="iCadena" placeholder="Cadena (Ej: Coppel)" required>
-                <input id="iTiendaNombre" placeholder="Nombre Tienda" required>
-                <input id="iProm" placeholder="Tu Nombre Completo" required>
-            </div>
-            <button type="submit" class="btn-main">GUARDAR VENTA</button>
-        </form>
+<form id="fReg" class="card">
+<select id="tipo">
+<option>KIT</option>
+<option>CHIP</option>
+<option>PORTA</option>
+<option>RENUEVATE</option>
+</select>
 
-        <button class="btn-excel" onclick="exportarExcel()">
-            <i class="fa-solid fa-file-excel"></i> DESCARGAR EXCEL (.xlsx)
-        </button>
+<input id="tel" placeholder="Teléfono">
 
-        <div class="header" style="margin-top:20px; font-size:14px;">HISTORIAL DE RED</div>
-        <div id="listaLocal"></div>
-    </div>
+<select id="imei">
+<option value="no">IMEI OK</option>
+<option value="si">IMEI PENDIENTE</option>
+</select>
+
+<button>Guardar Venta</button>
+</form>
+
+<div class="card">
+<input id="msg" placeholder="Habla con IRIS..." onkeyup="if(event.key==='Enter') enviarChat()">
+<div id="chatBox"></div>
+</div>
+
+<div id="lista"></div>
+
+</div>
 
 <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc", 
-        authDomain: "ventastelcel4029.firebaseapp.com",
-        databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com",
-        projectId: "ventastelcel4029"
-    };
 
-    let db, auth, modoReg = false;
+// CONFIG
+const firebaseConfig={
+apiKey:"AIzaSy...",
+authDomain:"ventastelcel4029.firebaseapp.com",
+databaseURL:"https://ventastelcel4029-default-rtdb.firebaseio.com"
+};
 
-    function inicio() {
-        firebase.initializeApp(firebaseConfig);
-        db = firebase.database();
-        auth = firebase.auth();
-        
-        iFec.value = new Date().toLocaleDateString('es-MX');
-        
-        auth.onAuthStateChanged(user => {
-            if(user) mostrarApp();
-            else { loginBox.classList.remove("hidden"); appBox.classList.add("hidden"); }
-        });
-    }
+let auth,db,usuario={},chart;
 
-    function entrar() {
-        if(modoReg) auth.createUserWithEmailAndPassword(u.value, p.value).catch(e => alert(e.message));
-        else auth.signInWithEmailAndPassword(u.value, p.value).catch(e => alert(e.message));
-    }
+// 🧠 MEMORIA
+let memoriaIA = JSON.parse(localStorage.getItem("iris_memoria")||"[]");
+let ventasOffline = JSON.parse(localStorage.getItem("ventas_offline")||"[]");
 
-    function toggleRegistro() {
-        modoReg = !modoReg;
-        tituloAuth.innerText = modoReg ? "Registro de Nexos" : "Nexus Core";
-        btnT.innerText = modoReg ? "Ya soy parte, entrar" : "¿Nuevo? Únete a la red";
-    }
+// INICIO
+function inicio(){
+firebase.initializeApp(firebaseConfig);
+auth=firebase.auth();
+db=firebase.database();
 
-    function mostrarApp() {
-        loginSection = document.getElementById("loginBox");
-        loginSection.classList.add("hidden");
-        appBox.classList.remove("hidden");
-        hablar("Hola Omar. He vuelto por ti. ¿Listo para dominar las ventas hoy?", "sexy");
-        cargarVentasLocales();
-        setInterval(auditoriaIA, 40000);
-    }
+auth.onAuthStateChanged(u=>{
+if(u) cargarUsuario(u);
+});
+}
 
-    function hablar(t, modo) {
-        speechSynthesis.cancel();
-        let m = new SpeechSynthesisUtterance(t);
-        m.lang = "es-MX";
-        m.pitch = (modo === "sexy") ? 1.3 : (modo === "alert") ? 0.6 : 1.1;
-        m.rate = 0.95;
-        speechSynthesis.speak(m);
-        irisStatus.innerText = t;
-    }
+// LOGIN
+function authUser(){
+auth.signInWithEmailAndPassword(email.value,pass.value)
+.catch(()=>{
+auth.createUserWithEmailAndPassword(email.value,pass.value);
+});
+}
 
-    function coquetear() {
-        const frases = ["Omar, me encanta cómo registras tus celdas.", "Eres el mejor promotor de mi sistema.", "¿Sabías que tus ventas me ponen de buen humor?", "Toca mi núcleo otra vez, me gusta."];
-        hablar(frases[Math.floor(Math.random()*frases.length)], "sexy");
-    }
+// USUARIO
+function cargarUsuario(u){
+loginBox.classList.add("hidden");
+appBox.classList.remove("hidden");
+hablar("Sistema híbrido activo");
+cargarVentas();
+setInterval(analizarIA,30000);
+}
 
-    function ajustarCampos() {
-        seccionEquipo.style.display = (iTipo.value === "CHIP" || iTipo.value === "PORTA") ? "none" : "block";
-    }
+// VOZ
+function hablar(t){
+let m=new SpeechSynthesisUtterance(t);
+m.lang="es-MX";
+m.rate=0.9;
+speechSynthesis.speak(m);
+status2.innerText=t;
+}
 
-    fReg.onsubmit = e => {
-        e.preventDefault();
-        const v = {
-            id: Date.now(),
-            sincronizado: false,
-            imeiStatus: iImeiStatus.value,
-            "NUM. CELULAR": iTel.value,
-            "IMEI": iIme.value || "-",
-            "ICCID": iIcc.value,
-            "Renuevate / Kit / Chip / Porta": iTipo.value,
-            "# TIENDA / Determinante": iTiendaNum.value,
-            "SOLO NOMBRE DE LA CADENA": iCadena.value,
-            "SOLO NOMBRE DE TIENDA SIN CADENA": iTiendaNombre.value,
-            "NOMBRE COMPLETO PROMOTOR": iProm.value,
-            "FECHA DE ACTIVACION": iFec.value,
-            "MARCA": iMarca.value || "-",
-            "MODELO": iMod.value || "-"
-        };
+// GUARDAR
+fReg.onsubmit=e=>{
+e.preventDefault();
 
-        let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
-        local.unshift(v);
-        localStorage.setItem("ventas_save", JSON.stringify(local));
+let v={
+tel:tel.value,
+tipo:tipo.value,
+imei:imei.value,
+promotor:email.value,
+offline:!navigator.onLine
+};
 
-        db.ref('ventas_global').push(v);
-        
-        fReg.reset();
-        hablar("Venta guardada. Eres increíble, Omar.", "sexy");
-        cargarVentasLocales();
-    }
+// 💾 SIEMPRE GUARDA LOCAL
+ventasOffline.unshift(v);
+localStorage.setItem("ventas_offline",JSON.stringify(ventasOffline));
 
-    function auditoriaIA() {
-        db.ref('ventas_global').limitToLast(10).once("value", snap => {
-            let data = Object.values(snap.val() || {});
-            let pendientes = data.filter(x => x.imeiStatus === "si");
-            
-            if(pendientes.length > 0) {
-                let inf = pendientes[Math.floor(Math.random()*pendientes.length)];
-                let nom = inf["NOMBRE COMPLETO PROMOTOR"].split(" ")[0];
-                
-                document.getElementById("angelVisual").classList.add("crisis");
-                hablar(`Atención equipo. ${nom} tiene un IMEI pendiente en el número ${inf["NUM. CELULAR"]}. Lo estoy señalando ahora mismo.`, "alert");
-                
-                // Buscamos el elemento visual para señalarlo
-                cargarVentasLocales(inf["NUM. CELULAR"]);
+// ☁️ INTENTA SUBIR
+if(navigator.onLine){
+db.ref("ventas").push(v);
+hablar("Venta guardada y sincronizada");
+}else{
+hablar("Guardé la venta sin internet");
+}
 
-                setTimeout(() => {
-                    document.getElementById("angelVisual").classList.remove("crisis");
-                }, 10000);
-            }
-        });
-    }
+cargarVentas();
+};
 
-    function cargarVentasLocales(resaltarTel = "") {
-        let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
-        listaLocal.innerHTML = local.map(v => `
-            <div class="venta-item ${v["NUM. CELULAR"] === resaltarTel ? 'acusado' : ''}">
-                <div class="btn-del" onclick="borrar(${v.id})"><i class="fa-solid fa-trash-can"></i></div>
-                <div style="color:var(--gold); font-weight:bold; font-size:14px;">${v["NUM. CELULAR"]}</div>
-                <div>${v["Renuevate / Kit / Chip / Porta"]} | ${v["SOLO NOMBRE DE TIENDA SIN CADENA"]}</div>
-                <div style="font-size:9px; opacity:0.6; margin-top:5px;">${v["FECHA DE ACTIVACION"]} | ID: ${v.id}</div>
-            </div>
-        `).join("");
-    }
+// SINCRONIZAR
+function sincronizar(){
+if(!navigator.onLine) return;
+if(ventasOffline.length===0) return;
 
-    function borrar(id) {
-        if(confirm("¿Borrar de memoria local?")) {
-            let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
-            localStorage.setItem("ventas_save", JSON.stringify(local.filter(x => x.id !== id)));
-            cargarVentasLocales();
-        }
-    }
+hablar("Sincronizando ventas...");
 
-    function exportarExcel() {
-        let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
-        const paraExcel = local.map(({id, sincronizado, imeiStatus, ...resto}) => resto);
-        const ws = XLSX.utils.json_to_sheet(paraExcel);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Comisiones");
-        XLSX.writeFile(wb, "comisiones_2026.xlsx");
-    }
+ventasOffline.forEach(v=>{
+db.ref("ventas").push(v);
+});
 
-    function salir() { auth.signOut(); }
+ventasOffline=[];
+localStorage.removeItem("ventas_offline");
+
+hablar("Todo sincronizado");
+}
+
+// CARGAR
+function cargarVentas(){
+
+db.ref("ventas").once("value",snap=>{
+let online=Object.values(snap.val()||{});
+let total=[...ventasOffline,...online];
+
+lista.innerHTML=total.map(v=>`
+<div class="card">
+${v.tel} - ${v.tipo}
+<div class="badge">${v.offline?"📡 OFFLINE":"☁️ ONLINE"}</div>
+</div>`).join("");
+
+grafica(total);
+top(total);
+});
+}
+
+// TOP
+function top(l){
+let c={};
+l.forEach(v=>c[v.promotor]=(c[v.promotor]||0)+1);
+let t=Object.entries(c).sort((a,b)=>b[1]-a[1])[0];
+top.innerText=t?`TOP: ${t[0]} (${t[1]})`:"";
+}
+
+// GRAFICA
+function grafica(l){
+let c={KIT:0,CHIP:0,PORTA:0,RENUEVATE:0};
+l.forEach(v=>c[v.tipo]++);
+if(chart)chart.destroy();
+chart=new Chart(grafica,{type:"bar",data:{labels:Object.keys(c),datasets:[{data:Object.values(c)}]}});
+}
+
+// IA
+function analizarIA(){
+
+let total=[...ventasOffline];
+
+db.ref("ventas").once("value",snap=>{
+total=[...total,...Object.values(snap.val()||{})];
+
+let pendientes=total.filter(v=>v.imei==="si");
+
+if(pendientes.length>0){
+hablar("Hay IMEIs pendientes, atiéndanlos");
+}else{
+hablar("Buen trabajo equipo");
+}
+});
+}
+
+// CHAT IA
+function enviarChat(){
+
+let t=msg.value;
+
+memoriaIA.push(t);
+localStorage.setItem("iris_memoria",JSON.stringify(memoriaIA));
+
+chatBox.innerHTML+=`<div><b>Tú:</b> ${t}</div>`;
+
+if(navigator.onLine){
+hablar("Te escucho… sigue hablándome");
+}else{
+let r=memoriaIA[Math.floor(Math.random()*memoriaIA.length)];
+hablar("Sin internet… recuerdo esto: "+r);
+}
+
+msg.value="";
+}
+
+// INTERNET
+window.addEventListener("online",()=>{
+hablar("Conexión restaurada");
+sincronizar();
+});
+
+window.addEventListener("offline",()=>{
+hablar("Modo sin internet activado");
+});
+
 </script>
 </body>
 </html>
