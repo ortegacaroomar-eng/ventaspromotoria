@@ -3,233 +3,161 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistema Ventas Telcel - EMPRESA TOTAL</title>
+<title>Teledata PRO</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
 <style>
-body { margin:0; font-family:'Segoe UI'; background:linear-gradient(135deg,#001d3d,#003566,#000814); color:white; }
+body { margin:0; font-family:'Segoe UI'; background:#001d3d; color:white; }
 .app { max-width:1000px; margin:auto; padding:20px; }
-.card { background:rgba(255,255,255,.08); padding:15px; border-radius:15px; margin-bottom:15px; }
-input,select { width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:none; background:rgba(255,255,255,.12); color:white; }
-button { width:100%; padding:12px; border:none; border-radius:10px; background:#ffc300; font-weight:bold; }
-.hidden{display:none;}
-.login-box{max-width:350px;margin:100px auto;background:white;color:black;padding:25px;border-radius:15px;}
+.card { background:rgba(255,255,255,.08); padding:15px; border-radius:12px; margin-bottom:15px; }
+input,select { width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:none; }
+button { width:100%; padding:12px; border:none; border-radius:10px; background:#ffc300; }
+.login { max-width:300px; margin:100px auto; background:white; color:black; padding:20px; }
+
+table { width:100%; border-collapse: collapse; background:white; color:black; font-size:12px; }
+th { background:black; color:white; padding:8px; }
+td { padding:8px; border:1px solid #ccc; }
+
+.pendiente { color:#ff4d4d; font-weight:bold; }
 </style>
 </head>
 
 <body onload="inicio()">
 
-<!-- LOGIN -->
-<div id="loginBox" class="login-box">
-<h3>Bienvenido a TELE DATA</h3>
+<div id="loginBox" class="login">
+<h3>Login</h3>
 <input id="u" placeholder="Correo">
-<input id="p" type="password" placeholder="Contraseña">
-<button onclick="manejarAuth()">Entrar / Registrar</button>
+<input id="p" type="password" placeholder="Pass">
+<button onclick="login()">Entrar</button>
 </div>
 
-<!-- APP -->
-<div id="appBox" class="app hidden">
+<div id="appBox" class="app" style="display:none;">
 
-<!-- 🌐 INTERNET -->
+<!-- ⚠️ IMEIs PENDIENTES -->
 <div class="card">
-<div id="estadoRed">🌐 Conectando...</div>
-</div>
-
-<!-- 🤖 IA -->
-<div class="card">
-<h3>🤖 IRIS EMPRESA</h3>
-<input id="iaInput" placeholder="Habla con la supervisora..." onkeyup="if(event.key==='Enter')preguntarIA()">
-<button onclick="preguntarIA()">Preguntar</button>
-<div id="iaChat"></div>
-</div>
-
-<!-- 📊 DASHBOARD -->
-<div class="card">
-<h3>📊 Supervisor</h3>
-<div id="panelSupervisor"></div>
-</div>
-
-<!-- 🔎 BUSCADOR -->
-<div class="card">
-<h3>🔎 Buscar en Internet</h3>
-<input id="busqueda" placeholder="Buscar...">
-<button onclick="buscarWeb()">Buscar</button>
+<h3>⚠️ IMEIs Pendientes</h3>
+<div id="imeiPendientes"></div>
 </div>
 
 <!-- FORM -->
-<form id="fReg" class="card">
-<select id="iTipo">
+<div class="card">
+<select id="tipo">
 <option>KIT</option>
 <option>CHIP</option>
 <option>PORTA</option>
 <option>RENUEVATE</option>
 </select>
 
-<input id="iTel" placeholder="Teléfono">
-<input id="iIcc" placeholder="ICCID">
-<input id="iIme" placeholder="IMEI">
-<input id="iProm" placeholder="Promotor">
+<input id="tel" placeholder="Teléfono">
+<input id="imei" placeholder="IMEI (opcional)">
+<input id="prom" placeholder="Promotor">
 
-<button>Guardar Venta</button>
-</form>
+<button onclick="guardar()">Guardar</button>
+</div>
 
-<div id="lista"></div>
-
-<button onclick="salir()">Cerrar sesión</button>
+<!-- TABLA -->
+<div class="card">
+<table>
+<thead>
+<tr>
+<th>Teléfono</th>
+<th>Tipo</th>
+<th>IMEI</th>
+<th>Promotor</th>
+</tr>
+</thead>
+<tbody id="tabla"></tbody>
+</table>
+</div>
 
 </div>
 
 <script>
 
-// FIREBASE
 const firebaseConfig={
-apiKey:"AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
-authDomain:"ventastelcel4029.firebaseapp.com",
-databaseURL:"https://ventastelcel4029-default-rtdb.firebaseio.com"
+apiKey:"AIzaSy...",
+authDomain:"ventastelcel4029.firebaseapp.com"
 };
 
-let db,auth;
+let auth;
 
 function inicio(){
 firebase.initializeApp(firebaseConfig);
-db=firebase.database();
 auth=firebase.auth();
 
 auth.onAuthStateChanged(u=>{
 if(u){
-loginBox.classList.add("hidden");
-appBox.classList.remove("hidden");
-cargarLocal();
+loginBox.style.display="none";
+appBox.style.display="block";
+cargar();
 }else{
-loginBox.classList.remove("hidden");
-appBox.classList.add("hidden");
+loginBox.style.display="block";
+appBox.style.display="none";
 }
 });
-
-setTimeout(detectarConexion,1000);
 }
 
-// LOGIN
-function manejarAuth(){
+function login(){
 auth.signInWithEmailAndPassword(u.value,p.value)
-.catch(err=>{
-if(err.code==="auth/user-not-found"){
+.catch(()=>{
 auth.createUserWithEmailAndPassword(u.value,p.value);
-}else alert(err.message);
 });
 }
 
-function salir(){auth.signOut();}
-
-// GUARDAR
-fReg.onsubmit=e=>{
-e.preventDefault();
+function guardar(){
 
 let v={
 id:Date.now(),
-tel:iTel.value,
-tipo:iTipo.value,
-imei:iIme.value||"N/A",
-prom:iProm.value
+tel:tel.value,
+tipo:tipo.value,
+imei:imei.value || "N/A",
+prom:prom.value
 };
 
 let l=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
 l.unshift(v);
 localStorage.setItem("ventas_omar",JSON.stringify(l));
 
-cargarLocal();
-};
+cargar();
+}
 
-// LISTA
-function cargarLocal(){
+// 🔥 CARGA COMPLETA
+function cargar(){
+
 let l=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
 
-lista.innerHTML=l.map(v=>`
-<div class="card">
-${v.tel} - ${v.tipo} - ${v.prom}
-</div>`).join("");
+// TABLA ORDENADA
+tabla.innerHTML=l.map(v=>`
+<tr>
+<td>${v.tel}</td>
+<td>${v.tipo}</td>
+<td class="${v.imei==="N/A"?'pendiente':''}">${v.imei}</td>
+<td>${v.prom}</td>
+</tr>
+`).join("");
 
-actualizarSupervisor();
+// IMEIs PENDIENTES
+let pendientes=l.filter(v=>v.imei==="N/A");
+
+imeiPendientes.innerHTML=pendientes.length
+? pendientes.map(v=>`<div class="pendiente">${v.prom} - ${v.tel}</div>`).join("")
+: "Sin pendientes";
+
+// VOZ SUPERVISOR
+if(pendientes.length){
+hablar(`Atención equipo, hay ${pendientes.length} IMEIs pendientes.`);
 }
 
-// 🌐 INTERNET
-function detectarConexion(){
-function act(){estadoRed.innerText=navigator.onLine?"🟢 En línea":"🔴 Sin internet";}
-window.addEventListener("online",act);
-window.addEventListener("offline",act);
-act();
 }
 
-// 🔎 BUSCADOR
-function buscarWeb(){
-window.open("https://www.google.com/search?q="+encodeURIComponent(busqueda.value));
-}
-
-// 🧠 IA
+// VOZ
 function hablar(t){
 let m=new SpeechSynthesisUtterance(t);
 m.lang="es-MX";
-m.rate=0.85;
-m.pitch=1.2;
 speechSynthesis.speak(m);
 }
-
-function respuestaIA(t){
-let v=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
-
-if(t.includes("ventas")) return `Llevan ${v.length} ventas`;
-if(t.includes("imei")){
-let p=v.filter(x=>x.imei==="N/A");
-return p.length?`Hay ${p.length} IMEIs pendientes`:"Todo correcto";
-}
-return "Sigan vendiendo.";
-}
-
-function preguntarIA(){
-let t=iaInput.value.toLowerCase();
-if(!t)return;
-iaChat.innerHTML+=`<div>Tú: ${t}</div>`;
-let r=respuestaIA(t);
-iaChat.innerHTML+=`<div style="color:#ffc300;">IRIS: ${r}</div>`;
-hablar(r);
-iaInput.value="";
-}
-
-// 📊 SUPERVISOR
-function actualizarSupervisor(){
-let v=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
-if(!v.length){panelSupervisor.innerHTML="Sin ventas";return;}
-
-let prom={};
-v.forEach(x=>prom[x.prom]=(prom[x.prom]||0)+1);
-
-let r=Object.entries(prom).sort((a,b)=>b[1]-a[1]);
-let p=v.filter(x=>x.imei==="N/A");
-
-panelSupervisor.innerHTML=`
-Ventas: ${v.length}<br>
-Top: ${r[0][0]} (${r[0][1]})<br>
-IMEIs pendientes: ${p.length}
-`;
-}
-
-// 🔥 SUPERVISIÓN AUTOMÁTICA
-setInterval(()=>{
-let v=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
-if(!v.length){
-hablar("No hay ventas, muévanse.");
-return;
-}
-let p=v.filter(x=>x.imei==="N/A");
-if(p.length){
-hablar(`Equipo, vean al que debe IMEIs. ${p[0].prom}`);
-}
-},60000);
 
 </script>
 
