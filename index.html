@@ -1,258 +1,330 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Teledata IA PRO</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teledata IA PRO</title>
 
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 
-<style>
-body{margin:0;font-family:'Segoe UI';background:#001d3d;color:white;}
-.hidden{display:none;}
+    <style>
+        :root {
+            --primary: #ffc300;
+            --secondary: #003566;
+            --bg: #001d3d;
+            --accent: #00b4d8;
+            --danger: #ff4d4d;
+            --success: #00ff88;
+        }
 
-/* LOGIN */
-.login-box{display:flex;justify-content:center;align-items:center;height:100vh;}
-.login-card{background:rgba(255,255,255,.08);padding:30px;border-radius:15px;width:300px;text-align:center;}
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
 
-input,select{width:100%;padding:10px;margin-bottom:10px;border-radius:8px;border:none;}
-button{width:100%;padding:12px;border:none;border-radius:10px;background:#ffc300;font-weight:bold;cursor:pointer;margin-top:5px;}
+        .hidden { display: none !important; }
 
-.card{background:rgba(255,255,255,.08);padding:15px;margin:15px;border-radius:12px;}
+        /* --- LOGIN & REGISTRO --- */
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-grow: 1;
+        }
 
-table{width:100%;background:white;color:black;}
-th{background:black;color:white;}
-td{border:1px solid #ccc;padding:6px;}
+        .auth-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 350px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            text-align: center;
+        }
 
-.pendiente{color:red;font-weight:bold;}
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border: none;
+            box-sizing: border-box;
+        }
 
-/* 🔵 HALO */
-#halo{
-position:fixed;
-bottom:20px;
-right:20px;
-width:90px;
-height:90px;
-border-radius:50%;
-border:4px solid #00b4d8;
-box-shadow:0 0 20px #00b4d8;
-animation:respirar 3s infinite;
-transition:.3s;
-}
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: var(--primary);
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
 
-@keyframes respirar{
-0%{transform:scale(1);}
-50%{transform:scale(1.1);}
-100%{transform:scale(1);}
-}
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-secondary { background: var(--secondary); color: white; }
 
-.hablando{border-color:#00ff88 !important;box-shadow:0 0 30px #00ff88;}
-.alerta{border-color:#ff4d4d !important;box-shadow:0 0 30px #ff4d4d;}
-.ventas{border-color:#00ffff !important;box-shadow:0 0 30px #00ffff;}
+        /* --- DASHBOARD --- */
+        .container { padding: 10px; max-width: 800px; margin: auto; width: 100%; box-sizing: border-box; }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent);
+        }
 
-</style>
+        .status-bar { display: flex; justify-content: space-between; font-size: 0.9em; }
+
+        /* --- TABLA --- */
+        .table-wrapper { overflow-x: auto; background: white; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; color: #333; }
+        th { background: #222; color: white; padding: 10px; text-align: left; }
+        td { padding: 10px; border-bottom: 1px solid #ddd; font-size: 0.9em; }
+        .pendiente { color: var(--danger); font-weight: bold; }
+
+        /* --- IA HALO --- */
+        #halo {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 4px solid var(--accent);
+            box-shadow: 0 0 15px var(--accent);
+            cursor: pointer;
+            z-index: 100;
+            animation: breathe 3s infinite ease-in-out;
+        }
+
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 15px var(--accent); }
+            50% { transform: scale(1.1); box-shadow: 0 0 25px var(--accent); }
+        }
+
+        .hablando { border-color: var(--success) !important; box-shadow: 0 0 25px var(--success) !important; }
+        .alerta { border-color: var(--danger) !important; box-shadow: 0 0 25px var(--danger) !important; }
+        .ventas { border-color: #00ffff !important; box-shadow: 0 0 30px #00ffff !important; }
+
+    </style>
 </head>
+<body>
 
-<body onload="inicio()">
+    <div id="authBox" class="auth-container">
+        <div class="auth-card">
+            <h2 style="color: var(--primary);">TELEDATA IA</h2>
+            <input id="userEmail" type="email" placeholder="Correo electrónico">
+            <input id="userPass" type="password" placeholder="Contraseña">
+            
+            <button onclick="handleLogin()">Iniciar Sesión</button>
+            <button class="btn-secondary" onclick="handleRegister()">Registrar Usuario Local</button>
+        </div>
+    </div>
 
-<!-- LOGIN -->
-<div id="loginBox" class="login-box">
-<div class="login-card">
+    <div id="appBox" class="container hidden">
+        <div class="status-bar card">
+            <span>📍 <span id="gpsDisplay">Ubicación...</span></span>
+            <button onclick="handleLogout()" style="width: auto; margin: 0; padding: 5px 10px;">Salir</button>
+        </div>
 
-<h2>TELEDATA IA</h2>
+        <div class="card">
+            <h3>⚠️ Pendientes de IMEI</h3>
+            <div id="pendientesLista" style="display: flex; gap: 10px; flex-wrap: wrap;"></div>
+        </div>
 
-<input id="u" placeholder="Correo">
-<input id="p" type="password" placeholder="Contraseña">
+        <div class="card">
+            <h3>Registrar Nueva Venta</h3>
+            <select id="fTipo">
+                <option value="KIT">KIT</option>
+                <option value="CHIP">CHIP</option>
+                <option value="PORTA">PORTA</option>
+                <option value="RENUEVATE">RENUEVATE</option>
+            </select>
+            <input id="fTel" type="number" placeholder="Teléfono (10 dígitos)">
+            <input id="fIme" type="text" placeholder="IMEI (Dejar vacío si es pendiente)">
+            <input id="fProm" type="text" placeholder="Nombre del Promotor">
+            <button onclick="saveSale()">Guardar Venta</button>
+        </div>
 
-<button onclick="login()">Entrar</button>
-<button onclick="registrar()" style="background:#003566;color:white;">
-Registrar usuario
-</button>
+        <div class="card">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Teléfono</th>
+                            <th>Tipo</th>
+                            <th>IMEI</th>
+                            <th>Promotor</th>
+                        </tr>
+                    </thead>
+                    <tbody id="salesTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-</div>
-</div>
+    <div id="halo" onclick="iaGreet()"></div>
+    <video id="cam" autoplay playsinline style="display:none;"></video>
 
-<!-- APP -->
-<div id="appBox" class="hidden">
+    <script>
+        // --- CONFIGURACIÓN Y ESTADO ---
+        let currentUser = null;
+        let lastSalesCount = 0;
 
-<div class="card">
-📍 <span id="gps">Detectando ubicación...</span>
-</div>
+        // --- MANEJO DE FECHAS (DD/MM/YYYY) ---
+        function getFormattedDate() {
+            const d = new Date();
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const year = d.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
 
-<div class="card">
-<h3>⚠️ IMEIs Pendientes</h3>
-<div id="imeiPendientes"></div>
-</div>
+        // --- AUTENTICACIÓN LOCAL ---
+        function handleRegister() {
+            const email = document.getElementById('userEmail').value;
+            const pass = document.getElementById('userPass').value;
 
-<div class="card">
-<select id="iTipo">
-<option>KIT</option>
-<option>CHIP</option>
-<option>PORTA</option>
-<option>RENUEVATE</option>
-</select>
+            if(!email || !pass) return alert("Completa los campos");
 
-<input id="iTel" placeholder="Teléfono">
-<input id="iIme" placeholder="IMEI">
-<input id="iProm" placeholder="Promotor">
+            let users = JSON.parse(localStorage.getItem('teledata_users') || "[]");
+            if(users.find(u => u.email === email)) return alert("El usuario ya existe");
 
-<button onclick="guardar()">Guardar</button>
-</div>
+            users.push({ email, pass });
+            localStorage.setItem('teledata_users', JSON.stringify(users));
+            alert("Usuario registrado localmente con éxito.");
+        }
 
-<div class="card">
-<table>
-<thead><tr><th>Tel</th><th>Tipo</th><th>IMEI</th><th>Promotor</th></tr></thead>
-<tbody id="tabla"></tbody>
-</table>
-</div>
+        function handleLogin() {
+            const email = document.getElementById('userEmail').value;
+            const pass = document.getElementById('userPass').value;
 
-</div>
+            let users = JSON.parse(localStorage.getItem('teledata_users') || "[]");
+            const user = users.find(u => u.email === email && u.pass === pass);
 
-<!-- HALO -->
-<div id="halo" onclick="activarIA()"></div>
+            if(user) {
+                currentUser = user;
+                showApp();
+            } else {
+                alert("Credenciales incorrectas");
+            }
+        }
 
-<!-- CAMARA -->
-<video id="cam" autoplay style="display:none;"></video>
+        function handleLogout() {
+            currentUser = null;
+            document.getElementById('authBox').classList.remove('hidden');
+            document.getElementById('appBox').classList.add('hidden');
+        }
 
-<script>
+        function showApp() {
+            document.getElementById('authBox').classList.add('hidden');
+            document.getElementById('appBox').classList.remove('hidden');
+            startGPS();
+            loadSales();
+        }
 
-// FIREBASE
-const firebaseConfig={
-apiKey:"AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
-authDomain:"ventastelcel4029.firebaseapp.com"
-};
+        // --- LÓGICA DE VENTAS ---
+        function saveSale() {
+            const tel = document.getElementById('fTel').value;
+            const tipo = document.getElementById('fTipo').value;
+            const imei = document.getElementById('fIme').value.trim() || "N/A";
+            const prom = document.getElementById('fProm').value;
 
-let auth;
-let ventasPrevias=0;
+            if(!tel || !prom) return alert("Teléfono y Promotor son obligatorios");
 
-function inicio(){
+            const newSale = {
+                id: Date.now(),
+                fecha: getFormattedDate(),
+                tel,
+                tipo,
+                imei,
+                prom
+            };
 
-firebase.initializeApp(firebaseConfig);
-auth=firebase.auth();
+            let sales = JSON.parse(localStorage.getItem('ventas_omar') || "[]");
+            sales.unshift(newSale);
+            localStorage.setItem('ventas_omar', JSON.stringify(sales));
 
-auth.onAuthStateChanged(user=>{
-if(user){
-loginBox.classList.add("hidden");
-appBox.classList.remove("hidden");
-gps();
-camara();
-cargar();
-}else{
-loginBox.classList.remove("hidden");
-appBox.classList.add("hidden");
-}
-});
-}
+            // Limpiar campos
+            document.getElementById('fTel').value = "";
+            document.getElementById('fIme').value = "";
+            
+            loadSales();
+        }
 
-// LOGIN
-function login(){
-auth.signInWithEmailAndPassword(u.value,p.value)
-.catch(e=>alert(e.message));
-}
+        function loadSales() {
+            const sales = JSON.parse(localStorage.getItem('ventas_omar') || "[]");
+            const tbody = document.getElementById('salesTableBody');
+            const pendientesDiv = document.getElementById('pendientesLista');
+            const halo = document.getElementById('halo');
 
-// REGISTRO
-function registrar(){
-auth.createUserWithEmailAndPassword(u.value,p.value)
-.then(()=>alert("Usuario creado"))
-.catch(e=>alert(e.message));
-}
+            // Render Tabla
+            tbody.innerHTML = sales.map(s => `
+                <tr>
+                    <td>${s.fecha}</td>
+                    <td>${s.tel}</td>
+                    <td>${s.tipo}</td>
+                    <td class="${s.imei === 'N/A' ? 'pendiente' : ''}">${s.imei}</td>
+                    <td>${s.prom}</td>
+                </tr>
+            `).join('');
 
-// GPS
-function gps(){
-navigator.geolocation.watchPosition(p=>{
-gps.innerText=`${p.coords.latitude.toFixed(5)}, ${p.coords.longitude.toFixed(5)}`;
-});
-}
+            // Lógica de Pendientes
+            const pendientes = sales.filter(s => s.imei === "N/A");
+            pendientesDiv.innerHTML = pendientes.length 
+                ? pendientes.map(p => `<span class="pendiente" style="background:rgba(255,0,0,0.1); padding:4px 8px; border-radius:5px;">${p.prom}</span>`).join('')
+                : "No hay pendientes";
 
-// CAMARA + MOVIMIENTO
-function camara(){
-navigator.mediaDevices.getUserMedia({video:true})
-.then(stream=>{
-cam.srcObject=stream;
+            // Efectos de IA
+            halo.classList.remove('alerta', 'ventas');
+            
+            if(pendientes.length > 0) halo.classList.add('alerta');
 
-// movimiento suave tipo seguimiento
-setInterval(()=>{
-let x=(Math.random()*40)-20;
-let y=(Math.random()*40)-20;
-halo.style.transform=`translate(${x}px,${y}px)`;
-},800);
+            if(sales.length > lastSalesCount && lastSalesCount !== 0) {
+                halo.classList.add('ventas');
+                speakIA("Venta guardada correctamente.");
+                setTimeout(() => halo.classList.remove('ventas'), 2000);
+            }
 
-});
-}
+            lastSalesCount = sales.length;
+        }
 
-// GUARDAR
-function guardar(){
+        // --- FUNCIONES EXTRA (GPS / VOZ) ---
+        function startGPS() {
+            if (navigator.geolocation) {
+                navigator.geolocation.watchPosition(p => {
+                    document.getElementById('gpsDisplay').innerText = 
+                        `${p.coords.latitude.toFixed(4)}, ${p.coords.longitude.toFixed(4)}`;
+                });
+            }
+        }
 
-let v={
-id:Date.now(),
-tel:iTel.value,
-tipo:iTipo.value,
-imei:iIme.value||"N/A",
-prom:iProm.value
-};
+        function speakIA(text) {
+            const halo = document.getElementById('halo');
+            halo.classList.add('hablando');
+            const msg = new SpeechSynthesisUtterance(text);
+            msg.lang = "es-MX";
+            msg.onend = () => halo.classList.remove('hablando');
+            window.speechSynthesis.speak(msg);
+        }
 
-let l=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
-l.unshift(v);
-localStorage.setItem("ventas_omar",JSON.stringify(l));
+        function iaGreet() {
+            speakIA("Sistema Teledata en línea. ¿En qué puedo ayudarte?");
+        }
 
-cargar();
-}
-
-// CARGAR
-function cargar(){
-
-let l=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
-
-tabla.innerHTML=l.map(v=>`
-<tr>
-<td>${v.tel}</td>
-<td>${v.tipo}</td>
-<td class="${v.imei==='N/A'?'pendiente':''}">${v.imei}</td>
-<td>${v.prom}</td>
-</tr>
-`).join("");
-
-let pendientes=l.filter(v=>v.imei==="N/A");
-
-imeiPendientes.innerHTML=pendientes.length
-? pendientes.map(v=>`<div class="pendiente">${v.prom}</div>`).join("")
-:"Sin pendientes";
-
-// 🎨 COLORES IA
-halo.classList.remove("alerta","ventas");
-
-if(pendientes.length>0){
-halo.classList.add("alerta");
-}
-
-if(l.length>ventasPrevias){
-halo.classList.add("ventas");
-hablar("Nueva venta registrada");
-setTimeout(()=>halo.classList.remove("ventas"),1500);
-}
-
-ventasPrevias=l.length;
-}
-
-// VOZ
-function hablar(t){
-halo.classList.add("hablando");
-
-let m=new SpeechSynthesisUtterance(t);
-m.lang="es-MX";
-
-m.onend=()=>halo.classList.remove("hablando");
-
-speechSynthesis.speak(m);
-}
-
-// ACTIVAR IA
-function activarIA(){
-hablar("Hola, estoy lista para ayudarte.");
-}
-
-</script>
-
+    </script>
 </body>
 </html>
