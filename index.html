@@ -3,58 +3,114 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Teledata PRO</title>
+<title>Teledata IA PRO</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 
-<style>
-body { margin:0; font-family:'Segoe UI'; background:#001d3d; color:white; }
-.app { max-width:1000px; margin:auto; padding:20px; }
-.card { background:rgba(255,255,255,.08); padding:15px; border-radius:12px; margin-bottom:15px; }
-input,select { width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:none; }
-button { width:100%; padding:12px; border:none; border-radius:10px; background:#ffc300; }
-.login { max-width:300px; margin:100px auto; background:white; color:black; padding:20px; }
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-table { width:100%; border-collapse: collapse; background:white; color:black; font-size:12px; }
+<style>
+body { margin:0; font-family:'Segoe UI'; background:linear-gradient(135deg,#001d3d,#003566,#000814); color:white; }
+
+/* LOGIN */
+.login-box {
+display:flex; justify-content:center; align-items:center;
+height:100vh;
+}
+
+.login-card {
+background:rgba(255,255,255,.08);
+padding:30px; border-radius:15px;
+width:300px; text-align:center;
+}
+
+input,select {
+width:100%; padding:10px;
+margin-bottom:10px;
+border-radius:8px;
+border:none;
+}
+
+button {
+width:100%; padding:12px;
+border:none;
+border-radius:10px;
+background:#ffc300;
+}
+
+.card {
+background:rgba(255,255,255,.08);
+padding:15px; border-radius:12px;
+margin:15px;
+}
+
+table {
+width:100%; background:white; color:black;
+border-collapse: collapse;
+}
+
 th { background:black; color:white; padding:8px; }
 td { padding:8px; border:1px solid #ccc; }
 
-.pendiente { color:#ff4d4d; font-weight:bold; }
+.pendiente { color:red; font-weight:bold; }
+
+.hidden { display:none; }
 </style>
 </head>
 
 <body onload="inicio()">
 
-<div id="loginBox" class="login">
-<h3>Login</h3>
+<!-- LOGIN -->
+<div id="loginBox" class="login-box">
+<div class="login-card">
+<h2>TELEDATA IA</h2>
 <input id="u" placeholder="Correo">
-<input id="p" type="password" placeholder="Pass">
-<button onclick="login()">Entrar</button>
+<input id="p" type="password" placeholder="Contraseña">
+<button onclick="manejarAuth()">Entrar</button>
+</div>
 </div>
 
-<div id="appBox" class="app" style="display:none;">
+<!-- APP -->
+<div id="appBox" class="hidden">
 
-<!-- ⚠️ IMEIs PENDIENTES -->
+<!-- IMEIs -->
 <div class="card">
 <h3>⚠️ IMEIs Pendientes</h3>
 <div id="imeiPendientes"></div>
 </div>
 
+<!-- IA APRENDIZAJE -->
+<div class="card">
+<h3>🧠 IA Aprendizaje</h3>
+<div id="iaAprendizaje"></div>
+</div>
+
+<!-- ASISTENTE -->
+<div class="card">
+<h3>🗣️ Asistente de Ventas</h3>
+<button onclick="asistenteVenta()">Atender cliente</button>
+<button onclick="explicarProducto('KIT')">KIT</button>
+<button onclick="explicarProducto('CHIP')">CHIP</button>
+<button onclick="explicarProducto('PORTA')">PORTA</button>
+<button onclick="explicarProducto('RENUEVATE')">RENUEVATE</button>
+</div>
+
 <!-- FORM -->
 <div class="card">
-<select id="tipo">
+<select id="iTipo">
 <option>KIT</option>
 <option>CHIP</option>
 <option>PORTA</option>
 <option>RENUEVATE</option>
 </select>
 
-<input id="tel" placeholder="Teléfono">
-<input id="imei" placeholder="IMEI (opcional)">
-<input id="prom" placeholder="Promotor">
+<input id="iTel" placeholder="Teléfono">
+<input id="iIcc" placeholder="ICCID">
+<input id="iIme" placeholder="IMEI">
+<input id="iProm" placeholder="Promotor">
 
-<button onclick="guardar()">Guardar</button>
+<button onclick="guardar()">Guardar Venta</button>
 </div>
 
 <!-- TABLA -->
@@ -72,10 +128,13 @@ td { padding:8px; border:1px solid #ccc; }
 </table>
 </div>
 
+<button onclick="salir()">Cerrar sesión</button>
+
 </div>
 
 <script>
 
+// FIREBASE
 const firebaseConfig={
 apiKey:"AIzaSy...",
 authDomain:"ventastelcel4029.firebaseapp.com"
@@ -89,31 +148,35 @@ auth=firebase.auth();
 
 auth.onAuthStateChanged(u=>{
 if(u){
-loginBox.style.display="none";
-appBox.style.display="block";
+loginBox.classList.add("hidden");
+appBox.classList.remove("hidden");
 cargar();
 }else{
-loginBox.style.display="block";
-appBox.style.display="none";
+loginBox.classList.remove("hidden");
+appBox.classList.add("hidden");
 }
 });
 }
 
-function login(){
+// LOGIN
+function manejarAuth(){
 auth.signInWithEmailAndPassword(u.value,p.value)
 .catch(()=>{
 auth.createUserWithEmailAndPassword(u.value,p.value);
 });
 }
 
+function salir(){auth.signOut();}
+
+// GUARDAR
 function guardar(){
 
 let v={
 id:Date.now(),
-tel:tel.value,
-tipo:tipo.value,
-imei:imei.value || "N/A",
-prom:prom.value
+tel:iTel.value,
+tipo:iTipo.value,
+imei:iIme.value||"N/A",
+prom:iProm.value
 };
 
 let l=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
@@ -123,12 +186,12 @@ localStorage.setItem("ventas_omar",JSON.stringify(l));
 cargar();
 }
 
-// 🔥 CARGA COMPLETA
+// CARGAR
 function cargar(){
 
 let l=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
 
-// TABLA ORDENADA
+// TABLA
 tabla.innerHTML=l.map(v=>`
 <tr>
 <td>${v.tel}</td>
@@ -138,18 +201,19 @@ tabla.innerHTML=l.map(v=>`
 </tr>
 `).join("");
 
-// IMEIs PENDIENTES
+// IMEIs
 let pendientes=l.filter(v=>v.imei==="N/A");
 
 imeiPendientes.innerHTML=pendientes.length
 ? pendientes.map(v=>`<div class="pendiente">${v.prom} - ${v.tel}</div>`).join("")
 : "Sin pendientes";
 
-// VOZ SUPERVISOR
 if(pendientes.length){
-hablar(`Atención equipo, hay ${pendientes.length} IMEIs pendientes.`);
+hablar(`Hay ${pendientes.length} IMEIs pendientes`);
 }
 
+// IA
+actualizarIA();
 }
 
 // VOZ
@@ -157,6 +221,61 @@ function hablar(t){
 let m=new SpeechSynthesisUtterance(t);
 m.lang="es-MX";
 speechSynthesis.speak(m);
+}
+
+// ASISTENTE
+function asistenteVenta(){
+hablar("Hola, soy tu asistente. Te ayudo a elegir la mejor opción.");
+}
+
+function explicarProducto(t){
+let m={
+KIT:"Incluye línea nueva con beneficios.",
+CHIP:"Activa rápido tu línea.",
+PORTA:"Conserva tu número y mejora plan.",
+RENUEVATE:"Cambia tu equipo con promo."
+};
+hablar(m[t]);
+}
+
+// =====================
+// 🧠 IA APRENDIZAJE
+// =====================
+function entrenarIA(){
+
+let v=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
+
+let data={
+total:v.length,
+productos:{},
+promotores:{},
+pendientes:0
+};
+
+v.forEach(x=>{
+data.productos[x.tipo]=(data.productos[x.tipo]||0)+1;
+data.promotores[x.prom]=(data.promotores[x.prom]||0)+1;
+if(x.imei==="N/A") data.pendientes++;
+});
+
+localStorage.setItem("ia_data",JSON.stringify(data));
+}
+
+function actualizarIA(){
+
+entrenarIA();
+
+let d=JSON.parse(localStorage.getItem("ia_data")||"{}");
+
+if(!d.total){
+iaAprendizaje.innerHTML="Sin datos";
+return;
+}
+
+iaAprendizaje.innerHTML=`
+Ventas: ${d.total}<br>
+IMEIs pendientes: ${d.pendientes}
+`;
 }
 
 </script>
