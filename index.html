@@ -11,14 +11,63 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{margin:0;background:#000814;color:white;font-family:'Segoe UI';}
+body{
+margin:0;
+background:linear-gradient(135deg,#000814,#001d3d,#003566);
+color:white;
+font-family:'Segoe UI';
+}
+
 .app{max-width:420px;margin:auto;padding:15px;}
-.card{background:rgba(255,255,255,.08);padding:15px;border-radius:15px;margin-bottom:12px;text-align:center;}
-input,select{width:100%;padding:10px;margin-top:6px;border-radius:8px;border:none;background:#111;color:white;}
-button{width:100%;padding:12px;margin-top:8px;border:none;border-radius:10px;background:#ffc300;font-weight:bold;}
+
+.card{
+background:rgba(255,255,255,.06);
+backdrop-filter:blur(10px);
+padding:15px;
+border-radius:15px;
+margin-bottom:12px;
+text-align:center;
+}
+
+input,select{
+width:100%;
+padding:12px;
+margin-top:6px;
+border-radius:10px;
+border:none;
+background:#0a0f1c;
+color:white;
+}
+
+button{
+width:100%;
+padding:14px;
+margin-top:10px;
+border:none;
+border-radius:12px;
+background:#ffc300;
+font-weight:bold;
+}
+
 .hidden{display:none;}
-#angel{width:120px;animation:float 4s infinite;}
-@keyframes float{50%{transform:translateY(-10px);}}
+
+/* 🔥 NÚCLEO IA */
+.iris-core{
+width:120px;
+height:120px;
+margin:auto;
+border-radius:50%;
+background: radial-gradient(circle,#00d4ff,#001d3d);
+box-shadow: 0 0 30px #00d4ff, inset 0 0 20px #00d4ff;
+animation: pulso 2s infinite;
+}
+
+@keyframes pulso{
+0%{transform:scale(1);box-shadow:0 0 20px #00d4ff;}
+50%{transform:scale(1.1);box-shadow:0 0 50px #00d4ff;}
+100%{transform:scale(1);}
+}
+
 #chatBox{max-height:120px;overflow:auto;font-size:12px;}
 </style>
 </head>
@@ -29,7 +78,7 @@ button{width:100%;padding:12px;margin-top:8px;border:none;border-radius:10px;bac
 <div id="loginBox" class="app">
 <div class="card">
 <h2 style="color:#ffc300;">TELEDATA</h2>
-<p style="font-size:12px;">Acceso IRIS</p>
+<p>Acceso IRIS</p>
 
 <input id="email" placeholder="Correo">
 <input id="pass" type="password" placeholder="Contraseña">
@@ -44,13 +93,12 @@ button{width:100%;padding:12px;margin-top:8px;border:none;border-radius:10px;bac
 <div id="appBox" class="app hidden">
 
 <div class="card">
-<img id="angel" src="https://i.ibb.co/Xf8X0vV/angel-blue-animated.png">
+<div class="iris-core"></div>
 <div id="status2">IRIS activa</div>
 </div>
 
 <div class="card">
 <canvas id="grafica"></canvas>
-<div id="top"></div>
 </div>
 
 <form id="fReg" class="card">
@@ -89,7 +137,7 @@ authDomain:"ventastelcel4029.firebaseapp.com",
 databaseURL:"https://ventastelcel4029-default-rtdb.firebaseio.com"
 };
 
-let auth,db,usuario={},chart;
+let auth,db,chart;
 
 // MEMORIA
 let memoriaIA=JSON.parse(localStorage.getItem("iris_memoria")||"[]");
@@ -106,7 +154,7 @@ if(u) cargarUsuario(u);
 });
 }
 
-// LOGIN FUNCIONAL
+// LOGIN
 function authUser(){
 
 let e=email.value.trim();
@@ -123,24 +171,16 @@ hablar("Conectando al sistema Teledata");
 
 auth.signInWithEmailAndPassword(e,p)
 .then(()=>{
-status.innerText="Acceso correcto";
 hablar("Bienvenido a Teledata");
 })
 .catch(err=>{
 
 if(err.code==="auth/user-not-found"){
-
-status.innerText="Creando usuario...";
 auth.createUserWithEmailAndPassword(e,p)
-.then(()=>{
-hablar("Bienvenido a Teledata");
-});
-
+.then(()=>hablar("Bienvenido a Teledata"));
 }else if(err.code==="auth/wrong-password"){
-
 status.innerText="Contraseña incorrecta";
 hablar("Contraseña incorrecta");
-
 }else{
 status.innerText=err.message;
 }
@@ -148,7 +188,7 @@ status.innerText=err.message;
 });
 }
 
-// CARGAR USUARIO
+// ENTRAR
 function cargarUsuario(u){
 loginBox.classList.add("hidden");
 appBox.classList.remove("hidden");
@@ -156,13 +196,23 @@ hablar("Sistema activo");
 cargarVentas();
 }
 
-// VOZ
+// VOZ + EFECTO IA
 function hablar(t){
+
+let core=document.querySelector(".iris-core");
+
+core.style.background="radial-gradient(circle,#00ffcc,#001d3d)";
+
+setTimeout(()=>{
+core.style.background="radial-gradient(circle,#00d4ff,#001d3d)";
+},800);
+
 let m=new SpeechSynthesisUtterance(t);
 m.lang="es-MX";
 m.rate=0.9;
 m.pitch=1.1;
 speechSynthesis.speak(m);
+
 status2.innerText=t;
 }
 
@@ -174,7 +224,6 @@ let v={
 tel:tel.value,
 tipo:tipo.value,
 imei:imei.value,
-promotor:email.value,
 offline:!navigator.onLine
 };
 
@@ -183,7 +232,7 @@ localStorage.setItem("ventas_offline",JSON.stringify(ventasOffline));
 
 if(navigator.onLine){
 db.ref("ventas").push(v);
-hablar("Venta guardada");
+hablar("Venta registrada");
 }else{
 hablar("Guardado sin internet");
 }
@@ -192,8 +241,8 @@ cargarVentas();
 };
 
 // SINCRONIZAR
-function sincronizar(){
-if(!navigator.onLine)return;
+window.addEventListener("online",()=>{
+hablar("Conexión restaurada");
 
 ventasOffline.forEach(v=>{
 db.ref("ventas").push(v);
@@ -201,9 +250,7 @@ db.ref("ventas").push(v);
 
 ventasOffline=[];
 localStorage.removeItem("ventas_offline");
-
-hablar("Datos sincronizados");
-}
+});
 
 // CARGAR
 function cargarVentas(){
@@ -232,35 +279,13 @@ data:{labels:Object.keys(c),datasets:[{data:Object.values(c)}]}
 });
 }
 
-// CHAT IA
+// CHAT
 function enviarChat(){
-
 let t=msg.value;
-
-memoriaIA.push(t);
-localStorage.setItem("iris_memoria",JSON.stringify(memoriaIA));
-
 chatBox.innerHTML+=`<div><b>Tú:</b> ${t}</div>`;
-
-if(navigator.onLine){
 hablar("Te escucho");
-}else{
-let r=memoriaIA[Math.floor(Math.random()*memoriaIA.length)];
-hablar("Sin internet recuerdo: "+r);
-}
-
 msg.value="";
 }
-
-// INTERNET
-window.addEventListener("online",()=>{
-hablar("Conexión restaurada");
-sincronizar();
-});
-
-window.addEventListener("offline",()=>{
-hablar("Modo sin internet");
-});
 
 </script>
 </body>
