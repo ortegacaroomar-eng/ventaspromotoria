@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IRIS IA EMPRESA</title>
+<title>IRIS TELEdata</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -13,35 +13,37 @@
 <style>
 body{margin:0;background:#000814;color:white;font-family:'Segoe UI';}
 .app{max-width:420px;margin:auto;padding:15px;}
-.card{background:rgba(255,255,255,.08);padding:15px;border-radius:15px;margin-bottom:12px;}
+.card{background:rgba(255,255,255,.08);padding:15px;border-radius:15px;margin-bottom:12px;text-align:center;}
 input,select{width:100%;padding:10px;margin-top:6px;border-radius:8px;border:none;background:#111;color:white;}
 button{width:100%;padding:12px;margin-top:8px;border:none;border-radius:10px;background:#ffc300;font-weight:bold;}
 .hidden{display:none;}
 #angel{width:120px;animation:float 4s infinite;}
 @keyframes float{50%{transform:translateY(-10px);}}
-.alerta{animation:pulse .3s infinite alternate;}
-@keyframes pulse{100%{filter:drop-shadow(0 0 20px red);}}
 #chatBox{max-height:120px;overflow:auto;font-size:12px;}
-.badge{font-size:10px;opacity:.7;}
 </style>
 </head>
 
 <body onload="inicio()">
 
+<!-- LOGIN -->
 <div id="loginBox" class="app">
 <div class="card">
-<h2 style="text-align:center;color:#ffc300;">IRIS</h2>
+<h2 style="color:#ffc300;">TELEDATA</h2>
+<p style="font-size:12px;">Acceso IRIS</p>
+
 <input id="email" placeholder="Correo">
 <input id="pass" type="password" placeholder="Contraseña">
-<input id="tienda" placeholder="Tienda">
-<button onclick="authUser()">Entrar / Crear</button>
+
+<button onclick="authUser()">INICIAR</button>
+
 <div id="status"></div>
 </div>
 </div>
 
+<!-- APP -->
 <div id="appBox" class="app hidden">
 
-<div class="card" style="text-align:center;">
+<div class="card">
 <img id="angel" src="https://i.ibb.co/Xf8X0vV/angel-blue-animated.png">
 <div id="status2">IRIS activa</div>
 </div>
@@ -82,16 +84,16 @@ button{width:100%;padding:12px;margin-top:8px;border:none;border-radius:10px;bac
 
 // CONFIG
 const firebaseConfig={
-apiKey:"AIzaSy...",
+apiKey:"AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
 authDomain:"ventastelcel4029.firebaseapp.com",
 databaseURL:"https://ventastelcel4029-default-rtdb.firebaseio.com"
 };
 
 let auth,db,usuario={},chart;
 
-// 🧠 MEMORIA
-let memoriaIA = JSON.parse(localStorage.getItem("iris_memoria")||"[]");
-let ventasOffline = JSON.parse(localStorage.getItem("ventas_offline")||"[]");
+// MEMORIA
+let memoriaIA=JSON.parse(localStorage.getItem("iris_memoria")||"[]");
+let ventasOffline=JSON.parse(localStorage.getItem("ventas_offline")||"[]");
 
 // INICIO
 function inicio(){
@@ -104,21 +106,54 @@ if(u) cargarUsuario(u);
 });
 }
 
-// LOGIN
+// LOGIN FUNCIONAL
 function authUser(){
-auth.signInWithEmailAndPassword(email.value,pass.value)
-.catch(()=>{
-auth.createUserWithEmailAndPassword(email.value,pass.value);
+
+let e=email.value.trim();
+let p=pass.value.trim();
+
+if(!e||!p){
+status.innerText="Ingresa datos";
+hablar("Necesito tus datos");
+return;
+}
+
+status.innerText="Conectando...";
+hablar("Conectando al sistema Teledata");
+
+auth.signInWithEmailAndPassword(e,p)
+.then(()=>{
+status.innerText="Acceso correcto";
+hablar("Bienvenido a Teledata");
+})
+.catch(err=>{
+
+if(err.code==="auth/user-not-found"){
+
+status.innerText="Creando usuario...";
+auth.createUserWithEmailAndPassword(e,p)
+.then(()=>{
+hablar("Bienvenido a Teledata");
+});
+
+}else if(err.code==="auth/wrong-password"){
+
+status.innerText="Contraseña incorrecta";
+hablar("Contraseña incorrecta");
+
+}else{
+status.innerText=err.message;
+}
+
 });
 }
 
-// USUARIO
+// CARGAR USUARIO
 function cargarUsuario(u){
 loginBox.classList.add("hidden");
 appBox.classList.remove("hidden");
-hablar("Sistema híbrido activo");
+hablar("Sistema activo");
 cargarVentas();
-setInterval(analizarIA,30000);
 }
 
 // VOZ
@@ -126,6 +161,7 @@ function hablar(t){
 let m=new SpeechSynthesisUtterance(t);
 m.lang="es-MX";
 m.rate=0.9;
+m.pitch=1.1;
 speechSynthesis.speak(m);
 status2.innerText=t;
 }
@@ -142,16 +178,14 @@ promotor:email.value,
 offline:!navigator.onLine
 };
 
-// 💾 SIEMPRE GUARDA LOCAL
 ventasOffline.unshift(v);
 localStorage.setItem("ventas_offline",JSON.stringify(ventasOffline));
 
-// ☁️ INTENTA SUBIR
 if(navigator.onLine){
 db.ref("ventas").push(v);
-hablar("Venta guardada y sincronizada");
+hablar("Venta guardada");
 }else{
-hablar("Guardé la venta sin internet");
+hablar("Guardado sin internet");
 }
 
 cargarVentas();
@@ -159,10 +193,7 @@ cargarVentas();
 
 // SINCRONIZAR
 function sincronizar(){
-if(!navigator.onLine) return;
-if(ventasOffline.length===0) return;
-
-hablar("Sincronizando ventas...");
+if(!navigator.onLine)return;
 
 ventasOffline.forEach(v=>{
 db.ref("ventas").push(v);
@@ -171,7 +202,7 @@ db.ref("ventas").push(v);
 ventasOffline=[];
 localStorage.removeItem("ventas_offline");
 
-hablar("Todo sincronizado");
+hablar("Datos sincronizados");
 }
 
 // CARGAR
@@ -183,21 +214,11 @@ let total=[...ventasOffline,...online];
 
 lista.innerHTML=total.map(v=>`
 <div class="card">
-${v.tel} - ${v.tipo}
-<div class="badge">${v.offline?"📡 OFFLINE":"☁️ ONLINE"}</div>
+${v.tel} - ${v.tipo} ${v.offline?"📡":"☁️"}
 </div>`).join("");
 
 grafica(total);
-top(total);
 });
-}
-
-// TOP
-function top(l){
-let c={};
-l.forEach(v=>c[v.promotor]=(c[v.promotor]||0)+1);
-let t=Object.entries(c).sort((a,b)=>b[1]-a[1])[0];
-top.innerText=t?`TOP: ${t[0]} (${t[1]})`:"";
 }
 
 // GRAFICA
@@ -205,24 +226,9 @@ function grafica(l){
 let c={KIT:0,CHIP:0,PORTA:0,RENUEVATE:0};
 l.forEach(v=>c[v.tipo]++);
 if(chart)chart.destroy();
-chart=new Chart(grafica,{type:"bar",data:{labels:Object.keys(c),datasets:[{data:Object.values(c)}]}});
-}
-
-// IA
-function analizarIA(){
-
-let total=[...ventasOffline];
-
-db.ref("ventas").once("value",snap=>{
-total=[...total,...Object.values(snap.val()||{})];
-
-let pendientes=total.filter(v=>v.imei==="si");
-
-if(pendientes.length>0){
-hablar("Hay IMEIs pendientes, atiéndanlos");
-}else{
-hablar("Buen trabajo equipo");
-}
+chart=new Chart(document.getElementById("grafica"),{
+type:"bar",
+data:{labels:Object.keys(c),datasets:[{data:Object.values(c)}]}
 });
 }
 
@@ -237,10 +243,10 @@ localStorage.setItem("iris_memoria",JSON.stringify(memoriaIA));
 chatBox.innerHTML+=`<div><b>Tú:</b> ${t}</div>`;
 
 if(navigator.onLine){
-hablar("Te escucho… sigue hablándome");
+hablar("Te escucho");
 }else{
 let r=memoriaIA[Math.floor(Math.random()*memoriaIA.length)];
-hablar("Sin internet… recuerdo esto: "+r);
+hablar("Sin internet recuerdo: "+r);
 }
 
 msg.value="";
@@ -253,7 +259,7 @@ sincronizar();
 });
 
 window.addEventListener("offline",()=>{
-hablar("Modo sin internet activado");
+hablar("Modo sin internet");
 });
 
 </script>
