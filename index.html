@@ -14,12 +14,22 @@ button { background:#003566; color:#fff; border:none; }
 .stat { background:#e9ecef; padding:8px; margin:5px 0; border-radius:6px; }
 </style>
 </head>
-<body onload="inicio()"><div id="login">
-<h3>Login</h3>
+<body onload="inicio()"><div id="login" class="container">
+<h3>Bienvenido</h3><button onclick="mostrarLogin()">🔑 Ingresar</button> <button onclick="mostrarRegistro()">🆕 Registrar usuario nuevo</button> <button onclick="mostrarAdmin()">🔒 Administrador</button>
+
+<div id="formLogin" class="hidden">
 <input id="u" placeholder="Correo">
 <input id="p" placeholder="Contraseña">
 <button onclick="entrar()">Entrar</button>
-</div><div id="panel" class="hidden">
+</div><div id="formRegistro" class="hidden">
+<input id="regU" placeholder="Correo">
+<input id="regP" placeholder="Contraseña">
+<button onclick="registrar()">Crear cuenta</button>
+</div><div id="formAdmin" class="hidden">
+<input id="adminUser" placeholder="Usuario admin">
+<input id="adminPassLogin" placeholder="Contraseña">
+<button onclick="loginAdmin()">Entrar como admin</button>
+</div></div><div id="panel" class="hidden">
 <div class="header">SISTEMA 4029</div>
 <div class="container"><input id="iProm" placeholder="Promotor">
 <input id="iTel" placeholder="Teléfono">
@@ -40,6 +50,45 @@ let uA="";
 function inicio(){
 const s=localStorage.getItem('ses');
 if(s){uA=s; mostrar();}
+}
+
+function mostrarLogin(){
+formLogin.classList.remove('hidden');
+formRegistro.classList.add('hidden');
+formAdmin.classList.add('hidden');
+}
+
+function mostrarRegistro(){
+formRegistro.classList.remove('hidden');
+formLogin.classList.add('hidden');
+formAdmin.classList.add('hidden');
+}
+
+function mostrarAdmin(){
+formAdmin.classList.remove('hidden');
+formLogin.classList.add('hidden');
+formRegistro.classList.add('hidden');
+}
+
+function registrar(){
+const u=document.getElementById('regU').value;
+const p=document.getElementById('regP').value;
+if(!u||!p) return alert('Completa datos');
+let db=JSON.parse(localStorage.getItem('users')||"{}");
+db[u]=p;
+localStorage.setItem('users',JSON.stringify(db));
+alert('Usuario creado');
+mostrarLogin();
+}
+
+function loginAdmin(){
+const u=document.getElementById('adminUser').value;
+const p=document.getElementById('adminPassLogin').value;
+if(u==='admin' && p==='admin123'){
+uA='admin';
+localStorage.setItem('ses',uA);
+mostrar();
+}else alert('Admin incorrecto');
 }
 
 function entrar(){
