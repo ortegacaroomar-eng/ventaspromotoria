@@ -1,206 +1,143 @@
-<!DOCTYPE html>
-<html lang="es">
+<!DOCTYPE html><html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teledata IA PRO - Voice</title>
-
-    <style>
-        :root {
-            --primary: #ffc300;
-            --secondary: #003566;
-            --bg: #001d3d;
-            --accent: #00b4d8;
-            --danger: #ff4d4d;
-            --success: #00ff88;
-            --listening: #9d4edd; /* Color cuando escucha */
-        }
-
-        body { margin: 0; font-family: 'Segoe UI'; background: var(--bg); color: white; }
-        .hidden { display: none !important; }
-
-        /* INTERFAZ */
-        .container { padding: 15px; max-width: 600px; margin: auto; }
-        .card { background: rgba(255, 255, 255, 0.07); padding: 15px; margin-bottom: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
-        
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: none; box-sizing: border-box; font-size: 16px; }
-        button { width: 100%; padding: 12px; border: none; border-radius: 10px; background: var(--primary); font-weight: bold; cursor: pointer; }
-
-        /* TABLA */
-        .table-wrapper { overflow-x: auto; background: white; border-radius: 8px; margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; color: #333; }
-        th { background: #222; color: white; padding: 8px; font-size: 0.8em; }
-        td { padding: 8px; border-bottom: 1px solid #ddd; font-size: 0.85em; text-align: center; }
-        .pendiente { color: var(--danger); font-weight: bold; }
-
-        /* IA HALO */
-        #halo {
-            position: fixed; bottom: 20px; right: 20px;
-            width: 80px; height: 80px;
-            border-radius: 50%; border: 4px solid var(--accent);
-            box-shadow: 0 0 15px var(--accent);
-            cursor: pointer; z-index: 100;
-            transition: 0.4s;
-            animation: breathe 3s infinite;
-        }
-
-        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-
-        .hablando { border-color: var(--success) !important; box-shadow: 0 0 30px var(--success) !important; }
-        .escuchando { border-color: var(--listening) !important; box-shadow: 0 0 30px var(--listening) !important; background: rgba(157, 78, 221, 0.2); }
-        .alerta { border-color: var(--danger) !important; }
-
-        .status-msg { font-size: 0.7em; text-align: center; color: var(--accent); margin-top: 5px; }
-
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SISTEMA VENTAS 4029</title>
+<style>
+body { font-family: Arial; margin:0; background:#f4f7f6; }
+.header { background:#003566; color:#fff; padding:15px; text-align:center; }
+.container { max-width:450px; margin:auto; background:#fff; padding:20px; }
+input, select, button { width:100%; padding:12px; margin:6px 0; }
+button { background:#003566; color:#fff; border:none; }
+.hidden { display:none; }
+.admin-box { margin-top:20px; padding:10px; border:2px solid #003566; }
+.stat { background:#e9ecef; padding:8px; margin:5px 0; border-radius:6px; }
+</style>
 </head>
-<body>
+<body onload="inicio()"><div id="login">
+<h3>Login</h3>
+<input id="u" placeholder="Correo">
+<input id="p" placeholder="Contraseña">
+<button onclick="entrar()">Entrar</button>
+</div><div id="panel" class="hidden">
+<div class="header">SISTEMA 4029</div>
+<div class="container"><input id="iProm" placeholder="Promotor">
+<input id="iTel" placeholder="Teléfono">
+<button onclick="guardar()">Guardar</button><div id="lista"></div><!-- ADMIN PRO --><div class="admin-box">
+<h4>🔒 Panel Administrador PRO</h4>
+<input id="adminPass" placeholder="Contraseña admin">
+<select id="filtroTiempo">
+<option value="todos">Todo</option>
+<option value="mes">Este mes</option>
+<option value="anio">Este año</option>
+</select>
+<button onclick="verAdmin()">Ver análisis</button><div id="adminStats"></div>
+<div id="adminData"></div>
+</div></div>
+</div><script>
+let uA="";
 
-    <div id="authBox" class="container" style="text-align: center; margin-top: 20vh;">
-        <div class="card">
-            <h2>TELEDATA IA</h2>
-            <input id="u" placeholder="Usuario">
-            <input id="p" type="password" placeholder="Contraseña">
-            <button onclick="login()">Entrar</button>
-            <p style="font-size: 0.8em;">Di "Entrar" para acceder</p>
-        </div>
-    </div>
+function inicio(){
+const s=localStorage.getItem('ses');
+if(s){uA=s; mostrar();}
+}
 
-    <div id="appBox" class="container hidden">
-        <div class="card">
-            📍 <span id="gps">Ubicación...</span>
-        </div>
+function entrar(){
+const u=document.getElementById('u').value;
+const p=document.getElementById('p').value;
+let db=JSON.parse(localStorage.getItem('users')||"{}");
+if(db[u]&&db[u]==p){
+uA=u;
+localStorage.setItem('ses',u);
+mostrar();
+}else alert("Error");
+}
 
-        <div class="card">
-            <h3>Nueva Venta</h3>
-            <select id="iTipo"><option>KIT</option><option>CHIP</option><option>PORTA</option></select>
-            <input id="iTel" type="number" placeholder="Teléfono">
-            <input id="iIme" placeholder="IMEI (N/A si está pendiente)">
-            <input id="iProm" placeholder="Promotor">
-            <button onclick="guardar()">Guardar Venta</button>
-        </div>
+function mostrar(){
+document.getElementById('login').classList.add('hidden');
+document.getElementById('panel').classList.remove('hidden');
+pintar();
+}
 
-        <div class="card">
-            <div class="table-wrapper">
-                <table>
-                    <thead><tr><th>Fecha</th><th>Tel</th><th>Tipo</th><th>IMEI</th><th>Prom</th></tr></thead>
-                    <tbody id="tabla"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+function guardar(){
+let d=JSON.parse(localStorage.getItem('ventas_'+uA)||"[]");
+d.push({
+prom: iProm.value,
+tel: iTel.value,
+fecha: new Date().toISOString()
+});
+localStorage.setItem('ventas_'+uA,JSON.stringify(d));
+pintar();
+}
 
-    <div id="halo" onclick="toggleEscucha()"></div>
-    <div id="voiceStatus" class="status-msg" style="position:fixed; bottom:105px; right:20px; width:80px;"></div>
+function pintar(){
+let d=JSON.parse(localStorage.getItem('ventas_'+uA)||"[]");
+let html="";
+d.forEach(x=>{
+html+=`<div>${x.prom} - ${x.tel}</div>`;
+});
+document.getElementById('lista').innerHTML=html;
+}
 
-    <script>
-        let recog;
-        let isEscuchando = false;
+// ADMIN PRO
+function verAdmin(){
+const pass=document.getElementById('adminPass').value;
+const filtro=document.getElementById('filtroTiempo').value;
 
-        // --- MANEJO DE FECHA ---
-        function getFecha() {
-            const d = new Date();
-            return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
-        }
+if(pass!=="admin123"){
+alert("Acceso denegado"); return;
+}
 
-        // --- SISTEMA DE VOZ (ESCUCHA) ---
-        if ('webkitSpeechRecognition' in window) {
-            recog = new webkitSpeechRecognition();
-            recog.lang = "es-MX";
-            recog.continuous = false;
+let total=0;
+let promotores={};
+let html="";
 
-            recog.onstart = () => {
-                isEscuchando = true;
-                halo.classList.add("escuchando");
-                document.getElementById('voiceStatus').innerText = "Escuchando...";
-            };
+for(let key in localStorage){
+if(key.startsWith('ventas_')){
+let user=key.replace('ventas_','');
+let data=JSON.parse(localStorage.getItem(key));
 
-            recog.onend = () => {
-                isEscuchando = false;
-                halo.classList.remove("escuchando");
-                document.getElementById('voiceStatus').innerText = "";
-            };
+html+=`<h5>${user}</h5>`;
 
-            recog.onresult = (e) => {
-                const comando = e.results[0][0].transcript.toLowerCase();
-                procesarComando(comando);
-            };
-        }
+data.forEach(v=>{
+let f=new Date(v.fecha);
+let ahora=new Date();
 
-        function toggleEscucha() {
-            if (isEscuchando) recog.stop();
-            else recog.start();
-        }
+let incluir=true;
+if(filtro==="mes"){
+incluir = f.getMonth()===ahora.getMonth() && f.getFullYear()===ahora.getFullYear();
+}
+if(filtro==="anio"){
+incluir = f.getFullYear()===ahora.getFullYear();
+}
 
-        function procesarComando(cmd) {
-            console.log("Comando recibido:", cmd);
+if(incluir){
+total++;
 
-            if (cmd.includes("entrar") || cmd.includes("iniciar")) {
-                login();
-            } else if (cmd.includes("guardar") || cmd.includes("registrar")) {
-                guardar();
-            } else if (cmd.includes("hola")) {
-                hablar("Hola, estoy lista. ¿Qué vamos a registrar hoy?");
-            } else if (cmd.includes("limpiar")) {
-                localStorage.removeItem("ventas_omar");
-                cargar();
-                hablar("Registros eliminados");
-            } else {
-                hablar("Escuché: " + cmd);
-            }
-        }
+// ranking
+if(!promotores[v.prom]) promotores[v.prom]=0;
+promotores[v.prom]++;
 
-        // --- LÓGICA DE APP ---
-        function login() {
-            authBox.classList.add("hidden");
-            appBox.classList.remove("hidden");
-            hablar("Acceso concedido");
-            cargar();
-        }
+html+=`<div>${v.prom} - ${v.tel} (${f.toLocaleDateString()})</div>`;
+}
+});
+}
+}
 
-        function guardar() {
-            const v = {
-                fecha: getFecha(),
-                tel: iTel.value || "0000",
-                tipo: iTipo.value,
-                imei: iIme.value || "N/A",
-                prom: iProm.value || "Sin nombre"
-            };
-            
-            let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-            l.unshift(v);
-            localStorage.setItem("ventas_omar", JSON.stringify(l));
-            
-            iTel.value = ""; iIme.value = "";
-            hablar("Venta registrada");
-            cargar();
-        }
+// ranking
+let ranking = Object.entries(promotores).sort((a,b)=>b[1]-a[1]);
+let rankHTML="<h4>🏆 Ranking Promotores</h4>";
+ranking.forEach((r,i)=>{
+rankHTML+=`<div class="stat">${i+1}. ${r[0]} - ${r[1]} ventas</div>`;
+});
 
-        function cargar() {
-            let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-            tabla.innerHTML = l.map(v => `
-                <tr>
-                    <td>${v.fecha}</td>
-                    <td>${v.tel}</td>
-                    <td>${v.tipo}</td>
-                    <td class="${v.imei=='N/A'?'pendiente':''}">${v.imei}</td>
-                    <td>${v.prom}</td>
-                </tr>
-            `).join("");
-            
-            // Alerta visual si hay pendientes
-            if (l.some(v => v.imei === "N/A")) halo.classList.add("alerta");
-            else halo.classList.remove("alerta");
-        }
+// stats
+let statsHTML = `
+<div class="stat">📊 Total ventas: ${total}</div>
+`;
 
-        function hablar(t) {
-            halo.classList.add("hablando");
-            const m = new SpeechSynthesisUtterance(t);
-            m.lang = "es-MX";
-            m.onend = () => halo.classList.remove("hablando");
-            speechSynthesis.speak(m);
-        }
-
-    </script>
-</body>
+document.getElementById('adminStats').innerHTML = statsHTML + rankHTML;
+document.getElementById('adminData').innerHTML = html;
+}
+</script></body>
 </html>
