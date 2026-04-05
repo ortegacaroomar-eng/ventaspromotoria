@@ -1,192 +1,220 @@
-<!DOCTYPE html><html lang="es">
+<!DOCTYPE html>
+<html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SISTEMA VENTAS 4029</title>
+<title>Sistema Ventas PRO</title>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
 <style>
-body { font-family: Arial; margin:0; background:#f4f7f6; }
-.header { background:#003566; color:#fff; padding:15px; text-align:center; }
-.container { max-width:450px; margin:auto; background:#fff; padding:20px; }
-input, select, button { width:100%; padding:12px; margin:6px 0; }
-button { background:#003566; color:#fff; border:none; }
-.hidden { display:none; }
-.admin-box { margin-top:20px; padding:10px; border:2px solid #003566; }
-.stat { background:#e9ecef; padding:8px; margin:5px 0; border-radius:6px; }
+body{font-family:Arial;margin:0;background:#001d3d;color:#fff}
+.login{max-width:350px;margin:80px auto;background:#fff;color:#000;padding:20px;border-radius:15px}
+input,button{width:100%;padding:10px;margin:5px 0}
+.app{padding:20px}
+.hidden{display:none}
+table{width:100%;background:#fff;color:#000}
+th{background:#000;color:#fff}
 </style>
 </head>
-<body onload="inicio()"><div id="login" class="container">
-<h3>Bienvenido</h3><button onclick="mostrarLogin()">🔑 Ingresar</button> <button onclick="mostrarRegistro()">🆕 Registrar usuario nuevo</button> <button onclick="mostrarAdmin()">🔒 Administrador</button>
 
-<div id="formLogin" class="hidden">
+<body onload="inicio()">
+
+<!-- LOGIN -->
+<div id="login" class="login">
+<h3>Bienvenido</h3>
+
+<button onclick="show('loginForm')">🔑 Ingresar</button>
+<button onclick="show('regForm')">🆕 Registrar</button>
+<button onclick="show('adminForm')">🔒 Admin</button>
+
+<div id="loginForm" class="hidden">
 <input id="u" placeholder="Correo">
-<input id="p" placeholder="Contraseña">
-<button onclick="entrar()">Entrar</button>
-</div><div id="formRegistro" class="hidden">
-<input id="regU" placeholder="Correo">
-<input id="regP" placeholder="Contraseña">
-<button onclick="registrar()">Crear cuenta</button>
-</div><div id="formAdmin" class="hidden">
-<input id="adminUser" placeholder="Usuario admin">
-<input id="adminPassLogin" placeholder="Contraseña">
-<button onclick="loginAdmin()">Entrar como admin</button>
-</div></div><div id="panel" class="hidden">
-<div class="header">SISTEMA 4029</div>
-<div class="container"><input id="iProm" placeholder="Promotor">
-<input id="iTel" placeholder="Teléfono">
-<button onclick="guardar()">Guardar</button><div id="lista"></div><!-- ADMIN PRO --><div class="admin-box">
-<h4>🔒 Panel Administrador PRO</h4>
-<input id="adminPass" placeholder="Contraseña admin">
-<select id="filtroTiempo">
-<option value="todos">Todo</option>
-<option value="mes">Este mes</option>
-<option value="anio">Este año</option>
-</select>
-<button onclick="verAdmin()">Ver análisis</button><div id="adminStats"></div>
-<div id="adminData"></div>
-</div></div>
-</div><script>
-let uA="";
+<input id="p" type="password" placeholder="Contraseña">
+<button onclick="login()">Entrar</button>
+</div>
+
+<div id="regForm" class="hidden">
+<input id="ru" placeholder="Correo">
+<input id="rp" type="password" placeholder="Contraseña">
+<button onclick="registro()">Crear</button>
+</div>
+
+<div id="adminForm" class="hidden">
+<input id="au" placeholder="Usuario">
+<input id="ap" type="password" placeholder="Pass">
+<button onclick="admin()">Entrar Admin</button>
+</div>
+</div>
+
+<!-- APP -->
+<div id="app" class="app hidden">
+
+<h3 id="reloj"></h3>
+<div id="direccion"></div>
+
+<form id="fReg">
+<input id="iTel" placeholder="Teléfono" required>
+<input id="iIcc" placeholder="ICCID" required>
+<input id="iProm" placeholder="Promotor" required>
+<button>Guardar Venta</button>
+</form>
+
+<table>
+<thead>
+<tr>
+<th>Teléfono</th>
+<th>ICCID</th>
+<th>Promotor</th>
+<th>Usuario</th>
+</tr>
+</thead>
+<tbody id="body"></tbody>
+</table>
+
+</div>
+
+<script>
+
+const config={
+apiKey:"TU_API_KEY",
+authDomain:"ventastelcel4029.firebaseapp.com",
+databaseURL:"https://ventastelcel4029-default-rtdb.firebaseio.com"
+};
+
+let auth;
+let esAdmin=false;
 
 function inicio(){
-const s=localStorage.getItem('ses');
-if(s){uA=s; mostrar();}
-}
+firebase.initializeApp(config);
+auth=firebase.auth();
 
-function mostrarLogin(){
-formLogin.classList.remove('hidden');
-formRegistro.classList.add('hidden');
-formAdmin.classList.add('hidden');
-}
+// reloj
+setInterval(()=>{reloj.innerText=new Date().toLocaleTimeString();},1000);
 
-function mostrarRegistro(){
-formRegistro.classList.remove('hidden');
-formLogin.classList.add('hidden');
-formAdmin.classList.add('hidden');
-}
-
-function mostrarAdmin(){
-formAdmin.classList.remove('hidden');
-formLogin.classList.add('hidden');
-formRegistro.classList.add('hidden');
-}
-
-function registrar(){
-const u=document.getElementById('regU').value;
-const p=document.getElementById('regP').value;
-if(!u||!p) return alert('Completa datos');
-let db=JSON.parse(localStorage.getItem('users')||"{}");
-db[u]=p;
-localStorage.setItem('users',JSON.stringify(db));
-alert('Usuario creado');
-mostrarLogin();
-}
-
-function loginAdmin(){
-const u=document.getElementById('adminUser').value;
-const p=document.getElementById('adminPassLogin').value;
-if(u==='admin' && p==='admin123'){
-uA='admin';
-localStorage.setItem('ses',uA);
-mostrar();
-}else alert('Admin incorrecto');
-}
-
-function entrar(){
-const u=document.getElementById('u').value;
-const p=document.getElementById('p').value;
-let db=JSON.parse(localStorage.getItem('users')||"{}");
-if(db[u]&&db[u]==p){
-uA=u;
-localStorage.setItem('ses',u);
-mostrar();
-}else alert("Error");
-}
-
-function mostrar(){
-document.getElementById('login').classList.add('hidden');
-document.getElementById('panel').classList.remove('hidden');
-pintar();
-}
-
-function guardar(){
-let d=JSON.parse(localStorage.getItem('ventas_'+uA)||"[]");
-d.push({
-prom: iProm.value,
-tel: iTel.value,
-fecha: new Date().toISOString()
+// GPS + dirección
+navigator.geolocation.getCurrentPosition(async p=>{
+let lat=p.coords.latitude;
+let lon=p.coords.longitude;
+try{
+let r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+let d=await r.json();
+direccion.innerText=d.display_name;
+}catch{direccion.innerText=lat+","+lon;}
 });
-localStorage.setItem('ventas_'+uA,JSON.stringify(d));
-pintar();
-}
 
-function pintar(){
-let d=JSON.parse(localStorage.getItem('ventas_'+uA)||"[]");
-let html="";
-d.forEach(x=>{
-html+=`<div>${x.prom} - ${x.tel}</div>`;
-});
-document.getElementById('lista').innerHTML=html;
-}
-
-// ADMIN PRO
-function verAdmin(){
-const pass=document.getElementById('adminPass').value;
-const filtro=document.getElementById('filtroTiempo').value;
-
-if(pass!=="admin123"){
-alert("Acceso denegado"); return;
-}
-
-let total=0;
-let promotores={};
-let html="";
-
-for(let key in localStorage){
-if(key.startsWith('ventas_')){
-let user=key.replace('ventas_','');
-let data=JSON.parse(localStorage.getItem(key));
-
-html+=`<h5>${user}</h5>`;
-
-data.forEach(v=>{
-let f=new Date(v.fecha);
-let ahora=new Date();
-
-let incluir=true;
-if(filtro==="mes"){
-incluir = f.getMonth()===ahora.getMonth() && f.getFullYear()===ahora.getFullYear();
-}
-if(filtro==="anio"){
-incluir = f.getFullYear()===ahora.getFullYear();
-}
-
-if(incluir){
-total++;
-
-// ranking
-if(!promotores[v.prom]) promotores[v.prom]=0;
-promotores[v.prom]++;
-
-html+=`<div>${v.prom} - ${v.tel} (${f.toLocaleDateString()})</div>`;
+// sesión
+auth.onAuthStateChanged(u=>{
+if(u){
+app.classList.remove("hidden");
+login.classList.add("hidden");
+cargar();
+}else{
+login.classList.remove("hidden");
+app.classList.add("hidden");
 }
 });
 }
+
+// UI
+function show(x){
+loginForm.classList.add("hidden");
+regForm.classList.add("hidden");
+adminForm.classList.add("hidden");
+document.getElementById(x).classList.remove("hidden");
 }
 
-// ranking
-let ranking = Object.entries(promotores).sort((a,b)=>b[1]-a[1]);
-let rankHTML="<h4>🏆 Ranking Promotores</h4>";
-ranking.forEach((r,i)=>{
-rankHTML+=`<div class="stat">${i+1}. ${r[0]} - ${r[1]} ventas</div>`;
+// AUTH
+function login(){auth.signInWithEmailAndPassword(u.value,p.value).catch(e=>alert(e.message));}
+function registro(){auth.createUserWithEmailAndPassword(ru.value,rp.value).catch(e=>alert(e.message));}
+
+function admin(){
+if(au.value=="admin" && ap.value=="admin123"){
+esAdmin=true;
+app.classList.remove("hidden");
+login.classList.add("hidden");
+cargar();
+}else{
+alert("Error admin");
+}
+}
+
+// GUARDAR EN FIREBASE
+fReg.onsubmit=e=>{
+e.preventDefault();
+let user=auth.currentUser;
+if(!user)return alert("No autenticado");
+
+let v={
+tel:iTel.value,
+icc:iIcc.value,
+prom:iProm.value,
+uid:user.uid,
+fecha:Date.now()
+};
+
+firebase.database().ref("ventas/"+user.uid).push(v);
+
+alert("Venta guardada ☁️");
+cargar();
+};
+
+// CARGAR DATOS
+function cargar(){
+
+// 👑 ADMIN VE TODO
+if(esAdmin){
+
+firebase.database().ref("ventas")
+.on("value",snap=>{
+
+let data=snap.val()||{};
+let total=[];
+
+Object.keys(data).forEach(uid=>{
+let ventas=data[uid];
+
+Object.values(ventas).forEach(v=>{
+total.push({...v,usuario:uid});
+});
 });
 
-// stats
-let statsHTML = `
-<div class="stat">📊 Total ventas: ${total}</div>
-`;
+pintar(total);
 
-document.getElementById('adminStats').innerHTML = statsHTML + rankHTML;
-document.getElementById('adminData').innerHTML = html;
+});
+
+}else{
+
+// 👤 USUARIO NORMAL
+let user=auth.currentUser;
+if(!user)return;
+
+firebase.database().ref("ventas/"+user.uid)
+.on("value",snap=>{
+
+let data=Object.values(snap.val()||{});
+pintar(data);
+
+});
+
 }
-</script></body>
+}
+
+// PINTAR TABLA
+function pintar(lista){
+body.innerHTML=lista.map(v=>`
+<tr>
+<td>${v.tel}</td>
+<td>${v.icc}</td>
+<td>${v.prom}</td>
+<td>${v.usuario||"—"}</td>
+</tr>
+`).join("");
+}
+
+</script>
+
+</body>
 </html>
