@@ -8,15 +8,29 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <style>
-body{font-family:Arial;margin:0;background:#001d3d;color:#fff}
-.login{max-width:350px;margin:80px auto;background:#fff;color:#000;padding:20px;border-radius:15px}
-input,button{width:100%;padding:10px;margin:5px 0}
-.app{padding:20px}
+:root{--bg:#001d3d;--card:#ffffff;--accent:#ffb703;--danger:#d90429}
+*{box-sizing:border-box}
+body{font-family:Arial;margin:0;background:var(--bg);color:#fff}
+.login{max-width:380px;margin:60px auto;background:var(--card);color:#000;padding:24px;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+input,button,select{width:100%;padding:12px;margin:6px 0;border-radius:8px;border:1px solid #ccc;font-size:15px}
+button{background:var(--bg);color:#fff;border:none;cursor:pointer;font-weight:bold}
+button:hover{opacity:.9}
+button.sec{background:#6c757d}
+button.danger{background:var(--danger)}
+.app{padding:20px;max-width:1200px;margin:0 auto}
 .hidden{display:none}
-table{width:100%;background:#fff;color:#000}
-th{background:#000;color:#fff}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
+.toolbar > *{flex:1;min-width:180px}
+table{width:100%;background:var(--card);color:#000;border-collapse:collapse;margin-top:8px;border-radius:8px;overflow:hidden}
+th{background:#000;color:#fff;padding:12px;text-align:left}
+td{padding:10px;border-bottom:1px solid #eee}
+.msg{margin:8px 0;color:#c1121f;font-size:14px;min-height:18px}
+.tag{background:var(--accent);color:#000;padding:2px 8px;border-radius:12px;font-size:12px}
+.acciones button{padding:6px 10px;width:auto;margin:0;font-size:13px}
 </style>
 </head>
 
@@ -24,196 +38,278 @@ th{background:#000;color:#fff}
 
 <!-- LOGIN -->
 <div id="login" class="login">
-<h3>Bienvenido</h3>
+<h3>Sistema Ventas PRO</h3>
+<p id="msgLogin" class="msg"></p>
 
-<button onclick="show('loginForm')">🔑 Ingresar</button>
-<button onclick="show('regForm')">🆕 Registrar</button>
-<button onclick="show('adminForm')">🔒 Admin</button>
+<div id="menuLogin">
+  <button onclick="show('loginForm')">🔑 Ingresar</button>
+  <button onclick="show('regForm')">🆕 Registrar</button>
+</div>
 
 <div id="loginForm" class="hidden">
-<input id="u" placeholder="Correo">
-<input id="p" type="password" placeholder="Contraseña">
-<button onclick="login()">Entrar</button>
+  <input id="u" type="email" placeholder="Correo" required>
+  <input id="p" type="password" placeholder="Contraseña" required>
+  <button onclick="login()">Entrar</button>
+  <button class="sec" onclick="show('menuLogin')">Volver</button>
 </div>
 
 <div id="regForm" class="hidden">
-<input id="ru" placeholder="Correo">
-<input id="rp" type="password" placeholder="Contraseña">
-<button onclick="registro()">Crear</button>
-</div>
-
-<div id="adminForm" class="hidden">
-<input id="au" placeholder="Usuario">
-<input id="ap" type="password" placeholder="Pass">
-<button onclick="admin()">Entrar Admin</button>
+  <input id="ru" type="email" placeholder="Correo" required>
+  <input id="rp" type="password" placeholder="Contraseña" minlength="6" required>
+  <button onclick="registro()">Crear cuenta</button>
+  <button class="sec" onclick="show('menuLogin')">Volver</button>
 </div>
 </div>
 
 <!-- APP -->
 <div id="app" class="app hidden">
+  <div class="header">
+    <div>
+      <h3>Sistema Ventas PRO <span id="tagRol" class="tag"></span></h3>
+      <div id="reloj"></div>
+      <small id="direccion">Obteniendo ubicación...</small>
+    </div>
+    <div>
+      <span id="correoUser"></span>
+      <button class="sec" onclick="salir()">Cerrar sesión</button>
+    </div>
+  </div>
 
-<h3 id="reloj"></h3>
-<div id="direccion"></div>
+  <form id="fReg">
+    <input id="iTel" placeholder="Teléfono" pattern="[0-9]{10}" title="10 dígitos" required>
+    <input id="iIcc" placeholder="ICCID" pattern="[0-9]{19,20}" title="19 o 20 dígitos" required>
+    <input id="iProm" placeholder="Promotor" required>
+    <button>Guardar Venta</button>
+  </form>
+  <p id="msgApp" class="msg"></p>
 
-<form id="fReg">
-<input id="iTel" placeholder="Teléfono" required>
-<input id="iIcc" placeholder="ICCID" required>
-<input id="iProm" placeholder="Promotor" required>
-<button>Guardar Venta</button>
-</form>
+  <div class="toolbar">
+    <select id="filtroProm" onchange="aplicarFiltros()">
+      <option value="">Todos los promotores</option>
+    </select>
+    <input id="buscarTel" placeholder="Buscar por teléfono..." oninput="aplicarFiltros()">
+    <button class="sec" onclick="exportarExcel()">📊 Exportar a Excel</button>
+  </div>
 
-<table>
-<thead>
-<tr>
-<th>Teléfono</th>
-<th>ICCID</th>
-<th>Promotor</th>
-<th>Usuario</th>
-</tr>
-</thead>
-<tbody id="body"></tbody>
-</table>
-
+  <table>
+    <thead>
+      <tr>
+        <th>Teléfono</th>
+        <th>ICCID</th>
+        <th>Promotor</th>
+        <th>Fecha</th>
+        <th>Usuario</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody id="body"></tbody>
+  </table>
 </div>
 
 <script>
-
 const config={
-apiKey:"TU_API_KEY",
-authDomain:"ventastelcel4029.firebaseapp.com",
-databaseURL:"https://ventastelcel4029-default-rtdb.firebaseio.com"
+  apiKey:"TU_API_KEY",
+  authDomain:"ventastelcel4029.firebaseapp.com",
+  databaseURL:"https://ventastelcel4029-default-rtdb.firebaseio.com"
 };
 
-let auth;
+let auth, db;
 let esAdmin=false;
+let refVentas;
+let todasLasVentas=[]; // guardamos todo para filtrar sin pedir a Firebase otra vez
 
 function inicio(){
-firebase.initializeApp(config);
-auth=firebase.auth();
+  firebase.initializeApp(config);
+  auth=firebase.auth();
+  db=firebase.database();
 
-// reloj
-setInterval(()=>{reloj.innerText=new Date().toLocaleTimeString();},1000);
+  setInterval(()=>{reloj.innerText=new Date().toLocaleString('es-MX');},1000);
 
-// GPS + dirección
-navigator.geolocation.getCurrentPosition(async p=>{
-let lat=p.coords.latitude;
-let lon=p.coords.longitude;
-try{
-let r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
-let d=await r.json();
-direccion.innerText=d.display_name;
-}catch{direccion.innerText=lat+","+lon;}
-});
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(async pos=>{
+      const {latitude:lat, longitude:lon} = pos.coords;
+      try{
+        const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+        const d=await r.json();
+        direccion.innerText=d.display_name || `${lat}, ${lon}`;
+      }catch{
+        direccion.innerText=`${lat}, ${lon}`;
+      }
+    },()=>{direccion.innerText="Ubicación no disponible";});
+  }else{
+    direccion.innerText="Geolocalización no soportada";
+  }
 
-// sesión
-auth.onAuthStateChanged(u=>{
-if(u){
-app.classList.remove("hidden");
-login.classList.add("hidden");
-cargar();
-}else{
-login.classList.remove("hidden");
-app.classList.add("hidden");
+  auth.onAuthStateChanged(async user=>{
+    if(user){
+      app.classList.remove("hidden");
+      login.classList.add("hidden");
+      correoUser.innerText=user.email;
+      
+      const token=await user.getIdTokenResult(true);
+      esAdmin=!!token.claims.admin;
+      tagRol.innerText=esAdmin ? "ADMIN" : "VENDEDOR";
+      
+      cargar();
+    }else{
+      login.classList.remove("hidden");
+      app.classList.add("hidden");
+      if(refVentas) refVentas.off();
+    }
+  });
 }
-});
-}
 
-// UI
 function show(x){
-loginForm.classList.add("hidden");
-regForm.classList.add("hidden");
-adminForm.classList.add("hidden");
-document.getElementById(x).classList.remove("hidden");
+  ['menuLogin','loginForm','regForm'].forEach(id=>document.getElementById(id).classList.add("hidden"));
+  document.getElementById(x).classList.remove("hidden");
+  msgLogin.innerText="";
+}
+function mostrarError(el,error){
+  const mensajes={
+    'auth/email-already-in-use':'Ese correo ya está registrado',
+    'auth/invalid-email':'Correo no válido',
+    'auth/weak-password':'Contraseña muy débil, mínimo 6 caracteres',
+    'auth/user-not-found':'Usuario no encontrado',
+    'auth/wrong-password':'Contraseña incorrecta'
+  };
+  el.innerText=mensajes[error.code] || error.message;
 }
 
-// AUTH
-function login(){auth.signInWithEmailAndPassword(u.value,p.value).catch(e=>alert(e.message));}
-function registro(){auth.createUserWithEmailAndPassword(ru.value,rp.value).catch(e=>alert(e.message));}
-
-function admin(){
-if(au.value=="admin" && ap.value=="admin123"){
-esAdmin=true;
-app.classList.remove("hidden");
-login.classList.add("hidden");
-cargar();
-}else{
-alert("Error admin");
+function login(){
+  msgLogin.innerText="";
+  auth.signInWithEmailAndPassword(u.value,p.value).catch(e=>mostrarError(msgLogin,e));
 }
+function registro(){
+  msgLogin.innerText="";
+  auth.createUserWithEmailAndPassword(ru.value,rp.value).catch(e=>mostrarError(msgLogin,e));
 }
+function salir(){auth.signOut();}
 
-// GUARDAR EN FIREBASE
+// GUARDAR VENTA
 fReg.onsubmit=e=>{
-e.preventDefault();
-let user=auth.currentUser;
-if(!user)return alert("No autenticado");
+  e.preventDefault();
+  msgApp.innerText="";
+  const user=auth.currentUser;
+  if(!user){msgApp.innerText="Sesión expirada";return;}
 
-let v={
-tel:iTel.value,
-icc:iIcc.value,
-prom:iProm.value,
-uid:user.uid,
-fecha:Date.now()
-};
+  const v={
+    tel:iTel.value.trim(),
+    icc:iIcc.value.trim(),
+    prom:iProm.value.trim(),
+    uid:user.uid,
+    email:user.email,
+    fecha:firebase.database.ServerValue.TIMESTAMP
+  };
 
-firebase.database().ref("ventas/"+user.uid).push(v);
-
-alert("Venta guardada ☁️");
-cargar();
+  db.ref("ventas/"+user.uid).push(v)
+    .then(()=>{
+      msgApp.style.color="#2a9d8f";
+      msgApp.innerText="Venta guardada ✓";
+      fReg.reset();
+      setTimeout(()=>{msgApp.innerText="";msgApp.style.color="#c1121f";},2000);
+    })
+    .catch(err=>{msgApp.innerText="Error: "+err.message;});
 };
 
 // CARGAR DATOS
 function cargar(){
-
-// 👑 ADMIN VE TODO
-if(esAdmin){
-
-firebase.database().ref("ventas")
-.on("value",snap=>{
-
-let data=snap.val()||{};
-let total=[];
-
-Object.keys(data).forEach(uid=>{
-let ventas=data[uid];
-
-Object.values(ventas).forEach(v=>{
-total.push({...v,usuario:uid});
-});
-});
-
-pintar(total);
-
-});
-
-}else{
-
-// 👤 USUARIO NORMAL
-let user=auth.currentUser;
-if(!user)return;
-
-firebase.database().ref("ventas/"+user.uid)
-.on("value",snap=>{
-
-let data=Object.values(snap.val()||{});
-pintar(data);
-
-});
-
+  if(refVentas) refVentas.off();
+  
+  if(esAdmin){
+    refVentas=db.ref("ventas");
+    refVentas.on("value",snap=>{
+      const data=snap.val()||{};
+      todasLasVentas=[];
+      Object.entries(data).forEach(([uid,userVentas])=>{
+        Object.entries(userVentas).forEach(([key,v])=>{
+          todasLasVentas.push({...v, key, uid});
+        });
+      });
+      todasLasVentas.sort((a,b)=>b.fecha-a.fecha);
+      llenarFiltroPromotor();
+      aplicarFiltros();
+    });
+  }else{
+    const user=auth.currentUser;
+    if(!user)return;
+    refVentas=db.ref("ventas/"+user.uid);
+    refVentas.on("value",snap=>{
+      const data=snap.val()||{};
+      todasLasVentas=Object.entries(data).map(([key,v])=>({...v,key,uid:user.uid}))
+        .sort((a,b)=>b.fecha-a.fecha);
+      llenarFiltroPromotor();
+      aplicarFiltros();
+    });
+  }
 }
+
+// ELIMINAR VENTA
+function eliminar(key,uid){
+  if(!confirm("¿Seguro que quieres eliminar esta venta?")) return;
+  db.ref(`ventas/${uid}/${key}`).remove()
+    .catch(err=>alert("Error al eliminar: "+err.message));
+}
+
+// FILTROS
+function llenarFiltroPromotor(){
+  const promotores=[...new Set(todasLasVentas.map(v=>v.prom))].sort();
+  filtroProm.innerHTML='<option value="">Todos los promotores</option>' + 
+    promotores.map(p=>`<option value="${p}">${p}</option>`).join("");
+}
+
+function aplicarFiltros(){
+  const textoTel=buscarTel.value.toLowerCase();
+  const promotor=filtroProm.value;
+  const filtradas=todasLasVentas.filter(v=>{
+    const matchTel=v.tel.includes(textoTel);
+    const matchProm=!promotor || v.prom===promotor;
+    return matchTel && matchProm;
+  });
+  pintar(filtradas);
+}
+
+// EXPORTAR EXCEL
+function exportarExcel(){
+  const datos=aplicarFiltrosYDevolver(); // usamos los datos ya filtrados
+  const ws=XLSX.utils.json_to_sheet(datos.map(v=>({
+    Telefono:v.tel,
+    ICCID:v.icc,
+    Promotor:v.prom,
+    Fecha:v.fecha ? new Date(v.fecha).toLocaleString('es-MX') : '',
+    Usuario:v.email||v.uid
+  })));
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,"Ventas");
+  XLSX.writeFile(wb,`ventas_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+function aplicarFiltrosYDevolver(){
+  const textoTel=buscarTel.value.toLowerCase();
+  const promotor=filtroProm.value;
+  return todasLasVentas.filter(v=>{
+    const matchTel=v.tel.includes(textoTel);
+    const matchProm=!promotor || v.prom===promotor;
+    return matchTel && matchProm;
+  });
 }
 
 // PINTAR TABLA
 function pintar(lista){
-body.innerHTML=lista.map(v=>`
-<tr>
-<td>${v.tel}</td>
-<td>${v.icc}</td>
-<td>${v.prom}</td>
-<td>${v.usuario||"—"}</td>
-</tr>
-`).join("");
+  body.innerHTML=lista.map(v=>`
+    <tr>
+      <td>${v.tel}</td>
+      <td>${v.icc}</td>
+      <td>${v.prom}</td>
+      <td>${v.fecha ? new Date(v.fecha).toLocaleString('es-MX') : '—'}</td>
+      <td>${esAdmin ? (v.email||v.uid) : '—'}</td>
+      <td class="acciones">
+        <button class="danger" onclick="eliminar('${v.key}','${v.uid}')">Eliminar</button>
+      </td>
+    </tr>
+  `).join("");
+  
+  if(!lista.length) body.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:20px">Sin resultados</td></tr>`;
 }
-
 </script>
 
 </body>
