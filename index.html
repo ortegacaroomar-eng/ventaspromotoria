@@ -160,8 +160,8 @@
         appId: "1:480758010888:web:e948c54f0217536aa9adbd"
     };
 
-    // CLAVE EXTRAÍDA DE TUS CAPTURAS
-    const GEMINI_API_KEY = "AIzaSyAGAdm64wUw0g2YGXHcoaDRj4oxCgC_3-E"; 
+    // TU NUEVA CLAVE ACTUALIZADA
+    const GEMINI_API_KEY = "AIzaSyBayQhTBchml9-uewg0fLFKO99Z8tD0R00"; 
 
     let db, auth, storage;
     let isLoginMode = true;
@@ -212,10 +212,12 @@
             }, () => { document.getElementById('txtGps').innerText = "GPS Desactivado"; });
         }
         
-        // FORMATO DD/MM/YYYY ASEGURADO
-        document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX', {
-            day: '2-digit', month: '2-digit', year: 'numeric'
-        });
+        // FORMATO DD/MM/YYYY
+        const hoy = new Date();
+        const dd = String(hoy.getDate()).padStart(2, '0');
+        const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+        const yyyy = hoy.getFullYear();
+        document.getElementById('iFec').value = `${dd}/${mm}/${yyyy}`;
 
         auth.onAuthStateChanged(user => {
             if(user) {
@@ -242,7 +244,7 @@
         };
     }
 
-    // FUNCIÓN CON CORRECCIÓN V1BETA Y SEGURIDAD
+    // FUNCIÓN CON CORRECCIÓN V1BETA Y CLAVE NUEVA
     async function llamarIA(prompt) {
         const respDiv = document.getElementById('iaRespuesta');
         respDiv.innerText = "Procesando...";
@@ -251,13 +253,7 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }],
-                    safetySettings: [
-                        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-                        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-                        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-                        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
-                    ]
+                    contents: [{ parts: [{ text: prompt }] }]
                 })
             });
 
@@ -266,8 +262,7 @@
             if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
                 return data.candidates[0].content.parts[0].text;
             } else {
-                console.error("Error IA:", data);
-                return "Error: " + (data.error?.message || "La IA no pudo responder. Revisa los detalles en consola.");
+                return "Error: " + (data.error?.message || "La IA no pudo responder.");
             }
         } catch (e) {
             return "Sin conexión: " + e.message;
@@ -300,7 +295,7 @@
 
     async function iaResumenDia(){
         const ventas = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-        const hoy = new Date().toLocaleDateString('es-MX', {day: '2-digit', month: '2-digit', year: 'numeric'});
+        const hoy = document.getElementById('iFec').value;
         const ventasHoy = ventas.filter(v=>v["FECHA DE ACTIVACION"]===hoy);
         if(!ventasHoy.length){document.getElementById('iaRespuesta').innerText="No tienes ventas hoy";return;}
         const prompt = `Resumen corto para promotor: ${ventasHoy.length} ventas hoy. Tipos: ${ventasHoy.map(v=>v["Renuevate/ Kit/Chip/ Porta"]).join(', ')}.`;
@@ -361,8 +356,8 @@
     function manejarAuth() {
         const u = document.getElementById('u').value, p = document.getElementById('p').value;
         if(!u || !p) return;
-        if(isLoginMode) auth.signInWithEmailAndPassword(u, p).catch(e => alert(e.message));
-        else auth.createUserWithEmailAndPassword(u, p).then(() => toggleAuthMode()).catch(e => alert(e.message));
+        if(isLoginMode) auth.signInWithEmailAndPassword(u, p).catch(e => alert("Error al entrar"));
+        else auth.createUserWithEmailAndPassword(u, p).then(() => toggleAuthMode()).catch(e => alert("Error al registrar"));
     }
 
     function salir() { auth.signOut(); }
@@ -410,9 +405,7 @@
         }
 
         cargarLocal(); e.target.reset();
-        document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX', {
-            day: '2-digit', month: '2-digit', year: 'numeric'
-        });
+        inicio(); // Reinicia fecha y GPS
         msg.style.color="var(--verde)"; msg.innerText="✓ Guardado";
         setTimeout(() => msg.innerText="", 2000);
     };
@@ -435,8 +428,11 @@
     function cargarLocal() {
         const lista = document.getElementById('listaVentas'), badge = document.getElementById('badgeTotal');
         let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-        const hoy = new Date().toLocaleDateString('es-MX', {day: '2-digit', month: '2-digit', year: 'numeric'});
+        
+        // Obtenemos la fecha actual en formato DD/MM/YYYY para el filtro
+        const hoy = document.getElementById('iFec').value;
         const ventasHoy = l.filter(v => v["FECHA DE ACTIVACION"] === hoy);
+        
         badge.innerText = ventasHoy.length;
         lista.innerHTML = l.map(v => `
             <div class="venta-item">
