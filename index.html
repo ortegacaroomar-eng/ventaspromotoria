@@ -11,32 +11,36 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         body { margin:0; font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; }
-        .app { max-width:1300px; margin:auto; padding:20px; }
-        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap:wrap; gap:10px }
+        .app { max-width:1000px; margin:auto; padding:20px; }
+        
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .gps-card { background: #000; border: 1px solid #00b4d8; padding: 10px 15px; border-radius: 12px; color: #00b4d8; font-size: 12px; display: flex; align-items: center; }
         .gps-card i { margin-right: 10px; font-size: 18px; color: #ffc300; }
         .reloj-digital { font-family: monospace; font-size: 24px; color: #ffc300; font-weight: bold; }
-        .user-info { font-size:12px; text-align:right }
-        .tag{background:#ffc300;color:#001d3d;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:bold}
+
         .btn-exit { background: rgba(255, 77, 77, 0.2); color: #ff4d4d; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #ff4d4d; cursor: pointer; }
+
         .card { background:rgba(255,255,255,.08); backdrop-filter:blur(10px); border-radius:15px; padding:20px; margin-bottom:15px; border:1px solid rgba(255,255,255,0.1); }
         label { font-size:10px; font-weight:bold; color:#ffc300; text-transform: uppercase; display: block; margin-bottom: 5px; }
+        
+        /* Inputs APP */
         .app input, .app select { width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; }
+        
+        /* Inputs LOGIN (Texto Negro) */
         .login-box input { width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #ccc; background:#f9f9f9; color:#000; box-sizing: border-box; font-size: 14px; }
+
         .btn-save { background:#ffc300; color:#001d3d; width:100%; padding:15px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size: 16px; }
         .btn-excel { background:#1f7a3f; color:white; width:100%; padding:14px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; margin-top:20px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(31, 122, 63, 0.4); }
-        .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
-        .toolbar > *{flex:1;min-width:180px}
-        .table-container { overflow-x: auto; background: white; border-radius: 10px; margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; color: #333; font-size: 11px; min-width: 1200px; }
+
+        .table-container { overflow-x: auto; background: white; border-radius: 10px; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; color: #333; font-size: 11px; min-width: 1100px; }
         th { background: #000 !important; color: #fff !important; padding: 12px; text-align: left; text-transform: uppercase; font-weight: bold; border: 1px solid #444; white-space: pre-line; }
         td { padding: 10px; border: 1px solid #ddd; }
         tr:nth-child(even) { background: #f9f9f9; }
+
         .hidden { display: none !important; }
         .login-box { max-width: 350px; margin: 100px auto; background: white; padding: 30px; border-radius: 20px; text-align: center; color: #000; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
         .btn-link-auth { background: none; border: none; color: #003566; font-size: 13px; text-decoration: underline; cursor: pointer; margin-top: 15px; font-weight: bold; }
-        .msg{margin:8px 0;color:#ff4d4d;font-size:13px;min-height:18px;text-align:center}
-        .acciones i{padding:6px;cursor:pointer}
     </style>
 </head>
 <body onload="inicio()">
@@ -44,7 +48,6 @@
     <div id="loginBox" class="login-box">
         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Logo_Telcel.svg/1200px-Logo_Telcel.svg.png" width="120">
         <h3 id="authTitle" style="color:#003566; margin-top:10px;">Acceso Promotores</h3>
-        <p id="msgLogin" class="msg"></p>
         <input id="u" type="email" placeholder="Correo electrónico">
         <input id="p" type="password" placeholder="Contraseña">
         <button class="btn-save" id="btnAuthAction" onclick="manejarAuth()">ENTRAR</button>
@@ -58,10 +61,7 @@
                 <div><b style="color:white">UBICACIÓN GPS</b><br><span id="txtGps">Localizando...</span></div>
             </div>
             <div class="reloj-digital" id="txtReloj">00:00:00</div>
-            <div class="user-info">
-                <span id="correoUser"></span> <span id="tagRol" class="tag"></span><br>
-                <div class="btn-exit" onclick="salir()"><i class="fa-solid fa-power-off"></i></div>
-            </div>
+            <div class="btn-exit" onclick="salir()"><i class="fa-solid fa-power-off"></i></div>
         </div>
 
         <form id="fReg">
@@ -77,9 +77,9 @@
                 <label>FECHA DE ACTIVACION</label>
                 <input id="iFec" required>
                 <label>NUM. CELULAR</label>
-                <input id="iTel" type="tel" required pattern="[0-9]{10}" maxlength="10" title="10 dígitos">
+                <input id="iTel" type="tel" required maxlength="10">
                 <label>ICCID</label>
-                <input id="iIcc" required pattern="[0-9]{19,20}" title="19 o 20 dígitos">
+                <input id="iIcc" required>
             </div>
 
             <div class="card">
@@ -102,17 +102,10 @@
             
             <button type="submit" class="btn-save">GUARDAR VENTA</button>
         </form>
-        <p id="msgApp" class="msg"></p>
 
-        <div class="toolbar">
-            <select id="filtroProm" onchange="aplicarFiltros()">
-                <option value="">Todos los promotores</option>
-            </select>
-            <input id="buscarTel" placeholder="Buscar por teléfono..." oninput="aplicarFiltros()">
-            <button class="btn-excel" onclick="exportarExcel()">
-                <i class="fa-solid fa-file-excel"></i> DESCARGAR REPORTE PROFESIONAL
-            </button>
-        </div>
+        <button class="btn-excel" onclick="exportarExcel()">
+            <i class="fa-solid fa-file-excel"></i> DESCARGAR REPORTE PROFESIONAL
+        </button>
 
         <div class="table-container">
             <table>
@@ -130,7 +123,6 @@
                         <th>MARCA</th>
                         <th>MODELO</th>
                         <th>REGISTRO</th>
-                        <th>USUARIO</th>
                         <th style="background:red !important">X</th>
                     </tr>
                 </thead>
@@ -141,7 +133,7 @@
 
 <script>
     const firebaseConfig = {
-        apiKey: "TU_API_KEY",
+        apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc", 
         authDomain: "ventastelcel4029.firebaseapp.com",
         databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com",
         projectId: "ventastelcel4029",
@@ -152,9 +144,6 @@
 
     let db, auth;
     let isLoginMode = true;
-    let esAdmin=false;
-    let refVentas;
-    let todasLasVentas=[];
 
     function inicio() {
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
@@ -164,25 +153,17 @@
         if(navigator.geolocation) {
             navigator.geolocation.watchPosition(p => {
                 document.getElementById('txtGps').innerHTML = `${p.coords.latitude.toFixed(6)}, ${p.coords.longitude.toFixed(6)}`;
-            },()=>{document.getElementById('txtGps').innerText="No disponible";});
+            });
         }
         document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
-        
-        auth.onAuthStateChanged(async user => {
+        auth.onAuthStateChanged(user => {
             if(user) {
                 document.getElementById('loginBox').classList.add("hidden");
                 document.getElementById('appBox').classList.remove("hidden");
-                correoUser.innerText=user.email;
-                
-                const token=await user.getIdTokenResult(true);
-                esAdmin=!!token.claims.admin;
-                tagRol.innerText=esAdmin ? "ADMIN" : "PROMOTOR";
-                
-                cargarVentas();
+                cargarLocal();
             } else {
                 document.getElementById('loginBox').classList.remove("hidden");
                 document.getElementById('appBox').classList.add("hidden");
-                if(refVentas) refVentas.off();
             }
         });
     }
@@ -192,34 +173,22 @@
         document.getElementById('authTitle').innerText = isLoginMode ? "Acceso Promotores" : "Registrar Nuevo Usuario";
         document.getElementById('btnAuthAction').innerText = isLoginMode ? "ENTRAR" : "REGISTRAR";
         document.getElementById('btnToggleAuth').innerText = isLoginMode ? "¿No tienes cuenta? Regístrate aquí" : "¿Ya tienes cuenta? Inicia sesión";
-        msgLogin.innerText="";
     }
 
     function manejarAuth() {
         const u = document.getElementById('u').value;
         const p = document.getElementById('p').value;
-        msgLogin.innerText="";
-        if(!u || !p) {msgLogin.innerText="Llena los campos";return;}
-        if(isLoginMode) { 
-            auth.signInWithEmailAndPassword(u, p).catch(e => msgLogin.innerText=e.message); 
-        } else { 
-            auth.createUserWithEmailAndPassword(u, p).then(() => { 
-                msgLogin.style.color="#2a9d8f";
-                msgLogin.innerText="Registrado. Ahora inicia sesión"; 
-                setTimeout(toggleAuthMode,1500); 
-            }).catch(e => msgLogin.innerText=e.message); 
-        }
+        if(!u || !p) return alert("Llena los campos");
+        if(isLoginMode) { auth.signInWithEmailAndPassword(u, p).catch(e => alert(e.message)); }
+        else { auth.createUserWithEmailAndPassword(u, p).then(() => { alert("Registrado"); toggleAuthMode(); }).catch(e => alert(e.message)); }
     }
 
     function salir() { auth.signOut(); }
 
     document.getElementById('fReg').onsubmit = e => {
         e.preventDefault();
-        msgApp.innerText="";
-        const user=auth.currentUser;
-        if(!user){msgApp.innerText="Sesión expirada";return;}
-
         const v = {
+            id: Date.now(),
             "NUM. CELULAR": document.getElementById('iTel').value,
             "IMEI": document.getElementById('iIme').value || "N/A",
             "ICCID": document.getElementById('iIcc').value,
@@ -231,78 +200,26 @@
             "FECHA DE ACTIVACION": document.getElementById('iFec').value,
             "MARCA": document.getElementById('iMarca').value || "N/A",
             "MODELO": document.getElementById('iMod').value || "N/A",
-            "REGISTRO": document.getElementById('iRegistro').value,
-            uid:user.uid,
-            email:user.email,
-            timestamp:firebase.database.ServerValue.TIMESTAMP
+            "REGISTRO": document.getElementById('iRegistro').value
         };
-        
-        db.ref("ventas/"+user.uid).push(v)
-          .then(()=>{
-            msgApp.style.color="#2a9d8f";
-            msgApp.innerText="Venta guardada en la nube ✓";
-            e.target.reset();
-            document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
-            setTimeout(()=>{msgApp.innerText="";msgApp.style.color="#ff4d4d";},2000);
-          })
-          .catch(err=>msgApp.innerText="Error: "+err.message);
+        let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
+        l.unshift(v);
+        localStorage.setItem("ventas_omar", JSON.stringify(l));
+        cargarLocal();
+        e.target.reset();
+        document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
     };
 
-    function eliminar(key,uid) {
-        if(!confirm("¿Borrar esta venta?")) return;
-        db.ref(`ventas/${uid}/${key}`).remove().catch(err=>alert("Error: "+err.message));
+    function eliminar(id) {
+        if(!confirm("¿Borrar?")) return;
+        let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]").filter(v => v.id !== id);
+        localStorage.setItem("ventas_omar", JSON.stringify(l));
+        cargarLocal();
     }
 
-    function cargarVentas() {
-        if(refVentas) refVentas.off();
-        
-        if(esAdmin){
-            refVentas=db.ref("ventas");
-            refVentas.on("value",snap=>{
-                const data=snap.val()||{};
-                todasLasVentas=[];
-                Object.entries(data).forEach(([uid,userVentas])=>{
-                    Object.entries(userVentas).forEach(([key,v])=>{
-                        todasLasVentas.push({...v, key, uid});
-                    });
-                });
-                todasLasVentas.sort((a,b)=>b.timestamp-a.timestamp);
-                llenarFiltroPromotor();
-                aplicarFiltros();
-            });
-        }else{
-            const user=auth.currentUser;
-            if(!user)return;
-            refVentas=db.ref("ventas/"+user.uid);
-            refVentas.on("value",snap=>{
-                const data=snap.val()||{};
-                todasLasVentas=Object.entries(data).map(([key,v])=>({...v,key,uid:user.uid}))
-                  .sort((a,b)=>b.timestamp-a.timestamp);
-                llenarFiltroPromotor();
-                aplicarFiltros();
-            });
-        }
-    }
-
-    function llenarFiltroPromotor(){
-        const promotores=[...new Set(todasLasVentas.map(v=>v["NOMBRE COMPLETO PROMOTOR"]))].sort();
-        filtroProm.innerHTML='<option value="">Todos los promotores</option>' + 
-            promotores.map(p=>`<option value="${p}">${p}</option>`).join("");
-    }
-
-    function aplicarFiltros(){
-        const textoTel=buscarTel.value.toLowerCase();
-        const promotor=filtroProm.value;
-        const filtradas=todasLasVentas.filter(v=>{
-            const matchTel=v["NUM. CELULAR"].includes(textoTel);
-            const matchProm=!promotor || v["NOMBRE COMPLETO PROMOTOR"]===promotor;
-            return matchTel && matchProm;
-        });
-        pintar(filtradas);
-    }
-
-    function pintar(lista) {
-        document.getElementById('bodyVentas').innerHTML = lista.map(v => `
+    function cargarLocal() {
+        let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
+        document.getElementById('bodyVentas').innerHTML = l.map(v => `
             <tr>
                 <td>${v["NUM. CELULAR"]}</td>
                 <td>${v.IMEI}</td>
@@ -316,18 +233,16 @@
                 <td>${v.MARCA}</td>
                 <td>${v.MODELO}</td>
                 <td>${v.REGISTRO}</td>
-                <td>${esAdmin ? (v.email||v.uid) : '—'}</td>
-                <td class="acciones"><i class="fa fa-trash" style="color:red" onclick="eliminar('${v.key}','${v.uid}')"></i></td>
+                <td><i class="fa fa-trash" style="color:red;cursor:pointer" onclick="eliminar(${v.id})"></i></td>
             </tr>
         `).join("");
-        if(!lista.length) bodyVentas.innerHTML=`<tr><td colspan="14" style="text-align:center;padding:20px">Sin ventas</td></tr>`;
     }
 
     function exportarExcel() {
-        const datos=aplicarFiltrosYDevolver();
-        if(datos.length === 0) return alert("No hay datos para exportar");
+        let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
+        if(l.length === 0) return alert("No hay datos");
 
-        const datosExcel = datos.map(v => ({
+        const datosExcel = l.map(v => ({
             "NUM.\nCELULAR": v["NUM. CELULAR"],
             "IMEI": v.IMEI,
             "ICCID": v.ICCID,
@@ -355,16 +270,6 @@
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Comisiones");
         XLSX.writeFile(wb, `comisiones_marzo_omar_${new Date().toISOString().slice(0,10)}.xlsx`);
-    }
-
-    function aplicarFiltrosYDevolver(){
-        const textoTel=buscarTel.value.toLowerCase();
-        const promotor=filtroProm.value;
-        return todasLasVentas.filter(v=>{
-            const matchTel=v["NUM. CELULAR"].includes(textoTel);
-            const matchProm=!promotor || v["NOMBRE COMPLETO PROMOTOR"]===promotor;
-            return matchTel && matchProm;
-        });
     }
 </script>
 </body>
