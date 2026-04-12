@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ventas Telcel PRO - v1.6</title>
+    <title>Ventas Telcel PRO - v1.6.1</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -22,7 +22,7 @@
         .btn { padding:12px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; width:100%; display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom: 8px; }
         .btn-save { background:var(--amarillo); color:#001d3d; width: 100%; }
         .btn-ia { background:var(--morado); color:white; width: 100%; font-size: 14px; }
-        .ia-resp { background:rgba(0,0,0,.4); padding:12px; border-radius:8px; border-left: 4px solid var(--morado); font-size:13px; min-height:40px; margin-top: 10px; }
+        .ia-resp { background:rgba(0,0,0,.4); padding:12px; border-radius:8px; border-left: 4px solid var(--morado); font-size:13px; min-height:40px; margin-top: 10px; color: #e0e0e0; }
         .hidden { display: none; }
         .online-tag { background: var(--amarillo); color: black; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; }
     </style>
@@ -55,7 +55,7 @@
             <button class="btn btn-ia" onclick="accionIA('dictar')"><i class="fa-solid fa-microphone"></i> Dictar venta</button>
             <button class="btn btn-ia" onclick="duplicarUltima()"><i class="fa-solid fa-copy"></i> Duplicar última</button>
 
-            <textarea id="iaPregunta" rows="2" placeholder="Hola"></textarea>
+            <textarea id="iaPregunta" rows="2" placeholder="Haz una pregunta personalizada..."></textarea>
             <button class="btn btn-ia" style="background:#b5179e" onclick="iaChat()">Preguntar a IA</button>
             
             <div id="iaRespuesta" class="ia-resp">Listo para ayudarte...</div>
@@ -63,8 +63,14 @@
 
         <form id="fReg">
             <div class="card">
-                <label>RENUEVATE/ KIT/CHIP/PORTA/AK</label>
-                <select id="iTipo"><option>KIT</option><option>CHIP</option><option>PORTA</option><option>RENUEVATE</option></select>
+                <label>TIPO DE OPERACIÓN</label>
+                <select id="iTipo">
+                    <option>KIT</option>
+                    <option>CHIP</option>
+                    <option>PORTA</option>
+                    <option>RENUEVATE</option>
+                    <option>AK</option>
+                </select>
                 
                 <label>FECHA (DD/MM/YYYY)</label>
                 <input id="iFec" readonly>
@@ -87,6 +93,7 @@
     </div>
 
 <script>
+    // Configuración Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
         authDomain: "ventastelcel4029.firebaseapp.com",
@@ -98,12 +105,17 @@
 
     let db, auth;
 
-    // BLINDAJE: Recupera la clave de la memoria local para que GitHub no la vea
+    // SISTEMA DE BLINDAJE DE CLAVE
     const getApiKey = () => {
         let key = localStorage.getItem('gemini_key_secure');
         if (!key) {
-            key = prompt("Clave bloqueada por GitHub. Pega tu nueva clave de Gemini aquí:");
-            if (key) localStorage.setItem('gemini_key_secure', key);
+            key = prompt("Se requiere clave de API. Por favor, pega la clave AIzaSy...:");
+            if (key && key.startsWith("AIzaSy")) {
+                localStorage.setItem('gemini_key_secure', key);
+            } else {
+                alert("Clave no válida.");
+                return null;
+            }
         }
         return key;
     };
@@ -113,18 +125,23 @@
         db = firebase.database();
         auth = firebase.auth();
 
-        // Reloj y Fecha (DD/MM/YYYY)
+        // Reloj con formato AM/PM
         setInterval(() => {
             const now = new Date();
-            document.getElementById('txtReloj').innerText = now.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' }).toLowerCase();
+            document.getElementById('txtReloj').innerText = now.toLocaleTimeString('en-US', { 
+                hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' 
+            }).toLowerCase();
         }, 1000);
 
+        // Fecha Formato DD/MM/YYYY
         const hoy = new Date();
         document.getElementById('iFec').value = `${String(hoy.getDate()).padStart(2,'0')}/${String(hoy.getMonth()+1).padStart(2,'0')}/${hoy.getFullYear()}`;
 
         // GPS
         navigator.geolocation.getCurrentPosition(p => {
             document.getElementById('txtGps').innerHTML = `<i class="fa-solid fa-location-dot"></i> ${p.coords.latitude.toFixed(6)}, ${p.coords.longitude.toFixed(6)}`;
+        }, () => {
+            document.getElementById('txtGps').innerText = "GPS no disponible";
         });
 
         auth.onAuthStateChanged(user => {
@@ -140,10 +157,10 @@
 
     function manejarAuth() {
         const u = document.getElementById('u').value, p = document.getElementById('p').value;
-        auth.signInWithEmailAndPassword(u, p).catch(e => alert("Error: " + e.message));
+        auth.signInWithEmailAndPassword(u, p).catch(e => alert("Error de acceso: " + e.message));
     }
 
-    // IA CORREGIDA
+    // FUNCIÓN IA CORREGIDA PARA GEMINI 1.5 FLASH
     async function llamarIA(prompt) {
         const respDiv = document.getElementById('iaRespuesta');
         const API_KEY = getApiKey();
@@ -151,29 +168,41 @@
 
         respDiv.innerText = "Consultando a Gemini...";
         try {
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+            // Usamos el endpoint v1beta con el modelo verificado
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+            
+            const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
             });
+            
             const data = await res.json();
-            if (data.candidates) {
+            
+            if (data.candidates && data.candidates[0].content) {
                 respDiv.innerText = data.candidates[0].content.parts[0].text;
             } else {
-                if(data.error?.message.includes("API key not valid")) localStorage.removeItem('gemini_key_secure');
-                respDiv.innerText = "Error: " + (data.error?.message || "Revisa tu conexión");
+                // Si la clave es rechazada por Google
+                if(data.error?.message.includes("API key not valid")) {
+                    localStorage.removeItem('gemini_key_secure');
+                    respDiv.innerText = "Error: Clave inhabilitada por seguridad. Recarga para ingresar una nueva.";
+                } else {
+                    respDiv.innerText = "Error API: " + (data.error?.message || "Sin respuesta");
+                }
             }
-        } catch (e) { respDiv.innerText = "Error de red."; }
+        } catch (e) { 
+            respDiv.innerText = "Error de conexión. Revisa tus datos móviles."; 
+        }
     }
 
-    // HERRAMIENTAS DE IA
+    // LÓGICA DE HERRAMIENTAS IA
     function accionIA(tipo) {
-        const v = document.getElementById('iTipo').value;
+        const ventaActual = document.getElementById('iTipo').value;
         const prompts = {
-            escanear: "Simula un escaneo de IMEI y dime si es compatible con la red 5G de Telcel.",
-            resumen: "Haz un resumen motivador de mis ventas de hoy en 2 líneas.",
-            argumento: `Dame 3 beneficios clave para convencer a un cliente de comprar un ${v} hoy.`,
-            dictar: "Estoy listo para escuchar. Por favor, dime el número y el tipo de venta."
+            escanear: "Actúa como un validador técnico de Telcel. Dime si un equipo con IMEI genérico es compatible con la red 5G y qué beneficios tiene el cliente.",
+            resumen: "Genera un reporte corto y profesional de mis actividades de venta hoy. Sé motivador.",
+            argumento: `Dame 3 puntos clave para cerrar una venta de ${ventaActual} resaltando los beneficios de la red Telcel.`,
+            dictar: "Estoy listo para transcribir. Menciona el número telefónico y el tipo de plan para registrarlo."
         };
         llamarIA(prompts[tipo]);
     }
@@ -184,14 +213,19 @@
     }
 
     function duplicarUltima() {
-        const ultima = JSON.parse(localStorage.getItem('ventas_omar') || "[]")[0];
-        if(ultima) {
+        const ventas = JSON.parse(localStorage.getItem('ventas_omar') || "[]");
+        if(ventas.length > 0) {
+            const ultima = ventas[0];
             document.getElementById('iTipo').value = ultima.tipo;
             document.getElementById('iMarca').value = ultima.marca || "";
-            document.getElementById('iaRespuesta').innerText = "Datos de la última venta cargados.";
+            document.getElementById('iMod').value = ultima.modelo || "";
+            document.getElementById('iaRespuesta').innerText = "Datos de la última venta cargados correctamente.";
+        } else {
+            alert("No hay ventas previas en este dispositivo.");
         }
     }
 
+    // REGISTRO DE VENTAS
     document.getElementById('fReg').onsubmit = e => {
         e.preventDefault();
         const venta = {
@@ -199,16 +233,27 @@
             iccid: document.getElementById('iIcc').value,
             tipo: document.getElementById('iTipo').value,
             marca: document.getElementById('iMarca').value,
+            modelo: document.getElementById('iMod').value,
             fecha: document.getElementById('iFec').value,
             timestamp: Date.now()
         };
+
+        // Persistencia Local
         let locales = JSON.parse(localStorage.getItem('ventas_omar') || "[]");
         locales.unshift(venta);
         localStorage.setItem('ventas_omar', JSON.stringify(locales));
-        if(navigator.onLine) db.ref("ventas/" + auth.currentUser.uid).push(venta);
-        alert("¡Venta guardada!");
+
+        // Sincronización Firebase
+        if(navigator.onLine) {
+            db.ref("ventas/" + auth.currentUser.uid).push(venta)
+              .then(() => alert("Venta sincronizada y guardada."))
+              .catch(() => alert("Guardado localmente (sin internet)."));
+        } else {
+            alert("Venta guardada localmente. Se sincronizará al detectar conexión.");
+        }
+
         e.target.reset();
-        inicio();
+        inicio(); // Reiniciar fecha y reloj
     };
 </script>
 </body>
