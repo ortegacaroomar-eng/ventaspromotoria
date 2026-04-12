@@ -160,7 +160,7 @@
         appId: "1:480758010888:web:e948c54f0217536aa9adbd"
     };
 
-    // CLAVE INTEGRADA DESDE TU CAPTURA DE PANTALLA
+    // CLAVE EXTRAÍDA DE TUS CAPTURAS
     const GEMINI_API_KEY = "AIzaSyAGAdm64wUw0g2YGXHcoaDRj4oxCgC_3-E"; 
 
     let db, auth, storage;
@@ -242,12 +242,12 @@
         };
     }
 
-    // FUNCIÓN LLAMARIA CON AJUSTES DE SEGURIDAD (PARA EVITAR BLOQUEOS)
+    // FUNCIÓN CON CORRECCIÓN V1BETA Y SEGURIDAD
     async function llamarIA(prompt) {
         const respDiv = document.getElementById('iaRespuesta');
         respDiv.innerText = "Procesando...";
         try {
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -266,8 +266,8 @@
             if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
                 return data.candidates[0].content.parts[0].text;
             } else {
-                console.log("Error de la IA:", data);
-                return "Error: " + (data.error?.message || "La IA bloqueó la respuesta. Intenta con otra pregunta.");
+                console.error("Error IA:", data);
+                return "Error: " + (data.error?.message || "La IA no pudo responder. Revisa los detalles en consola.");
             }
         } catch (e) {
             return "Sin conexión: " + e.message;
