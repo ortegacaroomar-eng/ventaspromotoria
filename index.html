@@ -160,7 +160,8 @@
         appId: "1:480758010888:web:e948c54f0217536aa9adbd"
     };
 
-    const GEMINI_API_KEY = "AIzaSyAGAdm64wUw0g2YGXHcoaDRj4oxCgC_3-E";
+    // CLAVE INTEGRADA DESDE TU CAPTURA DE PANTALLA
+    const GEMINI_API_KEY = "AIzaSyAGAdm64wUw0g2YGXHcoaDRj4oxCgC_3-E"; 
 
     let db, auth, storage;
     let isLoginMode = true;
@@ -210,7 +211,11 @@
                 document.getElementById('txtGps').innerHTML = `${p.coords.latitude.toFixed(6)}, ${p.coords.longitude.toFixed(6)}`;
             }, () => { document.getElementById('txtGps').innerText = "GPS Desactivado"; });
         }
-        document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX');
+        
+        // FORMATO DD/MM/YYYY ASEGURADO
+        document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX', {
+            day: '2-digit', month: '2-digit', year: 'numeric'
+        });
 
         auth.onAuthStateChanged(user => {
             if(user) {
@@ -237,20 +242,26 @@
         };
     }
 
+    // FUNCIÓN LLAMARIA CORREGIDA (URL ESTABLE Y PROTECCIÓN CONTRA UNDEFINED)
     async function llamarIA(prompt) {
         const respDiv = document.getElementById('iaRespuesta');
         respDiv.innerText="Pensando...";
         try{
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`,{
+            // Cambiado a v1 estable para mayor confiabilidad
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,{
                 method:'POST',
                 headers:{'Content-Type':'application/json'},
                 body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})
             });
             const data = await res.json();
-            if (data && data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+            
+            // Protección contra el error de lectura de tu captura
+            if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
                 return data.candidates[0].content.parts[0].text;
-            } else { return "La IA no pudo responder. Revisa tu conexión."; }
-        }catch(e){ return "Error: " + e.message; }
+            } else { 
+                return "La IA no pudo responder. Revisa que tu clave de API esté activa en Google Cloud."; 
+            }
+        }catch(e){ return "Error de red: " + e.message; }
     }
 
     function iniciarScanner(){
@@ -279,7 +290,7 @@
 
     async function iaResumenDia(){
         const ventas = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-        const hoy = new Date().toLocaleDateString('es-MX');
+        const hoy = new Date().toLocaleDateString('es-MX', {day: '2-digit', month: '2-digit', year: 'numeric'});
         const ventasHoy = ventas.filter(v=>v["FECHA DE ACTIVACION"]===hoy);
         if(!ventasHoy.length){document.getElementById('iaRespuesta').innerText="No tienes ventas hoy";return;}
         const prompt = `Resumen corto para promotor: ${ventasHoy.length} ventas hoy. Tipos: ${ventasHoy.map(v=>v["Renuevate/ Kit/Chip/ Porta"]).join(', ')}.`;
@@ -389,7 +400,9 @@
         }
 
         cargarLocal(); e.target.reset();
-        document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX');
+        document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX', {
+            day: '2-digit', month: '2-digit', year: 'numeric'
+        });
         msg.style.color="var(--verde)"; msg.innerText="✓ Guardado";
         setTimeout(() => msg.innerText="", 2000);
     };
@@ -412,7 +425,7 @@
     function cargarLocal() {
         const lista = document.getElementById('listaVentas'), badge = document.getElementById('badgeTotal');
         let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-        const hoy = new Date().toLocaleDateString('es-MX');
+        const hoy = new Date().toLocaleDateString('es-MX', {day: '2-digit', month: '2-digit', year: 'numeric'});
         const ventasHoy = l.filter(v => v["FECHA DE ACTIVACION"] === hoy);
         badge.innerText = ventasHoy.length;
         lista.innerHTML = l.map(v => `
