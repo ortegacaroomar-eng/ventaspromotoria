@@ -9,147 +9,86 @@
     <meta name="theme-color" content="#003566">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="TelcelPRO">
-    <link rel="apple-touch-icon" href="icon-192.png">
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
     <style>
         :root {--amarillo:#ffc300; --azul:#003566; --morado:#8338ec; --rojo:#d90429; --verde:#25D366;}
         body { margin:0; font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; }
         .app { max-width:1200px; margin:auto; padding:15px; }
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap:wrap; gap:10px }
         .gps-card { background: #000; border: 1px solid #00b4d8; padding: 8px 12px; border-radius: 12px; color: #00b4d8; font-size: 11px; display: flex; align-items: center; }
-        .gps-card i { margin-right: 8px; font-size: 16px; color: var(--amarillo); }
         .reloj-digital { font-family: monospace; font-size: 22px; color: var(--amarillo); font-weight: bold; }
-        .btn-exit { background: rgba(255, 77, 77, 0.2); color: #ff4d4d; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #ff4d4d; cursor: pointer; transition:.3s }
-        .btn-exit:hover { background:#ff4d4d; color:#fff; }
         .card { background:rgba(255,255,255,.08); backdrop-filter:blur(10px); border-radius:15px; padding:15px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1); }
         label { font-size:10px; font-weight:bold; color:var(--amarillo); text-transform: uppercase; display: block; margin-bottom: 4px; }
-        .app input,.app select,.app textarea { width:100%; padding:9px; margin-bottom:8px; border-radius:8px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; font-size:14px; }
-        .login-box input { width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #ccc; background:#f9f9f9; color:#000; box-sizing: border-box; font-size: 14px; }
-        .btn { padding:12px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size: 14px; transition:.3s; display:flex; align-items:center; justify-content:center; gap:8px; }
+        input, select, textarea { width:100%; padding:9px; margin-bottom:8px; border-radius:8px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; }
+        .btn { padding:12px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
         .btn-save { background:var(--amarillo); color:#001d3d; width:100%; }
-        .btn-save:hover { transform:scale(1.02); box-shadow:0 5px 15px rgba(255,195,0,.4) }
         .btn-ia { background:var(--morado); color:white; margin:4px 0; width:100%; }
-        .btn-ia:hover { background:#9d4edd; }
         .hidden { display: none!important; }
-        .login-box { max-width: 350px; margin: 80px auto; background: white; padding: 30px; border-radius: 20px; text-align: center; color: #000; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        .btn-link-auth { background: none; border: none; color: var(--azul); font-size: 13px; text-decoration: underline; cursor: pointer; margin-top: 15px; font-weight: bold; }
-        .ia-box { background:rgba(131,56,236,.15); border:1px solid var(--morado); }
-        .ia-resp { background:rgba(0,0,0,.3); padding:10px; border-radius:8px; margin-top:8px; font-size:13px; white-space:pre-wrap; min-height:20px; }
-        .row { display:flex; gap:8px; flex-wrap:wrap; }
-        .row > * { flex:1; min-width:150px; }
-        .msg{margin:6px 0;color:#ff4d4d;font-size:12px;min-height:16px;text-align:center}
-        .badge{ background:var(--amarillo); color:#001d3d; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:bold; }
-        #qr-reader { border-radius:10px; overflow:hidden; margin:8px 0; }
-        .btn-small { padding:6px 10px; font-size:12px; }
-        .img-preview { max-width:100px; border-radius:8px; margin-top:5px; }
-        .lista-ventas { max-height:300px; overflow-y:auto; }
-        .venta-item { background:rgba(0,0,0,.2); padding:10px; border-radius:8px; margin-bottom:8px; font-size:12px; display:flex; justify-content:space-between; align-items:center; }
-        .venta-info { flex:1; }
-        .venta-del { color:var(--rojo); cursor:pointer; padding:5px; }
-        .install-banner { background:var(--amarillo); color:#001d3d; padding:10px; text-align:center; font-weight:bold; cursor:pointer; display:none; position:sticky; top:0; z-index:100; }
+        .login-box { max-width: 350px; margin: 80px auto; background: white; padding: 30px; border-radius: 20px; text-align: center; color: #000; }
+        .ia-resp { background:rgba(0,0,0,.3); padding:10px; border-radius:8px; margin-top:8px; font-size:13px; white-space:pre-wrap; }
+        .badge { background:var(--amarillo); color:#001d3d; padding:3px 8px; border-radius:12px; font-size:11px; }
     </style>
 </head>
 <body onload="inicio()">
 
-    <div id="installBanner" class="install-banner" onclick="instalarApp()">
-        <i class="fa-solid fa-download"></i> INSTALAR APP EN TU CELULAR
-    </div>
-
     <div id="loginBox" class="login-box">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Logo_Telcel.svg/1200px-Logo_Telcel.svg.png" width="120">
-        <h3 id="authTitle" style="color:#003566; margin-top:10px;">Acceso Promotores PRO</h3>
-        <input id="u" type="email" placeholder="Correo electrónico">
-        <input id="p" type="password" placeholder="Contraseña">
-        <button class="btn btn-save" id="btnAuthAction" onclick="manejarAuth()">ENTRAR</button>
-        <button class="btn-link-auth" id="btnToggleAuth" onclick="toggleAuthMode()">¿No tienes cuenta? Regístrate aquí</button>
+        <h3 style="color:#003566;">Acceso Promotores PRO</h3>
+        <input id="u" type="email" placeholder="Correo" style="color:black; background:#eee">
+        <input id="p" type="password" placeholder="Contraseña" style="color:black; background:#eee">
+        <button class="btn btn-save" onclick="manejarAuth()">ENTRAR</button>
     </div>
 
     <div id="appBox" class="app hidden">
         <div class="top-bar">
-            <div class="gps-card">
-                <i class="fa-solid fa-location-dot"></i>
-                <div><b style="color:white">UBICACIÓN GPS</b><br><span id="txtGps">Localizando...</span></div>
-            </div>
+            <div class="gps-card"><i class="fa-solid fa-location-dot"></i> <span id="txtGps">Localizando...</span></div>
             <div class="reloj-digital" id="txtReloj">00:00:00</div>
-            <div class="badge" id="badgeConexion">Online</div>
-            <div class="btn-exit" onclick="salir()"><i class="fa-solid fa-power-off"></i></div>
+            <button class="badge" onclick="auth.signOut()">Salir</button>
         </div>
 
-        <div class="card ia-box">
+        <div class="card" style="border: 1px solid var(--morado)">
             <label><i class="fa-solid fa-robot"></i> ASISTENTE IA TELCEL</label>
-            <div class="row">
-                <button class="btn btn-ia" onclick="iniciarScanner()"><i class="fa-solid fa-barcode"></i> Escanear IMEI</button>
-                <button class="btn btn-ia" onclick="iaResumenDia()"><i class="fa-solid fa-chart-line"></i> Resumen del día</button>
-                <button class="btn btn-ia" onclick="iaSugerirVenta()"><i class="fa-solid fa-lightbulb"></i> Sugerir argumento</button>
+            <textarea id="iaPregunta" rows="2" placeholder="Pregunta algo o dicta la venta..."></textarea>
+            <div style="display:flex; gap:5px">
+                <button class="btn btn-ia" onclick="iaChat()">Preguntar</button>
+                <button class="btn btn-ia" onclick="iaSugerirVenta()">Tips Venta</button>
             </div>
-            <div id="qr-reader" class="hidden"></div>
-            <div class="row">
-                <button class="btn btn-ia btn-small" onclick="iniciarVoz()"><i class="fa-solid fa-microphone"></i> Dictar venta</button>
-                <button class="btn btn-ia btn-small" onclick="duplicarUltima()"><i class="fa-solid fa-copy"></i> Duplicar última</button>
-            </div>
-            <textarea id="iaPregunta" rows="2" placeholder="Pregúntale a la IA: ¿cómo rebato que está caro?"></textarea>
-            <button class="btn btn-ia" onclick="iaChat()">Preguntar a IA</button>
-            <div id="iaRespuesta" class="ia-resp">Aquí aparece la respuesta de la IA...</div>
+            <div id="iaRespuesta" class="ia-resp">Listo para ayudarte...</div>
         </div>
 
         <form id="fReg">
             <div class="card">
-                <label>Renuevate/ Kit/Chip/Porta/AK</label>
-                <select id="iTipo" required>
-                    <option value="KIT">KIT</option>
-                    <option value="CHIP">CHIP</option>
-                    <option value="PORTA">PORTA</option>
-                    <option value="RENUEVATE">RENUEVATE</option>
-                    <option value="AK">AK</option>
-                </select>
-                <label>FECHA DE ACTIVACION</label>
-                <input id="iFec" required>
-                <label>NUM. CELULAR</label>
-                <input id="iTel" type="tel" required maxlength="10" pattern="[0-9]{10}">
+                <label>Tipo de Venta</label>
+                <select id="iTipo"><option>KIT</option><option>CHIP</option><option>PORTA</option><option>RENUEVATE</option></select>
+                <label>FECHA (DD/MM/YYYY)</label>
+                <input id="iFec" readonly>
+                <label>NÚMERO TELCEL</label>
+                <input id="iTel" type="tel" maxlength="10" required>
                 <label>ICCID</label>
-                <input id="iIcc" required onblur="validarICCID()">
+                <input id="iIcc" required>
+                <label>MARCA/MODELO</label>
+                <div style="display:flex; gap:5px">
+                    <input id="iMarca" placeholder="Marca">
+                    <input id="iMod" placeholder="Modelo">
+                </div>
+                <button type="submit" class="btn btn-save">💾 GUARDAR REGISTRO</button>
             </div>
-
-            <div class="card">
-                <label>IMEI</label><input id="iIme">
-                <label>MARCA</label><input id="iMarca">
-                <label>MODELO</label><input id="iMod">
-                <label>FOTO TICKET/CLIENTE (Opcional)</label>
-                <input type="file" id="iFoto" accept="image/*" capture="environment">
-                <img id="previewFoto" class="img-preview hidden">
-            </div>
-
-            <div class="card">
-                <label>#TIENDA / Determinante</label><input id="iTiendaNum" required>
-                <label>SOLO NOMBRE DE LA CADENA</label><input id="iCadena" required>
-                <label>SOLO NOMBRE DE TIENDA SIN CADENA</label><input id="iTiendaNombre" required>
-                <label>NOMBRE COMPLETO PROMOTOR</label><input id="iProm" required>
-                <label>REGISTRO</label>
-                <select id="iRegistro" required>
-                    <option value="SI">SI</option>
-                    <option value="NO">NO</option>
-                </select>
-            </div>
-
-            <button type="submit" class="btn btn-save">GUARDAR VENTA <i class="fa-solid fa-cloud-arrow-up"></i></button>
         </form>
 
-        <p id="msgApp" class="msg"></p>
-
         <div class="card">
-            <label><i class="fa-solid fa-list"></i> VENTAS DEL DÍA <span class="badge" id="badgeTotal">0</span></label>
-            <div class="lista-ventas" id="listaVentas"></div>
+            <label>Ventas del Día</label>
+            <div id="listaVentas"></div>
         </div>
     </div>
 
 <script>
+    // CONFIGURACIÓN ACTUALIZADA 2026
     const firebaseConfig = {
         apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
         authDomain: "ventastelcel4029.firebaseapp.com",
@@ -160,289 +99,107 @@
         appId: "1:480758010888:web:e948c54f0217536aa9adbd"
     };
 
-    // TU NUEVA CLAVE ACTUALIZADA
+    // CLAVE ACTIVA DETECTADA EN CAPTURA 4401.JPG
     const GEMINI_API_KEY = "AIzaSyBayQhTBchml9-uewg0fLFKO99Z8tD0R00"; 
 
-    let db, auth, storage;
-    let isLoginMode = true;
-    let html5QrCode;
-    let ultimaVenta = null;
-    let deferredPrompt;
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        document.getElementById('installBanner').style.display = 'block';
-    });
-
-    function instalarApp(){
-        if(deferredPrompt) {
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choice) => {
-                if(choice.outcome === 'accepted'){
-                    document.getElementById('installBanner').style.display = 'none';
-                }
-            });
-        }
-    }
-
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js');
-    }
+    let db, auth;
 
     function inicio() {
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         db = firebase.database();
         auth = firebase.auth();
-        storage = firebase.storage();
 
-        window.addEventListener('online', () => { 
-            const badge = document.getElementById('badgeConexion');
-            badge.innerText='Online'; badge.style.background='var(--verde)'; sincronizarPendientes(); 
-        });
-        window.addEventListener('offline', () => { 
-            const badge = document.getElementById('badgeConexion');
-            badge.innerText='Offline'; badge.style.background='var(--rojo)'; 
+        // Reloj y GPS
+        setInterval(() => document.getElementById('txtReloj').innerText = new Date().toLocaleTimeString(), 1000);
+        navigator.geolocation.getCurrentPosition(p => {
+            document.getElementById('txtGps').innerText = `${p.coords.latitude.toFixed(4)}, ${p.coords.longitude.toFixed(4)}`;
         });
 
-        setInterval(() => document.getElementById('txtReloj').innerText = new Date().toLocaleTimeString('es-MX'), 1000);
-        if(navigator.geolocation) {
-            navigator.geolocation.watchPosition(p => {
-                document.getElementById('txtGps').innerHTML = `${p.coords.latitude.toFixed(6)}, ${p.coords.longitude.toFixed(6)}`;
-            }, () => { document.getElementById('txtGps').innerText = "GPS Desactivado"; });
-        }
-        
-        // FORMATO DD/MM/YYYY
+        // Formato DD/MM/YYYY solicitado
         const hoy = new Date();
-        const dd = String(hoy.getDate()).padStart(2, '0');
-        const mm = String(hoy.getMonth() + 1).padStart(2, '0');
-        const yyyy = hoy.getFullYear();
-        document.getElementById('iFec').value = `${dd}/${mm}/${yyyy}`;
+        document.getElementById('iFec').value = `${String(hoy.getDate()).padStart(2,'0')}/${String(hoy.getMonth()+1).padStart(2,'0')}/${hoy.getFullYear()}`;
 
         auth.onAuthStateChanged(user => {
             if(user) {
                 document.getElementById('loginBox').classList.add("hidden");
                 document.getElementById('appBox').classList.remove("hidden");
-                cargarLocal();
-                sincronizarPendientes();
+                cargarVentas();
             } else {
                 document.getElementById('loginBox').classList.remove("hidden");
                 document.getElementById('appBox').classList.add("hidden");
             }
         });
-
-        document.getElementById('iFoto').onchange = e => {
-            const file = e.target.files[0];
-            if(file){
-                const reader = new FileReader();
-                reader.onload = ev => { 
-                    const prev = document.getElementById('previewFoto');
-                    prev.src = ev.target.result; prev.classList.remove('hidden'); 
-                }
-                reader.readAsDataURL(file);
-            }
-        };
-    }
-
-    // FUNCIÓN CON CORRECCIÓN V1BETA Y CLAVE NUEVA
-    async function llamarIA(prompt) {
-        const respDiv = document.getElementById('iaRespuesta');
-        respDiv.innerText = "Procesando...";
-        try {
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }]
-                })
-            });
-
-            const data = await res.json();
-
-            if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
-                return data.candidates[0].content.parts[0].text;
-            } else {
-                return "Error: " + (data.error?.message || "La IA no pudo responder.");
-            }
-        } catch (e) {
-            return "Sin conexión: " + e.message;
-        }
-    }
-
-    function iniciarScanner(){
-        const qrDiv = document.getElementById('qr-reader');
-        qrDiv.classList.remove('hidden');
-        html5QrCode = new Html5Qrcode("qr-reader");
-        html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
-            (decodedText) => {
-                document.getElementById('iIme').value = decodedText.replace(/\D/g,'').slice(0,15);
-                html5QrCode.stop();
-                qrDiv.classList.add('hidden');
-                iaCompletarIMEI();
-            }, () => {});
-    }
-
-    async function iaCompletarIMEI(){
-        const imei = document.getElementById('iIme').value.trim();
-        if(imei.length<8) return;
-        const resp = await llamarIA(`IMEI: ${imei}. Dame Marca y Modelo probable. Formato corto: Marca: X, Modelo: Y`);
-        document.getElementById('iaRespuesta').innerText = resp;
-        const marca = resp.match(/Marca:\s*(.+)/i)?.[1]?.split(',')[0]?.trim();
-        const modelo = resp.match(/Modelo:\s*(.+)/i)?.[1]?.trim();
-        if(marca && !marca.toLowerCase().includes("desconocid")) document.getElementById('iMarca').value = marca;
-        if(modelo && !modelo.toLowerCase().includes("desconocid")) document.getElementById('iMod').value = modelo;
-    }
-
-    async function iaResumenDia(){
-        const ventas = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-        const hoy = document.getElementById('iFec').value;
-        const ventasHoy = ventas.filter(v=>v["FECHA DE ACTIVACION"]===hoy);
-        if(!ventasHoy.length){document.getElementById('iaRespuesta').innerText="No tienes ventas hoy";return;}
-        const prompt = `Resumen corto para promotor: ${ventasHoy.length} ventas hoy. Tipos: ${ventasHoy.map(v=>v["Renuevate/ Kit/Chip/ Porta"]).join(', ')}.`;
-        document.getElementById('iaRespuesta').innerText = await llamarIA(prompt);
-    }
-
-    async function iaSugerirVenta(){
-        const tipo = document.getElementById('iTipo').value;
-        document.getElementById('iaRespuesta').innerText = await llamarIA(`2 beneficios clave para vender un ${tipo} de Telcel.`);
-    }
-
-    async function iaChat(){
-        const pregunta = document.getElementById('iaPregunta').value.trim();
-        if(!pregunta) return;
-        document.getElementById('iaRespuesta').innerText = await llamarIA(pregunta);
-    }
-
-    function iniciarVoz(){
-        const rec = new (window.webkitSpeechRecognition || window.SpeechRecognition)();
-        rec.lang = 'es-MX';
-        rec.onresult = e => {
-            const txt = e.results[0][0].transcript.toLowerCase();
-            document.getElementById('iaRespuesta').innerText = "Escuché: " + txt;
-            const nums = txt.match(/\d{10,}/g);
-            if(nums) document.getElementById('iTel').value = nums[0].slice(0,10);
-            if(txt.includes('kit')) document.getElementById('iTipo').value='KIT';
-            else if(txt.includes('porta')) document.getElementById('iTipo').value='PORTA';
-            else if(txt.includes('chip')) document.getElementById('iTipo').value='CHIP';
-        };
-        rec.start();
-    }
-
-    function duplicarUltima(){
-        if(!ultimaVenta){alert("Sin ventas previas"); return;}
-        document.getElementById('iTipo').value = ultimaVenta["Renuevate/ Kit/Chip/ Porta"];
-        document.getElementById('iTiendaNum').value = ultimaVenta["#TIENDA / Determinante"];
-        document.getElementById('iCadena').value = ultimaVenta["SOLO NOMBRE DE LA CADENA"];
-        document.getElementById('iTiendaNombre').value = ultimaVenta["SOLO NOMBRE DE TIENDA SIN CADENA"];
-        document.getElementById('iProm').value = ultimaVenta["NOMBRE COMPLETO PROMOTOR"];
-        document.getElementById('msgApp').innerText="Copiado. Cambia número e ICCID.";
-    }
-
-    function validarICCID(){
-        const iccid = document.getElementById('iIcc').value;
-        const ventas = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-        const msg = document.getElementById('msgApp');
-        if(ventas.some(v=>v.ICCID===iccid)){
-            msg.style.color='#ff4d4d'; msg.innerText="⚠️ ICCID duplicado";
-        } else { msg.innerText=""; }
-    }
-
-    function toggleAuthMode() {
-        isLoginMode = !isLoginMode;
-        document.getElementById('authTitle').innerText = isLoginMode ? "Acceso Promotores PRO" : "Registro";
-        document.getElementById('btnAuthAction').innerText = isLoginMode ? "ENTRAR" : "REGISTRAR";
     }
 
     function manejarAuth() {
         const u = document.getElementById('u').value, p = document.getElementById('p').value;
-        if(!u || !p) return;
-        if(isLoginMode) auth.signInWithEmailAndPassword(u, p).catch(e => alert("Error al entrar"));
-        else auth.createUserWithEmailAndPassword(u, p).then(() => toggleAuthMode()).catch(e => alert("Error al registrar"));
+        auth.signInWithEmailAndPassword(u, p).catch(e => alert("Error: " + e.message));
     }
 
-    function salir() { auth.signOut(); }
-
-    document.getElementById('fReg').onsubmit = async e => {
-        e.preventDefault();
-        const msg = document.getElementById('msgApp');
-        msg.innerText = "Guardando...";
-        let fotoURL = "";
-
-        if(document.getElementById('iFoto').files[0] && navigator.onLine){
-            const file = document.getElementById('iFoto').files[0];
-            const ref = storage.ref(`tickets/${Date.now()}_${file.name}`);
-            await ref.put(file);
-            fotoURL = await ref.getDownloadURL();
+    // CORRECCIÓN V1BETA PARA EVITAR ERROR "MODEL NOT FOUND"
+    async function llamarIA(prompt) {
+        const respDiv = document.getElementById('iaRespuesta');
+        respDiv.innerText = "Consultando...";
+        try {
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            });
+            const data = await res.json();
+            const texto = data.candidates[0].content.parts[0].text;
+            respDiv.innerText = texto;
+            return texto;
+        } catch (e) {
+            respDiv.innerText = "Error: Verifica tu conexión o clave.";
+            return null;
         }
+    }
 
-        const v = {
+    async function iaChat() {
+        const p = document.getElementById('iaPregunta').value;
+        if(p) llamarIA(p);
+    }
+
+    async function iaSugerirVenta() {
+        const tipo = document.getElementById('iTipo').value;
+        llamarIA(`Dame un argumento rápido y matón para vender un ${tipo} de Telcel hoy.`);
+    }
+
+    document.getElementById('fReg').onsubmit = e => {
+        e.preventDefault();
+        const venta = {
             id: Date.now(),
-            "NUM. CELULAR": document.getElementById('iTel').value,
-            "IMEI": document.getElementById('iIme').value || "N/A",
-            "ICCID": document.getElementById('iIcc').value,
-            "Renuevate/ Kit/Chip/ Porta": document.getElementById('iTipo').value,
-            "#TIENDA / Determinante": document.getElementById('iTiendaNum').value,
-            "SOLO NOMBRE DE LA CADENA": document.getElementById('iCadena').value,
-            "SOLO NOMBRE DE TIENDA SIN CADENA": document.getElementById('iTiendaNombre').value,
-            "NOMBRE COMPLETO PROMOTOR": document.getElementById('iProm').value,
-            "FECHA DE ACTIVACION": document.getElementById('iFec').value,
-            "MARCA": document.getElementById('iMarca').value || "N/A",
-            "MODELO": document.getElementById('iMod').value || "N/A",
-            "REGISTRO": document.getElementById('iRegistro').value,
-            "FOTO_URL": fotoURL,
-            timestamp: Date.now()
+            fecha: document.getElementById('iFec').value,
+            tel: document.getElementById('iTel').value,
+            iccid: document.getElementById('iIcc').value,
+            tipo: document.getElementById('iTipo').value,
+            marca: document.getElementById('iMarca').value,
+            modelo: document.getElementById('iMod').value
         };
 
-        ultimaVenta = v;
-        let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-        l.unshift(v);
-        localStorage.setItem("ventas_omar", JSON.stringify(l));
+        // Guardar Local (Requisito de persistencia)
+        let locales = JSON.parse(localStorage.getItem('ventas_locales') || "[]");
+        locales.unshift(venta);
+        localStorage.setItem('ventas_locales', JSON.stringify(locales));
 
-        if(navigator.onLine && auth.currentUser) db.ref("ventas/"+auth.currentUser.uid).push(v);
-        else {
-            let pents = JSON.parse(localStorage.getItem("pendientes") || "[]");
-            pents.push(v); localStorage.setItem("pendientes", JSON.stringify(pents));
-        }
+        // Guardar en Firebase (Nube)
+        if(navigator.onLine) db.ref("ventas/" + auth.currentUser.uid).push(venta);
 
-        cargarLocal(); e.target.reset();
-        inicio(); // Reinicia fecha y GPS
-        msg.style.color="var(--verde)"; msg.innerText="✓ Guardado";
-        setTimeout(() => msg.innerText="", 2000);
+        alert("✓ Guardado correctamente");
+        e.target.reset();
+        inicio(); // Reset fecha
+        cargarVentas();
     };
 
-    function sincronizarPendientes(){
-        const pents = JSON.parse(localStorage.getItem("pendientes") || "[]");
-        if(pents.length && auth.currentUser && navigator.onLine){
-            pents.forEach(v => db.ref("ventas/"+auth.currentUser.uid).push(v));
-            localStorage.removeItem("pendientes");
-        }
-    }
-
-    function eliminar(id) {
-        if(!confirm("¿Borrar?")) return;
-        let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]").filter(v => v.id !== id);
-        localStorage.setItem("ventas_omar", JSON.stringify(l));
-        cargarLocal();
-    }
-
-    function cargarLocal() {
-        const lista = document.getElementById('listaVentas'), badge = document.getElementById('badgeTotal');
-        let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-        
-        // Obtenemos la fecha actual en formato DD/MM/YYYY para el filtro
-        const hoy = document.getElementById('iFec').value;
-        const ventasHoy = l.filter(v => v["FECHA DE ACTIVACION"] === hoy);
-        
-        badge.innerText = ventasHoy.length;
-        lista.innerHTML = l.map(v => `
-            <div class="venta-item">
-                <div class="venta-info">
-                    <b style="color:var(--amarillo)">${v["NUM. CELULAR"]}</b> - ${v["Renuevate/ Kit/Chip/ Porta"]}<br>
-                    <small>${v["FECHA DE ACTIVACION"]} | ${v["SOLO NOMBRE DE TIENDA SIN CADENA"]}</small>
-                </div>
-                <i class="fa fa-trash venta-del" onclick="eliminar(${v.id})"></i>
+    function cargarVentas() {
+        const lista = document.getElementById('listaVentas');
+        const locales = JSON.parse(localStorage.getItem('ventas_locales') || "[]");
+        lista.innerHTML = locales.slice(0,5).map(v => `
+            <div style="background:rgba(0,0,0,0.2); padding:8px; border-radius:8px; margin-bottom:5px; font-size:12px">
+                <b>${v.tel}</b> - ${v.tipo} <br> <small>${v.fecha} | ${v.marca} ${v.modelo}</small>
             </div>
-        `).join("");
+        `).join('');
     }
 </script>
 </body>
