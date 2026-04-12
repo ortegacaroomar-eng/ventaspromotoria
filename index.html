@@ -3,40 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Ventas Telcel - Omar Ortega</title>
+    <title>Sistema Ventas Telcel - Omar Ortega PRO</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
+        :root {--amarillo:#ffc300; --azul:#003566; --morado:#8338ec; --verde:#1f7a3f;}
         body { margin:0; font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; }
-       .app { max-width:1000px; margin:auto; padding:20px; }
-       .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+       .app { max-width:1200px; margin:auto; padding:20px; }
+       .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap:wrap; gap:10px }
        .gps-card { background: #000; border: 1px solid #00b4d8; padding: 10px 15px; border-radius: 12px; color: #00b4d8; font-size: 12px; display: flex; align-items: center; }
-       .gps-card i { margin-right: 10px; font-size: 18px; color: #ffc300; }
-       .reloj-digital { font-family: monospace; font-size: 24px; color: #ffc300; font-weight: bold; }
-       .btn-exit { background: rgba(255, 77, 77, 0.2); color: #ff4d4d; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #ff4d4d; cursor: pointer; }
+       .gps-card i { margin-right: 10px; font-size: 18px; color: var(--amarillo); }
+       .reloj-digital { font-family: monospace; font-size: 24px; color: var(--amarillo); font-weight: bold; }
+       .btn-exit { background: rgba(255, 77, 77, 0.2); color: #ff4d4d; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #ff4d4d; cursor: pointer; transition:.3s }
+       .btn-exit:hover { background:#ff4d4d; color:#fff; }
        .card { background:rgba(255,255,255,.08); backdrop-filter:blur(10px); border-radius:15px; padding:20px; margin-bottom:15px; border:1px solid rgba(255,255,255,0.1); }
-        label { font-size:10px; font-weight:bold; color:#ffc300; text-transform: uppercase; display: block; margin-bottom: 5px; }
+        label { font-size:10px; font-weight:bold; color:var(--amarillo); text-transform: uppercase; display: block; margin-bottom: 5px; }
        .app input,.app select,.app textarea { width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; }
        .login-box input { width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #ccc; background:#f9f9f9; color:#000; box-sizing: border-box; font-size: 14px; }
-       .btn-save { background:#ffc300; color:#001d3d; width:100%; padding:15px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size: 16px; }
-       .btn-ia { background:#8338ec; color:white; padding:10px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; margin:5px 0; width:100%; }
-       .btn-excel { background:#1f7a3f; color:white; width:100%; padding:14px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; margin-top:20px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(31, 122, 63, 0.4); }
+       .btn-save { background:var(--amarillo); color:#001d3d; width:100%; padding:15px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size: 16px; transition:.3s }
+       .btn-save:hover { transform:scale(1.02); box-shadow:0 5px 15px rgba(255,195,0,.4) }
+       .btn-ia { background:var(--morado); color:white; padding:10px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; margin:5px 0; width:100%; transition:.3s }
+       .btn-ia:hover { background:#9d4edd; }
+       .btn-excel { background:var(--verde); color:white; width:100%; padding:14px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; margin-top:20px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(31, 122, 63, 0.4); transition:.3s }
+       .btn-excel:hover { transform:scale(1.02); }
        .table-container { overflow-x: auto; background: white; border-radius: 10px; margin-top: 20px; }
-        table { width: 100%; border-collapse: collapse; color: #333; font-size: 11px; min-width: 1100px; }
-        th { background: #000!important; color: #fff!important; padding: 12px; text-align: left; text-transform: uppercase; font-weight: bold; border: 1px solid #444; white-space: pre-line; }
-        td { padding: 10px; border: 1px solid #ddd; }
+        table { width: 100%; border-collapse: collapse; color: #333; font-size: 11px; min-width: 1200px; }
+        th { background: #000!important; color: #fff!important; padding: 12px; text-align: center; text-transform: uppercase; font-weight: bold; border: 1px solid #444; white-space: pre-line; }
+        td { padding: 10px; border: 1px solid #ddd; text-align: center; }
         tr:nth-child(even) { background: #f9f9f9; }
        .hidden { display: none!important; }
        .login-box { max-width: 350px; margin: 100px auto; background: white; padding: 30px; border-radius: 20px; text-align: center; color: #000; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-       .btn-link-auth { background: none; border: none; color: #003566; font-size: 13px; text-decoration: underline; cursor: pointer; margin-top: 15px; font-weight: bold; }
-       .ia-box { background:rgba(131,56,236,.15); border:1px solid #8338ec; }
+       .btn-link-auth { background: none; border: none; color: var(--azul); font-size: 13px; text-decoration: underline; cursor: pointer; margin-top: 15px; font-weight: bold; }
+       .ia-box { background:rgba(131,56,236,.15); border:1px solid var(--morado); }
        .ia-resp { background:rgba(0,0,0,.3); padding:10px; border-radius:8px; margin-top:10px; font-size:13px; white-space:pre-wrap; min-height:20px; }
        .row { display:flex; gap:10px; }
        .row > * { flex:1; }
        .msg{margin:8px 0;color:#ff4d4d;font-size:13px;min-height:18px;text-align:center}
+       .badge{ background:var(--amarillo); color:#001d3d; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:bold; }
     </style>
 </head>
 <body onload="inicio()">
@@ -61,19 +67,20 @@
         </div>
 
         <div class="card ia-box">
-            <label><i class="fa-solid fa-robot"></i> ASISTENTE IA TELCEL</label>
+            <label><i class="fa-solid fa-robot"></i> ASISTENTE IA TELCEL PRO</label>
             <div class="row">
-                <button class="btn-ia" onclick="iaCompletarIMEI()"><i class="fa-solid fa-wand-magic-sparkles"></i> Detectar Marca/Modelo por IMEI</button>
+                <button class="btn-ia" onclick="iaCompletarIMEI()"><i class="fa-solid fa-wand-magic-sparkles"></i> Detectar Marca/Modelo</button>
                 <button class="btn-ia" onclick="iaResumenDia()"><i class="fa-solid fa-chart-line"></i> Resumen del día</button>
+                <button class="btn-ia" onclick="iaSugerirVenta()"><i class="fa-solid fa-lightbulb"></i> Sugerir venta</button>
             </div>
-            <textarea id="iaPregunta" rows="2" placeholder="Pregúntale a la IA: ¿qué plan recomiendo para 15GB?"></textarea>
+            <textarea id="iaPregunta" rows="2" placeholder="Pregúntale a la IA: ¿qué plan recomiendo para cliente que usa TikTok todo el día?"></textarea>
             <button class="btn-ia" onclick="iaChat()">Preguntar a IA</button>
             <div id="iaRespuesta" class="ia-resp">Aquí aparece la respuesta de la IA...</div>
         </div>
 
         <form id="fReg">
             <div class="card">
-                <label>Renuevate/ Kit/Chip/Porta</label>
+                <label>Renuevate/ Kit/Chip/Porta/AK</label>
                 <select id="iTipo" required>
                     <option value="KIT">KIT</option>
                     <option value="CHIP">CHIP</option>
@@ -84,7 +91,7 @@
                 <label>FECHA DE ACTIVACION</label>
                 <input id="iFec" required>
                 <label>NUM. CELULAR</label>
-                <input id="iTel" type="tel" required maxlength="10">
+                <input id="iTel" type="tel" required maxlength="10" pattern="[0-9]{10}">
                 <label>ICCID</label>
                 <input id="iIcc" required>
             </div>
@@ -107,7 +114,7 @@
                 </select>
             </div>
 
-            <button type="submit" class="btn-save">GUARDAR VENTA</button>
+            <button type="submit" class="btn-save">GUARDAR VENTA <i class="fa-solid fa-cloud-arrow-up"></i></button>
         </form>
 
         <button class="btn-excel" onclick="exportarExcel()">
@@ -152,8 +159,21 @@
 
     const GEMINI_API_KEY = "TU_GEMINI_API_KEY";
 
+    // PEGA AQUÍ EL BASE64 DE TU plantilla_telcel.xlsx
+    const PLANTILLA_BASE64 = `PEGA_AQUI_TU_BASE64`;
+
     let db, auth;
     let isLoginMode = true;
+
+    function base64ToArrayBuffer(base64) {
+        const binaryString = window.atob(base64);
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        return bytes.buffer;
+    }
 
     function inicio() {
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
@@ -180,7 +200,7 @@
 
     async function llamarIA(prompt) {
         if(GEMINI_API_KEY==="TU_GEMINI_API_KEY"){
-            return "⚠️ Configura tu API KEY de Gemini en la línea 170. Es gratis en aistudio.google.com";
+            return "⚠️ Configura tu API KEY de Gemini en la línea 173. Es gratis en aistudio.google.com";
         }
         iaRespuesta.innerText="Pensando...";
         try{
@@ -199,7 +219,7 @@
     async function iaCompletarIMEI(){
         const imei = iIme.value.trim();
         if(imei.length<8){iaRespuesta.innerText="Pon un IMEI válido primero";return;}
-        const resp = await llamarIA(`Dado este IMEI de celular: ${imei}, dime la Marca y Modelo más probable. Responde solo: Marca: X, Modelo: Y. Si no sabes, di Marca: Desconocida, Modelo: Desconocido`);
+        const resp = await llamarIA(`Dado este IMEI de celular: ${imei}, dime la Marca y Modelo más probable en México. Responde solo: Marca: X, Modelo: Y. Si no sabes, di Marca: Desconocida, Modelo: Desconocido`);
         iaRespuesta.innerText=resp;
         const marca = resp.match(/Marca:\s*(.+)/i)?.[1]?.split(',')[0]?.trim();
         const modelo = resp.match(/Modelo:\s*(.+)/i)?.[1]?.trim();
@@ -212,14 +232,20 @@
         const hoy = new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
         const ventasHoy = ventas.filter(v=>v["FECHA DE ACTIVACION"]===hoy);
         if(!ventasHoy.length){iaRespuesta.innerText="No tienes ventas registradas hoy";return;}
-        const prompt = `Eres un supervisor Telcel. Haz un resumen ejecutivo corto de estas ventas de hoy ${hoy}:\n${JSON.stringify(ventasHoy.map(v=>({tipo:v["Renuevate/ Kit/Chip/ Porta"],prom:v["NOMBRE COMPLETO PROMOTOR"]})))}. Menciona total, tipos más vendidos y felicita al promotor top. Máximo 3 líneas.`;
+        const prompt = `Eres Omar Ortega, supervisor Telcel. Haz un resumen motivador de estas ventas de hoy ${hoy}:\n${JSON.stringify(ventasHoy.map(v=>({tipo:v["Renuevate/ Kit/Chip/ Porta"],prom:v["NOMBRE COMPLETO PROMOTOR"]})))}. Menciona total, tipos más vendidos y felicita al promotor top. Máximo 3 líneas. Usa emojis.`;
         iaRespuesta.innerText = await llamarIA(prompt);
+    }
+
+    async function iaSugerirVenta(){
+        const tipo = iTipo.value;
+        const resp = await llamarIA(`Soy promotor Telcel. Un cliente quiere ${tipo}. Dame 2 argumentos de venta rápidos y 1 objeción común con su respuesta. Máximo 4 líneas.`);
+        iaRespuesta.innerText = resp;
     }
 
     async function iaChat(){
         const pregunta = iaPregunta.value.trim();
         if(!pregunta){iaRespuesta.innerText="Escribe una pregunta para la IA";return;}
-        const contexto = `Eres un experto en ventas Telcel México. Responde corto y útil para un promotor en campo. Pregunta: ${pregunta}`;
+        const contexto = `Eres un experto en ventas Telcel México con 10 años de experiencia. Responde corto, útil y motivador para un promotor en campo. Pregunta: ${pregunta}`;
         iaRespuesta.innerText = await llamarIA(contexto);
     }
 
@@ -296,15 +322,44 @@
     async function exportarExcel() {
         let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
         if(l.length === 0) return alert("No hay datos");
-        msgApp.innerText="Cargando tu plantilla original...";
+
+        msgApp.innerText="Generando con tu plantilla...";
 
         try {
-            const response = await fetch('plantilla_telcel.xlsx');
-            if(!response.ok) throw new Error('No se encontró plantilla_telcel.xlsx en esta carpeta');
-            const arrayBuffer = await response.arrayBuffer();
-            const workbook = new ExcelJS.Workbook();
-            await workbook.xlsx.load(arrayBuffer);
-            const worksheet = workbook.worksheets[0];
+            let workbook;
+            let worksheet;
+
+            // Si hay plantilla en Base64, la usamos. Si no, creamos una nueva con bordes
+            if(PLANTILLA_BASE64 && PLANTILLA_BASE64!== "PEGA_AQUI_TU_BASE64"){
+                const arrayBuffer = base64ToArrayBuffer(PLANTILLA_BASE64);
+                workbook = new ExcelJS.Workbook();
+                await workbook.xlsx.load(arrayBuffer);
+                worksheet = workbook.worksheets[0];
+            } else {
+                // Fallback: crear Excel con bordes negros igual que tu plantilla
+                workbook = new ExcelJS.Workbook();
+                worksheet = workbook.addWorksheet('Comisiones');
+                worksheet.columns = [
+                    { header: 'NUM.\nCELULAR', key: 'tel', width: 12 },
+                    { header: 'IMEI', key: 'imei', width: 18 },
+                    { header: 'ICCID', key: 'iccid', width: 22 },
+                    { header: 'Renuevate/\nKit/Chip/\nPorta', key: 'tipo', width: 15 },
+                    { header: '#TIENDA /\nDeterminant\ne', key: 'tienda', width: 12 },
+                    { header: 'SOLO\nNOMB\nRE DE LA\nCADEN', key: 'cadena', width: 10 },
+                    { header: 'SOLO NOMBRE DE TIENDA\nSIN CADENA', key: 'tiendanombre', width: 28 },
+                    { header: 'NOMBRE COMPLETO\nPROMOTOR', key: 'promotor', width: 25 },
+                    { header: 'FECHA DE\nACTIVACIO\nN', key: 'fecha', width: 12 },
+                    { header: 'MARCA', key: 'marca', width: 12 },
+                    { header: 'MODELO', key: 'modelo', width: 15 },
+                    { header: 'REGISTRO', key: 'registro', width: 10 }
+                ];
+                worksheet.getRow(1).eachCell((cell) => {
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF000000' } };
+                    cell.font = { color: { argb: 'FFFFFFFF' }, bold: true, size: 11 };
+                    cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+                    cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+                });
+            }
 
             let filaInicio = 2;
             l.forEach((v, index) => {
@@ -321,9 +376,17 @@
                 fila.getCell(10).value = v.MARCA;
                 fila.getCell(11).value = v.MODELO;
                 fila.getCell(12).value = v.REGISTRO;
+                // Si no hay plantilla, agregamos bordes manualmente
+                if(PLANTILLA_BASE64 === "PEGA_AQUI_TU_BASE64"){
+                    fila.eachCell((cell) => {
+                        cell.border = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+                        cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+                    });
+                }
                 fila.commit();
             });
 
+            worksheet.autoFilter = 'A1:L1';
             const buffer = await workbook.xlsx.writeBuffer();
             const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
             const url = window.URL.createObjectURL(blob);
@@ -334,12 +397,12 @@
             window.URL.revokeObjectURL(url);
 
             msgApp.style.color="#2a9d8f";
-            msgApp.innerText="Excel generado con tu formato original ✓";
+            msgApp.innerText="Excel generado ✓";
             setTimeout(()=>{msgApp.innerText="";msgApp.style.color="#ff4d4d";},3000);
 
         } catch (error) {
             console.error(error);
-            msgApp.innerText="Error: Sube plantilla_telcel.xlsx a la misma carpeta que este HTML";
+            msgApp.innerText="Error: " + error.message;
         }
     }
 </script>
