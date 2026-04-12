@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ventas Telcel PRO</title>
 
-    <!-- PWA Tags -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#003566">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -20,43 +19,41 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        :root {--amarillo:#ffc300; --azul:#003566; --morado:#8338ec; --rojo:#d90429;}
+        :root {--amarillo:#ffc300; --azul:#003566; --morado:#8338ec; --rojo:#d90429; --verde:#25D366;}
         body { margin:0; font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; }
- .app { max-width:1200px; margin:auto; padding:15px; }
- .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap:wrap; gap:10px }
- .gps-card { background: #000; border: 1px solid #00b4d8; padding: 8px 12px; border-radius: 12px; color: #00b4d8; font-size: 11px; display: flex; align-items: center; }
- .gps-card i { margin-right: 8px; font-size: 16px; color: var(--amarillo); }
- .reloj-digital { font-family: monospace; font-size: 22px; color: var(--amarillo); font-weight: bold; }
- .btn-exit { background: rgba(255, 77, 0.2); color: #ff4d4d; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #ff4d4d; cursor: pointer; transition:.3s }
- .btn-exit:hover { background:#ff4d4d; color:#fff; }
- .card { background:rgba(255,255,255,.08); backdrop-filter:blur(10px); border-radius:15px; padding:15px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1); }
+        .app { max-width:1200px; margin:auto; padding:15px; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap:wrap; gap:10px }
+        .gps-card { background: #000; border: 1px solid #00b4d8; padding: 8px 12px; border-radius: 12px; color: #00b4d8; font-size: 11px; display: flex; align-items: center; }
+        .gps-card i { margin-right: 8px; font-size: 16px; color: var(--amarillo); }
+        .reloj-digital { font-family: monospace; font-size: 22px; color: var(--amarillo); font-weight: bold; }
+        .btn-exit { background: rgba(255, 77, 77, 0.2); color: #ff4d4d; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #ff4d4d; cursor: pointer; transition:.3s }
+        .btn-exit:hover { background:#ff4d4d; color:#fff; }
+        .card { background:rgba(255,255,255,.08); backdrop-filter:blur(10px); border-radius:15px; padding:15px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.1); }
         label { font-size:10px; font-weight:bold; color:var(--amarillo); text-transform: uppercase; display: block; margin-bottom: 4px; }
- .app input,.app select,.app textarea { width:100%; padding:9px; margin-bottom:8px; border-radius:8px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; font-size:14px; }
- .login-box input { width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #ccc; background:#f9f9f9; color:#000; box-sizing: border-box; font-size: 14px; }
- .btn { padding:12px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size: 14px; transition:.3s; display:flex; align-items:center; justify-content:center; gap:8px; }
- .btn-save { background:var(--amarillo); color:#001d3d; width:100%; }
- .btn-save:hover { transform:scale(1.02); box-shadow:0 5px 15px rgba(255,195,0,.4) }
- .btn-ia { background:var(--morado); color:white; margin:4px 0; width:100%; }
- .btn-ia:hover { background:#9d4edd; }
- .btn-scan { background:#0077b6; color:white; }
- .btn-whatsapp { background:#25D366; color:white; width:100%; margin-top:10px; }
- .hidden { display: none!important; }
- .login-box { max-width: 350px; margin: 80px auto; background: white; padding: 30px; border-radius: 20px; text-align: center; color: #000; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
- .btn-link-auth { background: none; border: none; color: var(--azul); font-size: 13px; text-decoration: underline; cursor: pointer; margin-top: 15px; font-weight: bold; }
- .ia-box { background:rgba(131,56,236,.15); border:1px solid var(--morado); }
- .ia-resp { background:rgba(0,0,0,.3); padding:10px; border-radius:8px; margin-top:8px; font-size:13px; white-space:pre-wrap; min-height:20px; }
- .row { display:flex; gap:8px; flex-wrap:wrap; }
- .row > * { flex:1; min-width:150px; }
- .msg{margin:6px 0;color:#ff4d4d;font-size:12px;min-height:16px;text-align:center}
- .badge{ background:var(--amarillo); color:#001d3d; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:bold; }
-    #qr-reader { border-radius:10px; overflow:hidden; margin:8px 0; }
- .btn-small { padding:6px 10px; font-size:12px; }
- .img-preview { max-width:100px; border-radius:8px; margin-top:5px; }
- .lista-ventas { max-height:300px; overflow-y:auto; }
- .venta-item { background:rgba(0,0,0,.2); padding:10px; border-radius:8px; margin-bottom:8px; font-size:12px; display:flex; justify-content:space-between; align-items:center; }
- .venta-info { flex:1; }
- .venta-del { color:var(--rojo); cursor:pointer; padding:5px; }
- .install-banner { background:var(--amarillo); color:#001d3d; padding:10px; text-align:center; font-weight:bold; cursor:pointer; display:none; position:sticky; top:0; z-index:100; }
+        .app input,.app select,.app textarea { width:100%; padding:9px; margin-bottom:8px; border-radius:8px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; font-size:14px; }
+        .login-box input { width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #ccc; background:#f9f9f9; color:#000; box-sizing: border-box; font-size: 14px; }
+        .btn { padding:12px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size: 14px; transition:.3s; display:flex; align-items:center; justify-content:center; gap:8px; }
+        .btn-save { background:var(--amarillo); color:#001d3d; width:100%; }
+        .btn-save:hover { transform:scale(1.02); box-shadow:0 5px 15px rgba(255,195,0,.4) }
+        .btn-ia { background:var(--morado); color:white; margin:4px 0; width:100%; }
+        .btn-ia:hover { background:#9d4edd; }
+        .hidden { display: none!important; }
+        .login-box { max-width: 350px; margin: 80px auto; background: white; padding: 30px; border-radius: 20px; text-align: center; color: #000; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .btn-link-auth { background: none; border: none; color: var(--azul); font-size: 13px; text-decoration: underline; cursor: pointer; margin-top: 15px; font-weight: bold; }
+        .ia-box { background:rgba(131,56,236,.15); border:1px solid var(--morado); }
+        .ia-resp { background:rgba(0,0,0,.3); padding:10px; border-radius:8px; margin-top:8px; font-size:13px; white-space:pre-wrap; min-height:20px; }
+        .row { display:flex; gap:8px; flex-wrap:wrap; }
+        .row > * { flex:1; min-width:150px; }
+        .msg{margin:6px 0;color:#ff4d4d;font-size:12px;min-height:16px;text-align:center}
+        .badge{ background:var(--amarillo); color:#001d3d; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:bold; }
+        #qr-reader { border-radius:10px; overflow:hidden; margin:8px 0; }
+        .btn-small { padding:6px 10px; font-size:12px; }
+        .img-preview { max-width:100px; border-radius:8px; margin-top:5px; }
+        .lista-ventas { max-height:300px; overflow-y:auto; }
+        .venta-item { background:rgba(0,0,0,.2); padding:10px; border-radius:8px; margin-bottom:8px; font-size:12px; display:flex; justify-content:space-between; align-items:center; }
+        .venta-info { flex:1; }
+        .venta-del { color:var(--rojo); cursor:pointer; padding:5px; }
+        .install-banner { background:var(--amarillo); color:#001d3d; padding:10px; text-align:center; font-weight:bold; cursor:pointer; display:none; position:sticky; top:0; z-index:100; }
     </style>
 </head>
 <body onload="inicio()">
@@ -144,9 +141,6 @@
             <button type="submit" class="btn btn-save">GUARDAR VENTA <i class="fa-solid fa-cloud-arrow-up"></i></button>
         </form>
 
-        <button class="btn btn-whatsapp" onclick="enviarWhatsApp()">
-            <i class="fa-brands fa-whatsapp"></i> MANDAR REPORTE A JEFE
-        </button>
         <p id="msgApp" class="msg"></p>
 
         <div class="card">
@@ -181,12 +175,14 @@
     });
 
     function instalarApp(){
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choice) => {
-            if(choice.outcome === 'accepted'){
-                document.getElementById('installBanner').style.display = 'none';
-            }
-        });
+        if(deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choice) => {
+                if(choice.outcome === 'accepted'){
+                    document.getElementById('installBanner').style.display = 'none';
+                }
+            });
+        }
     }
 
     if ('serviceWorker' in navigator) {
@@ -199,16 +195,22 @@
         auth = firebase.auth();
         storage = firebase.storage();
 
-        window.addEventListener('online', () => { badgeConexion.innerText='Online'; badgeConexion.style.background='var(--verde)'; sincronizarPendientes(); });
-        window.addEventListener('offline', () => { badgeConexion.innerText='Offline'; badgeConexion.style.background='var(--rojo)'; });
+        window.addEventListener('online', () => { 
+            const badge = document.getElementById('badgeConexion');
+            badge.innerText='Online'; badge.style.background='var(--verde)'; sincronizarPendientes(); 
+        });
+        window.addEventListener('offline', () => { 
+            const badge = document.getElementById('badgeConexion');
+            badge.innerText='Offline'; badge.style.background='var(--rojo)'; 
+        });
 
         setInterval(() => document.getElementById('txtReloj').innerText = new Date().toLocaleTimeString('es-MX'), 1000);
         if(navigator.geolocation) {
             navigator.geolocation.watchPosition(p => {
                 document.getElementById('txtGps').innerHTML = `${p.coords.latitude.toFixed(6)}, ${p.coords.longitude.toFixed(6)}`;
-            });
+            }, () => { document.getElementById('txtGps').innerText = "GPS Desactivado"; });
         }
-        document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
+        document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX');
 
         auth.onAuthStateChanged(user => {
             if(user) {
@@ -222,18 +224,22 @@
             }
         });
 
-        iFoto.onchange = e => {
+        document.getElementById('iFoto').onchange = e => {
             const file = e.target.files[0];
             if(file){
                 const reader = new FileReader();
-                reader.onload = ev => { previewFoto.src = ev.target.result; previewFoto.classList.remove('hidden'); }
+                reader.onload = ev => { 
+                    const prev = document.getElementById('previewFoto');
+                    prev.src = ev.target.result; prev.classList.remove('hidden'); 
+                }
                 reader.readAsDataURL(file);
             }
         };
     }
 
     async function llamarIA(prompt) {
-        iaRespuesta.innerText="Pensando...";
+        const respDiv = document.getElementById('iaRespuesta');
+        respDiv.innerText="Pensando...";
         try{
             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`,{
                 method:'POST',
@@ -241,10 +247,10 @@
                 body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})
             });
             const data = await res.json();
-            return data.candidates[0].content.parts[0].text;
-        }catch(e){
-            return "Error con la IA: " + e.message;
-        }
+            if (data && data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+                return data.candidates[0].content.parts[0].text;
+            } else { return "La IA no pudo responder. Revisa tu conexión."; }
+        }catch(e){ return "Error: " + e.message; }
     }
 
     function iniciarScanner(){
@@ -253,7 +259,7 @@
         html5QrCode = new Html5Qrcode("qr-reader");
         html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
             (decodedText) => {
-                iIme.value = decodedText.replace(/\D/g,'').slice(0,15);
+                document.getElementById('iIme').value = decodedText.replace(/\D/g,'').slice(0,15);
                 html5QrCode.stop();
                 qrDiv.classList.add('hidden');
                 iaCompletarIMEI();
@@ -261,112 +267,93 @@
     }
 
     async function iaCompletarIMEI(){
-        const imei = iIme.value.trim();
-        if(imei.length<8){iaRespuesta.innerText="Pon un IMEI válido primero";return;}
-        const resp = await llamarIA(`IMEI: ${imei}. Dame Marca y Modelo probable en México. Formato: Marca: X, Modelo: Y`);
-        iaRespuesta.innerText=resp;
+        const imei = document.getElementById('iIme').value.trim();
+        if(imei.length<8) return;
+        const resp = await llamarIA(`IMEI: ${imei}. Dame Marca y Modelo probable. Formato corto: Marca: X, Modelo: Y`);
+        document.getElementById('iaRespuesta').innerText = resp;
         const marca = resp.match(/Marca:\s*(.+)/i)?.[1]?.split(',')[0]?.trim();
         const modelo = resp.match(/Modelo:\s*(.+)/i)?.[1]?.trim();
-        if(marca &&!marca.includes("Desconocida")) iMarca.value=marca;
-        if(modelo &&!modelo.includes("Desconocido")) iMod.value=modelo;
+        if(marca && !marca.toLowerCase().includes("desconocid")) document.getElementById('iMarca').value = marca;
+        if(modelo && !modelo.toLowerCase().includes("desconocid")) document.getElementById('iMod').value = modelo;
     }
 
     async function iaResumenDia(){
         const ventas = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-        const hoy = new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
+        const hoy = new Date().toLocaleDateString('es-MX');
         const ventasHoy = ventas.filter(v=>v["FECHA DE ACTIVACION"]===hoy);
-        if(!ventasHoy.length){iaRespuesta.innerText="No tienes ventas hoy";return;}
-        const prompt = `Eres Omar, promotor Telcel estrella. Resume motivador: ${ventasHoy.length} ventas hoy. Tipos: ${ventasHoy.map(v=>v["Renuevate/ Kit/Chip/ Porta"]).join(', ')}. 3 líneas con emojis.`;
-        iaRespuesta.innerText = await llamarIA(prompt);
+        if(!ventasHoy.length){document.getElementById('iaRespuesta').innerText="No tienes ventas hoy";return;}
+        const prompt = `Resumen corto para promotor: ${ventasHoy.length} ventas hoy. Tipos: ${ventasHoy.map(v=>v["Renuevate/ Kit/Chip/ Porta"]).join(', ')}.`;
+        document.getElementById('iaRespuesta').innerText = await llamarIA(prompt);
     }
 
     async function iaSugerirVenta(){
-        const tipo = iTipo.value;
-        const resp = await llamarIA(`Cliente quiere ${tipo} Telcel. Dame 2 beneficios clave y cómo rebatir "está caro". 4 líneas máximo.`);
-        iaRespuesta.innerText = resp;
+        const tipo = document.getElementById('iTipo').value;
+        document.getElementById('iaRespuesta').innerText = await llamarIA(`2 beneficios para vender un ${tipo} de Telcel.`);
     }
 
     async function iaChat(){
-        const pregunta = iaPregunta.value.trim();
-        if(!pregunta){iaRespuesta.innerText="Escribe una pregunta";return;}
-        iaRespuesta.innerText = await llamarIA(`Eres experto Telcel México. Responde corto y útil para promotor en campo: ${pregunta}`);
+        const pregunta = document.getElementById('iaPregunta').value.trim();
+        if(!pregunta) return;
+        document.getElementById('iaRespuesta').innerText = await llamarIA(pregunta);
     }
 
     function iniciarVoz(){
         const rec = new (window.webkitSpeechRecognition || window.SpeechRecognition)();
         rec.lang = 'es-MX';
         rec.onresult = e => {
-            const txt = e.results[0][0].transcript;
-            iaRespuesta.innerText = "Escuché: " + txt;
+            const txt = e.results[0][0].transcript.toLowerCase();
+            document.getElementById('iaRespuesta').innerText = "Escuché: " + txt;
             const nums = txt.match(/\d{10,}/g);
-            if(nums) iTel.value = nums[0].slice(0,10);
-            if(txt.toLowerCase().includes('kit')) iTipo.value='KIT';
-            if(txt.toLowerCase().includes('porta')) iTipo.value='PORTA';
-            if(txt.toLowerCase().includes('chip')) iTipo.value='CHIP';
-            if(txt.toLowerCase().includes('renuevate')) iTipo.value='RENUEVATE';
-            if(txt.toLowerCase().includes('ak')) iTipo.value='AK';
+            if(nums) document.getElementById('iTel').value = nums[0].slice(0,10);
+            if(txt.includes('kit')) document.getElementById('iTipo').value='KIT';
+            else if(txt.includes('porta')) document.getElementById('iTipo').value='PORTA';
+            else if(txt.includes('chip')) document.getElementById('iTipo').value='CHIP';
         };
         rec.start();
     }
 
     function duplicarUltima(){
-        if(!ultimaVenta){alert("Guarda una venta primero"); return;}
-        iTipo.value = ultimaVenta["Renuevate/ Kit/Chip/ Porta"];
-        iTiendaNum.value = ultimaVenta["#TIENDA / Determinante"];
-        iCadena.value = ultimaVenta["SOLO NOMBRE DE LA CADENA"];
-        iTiendaNombre.value = ultimaVenta["SOLO NOMBRE DE TIENDA SIN CADENA"];
-        iProm.value = ultimaVenta["NOMBRE COMPLETO PROMOTOR"];
-        msgApp.innerText="Datos duplicados. Cambia teléfono e ICCID";
+        if(!ultimaVenta){alert("Sin ventas previas"); return;}
+        document.getElementById('iTipo').value = ultimaVenta["Renuevate/ Kit/Chip/ Porta"];
+        document.getElementById('iTiendaNum').value = ultimaVenta["#TIENDA / Determinante"];
+        document.getElementById('iCadena').value = ultimaVenta["SOLO NOMBRE DE LA CADENA"];
+        document.getElementById('iTiendaNombre').value = ultimaVenta["SOLO NOMBRE DE TIENDA SIN CADENA"];
+        document.getElementById('iProm').value = ultimaVenta["NOMBRE COMPLETO PROMOTOR"];
+        document.getElementById('msgApp').innerText="Copiado. Cambia número e ICCID.";
     }
 
     function validarICCID(){
-        const iccid = iIcc.value;
+        const iccid = document.getElementById('iIcc').value;
         const ventas = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
+        const msg = document.getElementById('msgApp');
         if(ventas.some(v=>v.ICCID===iccid)){
-            msgApp.style.color='#ff4d4d';
-            msgApp.innerText="⚠️ ICCID ya registrado antes";
-        } else {
-            msgApp.innerText="";
-        }
-    }
-
-    function enviarWhatsApp(){
-        const ventas = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-        const hoy = new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
-        const ventasHoy = ventas.filter(v=>v["FECHA DE ACTIVACION"]===hoy);
-        const tipos = {};
-        ventasHoy.forEach(v => { tipos[v["Renuevate/ Kit/Chip/ Porta"]] = (tipos[v["Renuevate/ Kit/Chip/ Porta"]]||0)+1; });
-        let msg = `*Reporte ${hoy} - ${iProm.value || 'Omar'}*%0A`;
-        Object.entries(tipos).forEach(([t,c]) => msg += `${t}: ${c}%0A`);
-        msg += `*Total: ${ventasHoy.length} ventas*`;
-        window.open(`https://wa.me/?text=${msg}`, '_blank');
+            msg.style.color='#ff4d4d'; msg.innerText="⚠️ ICCID duplicado";
+        } else { msg.innerText=""; }
     }
 
     function toggleAuthMode() {
-        isLoginMode =!isLoginMode;
-        document.getElementById('authTitle').innerText = isLoginMode? "Acceso Promotores PRO" : "Registrar Nuevo Usuario";
-        document.getElementById('btnAuthAction').innerText = isLoginMode? "ENTRAR" : "REGISTRAR";
-        document.getElementById('btnToggleAuth').innerText = isLoginMode? "¿No tienes cuenta? Regístrate aquí" : "¿Ya tienes cuenta? Inicia sesión";
+        isLoginMode = !isLoginMode;
+        document.getElementById('authTitle').innerText = isLoginMode ? "Acceso Promotores PRO" : "Registro";
+        document.getElementById('btnAuthAction').innerText = isLoginMode ? "ENTRAR" : "REGISTRAR";
     }
 
     function manejarAuth() {
-        const u = document.getElementById('u').value;
-        const p = document.getElementById('p').value;
-        if(!u ||!p) return alert("Llena los campos");
-        if(isLoginMode) { auth.signInWithEmailAndPassword(u, p).catch(e => alert(e.message)); }
-        else { auth.createUserWithEmailAndPassword(u, p).then(() => { alert("Registrado"); toggleAuthMode(); }).catch(e => alert(e.message)); }
+        const u = document.getElementById('u').value, p = document.getElementById('p').value;
+        if(!u || !p) return;
+        if(isLoginMode) auth.signInWithEmailAndPassword(u, p).catch(e => alert(e.message));
+        else auth.createUserWithEmailAndPassword(u, p).then(() => toggleAuthMode()).catch(e => alert(e.message));
     }
 
     function salir() { auth.signOut(); }
 
     document.getElementById('fReg').onsubmit = async e => {
         e.preventDefault();
-        msgApp.innerText="";
+        const msg = document.getElementById('msgApp');
+        msg.innerText = "Guardando...";
         let fotoURL = "";
 
-        if(iFoto.files[0] && navigator.onLine){
-            msgApp.innerText="Subiendo foto...";
-            const file = iFoto.files[0];
+        if(document.getElementById('iFoto').files[0] && navigator.onLine){
+            const file = document.getElementById('iFoto').files[0];
             const ref = storage.ref(`tickets/${Date.now()}_${file.name}`);
             await ref.put(file);
             fotoURL = await ref.getDownloadURL();
@@ -395,49 +382,43 @@
         l.unshift(v);
         localStorage.setItem("ventas_omar", JSON.stringify(l));
 
-        if(navigator.onLine && auth.currentUser){
-            db.ref("ventas/"+auth.currentUser.uid).push(v);
-        } else {
-            let pendientes = JSON.parse(localStorage.getItem("pendientes") || "[]");
-            pendientes.push(v);
-            localStorage.setItem("pendientes", JSON.stringify(pendientes));
+        if(navigator.onLine && auth.currentUser) db.ref("ventas/"+auth.currentUser.uid).push(v);
+        else {
+            let pents = JSON.parse(localStorage.getItem("pendientes") || "[]");
+            pents.push(v); localStorage.setItem("pendientes", JSON.stringify(pents));
         }
 
-        cargarLocal();
-        e.target.reset();
-        previewFoto.classList.add('hidden');
-        document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
-        msgApp.style.color="#2a9d8f";
-        msgApp.innerText="Venta guardada ✓";
-        setTimeout(()=>{msgApp.innerText="";msgApp.style.color="#ff4d4d";},2000);
+        cargarLocal(); e.target.reset();
+        document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX');
+        msg.style.color="var(--verde)"; msg.innerText="✓ Guardado";
+        setTimeout(() => msg.innerText="", 2000);
     };
 
     function sincronizarPendientes(){
-        const pendientes = JSON.parse(localStorage.getItem("pendientes") || "[]");
-        if(pendientes.length && auth.currentUser && navigator.onLine){
-            pendientes.forEach(v => db.ref("ventas/"+auth.currentUser.uid).push(v));
+        const pents = JSON.parse(localStorage.getItem("pendientes") || "[]");
+        if(pents.length && auth.currentUser && navigator.onLine){
+            pents.forEach(v => db.ref("ventas/"+auth.currentUser.uid).push(v));
             localStorage.removeItem("pendientes");
-            msgApp.innerText="Ventas offline sincronizadas";
         }
     }
 
     function eliminar(id) {
         if(!confirm("¿Borrar?")) return;
-        let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]").filter(v => v.id!== id);
+        let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]").filter(v => v.id !== id);
         localStorage.setItem("ventas_omar", JSON.stringify(l));
         cargarLocal();
     }
 
     function cargarLocal() {
+        const lista = document.getElementById('listaVentas'), badge = document.getElementById('badgeTotal');
         let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-        const hoy = new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
-        const ventasHoy = l.filter(v=>v["FECHA DE ACTIVACION"]===hoy);
-        badgeTotal.innerText = ventasHoy.length;
-
-        document.getElementById('listaVentas').innerHTML = l.map(v => `
+        const hoy = new Date().toLocaleDateString('es-MX');
+        const ventasHoy = l.filter(v => v["FECHA DE ACTIVACION"] === hoy);
+        badge.innerText = ventasHoy.length;
+        lista.innerHTML = l.map(v => `
             <div class="venta-item">
                 <div class="venta-info">
-                    <b>${v["NUM. CELULAR"]}</b> - ${v["Renuevate/ Kit/Chip/ Porta"]}<br>
+                    <b style="color:var(--amarillo)">${v["NUM. CELULAR"]}</b> - ${v["Renuevate/ Kit/Chip/ Porta"]}<br>
                     <small>${v["FECHA DE ACTIVACION"]} | ${v["SOLO NOMBRE DE TIENDA SIN CADENA"]}</small>
                 </div>
                 <i class="fa fa-trash venta-del" onclick="eliminar(${v.id})"></i>
