@@ -7,40 +7,36 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         body { margin:0; font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; }
-        .app { max-width:1000px; margin:auto; padding:20px; }
-        
-        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .gps-card { background: #000; border: 1px solid #00b4d8; padding: 10px 15px; border-radius: 12px; color: #00b4d8; font-size: 12px; display: flex; align-items: center; }
-        .gps-card i { margin-right: 10px; font-size: 18px; color: #ffc300; }
-        .reloj-digital { font-family: monospace; font-size: 24px; color: #ffc300; font-weight: bold; }
-
-        .btn-exit { background: rgba(255, 77, 77, 0.2); color: #ff4d4d; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #ff4d4d; cursor: pointer; }
-
-        .card { background:rgba(255,255,255,.08); backdrop-filter:blur(10px); border-radius:15px; padding:20px; margin-bottom:15px; border:1px solid rgba(255,255,255,0.1); }
+       .app { max-width:1000px; margin:auto; padding:20px; }
+       .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+       .gps-card { background: #000; border: 1px solid #00b4d8; padding: 10px 15px; border-radius: 12px; color: #00b4d8; font-size: 12px; display: flex; align-items: center; }
+       .gps-card i { margin-right: 10px; font-size: 18px; color: #ffc300; }
+       .reloj-digital { font-family: monospace; font-size: 24px; color: #ffc300; font-weight: bold; }
+       .btn-exit { background: rgba(255, 77, 77, 0.2); color: #ff4d4d; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #ff4d4d; cursor: pointer; }
+       .card { background:rgba(255,255,255,.08); backdrop-filter:blur(10px); border-radius:15px; padding:20px; margin-bottom:15px; border:1px solid rgba(255,255,255,0.1); }
         label { font-size:10px; font-weight:bold; color:#ffc300; text-transform: uppercase; display: block; margin-bottom: 5px; }
-        
-        /* Inputs APP */
-        .app input, .app select { width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; }
-        
-        /* Inputs LOGIN (Texto Negro) */
-        .login-box input { width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #ccc; background:#f9f9f9; color:#000; box-sizing: border-box; font-size: 14px; }
-
-        .btn-save { background:#ffc300; color:#001d3d; width:100%; padding:15px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size: 16px; }
-        .btn-excel { background:#1f7a3f; color:white; width:100%; padding:14px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; margin-top:20px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(31, 122, 63, 0.4); }
-
-        .table-container { overflow-x: auto; background: white; border-radius: 10px; margin-top: 20px; }
+       .app input,.app select,.app textarea { width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; }
+       .login-box input { width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #ccc; background:#f9f9f9; color:#000; box-sizing: border-box; font-size: 14px; }
+       .btn-save { background:#ffc300; color:#001d3d; width:100%; padding:15px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size: 16px; }
+       .btn-ia { background:#8338ec; color:white; padding:10px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; margin:5px 0; width:100%; }
+       .btn-excel { background:#1f7a3f; color:white; width:100%; padding:14px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; margin-top:20px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(31, 122, 63, 0.4); }
+       .table-container { overflow-x: auto; background: white; border-radius: 10px; margin-top: 20px; }
         table { width: 100%; border-collapse: collapse; color: #333; font-size: 11px; min-width: 1100px; }
-        th { background: #000 !important; color: #fff !important; padding: 12px; text-align: left; text-transform: uppercase; font-weight: bold; border: 1px solid #444; white-space: pre-line; }
+        th { background: #000!important; color: #fff!important; padding: 12px; text-align: left; text-transform: uppercase; font-weight: bold; border: 1px solid #444; white-space: pre-line; }
         td { padding: 10px; border: 1px solid #ddd; }
         tr:nth-child(even) { background: #f9f9f9; }
-
-        .hidden { display: none !important; }
-        .login-box { max-width: 350px; margin: 100px auto; background: white; padding: 30px; border-radius: 20px; text-align: center; color: #000; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        .btn-link-auth { background: none; border: none; color: #003566; font-size: 13px; text-decoration: underline; cursor: pointer; margin-top: 15px; font-weight: bold; }
+       .hidden { display: none!important; }
+       .login-box { max-width: 350px; margin: 100px auto; background: white; padding: 30px; border-radius: 20px; text-align: center; color: #000; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+       .btn-link-auth { background: none; border: none; color: #003566; font-size: 13px; text-decoration: underline; cursor: pointer; margin-top: 15px; font-weight: bold; }
+       .ia-box { background:rgba(131,56,236,.15); border:1px solid #8338ec; }
+       .ia-resp { background:rgba(0,0,0,.3); padding:10px; border-radius:8px; margin-top:10px; font-size:13px; white-space:pre-wrap; min-height:20px; }
+       .row { display:flex; gap:10px; }
+       .row > * { flex:1; }
+       .msg{margin:8px 0;color:#ff4d4d;font-size:13px;min-height:18px;text-align:center}
     </style>
 </head>
 <body onload="inicio()">
@@ -62,6 +58,17 @@
             </div>
             <div class="reloj-digital" id="txtReloj">00:00:00</div>
             <div class="btn-exit" onclick="salir()"><i class="fa-solid fa-power-off"></i></div>
+        </div>
+
+        <div class="card ia-box">
+            <label><i class="fa-solid fa-robot"></i> ASISTENTE IA TELCEL</label>
+            <div class="row">
+                <button class="btn-ia" onclick="iaCompletarIMEI()"><i class="fa-solid fa-wand-magic-sparkles"></i> Detectar Marca/Modelo por IMEI</button>
+                <button class="btn-ia" onclick="iaResumenDia()"><i class="fa-solid fa-chart-line"></i> Resumen del día</button>
+            </div>
+            <textarea id="iaPregunta" rows="2" placeholder="Pregúntale a la IA: ¿qué plan recomiendo para 15GB?"></textarea>
+            <button class="btn-ia" onclick="iaChat()">Preguntar a IA</button>
+            <div id="iaRespuesta" class="ia-resp">Aquí aparece la respuesta de la IA...</div>
         </div>
 
         <form id="fReg">
@@ -99,13 +106,14 @@
                     <option value="NO">NO</option>
                 </select>
             </div>
-            
+
             <button type="submit" class="btn-save">GUARDAR VENTA</button>
         </form>
 
         <button class="btn-excel" onclick="exportarExcel()">
-            <i class="fa-solid fa-file-excel"></i> DESCARGAR REPORTE PROFESIONAL
+            <i class="fa-solid fa-file-excel"></i> DESCARGAR CON TU PLANTILLA ORIGINAL
         </button>
+        <p id="msgApp" class="msg"></p>
 
         <div class="table-container">
             <table>
@@ -123,7 +131,7 @@
                         <th>MARCA</th>
                         <th>MODELO</th>
                         <th>REGISTRO</th>
-                        <th style="background:red !important">X</th>
+                        <th style="background:red!important">X</th>
                     </tr>
                 </thead>
                 <tbody id="bodyVentas"></tbody>
@@ -133,7 +141,7 @@
 
 <script>
     const firebaseConfig = {
-        apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc", 
+        apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
         authDomain: "ventastelcel4029.firebaseapp.com",
         databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com",
         projectId: "ventastelcel4029",
@@ -141,6 +149,8 @@
         messagingSenderId: "480758010888",
         appId: "1:480758010888:web:e948c54f0217536aa9adbd"
     };
+
+    const GEMINI_API_KEY = "TU_GEMINI_API_KEY";
 
     let db, auth;
     let isLoginMode = true;
@@ -168,17 +178,62 @@
         });
     }
 
+    async function llamarIA(prompt) {
+        if(GEMINI_API_KEY==="TU_GEMINI_API_KEY"){
+            return "⚠️ Configura tu API KEY de Gemini en la línea 170. Es gratis en aistudio.google.com";
+        }
+        iaRespuesta.innerText="Pensando...";
+        try{
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`,{
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})
+            });
+            const data = await res.json();
+            return data.candidates[0].content.parts[0].text;
+        }catch(e){
+            return "Error con la IA: " + e.message;
+        }
+    }
+
+    async function iaCompletarIMEI(){
+        const imei = iIme.value.trim();
+        if(imei.length<8){iaRespuesta.innerText="Pon un IMEI válido primero";return;}
+        const resp = await llamarIA(`Dado este IMEI de celular: ${imei}, dime la Marca y Modelo más probable. Responde solo: Marca: X, Modelo: Y. Si no sabes, di Marca: Desconocida, Modelo: Desconocido`);
+        iaRespuesta.innerText=resp;
+        const marca = resp.match(/Marca:\s*(.+)/i)?.[1]?.split(',')[0]?.trim();
+        const modelo = resp.match(/Modelo:\s*(.+)/i)?.[1]?.trim();
+        if(marca && marca!=="Desconocida") iMarca.value=marca;
+        if(modelo && modelo!=="Desconocido") iMod.value=modelo;
+    }
+
+    async function iaResumenDia(){
+        const ventas = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
+        const hoy = new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
+        const ventasHoy = ventas.filter(v=>v["FECHA DE ACTIVACION"]===hoy);
+        if(!ventasHoy.length){iaRespuesta.innerText="No tienes ventas registradas hoy";return;}
+        const prompt = `Eres un supervisor Telcel. Haz un resumen ejecutivo corto de estas ventas de hoy ${hoy}:\n${JSON.stringify(ventasHoy.map(v=>({tipo:v["Renuevate/ Kit/Chip/ Porta"],prom:v["NOMBRE COMPLETO PROMOTOR"]})))}. Menciona total, tipos más vendidos y felicita al promotor top. Máximo 3 líneas.`;
+        iaRespuesta.innerText = await llamarIA(prompt);
+    }
+
+    async function iaChat(){
+        const pregunta = iaPregunta.value.trim();
+        if(!pregunta){iaRespuesta.innerText="Escribe una pregunta para la IA";return;}
+        const contexto = `Eres un experto en ventas Telcel México. Responde corto y útil para un promotor en campo. Pregunta: ${pregunta}`;
+        iaRespuesta.innerText = await llamarIA(contexto);
+    }
+
     function toggleAuthMode() {
-        isLoginMode = !isLoginMode;
-        document.getElementById('authTitle').innerText = isLoginMode ? "Acceso Promotores" : "Registrar Nuevo Usuario";
-        document.getElementById('btnAuthAction').innerText = isLoginMode ? "ENTRAR" : "REGISTRAR";
-        document.getElementById('btnToggleAuth').innerText = isLoginMode ? "¿No tienes cuenta? Regístrate aquí" : "¿Ya tienes cuenta? Inicia sesión";
+        isLoginMode =!isLoginMode;
+        document.getElementById('authTitle').innerText = isLoginMode? "Acceso Promotores" : "Registrar Nuevo Usuario";
+        document.getElementById('btnAuthAction').innerText = isLoginMode? "ENTRAR" : "REGISTRAR";
+        document.getElementById('btnToggleAuth').innerText = isLoginMode? "¿No tienes cuenta? Regístrate aquí" : "¿Ya tienes cuenta? Inicia sesión";
     }
 
     function manejarAuth() {
         const u = document.getElementById('u').value;
         const p = document.getElementById('p').value;
-        if(!u || !p) return alert("Llena los campos");
+        if(!u ||!p) return alert("Llena los campos");
         if(isLoginMode) { auth.signInWithEmailAndPassword(u, p).catch(e => alert(e.message)); }
         else { auth.createUserWithEmailAndPassword(u, p).then(() => { alert("Registrado"); toggleAuthMode(); }).catch(e => alert(e.message)); }
     }
@@ -212,7 +267,7 @@
 
     function eliminar(id) {
         if(!confirm("¿Borrar?")) return;
-        let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]").filter(v => v.id !== id);
+        let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]").filter(v => v.id!== id);
         localStorage.setItem("ventas_omar", JSON.stringify(l));
         cargarLocal();
     }
@@ -238,38 +293,54 @@
         `).join("");
     }
 
-    function exportarExcel() {
+    async function exportarExcel() {
         let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
         if(l.length === 0) return alert("No hay datos");
+        msgApp.innerText="Cargando tu plantilla original...";
 
-        const datosExcel = l.map(v => ({
-            "NUM.\nCELULAR": v["NUM. CELULAR"],
-            "IMEI": v.IMEI,
-            "ICCID": v.ICCID,
-            "Renuevate/\nKit/Chip/\nPorta": v["Renuevate/ Kit/Chip/ Porta"],
-            "#TIENDA /\nDeterminant\ne": v["#TIENDA / Determinante"],
-            "SOLO\nNOMB\nRE DE LA\nCADEN": v["SOLO NOMBRE DE LA CADENA"],
-            "SOLO NOMBRE DE TIENDA\nSIN CADENA": v["SOLO NOMBRE DE TIENDA SIN CADENA"],
-            "NOMBRE COMPLETO\nPROMOTOR": v["NOMBRE COMPLETO PROMOTOR"],
-            "FECHA DE\nACTIVACIO\nN": v["FECHA DE ACTIVACION"],
-            "MARCA": v.MARCA,
-            "MODELO": v.MODELO,
-            "REGISTRO": v.REGISTRO
-        }));
+        try {
+            const response = await fetch('plantilla_telcel.xlsx');
+            if(!response.ok) throw new Error('No se encontró plantilla_telcel.xlsx en esta carpeta');
+            const arrayBuffer = await response.arrayBuffer();
+            const workbook = new ExcelJS.Workbook();
+            await workbook.xlsx.load(arrayBuffer);
+            const worksheet = workbook.worksheets[0];
 
-        const ws = XLSX.utils.json_to_sheet(datosExcel);
-        
-        ws['!cols'] = [
-            {wch: 12}, {wch: 18}, {wch: 22}, {wch: 15}, {wch: 12}, 
-            {wch: 10}, {wch: 28}, {wch: 25}, {wch: 12}, {wch: 12}, {wch: 15}, {wch: 10}
-        ];
+            let filaInicio = 2;
+            l.forEach((v, index) => {
+                const fila = worksheet.getRow(filaInicio + index);
+                fila.getCell(1).value = v["NUM. CELULAR"];
+                fila.getCell(2).value = v.IMEI;
+                fila.getCell(3).value = v.ICCID;
+                fila.getCell(4).value = v["Renuevate/ Kit/Chip/ Porta"];
+                fila.getCell(5).value = v["#TIENDA / Determinante"];
+                fila.getCell(6).value = v["SOLO NOMBRE DE LA CADENA"];
+                fila.getCell(7).value = v["SOLO NOMBRE DE TIENDA SIN CADENA"];
+                fila.getCell(8).value = v["NOMBRE COMPLETO PROMOTOR"];
+                fila.getCell(9).value = v["FECHA DE ACTIVACION"];
+                fila.getCell(10).value = v.MARCA;
+                fila.getCell(11).value = v.MODELO;
+                fila.getCell(12).value = v.REGISTRO;
+                fila.commit();
+            });
 
-        const range = XLSX.utils.decode_range(ws['!ref']);
-        ws['!autofilter'] = { ref: XLSX.utils.encode_range(range) };
+            const buffer = await workbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Reporte_Telcel_${new Date().toISOString().slice(0,10)}.xlsx`;
+            a.click();
+            window.URL.revokeObjectURL(url);
 
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Comisiones");
-        XLSX.writeFile(wb, `comisiones_marzo_omar_${new Date().toISOString().slice(0,10)}.xlsx`);
+            msgApp.style.color="#2a9d8f";
+            msgApp.innerText="Excel generado con tu formato original ✓";
+            setTimeout(()=>{msgApp.innerText="";msgApp.style.color="#ff4d4d";},3000);
+
+        } catch (error) {
+            console.error(error);
+            msgApp.innerText="Error: Sube plantilla_telcel.xlsx a la misma carpeta que este HTML";
+        }
     }
 </script>
 </body>
