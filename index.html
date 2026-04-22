@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistema Ventas Pro - Omar Ortega</title>
+<title>Sistema Ventas Telcel - Omar Ortega</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -12,32 +12,73 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
-body { margin:0; font-family:'Segoe UI'; background:linear-gradient(135deg,#001d3d,#003566,#000814); color:white; }
+body { margin:0; font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#001d3d,#003566,#000814); color:white; }
 .app { max-width:1000px; margin:auto; padding:20px; }
 
-.card { background:rgba(255,255,255,.08); padding:20px; border-radius:15px; margin-bottom:15px; }
-label { font-size:10px; color:#ffc300; }
+.card { background:rgba(255,255,255,.08); backdrop-filter:blur(10px); border-radius:15px; padding:20px; margin-bottom:15px; }
 
-input, select { width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:none; background:rgba(255,255,255,.12); color:white; }
+label { font-size:10px; color:#ffc300; font-weight:bold; }
 
-.btn-save { background:#ffc300; color:#001d3d; padding:15px; width:100%; border:none; border-radius:10px; }
+input, select {
+width:100%;
+padding:10px;
+margin-bottom:10px;
+border-radius:8px;
+border:none;
+background:rgba(255,255,255,.12);
+color:white;
+}
 
-table { width:100%; background:white; color:black; font-size:11px; }
-td, th { padding:8px; }
+.btn-save {
+background:#ffc300;
+color:#001d3d;
+padding:15px;
+border:none;
+border-radius:10px;
+width:100%;
+font-weight:bold;
+cursor:pointer;
+}
 
-canvas { background:white; border-radius:10px; }
+.table-container {
+overflow-x:auto;
+background:white;
+border-radius:10px;
+margin-top:20px;
+}
+
+table { width:100%; border-collapse:collapse; color:black; font-size:11px; }
+
+th { background:black; color:white; padding:10px; }
+
+td { padding:8px; border:1px solid #ddd; }
 
 .hidden { display:none; }
-.login-box { max-width:300px; margin:100px auto; background:white; color:black; padding:20px; border-radius:15px; }
+
+.login-box {
+max-width:350px;
+margin:100px auto;
+background:white;
+padding:30px;
+border-radius:20px;
+color:black;
+text-align:center;
+}
+
+canvas {
+background:white;
+border-radius:10px;
+}
 </style>
 </head>
 
 <body onload="inicio()">
 
 <div id="loginBox" class="login-box">
+<h3>Acceso</h3>
 <input id="u" placeholder="Correo">
-<input id="p" type="password" placeholder="Password">
-<button onclick="manejarAuth()">Entrar</button>
+<input id="p" type="password" placeholder="Contraseña">
+<button class="btn-save" onclick="manejarAuth()">Entrar</button>
 </div>
 
 <div id="appBox" class="app hidden">
@@ -63,14 +104,14 @@ canvas { background:white; border-radius:10px; }
 <label>FECHA</label>
 <input id="iFec">
 
-<label>NUMERO</label>
+<label>NÚMERO</label>
 <input id="iTel">
 
 <label>ICCID</label>
 <input id="iIcc">
 </div>
 
-<button class="btn-save">Guardar</button>
+<button class="btn-save">GUARDAR VENTA</button>
 
 </form>
 
@@ -85,18 +126,20 @@ canvas { background:white; border-radius:10px; }
 <canvas id="graficaVentas"></canvas>
 </div>
 
+<div class="table-container">
 <table>
 <thead>
 <tr>
 <th>NUM</th>
 <th>TIPO</th>
-<th>COMPAÑIA</th>
+<th>COMPAÑÍA</th>
 <th>FECHA</th>
 <th>X</th>
 </tr>
 </thead>
 <tbody id="bodyVentas"></tbody>
 </table>
+</div>
 
 </div>
 
@@ -106,12 +149,15 @@ let auth;
 let chart;
 
 function inicio(){
+
 firebase.initializeApp({
 apiKey:"test",
 authDomain:"test"
 });
 
 auth = firebase.auth();
+
+document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX');
 
 auth.onAuthStateChanged(user=>{
 if(user){
@@ -121,6 +167,7 @@ cargarLocal();
 actualizarGrafica();
 }
 });
+
 }
 
 function manejarAuth(){
@@ -130,15 +177,16 @@ auth.signInAnonymously();
 document.getElementById('fReg').onsubmit = e=>{
 e.preventDefault();
 
-let v = {
+const v = {
 id: Date.now(),
-"NUM": iTel.value,
-"TIPO": iTipo.value,
-"COMPAÑIA": iCompania.value,
-"FECHA": iFec.value
+NUM: iTel.value,
+TIPO: iTipo.value,
+COMPAÑIA: iCompania.value,
+FECHA: iFec.value
 };
 
 let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
+
 l.unshift(v);
 
 localStorage.setItem("ventas_omar", JSON.stringify(l));
@@ -147,16 +195,25 @@ cargarLocal();
 actualizarGrafica();
 
 e.target.reset();
+
+iFec.value = new Date().toLocaleDateString('es-MX');
 };
 
 function eliminar(id){
-let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]").filter(v=>v.id!==id);
+
+let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
+
+l = l.filter(v => v.id !== id);
+
 localStorage.setItem("ventas_omar", JSON.stringify(l));
+
 cargarLocal();
 actualizarGrafica();
+
 }
 
 function cargarLocal(){
+
 let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
 
 bodyVentas.innerHTML = l.map(v=>`
@@ -165,14 +222,16 @@ bodyVentas.innerHTML = l.map(v=>`
 <td>${v.TIPO}</td>
 <td>${v.COMPAÑIA}</td>
 <td>${v.FECHA}</td>
-<td onclick="eliminar(${v.id})">❌</td>
+<td onclick="eliminar(${v.id})" style="cursor:pointer;color:red;">X</td>
 </tr>
 `).join("");
+
 }
 
 function actualizarGrafica(){
 
 let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
+
 let filtro = filtroTiempo.value;
 
 let hoy = new Date().toLocaleDateString('es-MX');
@@ -183,24 +242,38 @@ l.forEach(v=>{
 
 if(filtro==="hoy" && v.FECHA!==hoy) return;
 
+if(filtro==="semana"){
+let f = new Date(v.FECHA.split("/").reverse().join("-"));
+let now = new Date();
+let inicio = new Date(now.setDate(now.getDate() - now.getDay()));
+if(f < inicio) return;
+}
+
 if(v.COMPAÑIA==="TELCEL") telcel++;
 if(v.COMPAÑIA==="ATT") att++;
 if(v.COMPAÑIA==="BAIT") bait++;
 
 });
 
-let data = {
+const data = {
 labels:["Telcel","AT&T","BAIT"],
-datasets:[{data:[telcel,att,bait]}]
+datasets:[{
+label:"Ventas",
+data:[telcel,att,bait]
+}]
 };
 
 if(chart){
-chart.data=data;
+chart.data = data;
 chart.update();
 }else{
-chart = new Chart(graficaVentas,{
-type:'bar',
-data:data
+chart = new Chart(document.getElementById("graficaVentas"),{
+type:"bar",
+data:data,
+options:{
+responsive:true,
+scales:{ y:{ beginAtZero:true } }
+}
 });
 }
 
