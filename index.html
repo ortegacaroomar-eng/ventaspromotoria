@@ -3,137 +3,98 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistema Ventas PRO</title>
+<title>Ventas PRO</title>
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
 <!-- Chart -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body {
+body{
 margin:0;
-font-family:'Segoe UI', sans-serif;
-background: linear-gradient(135deg,#001d3d,#003566,#000814);
+font-family:'Segoe UI';
+background:linear-gradient(135deg,#001d3d,#003566,#000814);
 color:white;
 }
-
-.app { max-width:1100px; margin:auto; padding:20px; }
-
-.card {
-background: rgba(255,255,255,0.08);
-backdrop-filter: blur(12px);
-border-radius:16px;
+.card{
+background:rgba(255,255,255,0.08);
 padding:20px;
-margin-bottom:15px;
+border-radius:15px;
+margin:10px;
 }
-
-input, select {
+input,select{
 width:100%;
 padding:12px;
+margin:5px 0;
+border:none;
 border-radius:10px;
-border:none;
-background:rgba(255,255,255,0.12);
+background:rgba(255,255,255,0.15);
 color:white;
-margin-bottom:10px;
 }
-
-button {
-background: linear-gradient(135deg,#ffc300,#ffd60a);
-color:#001d3d;
-padding:14px;
+button{
+background:#ffd60a;
 border:none;
-border-radius:12px;
+padding:12px;
+border-radius:10px;
 font-weight:bold;
 cursor:pointer;
 }
-
-.hidden { display:none; }
-
-table { width:100%; background:white; color:black; }
-td, th { border:1px solid #ddd; padding:8px; }
+.hidden{display:none;}
+table{width:100%;background:white;color:black;}
+td,th{padding:8px;border:1px solid #ddd;}
 </style>
 </head>
 
 <body onload="inicio()">
 
 <!-- LOGIN -->
-<div id="loginBox" class="card" style="max-width:400px;margin:80px auto;text-align:center;">
+<div id="loginBox" class="card" style="max-width:400px;margin:auto;margin-top:80px;text-align:center;">
 <h2>🔐 Acceso</h2>
 
 <input id="correo" type="email" placeholder="Correo">
 <input id="pass" type="password" placeholder="Contraseña">
 
-<div style="background:#000;padding:10px;border-radius:10px;">
+<div style="background:black;padding:10px;border-radius:10px;">
 <span id="captchaText"></span>
-<input id="captchaInput" placeholder="Escribe el código">
+<input id="captchaInput" placeholder="Captcha">
 </div>
 
 <button onclick="login()">Entrar</button>
 <button onclick="registro()">Registrar</button>
-<button onclick="recuperar()">¿Olvidaste contraseña?</button>
+<button onclick="recuperar()">Recuperar</button>
 </div>
 
 <!-- APP -->
-<div id="appBox" class="app hidden">
+<div id="appBox" class="hidden">
 
 <div class="card">
-<label>📅 Fecha</label>
 <input type="date" id="fecha">
+<input id="meta" type="number" placeholder="Meta mensual (ej: 129000)">
 </div>
 
 <div class="card">
-<select id="tipo" onchange="mostrar()">
+<select id="tipo">
 <option value="TELCEL">TELCEL</option>
 <option value="ATT">AT&T</option>
 <option value="BAIT">BAIT</option>
 </select>
-</div>
 
-<!-- TELCEL -->
-<div id="telcelBox" class="card">
-<select id="tTipo">
-<option>RENUEVATE</option>
-<option>CHIP</option>
-<option>PORTA</option>
-</select>
-<input id="tNum" placeholder="Número">
-<input id="tICCID" placeholder="ICCID">
-<input id="tIMEI" placeholder="IMEI">
-<input id="tMarca" placeholder="Marca">
-</div>
+<input id="numero" placeholder="Número">
+<input id="marca" placeholder="Marca">
 
-<!-- ATT -->
-<div id="attBox" class="card hidden">
-<select id="aChip">
-<option value="NO">NO CHIP TELCEL</option>
-<option value="SI">SI CHIP TELCEL</option>
-</select>
-<input id="aNum" placeholder="Número">
-<input id="aICCID" placeholder="ICCID">
-<input id="aMarca" placeholder="Marca">
+<button onclick="guardar()">Guardar Venta</button>
 </div>
-
-<!-- BAIT -->
-<div id="baitBox" class="card hidden">
-<select id="bChip">
-<option value="NO">NO CHIP TELCEL</option>
-<option value="SI">SI CHIP TELCEL</option>
-</select>
-<input id="bNum" placeholder="Número">
-<input id="bICCID" placeholder="ICCID">
-<input id="bMarca" placeholder="Marca">
-</div>
-
-<button onclick="guardar()">💾 Guardar Venta</button>
 
 <div class="card">
+<h3 id="resumen"></h3>
 <canvas id="grafica"></canvas>
 </div>
 
-<button onclick="reporte()">📄 Generar Reporte Word</button>
+<button onclick="reporte()">📄 Reporte Word</button>
 
 <div class="card">
 <table>
@@ -142,7 +103,6 @@ td, th { border:1px solid #ddd; padding:8px; }
 <th>Comp</th>
 <th>Número</th>
 <th>Marca</th>
-<th>Chip</th>
 <th>Fecha</th>
 </tr>
 </thead>
@@ -154,22 +114,28 @@ td, th { border:1px solid #ddd; padding:8px; }
 
 <script>
 
-/* FIREBASE */
+/* FIREBASE CONFIG */
 const firebaseConfig = {
-apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
-authDomain: "ventastelcel4029.firebaseapp.com"
+apiKey: "TU_API_KEY",
+authDomain: "ventastelcel4029.firebaseapp.com",
+projectId: "ventastelcel4029",
+appId: "TU_APP_ID"
 };
 
 firebase.initializeApp(firebaseConfig);
+
 let auth = firebase.auth();
+let db = firebase.firestore();
+
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
 /* CAPTCHA */
 let captcha="";
 function generarCaptcha(){
-let chars="ABCDEFG123456789";
+let c="ABCDEFG123456789";
 captcha="";
 for(let i=0;i<5;i++){
-captcha+=chars[Math.floor(Math.random()*chars.length)];
+captcha+=c[Math.floor(Math.random()*c.length)];
 }
 captchaText.innerText=captcha;
 }
@@ -177,33 +143,38 @@ captchaText.innerText=captcha;
 /* INICIO */
 function inicio(){
 generarCaptcha();
-let hoy=new Date();
-fecha.value=hoy.toISOString().split("T")[0];
+fecha.value=new Date().toISOString().split("T")[0];
 
 auth.onAuthStateChanged(user=>{
 if(user){
 loginBox.classList.add("hidden");
 appBox.classList.remove("hidden");
 cargar();
-actualizarGrafica();
 }
 });
 }
 
 /* LOGIN */
 function login(){
+
 if(captchaInput.value!==captcha){
 alert("Captcha incorrecto");
 generarCaptcha();
 return;
 }
-auth.signInWithEmailAndPassword(correo.value,pass.value)
-.catch(e=>alert(e.message));
+
+auth.signInWithEmailAndPassword(correo.value.trim(),pass.value)
+.catch(e=>{
+if(e.code==="auth/user-not-found") alert("Usuario no existe");
+else if(e.code==="auth/wrong-password") alert("Contraseña incorrecta");
+else alert(e.message);
+generarCaptcha();
+});
 }
 
 /* REGISTRO */
 function registro(){
-auth.createUserWithEmailAndPassword(correo.value,pass.value)
+auth.createUserWithEmailAndPassword(correo.value.trim(),pass.value)
 .then(()=>alert("Registrado"))
 .catch(e=>alert(e.message));
 }
@@ -215,176 +186,135 @@ auth.sendPasswordResetEmail(correo.value)
 .catch(e=>alert(e.message));
 }
 
-/* UI */
-function mostrar(){
-telcelBox.classList.add("hidden");
-attBox.classList.add("hidden");
-baitBox.classList.add("hidden");
-
-if(tipo.value==="TELCEL") telcelBox.classList.remove("hidden");
-if(tipo.value==="ATT") attBox.classList.remove("hidden");
-if(tipo.value==="BAIT") baitBox.classList.remove("hidden");
-}
-
-/* FORMATO */
-function formatoFecha(f){
-return new Date(f).toLocaleDateString('es-MX');
-}
-
 /* GUARDAR */
 function guardar(){
 
-let f=formatoFecha(fecha.value);
+let user=auth.currentUser;
+if(!user){ alert("No autenticado"); return; }
 
-let gen=JSON.parse(localStorage.getItem("gen")||"[]");
-let tel=JSON.parse(localStorage.getItem("telcel")||"[]");
-
-if(tipo.value==="TELCEL"){
-let v={
-tipo:tTipo.value,
-num:tNum.value,
-iccid:tICCID.value,
-imei:tIMEI.value,
-marca:tMarca.value,
-fecha:f
+let venta={
+uid:user.uid,
+comp:tipo.value,
+num:numero.value,
+marca:marca.value,
+fecha:fecha.value,
+timestamp:new Date()
 };
-tel.unshift(v);
-localStorage.setItem("telcel",JSON.stringify(tel));
-gen.unshift({comp:"TELCEL",num:v.num,marca:v.marca,chip:"N/A",fecha:f});
-}
 
-if(tipo.value==="ATT"){
-gen.unshift({
-comp:"ATT",
-num:aNum.value,
-marca:aMarca.value,
-chip:aChip.value,
-fecha:f
-});
-}
-
-if(tipo.value==="BAIT"){
-gen.unshift({
-comp:"BAIT",
-num:bNum.value,
-marca:bMarca.value,
-chip:bChip.value,
-fecha:f
-});
-}
-
-localStorage.setItem("gen",JSON.stringify(gen));
-
+db.collection("ventas").add(venta)
+.then(()=>{
+alert("Guardado 🔥");
 cargar();
-actualizarGrafica();
+});
 }
 
-/* TABLA */
+/* CARGAR */
+let chart;
+
 function cargar(){
-let gen=JSON.parse(localStorage.getItem("gen")||"[]");
-tabla.innerHTML=gen.map(v=>`
+
+let user=auth.currentUser;
+
+db.collection("ventas")
+.where("uid","==",user.uid)
+.orderBy("timestamp","desc")
+.onSnapshot(snap=>{
+
+let data=[];
+snap.forEach(doc=>data.push(doc.data()));
+
+tabla.innerHTML=data.map(v=>`
 <tr>
 <td>${v.comp}</td>
 <td>${v.num}</td>
 <td>${v.marca}</td>
-<td>${v.chip}</td>
 <td>${v.fecha}</td>
 </tr>
 `).join("");
+
+grafica(data);
+metaCalculo(data);
+
+});
 }
 
-/* GRAFICA CORRECTA */
-let chart;
-
-function actualizarGrafica(){
-
-let gen=JSON.parse(localStorage.getItem("gen")||"[]");
-let f=formatoFecha(fecha.value);
+/* GRAFICA */
+function grafica(data){
 
 let t=0,a=0,b=0;
 
-gen.forEach(v=>{
-if(v.fecha!==f) return;
+data.forEach(v=>{
 if(v.comp==="TELCEL") t++;
 if(v.comp==="ATT") a++;
 if(v.comp==="BAIT") b++;
 });
 
-const ctx=document.getElementById("grafica").getContext("2d");
+let ctx=document.getElementById("grafica").getContext("2d");
 
-let data={
+let datos={
 labels:["Telcel","AT&T","BAIT"],
-datasets:[{
-label:`Ventas ${f}`,
-data:[t,a,b],
-borderWidth:1
-}]
+datasets:[{label:"Ventas",data:[t,a,b]}]
 };
 
 if(chart){
-chart.data=data;
+chart.data=datos;
 chart.update();
 }else{
-chart=new Chart(ctx,{
-type:"bar",
-data:data,
-options:{responsive:true}
-});
+chart=new Chart(ctx,{type:"bar",data:datos});
 }
 }
 
-/* REPORTE FUNCIONAL */
+/* META */
+function metaCalculo(data){
+
+let metaVal=parseInt(meta.value)||0;
+
+let total=data.length;
+
+let hoy=new Date();
+let diasRest=30-hoy.getDate();
+
+let faltante=metaVal-total;
+let diario=Math.ceil(faltante/diasRest);
+
+resumen.innerHTML=`
+Total ventas: ${total} <br>
+Meta: ${metaVal} <br>
+Faltan: ${faltante} <br>
+Debes vender diario: ${diario}
+`;
+}
+
+/* REPORTE */
 function reporte(){
 
-let gen=JSON.parse(localStorage.getItem("gen")||"[]");
+db.collection("ventas").get().then(snap=>{
 
-if(gen.length===0){
-alert("No hay datos");
-return;
-}
+let html=`<table border="1">
+<tr><th>Comp</th><th>Número</th><th>Marca</th><th>Fecha</th></tr>`;
 
-let f=formatoFecha(fecha.value);
-
-let t=0,a=0,b=0;
-
-gen.forEach(v=>{
-if(v.fecha!==f) return;
-if(v.comp==="TELCEL") t++;
-if(v.comp==="ATT") a++;
-if(v.comp==="BAIT") b++;
+snap.forEach(doc=>{
+let v=doc.data();
+html+=`<tr>
+<td>${v.comp}</td>
+<td>${v.num}</td>
+<td>${v.marca}</td>
+<td>${v.fecha}</td>
+</tr>`;
 });
 
-let total=t+a+b;
+html+="</table>";
 
-let contenido=`
-<!DOCTYPE html>
-<html>
-<body style="font-family:Arial;">
-<h1>REPORTE DE VENTAS</h1>
-<p>Fecha: ${f}</p>
-
-<table border="1" style="border-collapse:collapse;">
-<tr><th>Compañía</th><th>Ventas</th></tr>
-<tr><td>Telcel</td><td>${t}</td></tr>
-<tr><td>AT&T</td><td>${a}</td></tr>
-<tr><td>BAIT</td><td>${b}</td></tr>
-</table>
-
-<h3>Total: ${total}</h3>
-</body>
-</html>
-`;
-
-let blob=new Blob(['\ufeff',contenido],{type:"application/msword"});
+let blob=new Blob(['\ufeff',html],{type:"application/msword"});
 let url=URL.createObjectURL(blob);
 
-let link=document.createElement("a");
-link.href=url;
-link.download=`Reporte_${f}.doc`;
+let a=document.createElement("a");
+a.href=url;
+a.download="reporte.doc";
+a.click();
 
-document.body.appendChild(link);
-link.click();
-document.body.removeChild(link);
+});
+
 }
 
 </script>
