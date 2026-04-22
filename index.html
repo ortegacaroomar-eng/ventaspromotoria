@@ -3,324 +3,243 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ventas Elite - Telcel</title>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <title>Sistema Auditor PRO - Telcel</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --gold: #ffd60a;
             --blue-dark: #000814;
-            --blue-mid: #003566;
             --glass: rgba(255, 255, 255, 0.1);
         }
 
         body {
             margin: 0;
-            font-family: 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             background: radial-gradient(circle at top, #001d3d, var(--blue-dark));
             color: white;
             min-height: 100vh;
         }
 
-        .app { max-width: 1200px; margin: auto; padding: 25px; }
+        .app { max-width: 1200px; margin: auto; padding: 20px; }
 
         .card {
             background: var(--glass);
             backdrop-filter: blur(15px);
             border-radius: 20px;
-            padding: 25px;
+            padding: 20px;
             margin-bottom: 20px;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
         }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-            padding: 15px;
-            border-radius: 15px;
-            text-align: center;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .stat-card h4 { margin: 0; color: var(--gold); font-size: 0.9em; }
-        .stat-card p { margin: 5px 0 0; font-size: 1.8em; font-weight: bold; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
 
         input, select {
             width: 100%;
-            padding: 14px;
-            border-radius: 12px;
+            padding: 12px;
+            border-radius: 10px;
             border: 1px solid rgba(255,255,255,0.2);
-            background: rgba(0,0,0,0.2);
+            background: rgba(0,0,0,0.3);
             color: white;
             margin-bottom: 15px;
-            outline: none;
-            transition: 0.3s;
+            box-sizing: border-box;
         }
-
-        input:focus { border-color: var(--gold); box-shadow: 0 0 10px rgba(255, 214, 10, 0.3); }
 
         button {
             background: linear-gradient(135deg, var(--gold), #ffc300);
             color: #000;
-            padding: 15px;
+            padding: 14px;
             border: none;
             border-radius: 12px;
             font-weight: bold;
             cursor: pointer;
             width: 100%;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: 0.3s;
         }
 
-        button:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(255, 214, 10, 0.4); }
-
-        .btn-sec { background: transparent; border: 1px solid var(--gold); color: var(--gold); }
-        
-        .table-container { overflow-x: auto; border-radius: 15px; }
-        table { width: 100%; background: rgba(255,255,255,0.95); color: #222; border-collapse: collapse; }
-        th { background: #e9ecef; padding: 15px; text-align: left; }
-        td { padding: 12px 15px; border-bottom: 1px solid #ddd; }
+        .table-container { background: white; border-radius: 15px; overflow: hidden; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; color: #333; font-size: 0.85em; }
+        th { background: #eee; padding: 10px; }
+        td { padding: 8px 10px; border-bottom: 1px solid #ddd; }
 
         .hidden { display: none; }
-        .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.8em; font-weight: bold; }
-        .badge-telcel { background: #003566; color: white; }
+        .label-gold { color: var(--gold); font-weight: bold; font-size: 0.9em; display: block; margin-bottom: 5px; }
     </style>
 </head>
-
 <body onload="inicio()">
 
-<div id="loginBox" class="card" style="max-width:400px; margin: 100px auto; text-align: center;">
-    <h2 style="color: var(--gold);">⚡ Sistema Telcel Elite</h2>
-    <input id="correo" type="email" placeholder="Usuario/Email">
-    <input id="pass" type="password" placeholder="Password">
-    <div style="background:rgba(0,0,0,0.4); padding:15px; border-radius:12px; margin-bottom:15px;">
-        <span id="captchaText" style="font-family: monospace; font-size: 1.5em; letter-spacing: 8px; color: var(--gold);"></span>
-        <input id="captchaInput" placeholder="Código de seguridad" style="margin-top:10px; text-align: center;">
-    </div>
-    <button onclick="login()">Iniciar Sesión</button>
-    <button onclick="registro()" class="btn-sec" style="margin-top:10px;">Crear Cuenta Local</button>
-</div>
-
-<div id="appBox" class="app hidden">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h2 style="margin:0;">Dashboard <span style="color: var(--gold);">Telcel</span></h2>
-        <button onclick="cerrarSesion()" style="width: auto; background: #d00000; color: white; padding: 10px 20px;">Salir</button>
-    </div>
-
-    <div class="stats-grid">
-        <div class="stat-card">
-            <h4>Total Hoy</h4>
-            <p id="statTotal">0</p>
-        </div>
-        <div class="stat-card">
-            <h4>Telcel</h4>
-            <p id="statTelcel">0</p>
-        </div>
-        <div class="stat-card">
-            <h4>Otras</h4>
-            <p id="statOtras">0</p>
-        </div>
-    </div>
-
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+<div class="app">
+    <div class="grid">
         <div class="card">
-            <label>📅 Fecha de Registro</label>
-            <input type="date" id="fecha" onchange="actualizarTodo()">
+            <h2 style="color:var(--gold); margin-top:0;">📱 Nueva Venta</h2>
             
-            <label>📡 Compañía</label>
-            <select id="tipo" onchange="cambiarVista()">
+            <span class="label-gold">Fecha Operación</span>
+            <input type="date" id="fechaIn">
+
+            <span class="label-gold">Compañía</span>
+            <select id="compIn" onchange="alternarCampos()">
                 <option value="TELCEL">TELCEL</option>
                 <option value="ATT">AT&T</option>
                 <option value="BAIT">BAIT</option>
             </select>
 
-            <div id="camposDinamicos">
-                <input id="vNum" type="tel" placeholder="Número (10 dígitos)" maxlength="10">
-                <input id="vMarca" placeholder="Marca / Modelo">
-                <div id="extTelcel">
-                    <select id="tTipo"><option>RENUEVATE</option><option>CHIP</option><option>PORTA</option></select>
-                    <input id="tICCID" placeholder="ICCID (Últimos dígitos)">
-                </div>
-                <div id="extOtras" class="hidden">
-                    <select id="oChip"><option value="NO">SIN CHIP TELCEL</option><option value="SI">CON CHIP TELCEL</option></select>
-                </div>
+            <input id="numIn" type="tel" placeholder="Número (10 dígitos)">
+            <input id="marcaIn" placeholder="Marca (Ej: Samsung)">
+            <input id="modeloIn" placeholder="Modelo (Ej: Galaxy A54)">
+
+            <div id="boxTelcel">
+                <span class="label-gold">Tipo Telcel</span>
+                <select id="tipoTelcel">
+                    <option value="PORTA">PORTA</option>
+                    <option value="RENUEVATE">RENUEVATE</option>
+                    <option value="CHIP">CHIP</option>
+                </select>
             </div>
-            <button onclick="guardarVenta()">🚀 Registrar Venta</button>
+
+            <div id="boxOtras" class="hidden">
+                <span class="label-gold">¿Se entregó con Chip Telcel?</span>
+                <select id="chipTelcelPregunta">
+                    <option value="SI">SÍ</option>
+                    <option value="NO">NO</option>
+                </select>
+            </div>
+
+            <button onclick="guardar()">💾 Registrar Localmente</button>
         </div>
 
         <div class="card">
-            <canvas id="graficaMain"></canvas>
+            <h2 style="color:var(--gold); margin-top:0;">📊 Detalle de Inventario</h2>
+            <p style="font-size: 0.8em;">Desglose por Marcas y Modelos</p>
+            <canvas id="chartDetallado"></canvas>
         </div>
     </div>
 
-    <div class="card">
-        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-            <button onclick="reporteWord()" style="background: #0077b6; color:white;">Generar Word</button>
-            <button onclick="exportarExcel()" style="background: #2b9348; color:white;">Exportar Excel</button>
+    <div class="grid">
+        <div class="card">
+            <h3 style="color:var(--gold);">📋 Historial Telcel (Aparte)</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr><th>Fecha</th><th>Tipo</th><th>Número</th><th>Marca/Mod</th></tr>
+                    </thead>
+                    <tbody id="tablaTelcel"></tbody>
+                </table>
+            </div>
         </div>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Compañía</th>
-                        <th>Número</th>
-                        <th>Modelo</th>
-                        <th>Extra</th>
-                        <th>Fecha</th>
-                    </tr>
-                </thead>
-                <tbody id="tablaCuerpo"></tbody>
-            </table>
+
+        <div class="card">
+            <h3 style="color:var(--gold);">📋 Historial Competencia</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr><th>Fecha</th><th>Comp</th><th>Chip Tel</th><th>Número</th></tr>
+                    </thead>
+                    <tbody id="tablaOtras"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-// --- LOGICA DE NEGOCIO ---
-const firebaseConfig = { apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc", authDomain: "ventastelcel4029.firebaseapp.com" };
-firebase.initializeApp(firebaseConfig);
+    let chartObj;
 
-let chart;
+    function inicio() {
+        document.getElementById('fechaIn').value = new Date().toISOString().split('T')[0];
+        actualizarTodo();
+    }
 
-function formatFecha(iso) {
-    const [y, m, d] = iso.split('-');
-    return `${d}/${m}/${y}`;
-}
+    function alternarCampos() {
+        const c = document.getElementById('compIn').value;
+        document.getElementById('boxTelcel').classList.toggle('hidden', c !== 'TELCEL');
+        document.getElementById('boxOtras').classList.toggle('hidden', c === 'TELCEL');
+    }
 
-function inicio() {
-    generarCaptcha();
-    document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
-    firebase.auth().onAuthStateChanged(user => {
-        if(user || localStorage.getItem('active')) {
-            loginBox.classList.add('hidden');
-            appBox.classList.remove('hidden');
-            actualizarTodo();
+    function formatFecha(f) {
+        const [y, m, d] = f.split('-');
+        return `${d}/${m}/${y}`;
+    }
+
+    function guardar() {
+        const comp = document.getElementById('compIn').value;
+        const num = document.getElementById('numIn').value;
+        const fRaw = document.getElementById('fechaIn').value;
+        const marca = document.getElementById('marcaIn').value || "Genérico";
+        const modelo = document.getElementById('modeloIn').value || "S/M";
+
+        if(!num) return alert("Número requerido");
+
+        const item = {
+            fecha: formatFecha(fRaw),
+            num, marca, modelo, comp,
+            detalle: comp === 'TELCEL' ? tipoTelcel.value : chipTelcelPregunta.value
+        };
+
+        // GUARDADO APARTE
+        if(comp === 'TELCEL') {
+            let tel = JSON.parse(localStorage.getItem('db_telcel') || '[]');
+            tel.unshift(item);
+            localStorage.setItem('db_telcel', JSON.stringify(tel));
+        } else {
+            let otr = JSON.parse(localStorage.getItem('db_otras') || '[]');
+            otr.unshift(item);
+            localStorage.setItem('db_otras', JSON.stringify(otr));
         }
-    });
-}
 
-function generarCaptcha() {
-    const val = Math.random().toString(36).substring(2,7).toUpperCase();
-    captchaText.innerText = val;
-    window.currentCaptcha = val;
-}
+        // Guardar para la gráfica (general)
+        let gen = JSON.parse(localStorage.getItem('db_grafica') || '[]');
+        gen.unshift(item);
+        localStorage.setItem('db_grafica', JSON.stringify(gen));
 
-function login() {
-    if(captchaInput.value.toUpperCase() !== window.currentCaptcha) return alert("Captcha incorrecto");
-    localStorage.setItem('active', 'true'); // Simulación para el ejemplo
-    location.reload();
-}
+        // Limpiar campos
+        document.getElementById('numIn').value = "";
+        document.getElementById('marcaIn').value = "";
+        document.getElementById('modeloIn').value = "";
+        
+        actualizarTodo();
+    }
 
-function cambiarVista() {
-    const t = tipo.value;
-    document.getElementById('extTelcel').classList.toggle('hidden', t !== 'TELCEL');
-    document.getElementById('extOtras').classList.toggle('hidden', t === 'TELCEL');
-}
+    function actualizarTodo() {
+        const tel = JSON.parse(localStorage.getItem('db_telcel') || '[]');
+        const otr = JSON.parse(localStorage.getItem('db_otras') || '[]');
+        const gen = JSON.parse(localStorage.getItem('db_grafica') || '[]');
 
-function guardarVenta() {
-    const num = vNum.value;
-    if(num.length < 10) return alert("Número inválido");
+        // Llenar Tablas
+        tablaTelcel.innerHTML = tel.map(i => `<tr><td>${i.fecha}</td><td>${i.detalle}</td><td>${i.num}</td><td>${i.marca} ${i.modelo}</td></tr>`).join('');
+        tablaOtras.innerHTML = otr.map(i => `<tr><td>${i.fecha}</td><td>${i.comp}</td><td>${i.detalle}</td><td>${i.num}</td></tr>`).join('');
 
-    const venta = {
-        comp: tipo.value,
-        num: num,
-        marca: vMarca.value || 'Genérico',
-        extra: tipo.value === 'TELCEL' ? tTipo.value : oChip.value,
-        fecha: formatFecha(fecha.value),
-        rawDate: fecha.value
-    };
+        renderGrafica(gen);
+    }
 
-    let datos = JSON.parse(localStorage.getItem('ventas_db') || '[]');
-    datos.unshift(venta);
-    localStorage.setItem('ventas_db', JSON.stringify(datos));
-    
-    vNum.value = ""; vMarca.value = "";
-    actualizarTodo();
-}
+    function renderGrafica(datos) {
+        const ctx = document.getElementById('chartDetallado').getContext('2d');
+        if(chartObj) chartObj.destroy();
 
-function actualizarTodo() {
-    const datos = JSON.parse(localStorage.getItem('ventas_db') || '[]');
-    const fSel = formatFecha(fecha.value);
-    
-    // Filtros para UI
-    const hoy = datos.filter(v => v.fecha === fSel);
-    const t = hoy.filter(v => v.comp === 'TELCEL').length;
-    const a = hoy.filter(v => v.comp === 'ATT').length;
-    const b = hoy.filter(v => v.comp === 'BAIT').length;
+        // Procesar datos para detalle de marcas y modelos
+        const etiquetas = [...new Set(datos.map(d => `${d.marca} ${d.modelo}`))].slice(0, 8); // Top 8 modelos
+        
+        const dataTelcel = etiquetas.map(label => datos.filter(d => `${d.marca} ${d.modelo}` === label && d.comp === 'TELCEL').length);
+        const dataATT = etiquetas.map(label => datos.filter(d => `${d.marca} ${d.modelo}` === label && d.comp === 'ATT').length);
+        const dataBAIT = etiquetas.map(label => datos.filter(d => `${d.marca} ${d.modelo}` === label && d.comp === 'BAIT').length);
 
-    // Stats
-    statTotal.innerText = hoy.length;
-    statTelcel.innerText = t;
-    statOtras.innerText = a + b;
-
-    // Tabla
-    tablaCuerpo.innerHTML = datos.map(v => `
-        <tr>
-            <td><span class="badge ${v.comp === 'TELCEL' ? 'badge-telcel' : ''}">${v.comp}</span></td>
-            <td>${v.num}</td>
-            <td>${v.marca}</td>
-            <td>${v.extra}</td>
-            <td>${v.fecha}</td>
-        </tr>
-    `).join('');
-
-    renderGrafica(t, a, b, fSel);
-}
-
-function renderGrafica(t, a, b, f) {
-    const ctx = document.getElementById('graficaMain').getContext('2d');
-    if(chart) chart.destroy();
-    chart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Telcel', 'AT&T', 'BAIT'],
-            datasets: [{
-                data: [t, a, b],
-                backgroundColor: ['#ffd60a', '#003566', '#ef233c'],
-                borderWidth: 0
-            }]
-        },
-        options: {
-            plugins: { 
-                legend: { labels: { color: 'white' } },
-                title: { display: true, text: 'Balance del día ' + f, color: 'white' }
+        chartObj = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: etiquetas,
+                datasets: [
+                    { label: 'Telcel', data: dataTelcel, backgroundColor: '#ffd60a' },
+                    { label: 'AT&T', data: dataATT, backgroundColor: '#00b4d8' },
+                    { label: 'BAIT', data: dataBAIT, backgroundColor: '#ef233c' }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { labels: { color: 'white' } } },
+                scales: {
+                    x: { stacked: true, ticks: { color: 'white', font: { size: 10 } } },
+                    y: { stacked: true, ticks: { color: 'white' } }
+                }
             }
-        }
-    });
-}
-
-function exportarExcel() {
-    const datos = JSON.parse(localStorage.getItem('ventas_db') || '[]');
-    let csv = "Compañia,Numero,Modelo,Extra,Fecha\n";
-    datos.forEach(v => {
-        csv += `${v.comp},${v.num},${v.marca},${v.extra},${v.fecha}\n`;
-    });
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'Inventario_Ventas.csv';
-    a.click();
-}
-
-function reporteWord() {
-    alert("Generando reporte profesional...");
-    // (Misma lógica de Blob para Word pero con estilos de tabla mejorados)
-}
-
-function cerrarSesion() {
-    localStorage.removeItem('active');
-    location.reload();
-}
+        });
+    }
 </script>
 </body>
 </html>
