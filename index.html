@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Auditor Elite v2.0 - Telcel</title>
-    
+    <title>Auditoría Elite - Sincronizado</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
@@ -13,129 +12,102 @@
 
     <style>
         :root { --gold: #ffd60a; --dark: #000814; --glass: rgba(255, 255, 255, 0.1); }
-        body { 
-            margin: 0; font-family: 'Segoe UI', sans-serif; 
-            background: radial-gradient(circle at top, #001d3d, var(--dark)); 
-            color: white; min-height: 100vh; overflow-x: hidden;
-        }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: radial-gradient(circle at top, #001d3d, var(--dark)); color: white; min-height: 100vh; }
         .app { max-width: 1200px; margin: auto; padding: 20px; }
-        .card { 
-            background: var(--glass); backdrop-filter: blur(15px); 
-            border-radius: 20px; padding: 20px; margin-bottom: 20px; 
-            border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
+        .card { background: var(--glass); backdrop-filter: blur(15px); border-radius: 20px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.1); }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        
         label { color: var(--gold); font-size: 0.85em; font-weight: bold; margin-bottom: 5px; display: block; }
-        input, select { 
-            width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); 
-            background: rgba(0,0,0,0.3); color: white; margin-bottom: 12px; box-sizing: border-box; 
-        }
-        
-        .btn { 
-            background: var(--gold); color: #000; padding: 14px; border: none; border-radius: 12px; 
-            font-weight: bold; cursor: pointer; width: 100%; text-transform: uppercase; transition: 0.3s; 
-        }
-        .btn:hover { transform: scale(1.02); filter: brightness(1.1); }
-        .btn-excel { background: #2b9348; color: white; margin-top: 8px; }
+        input, select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; margin-bottom: 12px; box-sizing: border-box; }
+        .btn { background: var(--gold); color: #000; padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; text-transform: uppercase; transition: 0.3s; }
+        .btn-excel { background: #2b9348; color: white; margin-top: 10px; }
         .btn-logout { background: #d00000; color: white; width: auto; padding: 8px 15px; font-size: 0.8em; }
-        
         .table-container { background: white; border-radius: 15px; overflow-x: auto; margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; color: #222; font-size: 0.8em; min-width: 600px; }
-        th { background: #f1f1f1; padding: 12px; text-align: left; border-bottom: 2px solid #ddd; }
-        td { padding: 10px; border-bottom: 1px solid #eee; }
-        
+        table { width: 100%; border-collapse: collapse; color: #222; font-size: 0.8em; min-width: 800px; }
+        th { background: #eee; padding: 12px; text-align: left; }
+        td { padding: 10px; border-bottom: 1px solid #ddd; }
         .hidden { display: none; }
-        .badge { padding: 3px 8px; border-radius: 5px; font-weight: bold; font-size: 0.8em; }
-        .badge-telcel { background: #ffd60a; color: black; }
-        .badge-att { background: #00b4d8; color: white; }
-        .badge-bait { background: #ef233c; color: white; }
     </style>
 </head>
 <body onload="inicio()">
 
 <div id="loginBox" class="card" style="max-width:400px; margin: 100px auto; text-align: center;">
-    <h2 style="color: var(--gold);">☁️ Acceso Auditor Cloud</h2>
-    <input id="correo" type="email" placeholder="Usuario (Correo)">
+    <h2 style="color: var(--gold);">☁️ Acceso Auditor</h2>
+    <input id="correo" type="email" placeholder="Correo">
     <input id="pass" type="password" placeholder="Contraseña">
-    <button class="btn" onclick="login()">Entrar al Sistema</button>
-    <p style="font-size: 0.8em; margin-top: 15px;">¿No tienes cuenta? <a href="#" onclick="registro()" style="color:var(--gold)">Regístrate aquí</a></p>
+    <button class="btn" onclick="login()">Entrar</button>
 </div>
 
 <div id="appBox" class="app hidden">
     <header>
-        <h2 style="color:var(--gold); margin:0;">Ventas Telcel <span style="font-size: 0.5em; color:white; font-weight: normal;">• Sincronizado</span></h2>
+        <h2 style="color:var(--gold); margin:0;">Panel Auditor Pro</h2>
         <button class="btn btn-logout" onclick="logout()">Cerrar Sesión</button>
     </header>
 
     <div class="grid">
         <div class="card">
-            <label>Fecha de Operación</label>
+            <label>Fecha Operación</label>
             <input type="date" id="fechaIn">
-            
             <label>Compañía</label>
-            <select id="compIn" onchange="alternarCampos()">
+            <select id="compIn" onchange="alternar()">
                 <option value="TELCEL">TELCEL</option>
                 <option value="ATT">AT&T</option>
                 <option value="BAIT">BAIT</option>
             </select>
-
-            <input id="numIn" type="tel" placeholder="Número Telefónico (10 dígitos)">
-            <input id="marcaIn" placeholder="Marca del Equipo">
-            <input id="modeloIn" placeholder="Modelo del Equipo">
+            <input id="numIn" placeholder="Número Telefónico">
+            <input id="marcaIn" placeholder="Marca">
+            <input id="modeloIn" placeholder="Modelo">
 
             <div id="boxTelcel">
-                <label>Tipo de Operación</label>
-                <select id="tipoTelcel">
-                    <option value="PORTA">PORTA</option>
-                    <option value="RENUEVATE">RENUEVATE</option>
-                    <option value="CHIP">CHIP</option>
-                </select>
+                <select id="tipoTelcel"><option>PORTA</option><option>RENUEVATE</option><option>CHIP</option></select>
                 <input id="imeiIn" placeholder="IMEI">
-                <input id="iccidIn" placeholder="ICCID">
+                <input id="iccidIn" placeholder="ICCID Telcel">
             </div>
 
             <div id="boxOtras" class="hidden">
-                <label>¿Se entregó con Chip Telcel?</label>
-                <select id="chipPregunta">
-                    <option value="NO">SIN CHIP TELCEL</option>
-                    <option value="SI">CON CHIP TELCEL</option>
+                <input id="iccOtras" placeholder="ICC (Chip Original ATT/BAIT)">
+                <label>¿Se entregó con Chip Telcel aparte?</label>
+                <select id="chipTelcelPregunta">
+                    <option value="NO">NO</option>
+                    <option value="SI">SÍ (Chip Telcel Aparte)</option>
                 </select>
             </div>
 
-            <button class="btn" onclick="guardarFirebase()">🚀 Subir a la Nube</button>
-            <button class="btn btn-excel" onclick="exportarExcel()">📊 Exportar Excel Pro</button>
+            <button class="btn" onclick="guardarFirebase()">🚀 Sincronizar Venta</button>
+            <button class="btn btn-excel" onclick="exportarExcel()">📊 Generar Excel Élite</button>
         </div>
 
         <div class="card">
-            <h3 style="margin-top:0; color:var(--gold)">📈 Resumen de Ventas</h3>
-            <canvas id="chartCloud" style="max-height: 300px;"></canvas>
+            <canvas id="chartCloud"></canvas>
         </div>
     </div>
 
     <div class="card">
-        <h3 style="color:var(--gold);">📋 Historial en Tiempo Real (Sincronizado)</h3>
+        <h3 style="color:var(--gold);">📋 Historial Telcel</h3>
         <div class="table-container">
             <table>
                 <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Compañía</th>
-                        <th>Operación / Chip</th>
-                        <th>Número</th>
-                        <th>Marca/Modelo</th>
-                        <th>IMEI/ICCID</th>
-                    </tr>
+                    <tr><th>Fecha</th><th>Tipo</th><th>Número</th><th>Equipo</th><th>IMEI</th><th>ICCID</th></tr>
                 </thead>
-                <tbody id="tablaCuerpo"></tbody>
+                <tbody id="tablaTelcel"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card" style="border-top: 3px solid #ef233c;">
+        <h3 style="color:var(--gold);">📋 Historial Competencia (ATT / BAIT)</h3>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr><th>Fecha</th><th>Comp.</th><th>Número</th><th>Equipo</th><th>ICC Orig.</th><th>¿Chip Telcel?</th></tr>
+                </thead>
+                <tbody id="tablaOtras"></tbody>
             </table>
         </div>
     </div>
 </div>
 
 <script>
-    // CONFIGURACIÓN DE TU PROYECTO FIREBASE
     const firebaseConfig = {
         apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
         authDomain: "ventastelcel4029.firebaseapp.com",
@@ -152,7 +124,6 @@
 
     function inicio() {
         document.getElementById('fechaIn').value = new Date().toISOString().split('T')[0];
-        
         auth.onAuthStateChanged(user => {
             if (user) {
                 loginBox.classList.add('hidden');
@@ -161,125 +132,97 @@
             } else {
                 loginBox.classList.remove('hidden');
                 appBox.classList.add('hidden');
-                if(chart) chart.destroy();
             }
         });
     }
 
-    function alternarCampos() {
+    function alternar() {
         const c = document.getElementById('compIn').value;
         document.getElementById('boxTelcel').classList.toggle('hidden', c !== 'TELCEL');
         document.getElementById('boxOtras').classList.toggle('hidden', c === 'TELCEL');
     }
 
-    // --- LOGICA DE FIREBASE ---
-    function login() {
-        auth.signInWithEmailAndPassword(correo.value, pass.value).catch(e => alert("Error: " + e.message));
-    }
-
-    function registro() {
-        auth.createUserWithEmailAndPassword(correo.value, pass.value).then(() => alert("Cuenta creada")).catch(e => alert(e.message));
-    }
-
-    function logout() { if(confirm("¿Cerrar sesión?")) auth.signOut(); }
+    function login() { auth.signInWithEmailAndPassword(correo.value, pass.value).catch(e => alert(e.message)); }
+    function logout() { auth.signOut(); }
 
     function guardarFirebase() {
-        const num = document.getElementById('numIn').value;
-        if(!num) return alert("Ingresa el número");
-
         const comp = document.getElementById('compIn').value;
         const venta = {
             fecha: document.getElementById('fechaIn').value,
             compania: comp,
-            numero: num,
-            marca: document.getElementById('marcaIn').value || "N/A",
-            modelo: document.getElementById('modeloIn').value || "N/A",
+            numero: document.getElementById('numIn').value,
+            marca: document.getElementById('marcaIn').value,
+            modelo: document.getElementById('modeloIn').value,
             imei: document.getElementById('imeiIn').value || "N/A",
-            iccid: document.getElementById('iccidIn').value || "N/A",
-            detalle: comp === 'TELCEL' ? tipoTelcel.value : chipPregunta.value,
+            iccid: comp === 'TELCEL' ? iccidIn.value : iccOtras.value,
+            chip_telcel_aparte: comp !== 'TELCEL' ? chipTelcelPregunta.value : "N/A",
+            detalle_telcel: comp === 'TELCEL' ? tipoTelcel.value : "N/A",
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         };
 
         db.collection("ventas").add(venta).then(() => {
-            alert("✅ Sincronizado");
+            alert("Venta sincronizada");
             document.querySelectorAll('input:not([type="date"])').forEach(i => i.value = "");
         });
     }
 
     function escucharDatos() {
         db.collection("ventas").orderBy("timestamp", "desc").onSnapshot(snapshot => {
-            let datos = [];
-            let html = "";
-            let t = 0, a = 0, b = 0;
+            let htmlTel = ""; let htmlOtr = "";
+            let data = [];
+            let counts = { TELCEL: 0, ATT: 0, BAIT: 0 };
 
             snapshot.forEach(doc => {
                 const v = doc.data();
-                datos.push(v);
-                if(v.compania === 'TELCEL') t++;
-                if(v.compania === 'ATT') a++;
-                if(v.compania === 'BAIT') b++;
+                data.push(v);
+                counts[v.compania]++;
 
-                let bClass = v.compania === 'TELCEL' ? 'badge-telcel' : (v.compania === 'ATT' ? 'badge-att' : 'badge-bait');
-
-                html += `<tr>
-                    <td>${v.fecha}</td>
-                    <td><span class="badge ${bClass}">${v.compania}</span></td>
-                    <td><b>${v.detalle}</b></td>
-                    <td>${v.numero}</td>
-                    <td>${v.marca} ${v.modelo}</td>
-                    <td style="font-size:0.85em">${v.imei} <br> <small>${v.iccid}</small></td>
-                </tr>`;
+                if(v.compania === 'TELCEL') {
+                    htmlTel += `<tr><td>${v.fecha}</td><td>${v.detalle_telcel}</td><td>${v.numero}</td><td>${v.marca} ${v.modelo}</td><td>${v.imei}</td><td>${v.iccid}</td></tr>`;
+                } else {
+                    htmlOtr += `<tr><td>${v.fecha}</td><td>${v.compania}</td><td>${v.numero}</td><td>${v.marca} ${v.modelo}</td><td>${v.iccid}</td><td style="color:${v.chip_telcel_aparte==='SI'?'#2b9348':'#d00000'}; font-weight:bold">${v.chip_telcel_aparte}</td></tr>`;
+                }
             });
 
-            document.getElementById('tablaCuerpo').innerHTML = html;
-            window.datosActuales = datos;
-            actualizarGrafica(t, a, b);
+            document.getElementById('tablaTelcel').innerHTML = htmlTel;
+            document.getElementById('tablaOtras').innerHTML = htmlOtr;
+            window.datosActuales = data;
+            actualizarGrafica(counts);
         });
     }
 
-    function actualizarGrafica(t, a, b) {
+    function actualizarGrafica(c) {
         const ctx = document.getElementById('chartCloud').getContext('2d');
         if(chart) chart.destroy();
         chart = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: ['Telcel', 'AT&T', 'BAIT'],
-                datasets: [{ label: 'Ventas', data: [t, a, b], backgroundColor: ['#ffd60a', '#00b4d8', '#ef233c'] }]
+                datasets: [{ data: [c.TELCEL, c.ATT, c.BAIT], backgroundColor: ['#ffd60a', '#00b4d8', '#ef233c'] }]
             },
-            options: {
-                plugins: { legend: { display: false } },
-                scales: { 
-                    y: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-                    x: { ticks: { color: 'white' } }
-                }
-            }
+            options: { plugins: { legend: { display: false } }, scales: { y: { ticks: { color: 'white' } }, x: { ticks: { color: 'white' } } } }
         });
     }
 
-    // --- EXCEL PRO ---
     function exportarExcel() {
-        if(!window.datosActuales) return alert("Sin datos");
         const wb = XLSX.utils.book_new();
+        const d = window.datosActuales;
 
-        const tel = window.datosActuales.filter(x => x.compania === 'TELCEL').map(v => ({
-            "FECHA": v.fecha, "TIPO": v.detalle, "NÚMERO": v.numero, "MARCA": v.marca, "MODELO": v.modelo, "IMEI": v.imei, "ICCID": v.iccid
+        const tel = d.filter(x => x.compania === 'TELCEL').map(v => ({
+            "FECHA": v.fecha, "TIPO": v.detalle_telcel, "NÚMERO": v.numero, "EQUIPO": v.marca + " " + v.modelo, "IMEI": v.imei, "ICCID TELCEL": v.iccid
         }));
         const ws1 = XLSX.utils.json_to_sheet(tel);
-        ajustar(ws1);
+        ws1['!cols'] = [{wch:12},{wch:12},{wch:15},{wch:20},{wch:18},{wch:22}];
         XLSX.utils.book_append_sheet(wb, ws1, "TELCEL");
 
-        const otr = window.datosActuales.filter(x => x.compania !== 'TELCEL').map(v => ({
-            "FECHA": v.fecha, "COMPAÑÍA": v.compania, "¿CHIP TELCEL?": v.detalle, "NÚMERO": v.numero, "MARCA": v.marca, "MODELO": v.modelo
+        const otr = d.filter(x => x.compania !== 'TELCEL').map(v => ({
+            "FECHA": v.fecha, "COMPAÑÍA": v.compania, "NÚMERO": v.numero, "EQUIPO": v.marca + " " + v.modelo, "ICC ORIGINAL": v.iccid, "CHIP TELCEL APARTE": v.chip_telcel_aparte
         }));
         const ws2 = XLSX.utils.json_to_sheet(otr);
-        ajustar(ws2);
+        ws2['!cols'] = [{wch:12},{wch:12},{wch:15},{wch:20},{wch:22},{wch:18}];
         XLSX.utils.book_append_sheet(wb, ws2, "COMPETENCIA");
 
-        XLSX.writeFile(wb, `Reporte_Elite_${new Date().getTime()}.xlsx`);
-    }
-
-    function ajustar(ws) {
-        ws['!cols'] = [{wch:12}, {wch:15}, {wch:15}, {wch:15}, {wch:15}, {wch:20}, {wch:25}];
+        XLSX.writeFile(wb, "Reporte_Ventas_Sincronizado.xlsx");
     }
 </script>
 </body>
