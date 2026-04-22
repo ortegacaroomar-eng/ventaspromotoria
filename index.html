@@ -19,71 +19,97 @@
         .card { background: var(--glass); backdrop-filter: blur(15px); border-radius: 20px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.1); }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
         input, select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; margin-bottom: 12px; box-sizing: border-box; }
-        .btn { background: var(--gold); color: #000; padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; text-transform: uppercase; margin-bottom: 5px; }
+        
+        .btn { background: var(--gold); color: #000; padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; text-transform: uppercase; margin-bottom: 5px; transition: 0.3s; }
+        .btn:hover { transform: scale(1.02); opacity: 0.9; }
+        
         .btn-excel { background: #2b9348; color: white; }
+        .btn-logout { background: #d00000; color: white; width: auto; padding: 8px 15px; font-size: 0.8em; }
+        
         .table-container { background: white; border-radius: 15px; overflow: hidden; margin-top: 10px; }
         table { width: 100%; border-collapse: collapse; color: #222; font-size: 0.8em; }
         th { background: #f1f1f1; padding: 10px; text-align: left; }
         td { padding: 8px 10px; border-bottom: 1px solid #eee; }
+        
         .hidden { display: none; }
-        .status-online { color: #00ff00; font-size: 0.8em; text-align: right; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     </style>
 </head>
 <body onload="inicio()">
 
 <div id="loginBox" class="card" style="max-width:400px; margin: 100px auto; text-align: center;">
-    <h2 style="color: var(--gold);">☁️ Acceso en la Nube</h2>
-    <input id="correo" type="email" placeholder="Correo">
+    <h2 style="color: var(--gold);">☁️ Acceso Telcel</h2>
+    <input id="correo" type="email" placeholder="Correo Electrónico">
     <input id="pass" type="password" placeholder="Contraseña">
     <button class="btn" onclick="login()">Entrar</button>
-    <button class="btn" style="background:transparent; color:white; border:1px solid white;" onclick="registro()">Crear Cuenta</button>
+    <button class="btn" style="background:transparent; color:white; border:1px solid white;" onclick="registro()">Crear Nueva Cuenta</button>
 </div>
 
 <div id="appBox" class="app hidden">
-    <div style="display:flex; justify-content: space-between; align-items:center;">
-        <h2 style="color:var(--gold);">Panel Telcel <span style="font-size: 0.5em; color:white;">(Sincronizado)</span></h2>
-        <button onclick="logout()" style="background:red; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">Salir</button>
-    </div>
+    <header>
+        <h2 style="color:var(--gold); margin:0;">Panel Sincronizado <span style="font-size: 0.5em; color:white;">(Online)</span></h2>
+        <button class="btn btn-logout" onclick="logout()">Cerrar Sesión</button>
+    </header>
 
     <div class="grid">
         <div class="card">
             <label>Fecha Operación</label>
             <input type="date" id="fechaIn">
+            
+            <label>Compañía</label>
             <select id="compIn" onchange="alternar()">
                 <option value="TELCEL">TELCEL</option>
                 <option value="ATT">AT&T</option>
                 <option value="BAIT">BAIT</option>
             </select>
-            <input id="numIn" placeholder="Número">
+
+            <input id="numIn" placeholder="Número Telefónico">
             <input id="marcaIn" placeholder="Marca">
             <input id="modeloIn" placeholder="Modelo">
 
             <div id="boxTelcel">
-                <select id="tipoTelcel"><option>PORTA</option><option>RENUEVATE</option><option>CHIP</option></select>
-                <input id="imeiIn" placeholder="IMEI">
+                <label>Tipo Telcel</label>
+                <select id="tipoTelcel">
+                    <option value="PORTA">PORTA</option>
+                    <option value="RENUEVATE">RENUEVATE</option>
+                    <option value="CHIP">CHIP</option>
+                </select>
+                <input id="imeiIn" placeholder="IMEI (15 dígitos)">
                 <input id="iccidIn" placeholder="ICCID">
             </div>
 
             <div id="boxOtras" class="hidden">
-                <label>¿Chip Telcel?</label>
-                <select id="chipPregunta"><option value="NO">NO</option><option value="SI">SÍ</option></select>
+                <label>¿Chip Telcel incluido?</label>
+                <select id="chipPregunta">
+                    <option value="NO">SIN CHIP TELCEL</option>
+                    <option value="SI">CON CHIP TELCEL</option>
+                </select>
             </div>
 
             <button class="btn" onclick="guardarFirebase()">🚀 Subir a la Nube</button>
-            <button class="btn btn-excel" onclick="exportarExcel()">📊 Descargar Excel</button>
+            <button class="btn btn-excel" onclick="exportarExcel()">📊 Reporte Excel Completo</button>
         </div>
 
         <div class="card">
+            <h3 style="margin-top:0;">📊 Rendimiento por Marca</h3>
             <canvas id="chartCloud"></canvas>
         </div>
     </div>
 
     <div class="card">
-        <h3>📋 Historial en Tiempo Real</h3>
+        <h3>📋 Historial de Ventas Sincronizado</h3>
+        <p style="font-size: 0.8em; opacity: 0.7;">Los datos se actualizan automáticamente en todos los teléfonos conectados.</p>
         <div class="table-container">
             <table>
                 <thead>
-                    <tr><th>Fecha</th><th>Comp.</th><th>Detalle</th><th>Número</th><th>Modelo</th><th>IMEI/ICCID</th></tr>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Comp.</th>
+                        <th>Tipo/Chip</th>
+                        <th>Número</th>
+                        <th>Modelo</th>
+                        <th>IMEI/ICCID</th>
+                    </tr>
                 </thead>
                 <tbody id="tablaCuerpo"></tbody>
             </table>
@@ -92,7 +118,7 @@
 </div>
 
 <script>
-    // Configuración de Firebase (Se usa la tuya de Telcel)
+    // Configuración de Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
         authDomain: "ventastelcel4029.firebaseapp.com",
@@ -104,20 +130,22 @@
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
-    const db = firebase.firestore(); // Base de datos en la nube
+    const db = firebase.firestore();
     let chart;
 
     function inicio() {
         document.getElementById('fechaIn').value = new Date().toISOString().split('T')[0];
         
+        // Listener de sesión
         auth.onAuthStateChanged(user => {
             if (user) {
                 loginBox.classList.add('hidden');
                 appBox.classList.remove('hidden');
-                escucharDatos(); // Activa la sincronización en vivo
+                escucharDatos(); // Inicia sincronización en tiempo real
             } else {
                 loginBox.classList.remove('hidden');
                 appBox.classList.add('hidden');
+                if(chart) chart.destroy(); // Limpia gráfica al salir
             }
         });
     }
@@ -128,46 +156,53 @@
         document.getElementById('boxOtras').classList.toggle('hidden', c === 'TELCEL');
     }
 
-    // --- ACCIONES DE NUBE ---
+    // --- ACCIONES DE FIREBASE ---
 
     function login() {
-        auth.signInWithEmailAndPassword(correo.value, pass.value).catch(e => alert(e.message));
+        if(!correo.value || !pass.value) return alert("Llena todos los campos");
+        auth.signInWithEmailAndPassword(correo.value, pass.value).catch(e => alert("Error: " + e.message));
     }
 
     function registro() {
-        auth.createUserWithEmailAndPassword(correo.value, pass.value).then(() => alert("Cuenta creada")).catch(e => alert(e.message));
+        if(!correo.value || !pass.value) return alert("Llena todos los campos");
+        auth.createUserWithEmailAndPassword(correo.value, pass.value)
+            .then(() => alert("Cuenta creada con éxito"))
+            .catch(e => alert("Error: " + e.message));
     }
 
-    function logout() { auth.signOut(); }
+    function logout() {
+        if(confirm("¿Deseas cerrar la sesión en este dispositivo?")) {
+            auth.signOut();
+        }
+    }
 
     function guardarFirebase() {
-        const user = auth.currentUser;
+        const num = document.getElementById('numIn').value;
+        if(!num) return alert("El número es obligatorio");
+
         const comp = document.getElementById('compIn').value;
-        
         const venta = {
-            userId: user.uid,
             fecha: document.getElementById('fechaIn').value,
             compania: comp,
-            numero: document.getElementById('numIn').value,
-            marca: document.getElementById('marcaIn').value,
-            modelo: document.getElementById('modeloIn').value,
+            numero: num,
+            marca: document.getElementById('marcaIn').value || "N/A",
+            modelo: document.getElementById('modeloIn').value || "N/A",
             imei: document.getElementById('imeiIn').value || "N/A",
             iccid: document.getElementById('iccidIn').value || "N/A",
             detalle: comp === 'TELCEL' ? tipoTelcel.value : chipPregunta.value,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp() // Para orden exacto
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
         };
 
         db.collection("ventas").add(venta).then(() => {
-            alert("Sincronizado con todos los dispositivos");
+            alert("✅ Sincronizado correctamente");
+            // Limpieza de campos
             document.querySelectorAll('input:not([type="date"])').forEach(i => i.value = "");
-        });
+        }).catch(e => alert("Error al subir: " + e.message));
     }
 
-    // Esta función "escucha" la nube. Si alguien agrega algo desde otro cel, esto se actualiza solo.
     function escucharDatos() {
-        db.collection("ventas")
-          .orderBy("timestamp", "desc")
-          .onSnapshot(snapshot => {
+        // Ordena por fecha de creación (los más nuevos arriba)
+        db.collection("ventas").orderBy("timestamp", "desc").onSnapshot(snapshot => {
             let datos = [];
             let html = "";
             let t = 0, a = 0, b = 0;
@@ -175,6 +210,7 @@
             snapshot.forEach(doc => {
                 const v = doc.data();
                 datos.push(v);
+                
                 if(v.compania === 'TELCEL') t++;
                 if(v.compania === 'ATT') a++;
                 if(v.compania === 'BAIT') b++;
@@ -190,7 +226,7 @@
             });
 
             document.getElementById('tablaCuerpo').innerHTML = html;
-            window.datosActuales = datos; // Para el excel
+            window.datosActuales = datos;
             actualizarGrafica(t, a, b);
         });
     }
@@ -199,21 +235,38 @@
         const ctx = document.getElementById('chartCloud').getContext('2d');
         if(chart) chart.destroy();
         chart = new Chart(ctx, {
-            type: 'pie',
+            type: 'doughnut',
             data: {
                 labels: ['Telcel', 'AT&T', 'BAIT'],
-                datasets: [{ data: [t, a, b], backgroundColor: ['#ffd60a', '#00b4d8', '#ef233c'] }]
+                datasets: [{ 
+                    data: [t, a, b], 
+                    backgroundColor: ['#ffd60a', '#00b4d8', '#ef233c'],
+                    borderWidth: 0 
+                }]
             },
-            options: { plugins: { legend: { labels: { color: 'white' } } } }
+            options: { 
+                plugins: { 
+                    legend: { position: 'bottom', labels: { color: 'white' } } 
+                } 
+            }
         });
     }
 
     function exportarExcel() {
-        if(!window.datosActuales) return;
+        if(!window.datosActuales || window.datosActuales.length === 0) return alert("No hay datos en la nube");
         const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.json_to_sheet(window.datosActuales);
-        XLSX.utils.book_append_sheet(wb, ws, "Ventas_Sincronizadas");
-        XLSX.writeFile(wb, "Reporte_Cloud_Ventas.xlsx");
+        
+        // Pestaña Telcel
+        const tel = window.datosActuales.filter(x => x.compania === 'TELCEL');
+        const wsTel = XLSX.utils.json_to_sheet(tel);
+        XLSX.utils.book_append_sheet(wb, wsTel, "Reporte Telcel");
+
+        // Pestaña Competencia
+        const otr = window.datosActuales.filter(x => x.compania !== 'TELCEL');
+        const wsOtr = XLSX.utils.json_to_sheet(otr);
+        XLSX.utils.book_append_sheet(wb, wsOtr, "Reporte Competencia");
+
+        XLSX.writeFile(wb, "Auditoria_Ventas_Cloud.xlsx");
     }
 </script>
 </body>
