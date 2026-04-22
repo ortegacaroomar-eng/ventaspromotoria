@@ -1,240 +1,393 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Auditor Pro + AI Intel</title>
-    
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema Ventas PRO</title>
 
-    <style>
-        :root { --gold: #ffd60a; --dark: #000814; --glass: rgba(255, 255, 255, 0.1); --ai-blue: #00f2ff; }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: radial-gradient(circle at top, #001d3d, var(--dark)); color: white; min-height: 100vh; }
-        .app { max-width: 1200px; margin: auto; padding: 20px; }
-        .card { background: var(--glass); backdrop-filter: blur(15px); border-radius: 20px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        
-        /* ESTILO IA */
-        .ai-box { background: rgba(0, 242, 255, 0.05); border: 1px dashed var(--ai-blue); padding: 15px; border-radius: 15px; margin-bottom: 20px; animation: pulse 2s infinite; }
-        .ai-title { color: var(--ai-blue); font-size: 0.9em; font-weight: bold; margin-bottom: 5px; display: flex; align-items: center; gap: 8px; }
-        @keyframes pulse { 0% { box-shadow: 0 0 5px rgba(0,242,255,0.2); } 50% { box-shadow: 0 0 15px rgba(0,242,255,0.4); } 100% { box-shadow: 0 0 5px rgba(0,242,255,0.2); } }
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        label { color: var(--gold); font-size: 0.85em; font-weight: bold; margin-bottom: 5px; display: block; }
-        input, select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; margin-bottom: 12px; box-sizing: border-box; }
-        
-        .btn { background: #b08d00; color: #000; padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; text-transform: uppercase; transition: 0.3s; }
-        .btn-sync { background: var(--gold); display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-excel { background: #2b9348; color: white; margin-top: 8px; }
-        .btn-logout { background: #d00000; color: white; width: auto; padding: 8px 15px; font-size: 0.8em; }
-        
-        .table-container { background: white; border-radius: 15px; overflow-x: auto; margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; color: #222; font-size: 0.85em; min-width: 800px; }
-        th { background: #f1f1f1; padding: 12px; text-align: left; }
-        td { padding: 10px; border-bottom: 1px solid #eee; }
-        .hidden { display: none; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
-    </style>
+<!-- Chart -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+margin:0;
+font-family:'Segoe UI', sans-serif;
+background: linear-gradient(135deg,#001d3d,#003566,#000814);
+color:white;
+}
+
+.app { max-width:1100px; margin:auto; padding:20px; }
+
+.card {
+background: rgba(255,255,255,0.08);
+backdrop-filter: blur(12px);
+border-radius:16px;
+padding:20px;
+margin-bottom:15px;
+}
+
+input, select {
+width:100%;
+padding:12px;
+border-radius:10px;
+border:none;
+background:rgba(255,255,255,0.12);
+color:white;
+margin-bottom:10px;
+}
+
+button {
+background: linear-gradient(135deg,#ffc300,#ffd60a);
+color:#001d3d;
+padding:14px;
+border:none;
+border-radius:12px;
+font-weight:bold;
+cursor:pointer;
+}
+
+.hidden { display:none; }
+
+table { width:100%; background:white; color:black; }
+td, th { border:1px solid #ddd; padding:8px; }
+</style>
 </head>
+
 <body onload="inicio()">
 
-<div id="loginBox" class="card" style="max-width:400px; margin: 80px auto; text-align: center;">
-    <h2 style="color: var(--gold);">☁️ Acceso Auditor Pro</h2>
-    <input id="correo" type="email" placeholder="Correo">
-    <input id="pass" type="password" placeholder="Contraseña">
-    <button class="btn btn-sync" onclick="login()">ENTRAR AL PANEL</button>
+<!-- LOGIN -->
+<div id="loginBox" class="card" style="max-width:400px;margin:80px auto;text-align:center;">
+<h2>🔐 Acceso</h2>
+
+<input id="correo" type="email" placeholder="Correo">
+<input id="pass" type="password" placeholder="Contraseña">
+
+<div style="background:#000;padding:10px;border-radius:10px;">
+<span id="captchaText"></span>
+<input id="captchaInput" placeholder="Escribe el código">
 </div>
 
+<button onclick="login()">Entrar</button>
+<button onclick="registro()">Registrar</button>
+<button onclick="recuperar()">¿Olvidaste contraseña?</button>
+</div>
+
+<!-- APP -->
 <div id="appBox" class="app hidden">
-    <header>
-        <h1 style="color:var(--gold); margin:0; font-size: 1.5em;">Panel Auditor Pro</h1>
-        <button class="btn btn-logout" onclick="logout()">CERRAR SESIÓN</button>
-    </header>
 
-    <div class="ai-box">
-        <div class="ai-title">🤖 IA ANALYTICS: Sugerencia Estratégica</div>
-        <div id="aiAdvice">Analizando datos en la nube...</div>
-    </div>
+<div class="card">
+<label>📅 Fecha</label>
+<input type="date" id="fecha">
+</div>
 
-    <div class="grid">
-        <div class="card">
-            <label>Fecha Operación</label>
-            <input type="date" id="fechaIn">
-            <label>Compañía</label>
-            <select id="compIn" onchange="alternar()">
-                <option value="TELCEL">TELCEL</option>
-                <option value="ATT">AT&T</option>
-                <option value="BAIT">BAIT</option>
-            </select>
-            <input id="numIn" type="tel" placeholder="Número Telefónico">
-            <input id="marcaIn" type="text" placeholder="Marca (Ej. Samsung)">
-            <input id="modeloIn" type="text" placeholder="Modelo">
+<div class="card">
+<select id="tipo" onchange="mostrar()">
+<option value="TELCEL">TELCEL</option>
+<option value="ATT">AT&T</option>
+<option value="BAIT">BAIT</option>
+</select>
+</div>
 
-            <div id="boxTelcel">
-                <select id="tipoTelcel"><option>PORTA</option><option>RENUEVATE</option><option>CHIP</option></select>
-                <input id="imeiIn" placeholder="IMEI">
-                <input id="iccidIn" placeholder="ICCID Telcel">
-            </div>
+<!-- TELCEL -->
+<div id="telcelBox" class="card">
+<select id="tTipo">
+<option>RENUEVATE</option>
+<option>CHIP</option>
+<option>PORTA</option>
+</select>
+<input id="tNum" placeholder="Número">
+<input id="tICCID" placeholder="ICCID">
+<input id="tIMEI" placeholder="IMEI">
+<input id="tMarca" placeholder="Marca">
+</div>
 
-            <div id="boxOtras" class="hidden">
-                <input id="iccOtras" placeholder="ICC Original (Competencia)">
-                <label>¿Con Chip Telcel aparte?</label>
-                <select id="chipTelcelPregunta"><option value="NO">NO</option><option value="SI">SÍ</option></select>
-            </div>
+<!-- ATT -->
+<div id="attBox" class="card hidden">
+<select id="aChip">
+<option value="NO">NO CHIP TELCEL</option>
+<option value="SI">SI CHIP TELCEL</option>
+</select>
+<input id="aNum" placeholder="Número">
+<input id="aICCID" placeholder="ICCID">
+<input id="aMarca" placeholder="Marca">
+</div>
 
-            <button class="btn btn-sync" onclick="guardarFirebase()">🚀 SINCRONIZAR VENTA</button>
-            <button class="btn btn-excel" onclick="exportarExcel()">📊 GENERAR EXCEL ÉLITE</button>
-        </div>
+<!-- BAIT -->
+<div id="baitBox" class="card hidden">
+<select id="bChip">
+<option value="NO">NO CHIP TELCEL</option>
+<option value="SI">SI CHIP TELCEL</option>
+</select>
+<input id="bNum" placeholder="Número">
+<input id="bICCID" placeholder="ICCID">
+<input id="bMarca" placeholder="Marca">
+</div>
 
-        <div class="card">
-            <canvas id="chartCloud"></canvas>
-        </div>
-    </div>
+<button onclick="guardar()">💾 Guardar Venta</button>
 
-    <div class="card">
-        <h3 style="color:var(--gold);">📋 Historial Sincronizado</h3>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr><th>Fecha</th><th>Comp.</th><th>Número</th><th>Equipo</th><th>ICCID/ICC</th><th>Info Extra</th></tr>
-                </thead>
-                <tbody id="tablaGlobal"></tbody>
-            </table>
-        </div>
-    </div>
+<div class="card">
+<canvas id="grafica"></canvas>
+</div>
+
+<button onclick="reporte()">📄 Generar Reporte Word</button>
+
+<div class="card">
+<table>
+<thead>
+<tr>
+<th>Comp</th>
+<th>Número</th>
+<th>Marca</th>
+<th>Chip</th>
+<th>Fecha</th>
+</tr>
+</thead>
+<tbody id="tabla"></tbody>
+</table>
+</div>
+
 </div>
 
 <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
-        authDomain: "ventastelcel4029.firebaseapp.com",
-        projectId: "ventastelcel4029",
-        storageBucket: "ventastelcel4029.appspot.com",
-        messagingSenderId: "542284923420",
-        appId: "1:542284923420:web:4887352d12e86095690623"
-    };
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-    let chart;
+/* FIREBASE */
+const firebaseConfig = {
+apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
+authDomain: "ventastelcel4029.firebaseapp.com"
+};
 
-    function inicio() {
-        document.getElementById('fechaIn').value = new Date().toISOString().split('T')[0];
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                loginBox.classList.add('hidden');
-                appBox.classList.remove('hidden');
-                escucharDatos();
-            } else {
-                loginBox.classList.remove('hidden');
-                appBox.classList.add('hidden');
-            }
-        });
-    }
+firebase.initializeApp(firebaseConfig);
+let auth = firebase.auth();
 
-    function alternar() {
-        const c = document.getElementById('compIn').value;
-        document.getElementById('boxTelcel').classList.toggle('hidden', c !== 'TELCEL');
-        document.getElementById('boxOtras').classList.toggle('hidden', c === 'TELCEL');
-    }
+/* CAPTCHA */
+let captcha="";
+function generarCaptcha(){
+let chars="ABCDEFG123456789";
+captcha="";
+for(let i=0;i<5;i++){
+captcha+=chars[Math.floor(Math.random()*chars.length)];
+}
+captchaText.innerText=captcha;
+}
 
-    function login() { auth.signInWithEmailAndPassword(correo.value, pass.value).catch(e => alert(e.message)); }
-    function logout() { auth.signOut(); }
+/* INICIO */
+function inicio(){
+generarCaptcha();
+let hoy=new Date();
+fecha.value=hoy.toISOString().split("T")[0];
 
-    function guardarFirebase() {
-        const comp = document.getElementById('compIn').value;
-        const venta = {
-            fecha: document.getElementById('fechaIn').value,
-            compania: comp,
-            numero: document.getElementById('numIn').value,
-            marca: document.getElementById('marcaIn').value || "S/M",
-            modelo: document.getElementById('modeloIn').value || "S/M",
-            iccid: comp === 'TELCEL' ? iccidIn.value : iccOtras.value,
-            chip_telcel_aparte: comp !== 'TELCEL' ? chipTelcelPregunta.value : "N/A",
-            detalle: comp === 'TELCEL' ? tipoTelcel.value : "COMPETENCIA",
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        };
-        db.collection("ventas").add(venta).then(() => {
-            alert("✅ Sincronizado");
-            document.querySelectorAll('input:not([type="date"])').forEach(i => i.value = "");
-        });
-    }
+auth.onAuthStateChanged(user=>{
+if(user){
+loginBox.classList.add("hidden");
+appBox.classList.remove("hidden");
+cargar();
+actualizarGrafica();
+}
+});
+}
 
-    function escucharDatos() {
-        db.collection("ventas").orderBy("timestamp", "desc").onSnapshot(snapshot => {
-            let html = ""; let data = [];
-            let c = { TELCEL: 0, ATT: 0, BAIT: 0 };
-            let marcas = {};
+/* LOGIN */
+function login(){
+if(captchaInput.value!==captcha){
+alert("Captcha incorrecto");
+generarCaptcha();
+return;
+}
+auth.signInWithEmailAndPassword(correo.value,pass.value)
+.catch(e=>alert(e.message));
+}
 
-            snapshot.forEach(doc => {
-                const v = doc.data();
-                data.push(v);
-                c[v.compania]++;
-                marcas[v.marca] = (marcas[v.marca] || 0) + 1;
+/* REGISTRO */
+function registro(){
+auth.createUserWithEmailAndPassword(correo.value,pass.value)
+.then(()=>alert("Registrado"))
+.catch(e=>alert(e.message));
+}
 
-                html += `<tr>
-                    <td>${v.fecha}</td>
-                    <td><b>${v.compania}</b></td>
-                    <td>${v.numero}</td>
-                    <td>${v.marca} ${v.modelo}</td>
-                    <td>${v.iccid}</td>
-                    <td>${v.detalle} | Chip Tel: ${v.chip_telcel_aparte}</td>
-                </tr>`;
-            });
+/* RECUPERAR */
+function recuperar(){
+auth.sendPasswordResetEmail(correo.value)
+.then(()=>alert("Correo enviado"))
+.catch(e=>alert(e.message));
+}
 
-            document.getElementById('tablaGlobal').innerHTML = html;
-            window.datosActuales = data;
-            actualizarGrafica(c);
-            generarIA(c, marcas);
-        });
-    }
+/* UI */
+function mostrar(){
+telcelBox.classList.add("hidden");
+attBox.classList.add("hidden");
+baitBox.classList.add("hidden");
 
-    // --- MÓDULO DE IA GENERATIVA (LÓGICA) ---
-    function generarIA(counts, marcas) {
-        const advice = document.getElementById('aiAdvice');
-        let total = counts.TELCEL + counts.ATT + counts.BAIT;
-        let topMarca = Object.keys(marcas).reduce((a, b) => marcas[a] > marcas[b] ? a : b, "ninguna");
+if(tipo.value==="TELCEL") telcelBox.classList.remove("hidden");
+if(tipo.value==="ATT") attBox.classList.remove("hidden");
+if(tipo.value==="BAIT") baitBox.classList.remove("hidden");
+}
 
-        if(total === 0) { advice.innerText = "Esperando ventas para generar diagnóstico..."; return; }
+/* FORMATO */
+function formatoFecha(f){
+return new Date(f).toLocaleDateString('es-MX');
+}
 
-        let mensaje = `Hoy dominas con **${counts.TELCEL}** ventas de Telcel. `;
-        if (counts.ATT + counts.BAIT > counts.TELCEL) {
-            mensaje = "⚠️ **Alerta IA:** La competencia está subiendo. Sugiero ofrecer Portabilidad con más beneficios de datos.";
-        } else if (topMarca !== "ninguna") {
-            mensaje += `La marca **${topMarca}** es tendencia hoy. Asegúrate de tener equipos en exhibición.`;
-        }
-        
-        advice.innerHTML = mensaje.replace(/\*\*(.*?)\*\*/g, '<b style="color:white">$1</b>');
-    }
+/* GUARDAR */
+function guardar(){
 
-    function actualizarGrafica(c) {
-        const ctx = document.getElementById('chartCloud').getContext('2d');
-        if(chart) chart.destroy();
-        chart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['Telcel', 'AT&T', 'BAIT'],
-                datasets: [{ data: [c.TELCEL, c.ATT, c.BAIT], backgroundColor: ['#ffd60a', '#00b4d8', '#ef233c'] }]
-            },
-            options: { plugins: { legend: { display: false } }, scales: { y: { ticks: { color: 'white' } }, x: { ticks: { color: 'white' } } } }
-        });
-    }
+let f=formatoFecha(fecha.value);
 
-    function exportarExcel() {
-        const wb = XLSX.utils.book_new();
-        const d = window.datosActuales;
-        const res = d.map(v => ({
-            "COMPAÑÍA": v.compania, "FECHA": v.fecha, "NÚMERO": v.numero, "MARCA": v.marca, "MODELO": v.modelo, "ICCID/ICC": v.iccid, "DETALLE": v.detalle, "CHIP TELCEL APARTE": v.chip_telcel_aparte
-        }));
-        const ws = XLSX.utils.json_to_sheet(res);
-        ws['!cols'] = [{wch:12},{wch:12},{wch:15},{wch:15},{wch:15},{wch:25},{wch:15},{wch:18}];
-        XLSX.utils.book_append_sheet(wb, ws, "REPORTE COMPLETO");
-        XLSX.writeFile(wb, `Auditoria_IA_Elite.xlsx`);
-    }
+let gen=JSON.parse(localStorage.getItem("gen")||"[]");
+let tel=JSON.parse(localStorage.getItem("telcel")||"[]");
+
+if(tipo.value==="TELCEL"){
+let v={
+tipo:tTipo.value,
+num:tNum.value,
+iccid:tICCID.value,
+imei:tIMEI.value,
+marca:tMarca.value,
+fecha:f
+};
+tel.unshift(v);
+localStorage.setItem("telcel",JSON.stringify(tel));
+gen.unshift({comp:"TELCEL",num:v.num,marca:v.marca,chip:"N/A",fecha:f});
+}
+
+if(tipo.value==="ATT"){
+gen.unshift({
+comp:"ATT",
+num:aNum.value,
+marca:aMarca.value,
+chip:aChip.value,
+fecha:f
+});
+}
+
+if(tipo.value==="BAIT"){
+gen.unshift({
+comp:"BAIT",
+num:bNum.value,
+marca:bMarca.value,
+chip:bChip.value,
+fecha:f
+});
+}
+
+localStorage.setItem("gen",JSON.stringify(gen));
+
+cargar();
+actualizarGrafica();
+}
+
+/* TABLA */
+function cargar(){
+let gen=JSON.parse(localStorage.getItem("gen")||"[]");
+tabla.innerHTML=gen.map(v=>`
+<tr>
+<td>${v.comp}</td>
+<td>${v.num}</td>
+<td>${v.marca}</td>
+<td>${v.chip}</td>
+<td>${v.fecha}</td>
+</tr>
+`).join("");
+}
+
+/* GRAFICA CORRECTA */
+let chart;
+
+function actualizarGrafica(){
+
+let gen=JSON.parse(localStorage.getItem("gen")||"[]");
+let f=formatoFecha(fecha.value);
+
+let t=0,a=0,b=0;
+
+gen.forEach(v=>{
+if(v.fecha!==f) return;
+if(v.comp==="TELCEL") t++;
+if(v.comp==="ATT") a++;
+if(v.comp==="BAIT") b++;
+});
+
+const ctx=document.getElementById("grafica").getContext("2d");
+
+let data={
+labels:["Telcel","AT&T","BAIT"],
+datasets:[{
+label:`Ventas ${f}`,
+data:[t,a,b],
+borderWidth:1
+}]
+};
+
+if(chart){
+chart.data=data;
+chart.update();
+}else{
+chart=new Chart(ctx,{
+type:"bar",
+data:data,
+options:{responsive:true}
+});
+}
+}
+
+/* REPORTE FUNCIONAL */
+function reporte(){
+
+let gen=JSON.parse(localStorage.getItem("gen")||"[]");
+
+if(gen.length===0){
+alert("No hay datos");
+return;
+}
+
+let f=formatoFecha(fecha.value);
+
+let t=0,a=0,b=0;
+
+gen.forEach(v=>{
+if(v.fecha!==f) return;
+if(v.comp==="TELCEL") t++;
+if(v.comp==="ATT") a++;
+if(v.comp==="BAIT") b++;
+});
+
+let total=t+a+b;
+
+let contenido=`
+<!DOCTYPE html>
+<html>
+<body style="font-family:Arial;">
+<h1>REPORTE DE VENTAS</h1>
+<p>Fecha: ${f}</p>
+
+<table border="1" style="border-collapse:collapse;">
+<tr><th>Compañía</th><th>Ventas</th></tr>
+<tr><td>Telcel</td><td>${t}</td></tr>
+<tr><td>AT&T</td><td>${a}</td></tr>
+<tr><td>BAIT</td><td>${b}</td></tr>
+</table>
+
+<h3>Total: ${total}</h3>
+</body>
+</html>
+`;
+
+let blob=new Blob(['\ufeff',contenido],{type:"application/msword"});
+let url=URL.createObjectURL(blob);
+
+let link=document.createElement("a");
+link.href=url;
+link.download=`Reporte_${f}.doc`;
+
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
+}
+
 </script>
+
 </body>
 </html>
