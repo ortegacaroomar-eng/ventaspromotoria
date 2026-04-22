@@ -3,138 +3,181 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistema Ventas PRO - Omar</title>
+<title>Sistema Ventas PRO</title>
 
+<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
+<!-- CHART -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body { margin:0; font-family:'Segoe UI'; background:#001d3d; color:white; }
-.app { max-width:1000px; margin:auto; padding:20px; }
-.card { background:#003566; padding:15px; border-radius:10px; margin-bottom:10px; }
+body {
+    margin:0;
+    font-family:'Segoe UI', sans-serif;
+    background: linear-gradient(135deg,#001d3d,#003566,#000814);
+    color:white;
+}
+
+.app { max-width:1100px; margin:auto; padding:20px; }
+
+.card {
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(12px);
+    border-radius:16px;
+    padding:20px;
+    margin-bottom:15px;
+}
 
 input, select {
-width:100%; padding:10px; margin:5px 0;
+    width:100%;
+    padding:12px;
+    border-radius:10px;
+    border:none;
+    background:rgba(255,255,255,0.12);
+    color:white;
+    margin-bottom:10px;
 }
 
 button {
-padding:12px; width:100%;
-background:#ffc300; border:none;
-margin-top:5px;
+    background: linear-gradient(135deg,#ffc300,#ffd60a);
+    color:#001d3d;
+    padding:14px;
+    border:none;
+    border-radius:12px;
+    font-weight:bold;
+    cursor:pointer;
 }
 
 .hidden { display:none; }
 
-table {
-width:100%; background:white; color:black; font-size:12px;
-}
-
-td, th { padding:8px; border:1px solid #ddd; }
-
-canvas { background:white; border-radius:10px; }
+table { width:100%; background:white; color:black; }
+td, th { border:1px solid #ddd; padding:8px; }
 </style>
 </head>
 
 <body onload="inicio()">
 
 <!-- LOGIN -->
-<div id="loginBox">
-<input id="u" placeholder="Correo">
-<input id="p" type="password" placeholder="Contraseña">
+<div id="loginBox" class="card" style="max-width:400px;margin:80px auto;text-align:center;">
+<h2>🔐 Acceso</h2>
+
+<input id="correo" type="email" placeholder="Correo">
+<input id="pass" type="password" placeholder="Contraseña">
+
+<div style="background:#000;padding:10px;border-radius:10px;">
+<span id="captchaText"></span>
+<input id="captchaInput" placeholder="Escribe el código">
+</div>
+
 <button onclick="login()">Entrar</button>
+<button onclick="registro()">Registrar</button>
+<button onclick="recuperar()">¿Olvidaste contraseña?</button>
 </div>
 
 <!-- APP -->
 <div id="appBox" class="app hidden">
 
-<!-- COMPAÑIA -->
 <div class="card">
-<label>COMPAÑÍA</label>
-<select id="tipoCompania" onchange="mostrarSeccion()">
+<label>📅 Fecha</label>
+<input type="date" id="fecha">
+</div>
+
+<div class="card">
+<select id="tipo" onchange="mostrar()">
 <option value="TELCEL">TELCEL</option>
 <option value="ATT">AT&T</option>
 <option value="BAIT">BAIT</option>
 </select>
 </div>
 
-<!-- TELCEL -->
-<div id="secTelcel" class="card">
-<select id="telcelTipo">
+<div id="telcelBox" class="card">
+<select id="tTipo">
 <option>RENUEVATE</option>
 <option>CHIP</option>
 <option>PORTA</option>
 </select>
-<input id="telcelNumero" placeholder="Número">
-<input id="telcelICCID" placeholder="ICCID">
-<input id="telcelIMEI" placeholder="IMEI">
-<input id="telcelMarca" placeholder="Marca">
+<input id="tNum" placeholder="Número">
+<input id="tICCID" placeholder="ICCID">
+<input id="tIMEI" placeholder="IMEI">
+<input id="tMarca" placeholder="Marca">
 </div>
 
-<!-- ATT -->
-<div id="secATT" class="card hidden">
-<select id="attChip">
+<div id="attBox" class="card hidden">
+<select id="aChip">
 <option value="NO">NO CHIP TELCEL</option>
 <option value="SI">SI CHIP TELCEL</option>
 </select>
-<input id="attNumero" placeholder="Número">
-<input id="attICCID" placeholder="ICCID">
-<input id="attMarca" placeholder="Marca">
+<input id="aNum" placeholder="Número">
+<input id="aICCID" placeholder="ICCID">
+<input id="aMarca" placeholder="Marca">
 </div>
 
-<!-- BAIT -->
-<div id="secBAIT" class="card hidden">
-<select id="baitChip">
+<div id="baitBox" class="card hidden">
+<select id="bChip">
 <option value="NO">NO CHIP TELCEL</option>
 <option value="SI">SI CHIP TELCEL</option>
 </select>
-<input id="baitNumero" placeholder="Número">
-<input id="baitICCID" placeholder="ICCID">
-<input id="baitMarca" placeholder="Marca">
+<input id="bNum" placeholder="Número">
+<input id="bICCID" placeholder="ICCID">
+<input id="bMarca" placeholder="Marca">
 </div>
 
-<button onclick="guardar()">GUARDAR VENTA</button>
+<button onclick="guardar()">💾 Guardar</button>
 
-<!-- CALENDARIO + GRAFICA -->
 <div class="card">
-<label>CALENDARIO</label>
-<input type="date" id="fechaFiltro" onchange="grafica()">
-<canvas id="c"></canvas>
+<canvas id="grafica"></canvas>
 </div>
 
-<button onclick="generarReporte()">📄 GENERAR REPORTE PRO</button>
+<button onclick="reporte()">📄 Reporte Word</button>
 
-<!-- TABLA -->
+<div class="card">
 <table>
 <thead>
 <tr>
-<th>COMP</th>
-<th>NUM</th>
-<th>MARCA</th>
-<th>FECHA</th>
-<th>X</th>
+<th>Comp</th><th>Num</th><th>Marca</th><th>Chip</th><th>Fecha</th>
 </tr>
 </thead>
-<tbody id="body"></tbody>
+<tbody id="tabla"></tbody>
 </table>
+</div>
 
 </div>
 
 <script>
 
+/* FIREBASE CONFIG (NO TOCADO) */
 const firebaseConfig = {
 apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
 authDomain: "ventastelcel4029.firebaseapp.com"
 };
 
-let chart;
-
-function inicio(){
 firebase.initializeApp(firebaseConfig);
+let auth = firebase.auth();
 
-firebase.auth().onAuthStateChanged(u=>{
-if(u){
-loginBox.style.display="none";
+/* CAPTCHA */
+let captcha="";
+
+function generarCaptcha(){
+let chars="ABCDEFG123456789";
+captcha="";
+for(let i=0;i<5;i++){
+captcha += chars[Math.floor(Math.random()*chars.length)];
+}
+captchaText.innerText=captcha;
+}
+
+/* INICIO */
+function inicio(){
+generarCaptcha();
+
+let hoy=new Date();
+fecha.value=hoy.toISOString().split("T")[0];
+
+auth.onAuthStateChanged(user=>{
+if(user){
+loginBox.classList.add("hidden");
 appBox.classList.remove("hidden");
 cargar();
 grafica();
@@ -142,111 +185,134 @@ grafica();
 });
 }
 
+/* LOGIN */
 function login(){
-firebase.auth().signInWithEmailAndPassword(u.value,p.value)
-.catch(()=>alert("Error login"));
+if(captchaInput.value!==captcha){
+alert("Captcha incorrecto");
+generarCaptcha();
+return;
 }
 
-function mostrarSeccion(){
-secTelcel.classList.add("hidden");
-secATT.classList.add("hidden");
-secBAIT.classList.add("hidden");
-
-let t = tipoCompania.value;
-
-if(t==="TELCEL") secTelcel.classList.remove("hidden");
-if(t==="ATT") secATT.classList.remove("hidden");
-if(t==="BAIT") secBAIT.classList.remove("hidden");
+auth.signInWithEmailAndPassword(correo.value,pass.value)
+.catch(e=>alert(e.message));
 }
 
+/* REGISTRO */
+function registro(){
+auth.createUserWithEmailAndPassword(correo.value,pass.value)
+.then(()=>alert("Registrado"))
+.catch(e=>alert(e.message));
+}
+
+/* RECUPERAR */
+function recuperar(){
+auth.sendPasswordResetEmail(correo.value)
+.then(()=>alert("Correo enviado"))
+.catch(e=>alert(e.message));
+}
+
+/* UI */
+function mostrar(){
+telcelBox.classList.add("hidden");
+attBox.classList.add("hidden");
+baitBox.classList.add("hidden");
+
+if(tipo.value==="TELCEL") telcelBox.classList.remove("hidden");
+if(tipo.value==="ATT") attBox.classList.remove("hidden");
+if(tipo.value==="BAIT") baitBox.classList.remove("hidden");
+}
+
+/* FORMATO */
+function formatoFecha(f){
+return new Date(f).toLocaleDateString('es-MX');
+}
+
+/* GUARDAR */
 function guardar(){
 
-let tipo = tipoCompania.value;
+let f=formatoFecha(fecha.value);
 
-let v = {
-id: Date.now(),
-COMPANIA: tipo,
-FECHA: new Date().toLocaleDateString('es-MX')
+let gen=JSON.parse(localStorage.getItem("gen")||"[]");
+let tel=JSON.parse(localStorage.getItem("telcel")||"[]");
+
+if(tipo.value==="TELCEL"){
+let v={
+tipo:tTipo.value,
+num:tNum.value,
+iccid:tICCID.value,
+imei:tIMEI.value,
+marca:tMarca.value,
+fecha:f
 };
 
-if(tipo==="TELCEL"){
-v.NUM = telcelNumero.value;
-v.ICCID = telcelICCID.value;
-v.IMEI = telcelIMEI.value;
-v.MARCA = telcelMarca.value;
+tel.unshift(v);
+localStorage.setItem("telcel",JSON.stringify(tel));
+
+gen.unshift({comp:"TELCEL",num:v.num,marca:v.marca,chip:"N/A",fecha:f});
 }
 
-if(tipo==="ATT"){
-v.NUM = attNumero.value;
-v.ICCID = attICCID.value;
-v.CHIP = attChip.value;
-v.MARCA = attMarca.value;
+if(tipo.value==="ATT"){
+gen.unshift({
+comp:"ATT",
+num:aNum.value,
+marca:aMarca.value,
+chip:aChip.value,
+fecha:f
+});
 }
 
-if(tipo==="BAIT"){
-v.NUM = baitNumero.value;
-v.ICCID = baitICCID.value;
-v.CHIP = baitChip.value;
-v.MARCA = baitMarca.value;
+if(tipo.value==="BAIT"){
+gen.unshift({
+comp:"BAIT",
+num:bNum.value,
+marca:bMarca.value,
+chip:bChip.value,
+fecha:f
+});
 }
 
-let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-l.unshift(v);
-localStorage.setItem("ventas_omar", JSON.stringify(l));
+localStorage.setItem("gen",JSON.stringify(gen));
 
 cargar();
 grafica();
 }
 
+/* TABLA */
 function cargar(){
-let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
+let gen=JSON.parse(localStorage.getItem("gen")||"[]");
 
-body.innerHTML = l.map(v=>`
+tabla.innerHTML=gen.map(v=>`
 <tr>
-<td>${v.COMPANIA}</td>
-<td>${v.NUM}</td>
-<td>${v.MARCA}</td>
-<td>${v.FECHA}</td>
-<td onclick="del(${v.id})" style="color:red;cursor:pointer;">X</td>
+<td>${v.comp}</td>
+<td>${v.num}</td>
+<td>${v.marca}</td>
+<td>${v.chip}</td>
+<td>${v.fecha}</td>
 </tr>
 `).join("");
 }
 
-function del(id){
-let l = JSON.parse(localStorage.getItem("ventas_omar"));
-l = l.filter(v=>v.id!==id);
-localStorage.setItem("ventas_omar", JSON.stringify(l));
-cargar();grafica();
-}
-
-function formatear(fecha){
-let f=new Date(fecha);
-let d=("0"+f.getDate()).slice(-2);
-let m=("0"+(f.getMonth()+1)).slice(-2);
-let y=f.getFullYear();
-return `${d}/${m}/${y}`;
-}
+/* GRAFICA */
+let chart;
 
 function grafica(){
 
-let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-
-let fecha = fechaFiltro.value ? formatear(fechaFiltro.value) : new Date().toLocaleDateString('es-MX');
+let gen=JSON.parse(localStorage.getItem("gen")||"[]");
+let f=formatoFecha(fecha.value);
 
 let t=0,a=0,b=0;
 
-l.forEach(v=>{
-if(v.FECHA!==fecha) return;
-
-if(v.COMPANIA==="TELCEL") t++;
-if(v.COMPANIA==="ATT") a++;
-if(v.COMPANIA==="BAIT") b++;
+gen.forEach(v=>{
+if(v.fecha!==f) return;
+if(v.comp==="TELCEL") t++;
+if(v.comp==="ATT") a++;
+if(v.comp==="BAIT") b++;
 });
 
 let data={
 labels:["Telcel","AT&T","BAIT"],
 datasets:[{
-label:`Ventas ${fecha}`,
+label:"Ventas",
 data:[t,a,b]
 }]
 };
@@ -255,51 +321,50 @@ if(chart){
 chart.data=data;
 chart.update();
 }else{
-chart=new Chart(c,{type:"bar",data:data});
+chart=new Chart(grafica,{
+type:"bar",
+data:data
+});
+}
 }
 
-}
+/* REPORTE */
+function reporte(){
 
-/* REPORTE PRO WORD */
-function generarReporte(){
-
-let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-
-let fecha = fechaFiltro.value 
-? formatear(fechaFiltro.value)
-: new Date().toLocaleDateString('es-MX');
+let gen=JSON.parse(localStorage.getItem("gen")||"[]");
+let f=formatoFecha(fecha.value);
 
 let t=0,a=0,b=0;
 
-l.forEach(v=>{
-if(v.FECHA!==fecha) return;
-
-if(v.COMPANIA==="TELCEL") t++;
-if(v.COMPANIA==="ATT") a++;
-if(v.COMPANIA==="BAIT") b++;
+gen.forEach(v=>{
+if(v.fecha!==f) return;
+if(v.comp==="TELCEL") t++;
+if(v.comp==="ATT") a++;
+if(v.comp==="BAIT") b++;
 });
 
-let total = t+a+b;
+let total=t+a+b;
 
-let contenido = `
+let html=`
 <html><body>
-<h1>REPORTE DE VENTAS</h1>
-<p>Fecha: ${fecha}</p>
+<h2>Reporte</h2>
+<p>Fecha: ${f}</p>
 <p>Total: ${total}</p>
-<p>Telcel: ${t}</p>
-<p>AT&T: ${a}</p>
-<p>BAIT: ${b}</p>
+<ul>
+<li>Telcel: ${t}</li>
+<li>AT&T: ${a}</li>
+<li>BAIT: ${b}</li>
+</ul>
 </body></html>
 `;
 
-let blob = new Blob(['\ufeff', contenido], {type:'application/msword'});
-let url = URL.createObjectURL(blob);
+let blob=new Blob(['\ufeff',html],{type:"application/msword"});
+let url=URL.createObjectURL(blob);
 
-let aTag = document.createElement("a");
-aTag.href = url;
-aTag.download = "Reporte.doc";
+let aTag=document.createElement("a");
+aTag.href=url;
+aTag.download="Reporte.doc";
 aTag.click();
-
 }
 
 </script>
