@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Auditor Pro + AI Intel</title>
+    <title>Panel Auditor Pro + Seguridad AI</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -17,18 +17,16 @@
         .app { max-width: 1200px; margin: auto; padding: 20px; }
         .card { background: var(--glass); backdrop-filter: blur(15px); border-radius: 20px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         
-        /* ESTILO IA */
-        .ai-box { background: rgba(0, 242, 255, 0.05); border: 1px dashed var(--ai-blue); padding: 15px; border-radius: 15px; margin-bottom: 20px; animation: pulse 2s infinite; }
-        .ai-title { color: var(--ai-blue); font-size: 0.9em; font-weight: bold; margin-bottom: 5px; display: flex; align-items: center; gap: 8px; }
-        @keyframes pulse { 0% { box-shadow: 0 0 5px rgba(0,242,255,0.2); } 50% { box-shadow: 0 0 15px rgba(0,242,255,0.4); } 100% { box-shadow: 0 0 5px rgba(0,242,255,0.2); } }
+        .ai-box { background: rgba(0, 242, 255, 0.05); border: 1px dashed var(--ai-blue); padding: 15px; border-radius: 15px; margin-bottom: 20px; }
+        .ai-title { color: var(--ai-blue); font-size: 0.9em; font-weight: bold; margin-bottom: 5px; }
 
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         label { color: var(--gold); font-size: 0.85em; font-weight: bold; margin-bottom: 5px; display: block; }
         input, select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; margin-bottom: 12px; box-sizing: border-box; }
         
-        .btn { background: #b08d00; color: #000; padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; text-transform: uppercase; transition: 0.3s; }
-        .btn-sync { background: var(--gold); display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-excel { background: #2b9348; color: white; margin-top: 8px; }
+        .btn { background: #b08d00; color: #000; padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; text-transform: uppercase; transition: 0.3s; margin-bottom: 10px; }
+        .btn-sync { background: var(--gold); }
+        .btn-excel { background: #2b9348; color: white; }
         .btn-logout { background: #d00000; color: white; width: auto; padding: 8px 15px; font-size: 0.8em; }
         
         .table-container { background: white; border-radius: 15px; overflow-x: auto; margin-top: 10px; }
@@ -37,15 +35,31 @@
         td { padding: 10px; border-bottom: 1px solid #eee; }
         .hidden { display: none; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
+        
+        /* Estilos Recuperar Pass */
+        .captcha-text { background: #fff; color: #000; padding: 5px; font-weight: bold; border-radius: 5px; letter-spacing: 3px; }
     </style>
 </head>
 <body onload="inicio()">
 
 <div id="loginBox" class="card" style="max-width:400px; margin: 80px auto; text-align: center;">
-    <h2 style="color: var(--gold);">☁️ Acceso Auditor Pro</h2>
-    <input id="correo" type="email" placeholder="Correo">
+    <h2 id="loginTitle" style="color: var(--gold);">☁️ Acceso Auditor Pro</h2>
+    <input id="correo" type="email" placeholder="Correo Electrónico">
     <input id="pass" type="password" placeholder="Contraseña">
-    <button class="btn btn-sync" onclick="login()">ENTRAR AL PANEL</button>
+    
+    <div id="captchaBox" class="hidden" style="margin-bottom: 15px; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 10px;">
+        <p style="font-size: 0.8em; margin-bottom: 5px;">Resuelve el Captcha para recuperar:</p>
+        <span id="captchaLabel" class="captcha-text"></span>
+        <input id="captchaInput" type="number" placeholder="Resultado" style="margin-top:10px; width: 80px; text-align:center;">
+    </div>
+
+    <button id="btnPrincipal" class="btn btn-sync" onclick="login()">ENTRAR</button>
+    
+    <p style="font-size: 0.85em;">
+        <a href="javascript:void(0)" onclick="mostrarRegistro()" style="color:var(--gold)">Crear cuenta nueva</a> | 
+        <a href="javascript:void(0)" onclick="mostrarRecuperar()" style="color:var(--ai-blue)">¿Olvidaste tu contraseña?</a>
+    </p>
+    <button id="btnVolver" class="hidden btn" onclick="window.location.reload()">VOLVER AL LOGIN</button>
 </div>
 
 <div id="appBox" class="app hidden">
@@ -55,8 +69,8 @@
     </header>
 
     <div class="ai-box">
-        <div class="ai-title">🤖 IA ANALYTICS: Sugerencia Estratégica</div>
-        <div id="aiAdvice">Analizando datos en la nube...</div>
+        <div class="ai-title">🤖 IA ANALYTICS: Diagnóstico en Vivo</div>
+        <div id="aiAdvice">Analizando ventas...</div>
     </div>
 
     <div class="grid">
@@ -70,7 +84,7 @@
                 <option value="BAIT">BAIT</option>
             </select>
             <input id="numIn" type="tel" placeholder="Número Telefónico">
-            <input id="marcaIn" type="text" placeholder="Marca (Ej. Samsung)">
+            <input id="marcaIn" type="text" placeholder="Marca (AK)">
             <input id="modeloIn" type="text" placeholder="Modelo">
 
             <div id="boxTelcel">
@@ -89,21 +103,12 @@
             <button class="btn btn-excel" onclick="exportarExcel()">📊 GENERAR EXCEL ÉLITE</button>
         </div>
 
-        <div class="card">
-            <canvas id="chartCloud"></canvas>
-        </div>
+        <div class="card"><canvas id="chartCloud"></canvas></div>
     </div>
 
     <div class="card">
         <h3 style="color:var(--gold);">📋 Historial Sincronizado</h3>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr><th>Fecha</th><th>Comp.</th><th>Número</th><th>Equipo</th><th>ICCID/ICC</th><th>Info Extra</th></tr>
-                </thead>
-                <tbody id="tablaGlobal"></tbody>
-            </table>
-        </div>
+        <div class="table-container"><table><thead><tr><th>Fecha</th><th>Comp.</th><th>Número</th><th>Equipo</th><th>ICCID/ICC</th><th>Info Extra</th></tr></thead><tbody id="tablaGlobal"></tbody></table></div>
     </div>
 </div>
 
@@ -121,119 +126,100 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
     let chart;
+    let captchaSol = 0;
 
     function inicio() {
         document.getElementById('fechaIn').value = new Date().toISOString().split('T')[0];
         auth.onAuthStateChanged(user => {
-            if (user) {
-                loginBox.classList.add('hidden');
-                appBox.classList.remove('hidden');
-                escucharDatos();
-            } else {
-                loginBox.classList.remove('hidden');
-                appBox.classList.add('hidden');
-            }
+            if (user) { loginBox.classList.add('hidden'); appBox.classList.remove('hidden'); escucharDatos(); }
+            else { loginBox.classList.remove('hidden'); appBox.classList.add('hidden'); }
         });
     }
 
+    // --- SEGURIDAD Y ACCESO ---
+    function mostrarRegistro() {
+        loginTitle.innerText = "Registrar Nuevo Usuario";
+        btnPrincipal.innerText = "CREAR CUENTA";
+        btnPrincipal.setAttribute("onclick", "registrar()");
+        btnVolver.classList.remove('hidden');
+    }
+
+    function mostrarRecuperar() {
+        loginTitle.innerText = "Recuperar Contraseña";
+        pass.classList.add('hidden');
+        captchaBox.classList.remove('hidden');
+        btnPrincipal.innerText = "ENVIAR CORREO";
+        btnPrincipal.setAttribute("onclick", "recuperarPass()");
+        btnVolver.classList.remove('hidden');
+        generarCaptcha();
+    }
+
+    function generarCaptcha() {
+        const n1 = Math.floor(Math.random() * 10) + 1;
+        const n2 = Math.floor(Math.random() * 10) + 1;
+        captchaSol = n1 + n2;
+        document.getElementById('captchaLabel').innerText = `${n1} + ${n2} = ?`;
+    }
+
+    function registrar() {
+        auth.createUserWithEmailAndPassword(correo.value, pass.value).then(() => alert("Cuenta creada con éxito")).catch(e => alert(e.message));
+    }
+
+    function recuperarPass() {
+        if(parseInt(captchaInput.value) !== captchaSol) return alert("Captcha incorrecto. Intenta de nuevo.");
+        if(!correo.value) return alert("Escribe tu correo");
+        
+        auth.sendPasswordResetEmail(correo.value)
+            .then(() => alert("Enlace enviado a tu correo. Revisa Spam."))
+            .catch(e => alert(e.message));
+    }
+
+    function login() { auth.signInWithEmailAndPassword(correo.value, pass.value).catch(e => alert("Error: " + e.message)); }
+    function logout() { if(confirm("¿Cerrar sesión?")) auth.signOut(); }
+
+    // --- LÓGICA DE NEGOCIO ---
     function alternar() {
         const c = document.getElementById('compIn').value;
         document.getElementById('boxTelcel').classList.toggle('hidden', c !== 'TELCEL');
         document.getElementById('boxOtras').classList.toggle('hidden', c === 'TELCEL');
     }
 
-    function login() { auth.signInWithEmailAndPassword(correo.value, pass.value).catch(e => alert(e.message)); }
-    function logout() { auth.signOut(); }
-
     function guardarFirebase() {
         const comp = document.getElementById('compIn').value;
-        const venta = {
-            fecha: document.getElementById('fechaIn').value,
-            compania: comp,
-            numero: document.getElementById('numIn').value,
-            marca: document.getElementById('marcaIn').value || "S/M",
-            modelo: document.getElementById('modeloIn').value || "S/M",
+        db.collection("ventas").add({
+            fecha: fechaIn.value, compania: comp, numero: numIn.value, marca: marcaIn.value || "AK", modelo: modeloIn.value || "S/M",
             iccid: comp === 'TELCEL' ? iccidIn.value : iccOtras.value,
             chip_telcel_aparte: comp !== 'TELCEL' ? chipTelcelPregunta.value : "N/A",
             detalle: comp === 'TELCEL' ? tipoTelcel.value : "COMPETENCIA",
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        };
-        db.collection("ventas").add(venta).then(() => {
-            alert("✅ Sincronizado");
-            document.querySelectorAll('input:not([type="date"])').forEach(i => i.value = "");
-        });
+        }).then(() => { alert("🚀 Sincronizado"); document.querySelectorAll('input:not([type="date"])').forEach(i => i.value = ""); });
     }
 
     function escucharDatos() {
         db.collection("ventas").orderBy("timestamp", "desc").onSnapshot(snapshot => {
-            let html = ""; let data = [];
-            let c = { TELCEL: 0, ATT: 0, BAIT: 0 };
-            let marcas = {};
-
+            let html = ""; let c = { TELCEL: 0, ATT: 0, BAIT: 0 }; let data = [];
             snapshot.forEach(doc => {
-                const v = doc.data();
-                data.push(v);
-                c[v.compania]++;
-                marcas[v.marca] = (marcas[v.marca] || 0) + 1;
-
-                html += `<tr>
-                    <td>${v.fecha}</td>
-                    <td><b>${v.compania}</b></td>
-                    <td>${v.numero}</td>
-                    <td>${v.marca} ${v.modelo}</td>
-                    <td>${v.iccid}</td>
-                    <td>${v.detalle} | Chip Tel: ${v.chip_telcel_aparte}</td>
-                </tr>`;
+                const v = doc.data(); data.push(v); c[v.compania]++;
+                html += `<tr><td>${v.fecha}</td><td><b>${v.compania}</b></td><td>${v.numero}</td><td>${v.marca} ${v.modelo}</td><td>${v.iccid}</td><td>${v.detalle}</td></tr>`;
             });
-
             document.getElementById('tablaGlobal').innerHTML = html;
             window.datosActuales = data;
             actualizarGrafica(c);
-            generarIA(c, marcas);
+            document.getElementById('aiAdvice').innerHTML = `Dominio actual: <b>Telcel (${c.TELCEL})</b> vs Otros (${c.ATT+c.BAIT})`;
         });
-    }
-
-    // --- MÓDULO DE IA GENERATIVA (LÓGICA) ---
-    function generarIA(counts, marcas) {
-        const advice = document.getElementById('aiAdvice');
-        let total = counts.TELCEL + counts.ATT + counts.BAIT;
-        let topMarca = Object.keys(marcas).reduce((a, b) => marcas[a] > marcas[b] ? a : b, "ninguna");
-
-        if(total === 0) { advice.innerText = "Esperando ventas para generar diagnóstico..."; return; }
-
-        let mensaje = `Hoy dominas con **${counts.TELCEL}** ventas de Telcel. `;
-        if (counts.ATT + counts.BAIT > counts.TELCEL) {
-            mensaje = "⚠️ **Alerta IA:** La competencia está subiendo. Sugiero ofrecer Portabilidad con más beneficios de datos.";
-        } else if (topMarca !== "ninguna") {
-            mensaje += `La marca **${topMarca}** es tendencia hoy. Asegúrate de tener equipos en exhibición.`;
-        }
-        
-        advice.innerHTML = mensaje.replace(/\*\*(.*?)\*\*/g, '<b style="color:white">$1</b>');
     }
 
     function actualizarGrafica(c) {
         const ctx = document.getElementById('chartCloud').getContext('2d');
         if(chart) chart.destroy();
-        chart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['Telcel', 'AT&T', 'BAIT'],
-                datasets: [{ data: [c.TELCEL, c.ATT, c.BAIT], backgroundColor: ['#ffd60a', '#00b4d8', '#ef233c'] }]
-            },
-            options: { plugins: { legend: { display: false } }, scales: { y: { ticks: { color: 'white' } }, x: { ticks: { color: 'white' } } } }
-        });
+        chart = new Chart(ctx, { type: 'bar', data: { labels: ['Telcel', 'AT&T', 'BAIT'], datasets: [{ data: [c.TELCEL, c.ATT, c.BAIT], backgroundColor: ['#ffd60a', '#00b4d8', '#ef233c'] }] }, options: { scales: { y: { ticks: { color: 'white' } }, x: { ticks: { color: 'white' } } } } });
     }
 
     function exportarExcel() {
         const wb = XLSX.utils.book_new();
-        const d = window.datosActuales;
-        const res = d.map(v => ({
-            "COMPAÑÍA": v.compania, "FECHA": v.fecha, "NÚMERO": v.numero, "MARCA": v.marca, "MODELO": v.modelo, "ICCID/ICC": v.iccid, "DETALLE": v.detalle, "CHIP TELCEL APARTE": v.chip_telcel_aparte
-        }));
-        const ws = XLSX.utils.json_to_sheet(res);
-        ws['!cols'] = [{wch:12},{wch:12},{wch:15},{wch:15},{wch:15},{wch:25},{wch:15},{wch:18}];
-        XLSX.utils.book_append_sheet(wb, ws, "REPORTE COMPLETO");
-        XLSX.writeFile(wb, `Auditoria_IA_Elite.xlsx`);
+        const ws = XLSX.utils.json_to_sheet(window.datosActuales);
+        XLSX.utils.book_append_sheet(wb, ws, "Reporte");
+        XLSX.writeFile(wb, "Auditoria_Elite_Cloud.xlsx");
     }
 </script>
 </body>
