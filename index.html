@@ -3,140 +3,120 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistema Ventas Telcel - Omar Ortega</title>
+<title>Sistema Ventas PRO - Omar</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
 <style>
-body { margin:0; font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#001d3d,#003566,#000814); color:white; }
+body { margin:0; font-family:'Segoe UI'; background:#001d3d; color:white; }
 .app { max-width:1000px; margin:auto; padding:20px; }
-
-.card { background:rgba(255,255,255,.08); backdrop-filter:blur(10px); border-radius:15px; padding:20px; margin-bottom:15px; }
-
-label { font-size:10px; color:#ffc300; font-weight:bold; }
+.card { background:#003566; padding:15px; border-radius:10px; margin-bottom:10px; }
 
 input, select {
-width:100%;
-padding:10px;
-margin-bottom:10px;
-border-radius:8px;
-border:none;
-background:rgba(255,255,255,.12);
-color:white;
+width:100%; padding:10px; margin:5px 0;
 }
 
-.btn-save {
-background:#ffc300;
-color:#001d3d;
-padding:15px;
-border:none;
-border-radius:10px;
-width:100%;
-font-weight:bold;
-cursor:pointer;
+button {
+padding:12px; width:100%;
+background:#ffc300; border:none;
+margin-top:5px;
 }
-
-.table-container {
-overflow-x:auto;
-background:white;
-border-radius:10px;
-margin-top:20px;
-}
-
-table { width:100%; border-collapse:collapse; color:black; font-size:11px; }
-
-th { background:black; color:white; padding:10px; }
-
-td { padding:8px; border:1px solid #ddd; }
 
 .hidden { display:none; }
 
-.login-box {
-max-width:350px;
-margin:100px auto;
-background:white;
-padding:30px;
-border-radius:20px;
-color:black;
-text-align:center;
+table {
+width:100%; background:white; color:black; font-size:12px;
 }
 
-canvas {
-background:white;
-border-radius:10px;
-}
+td, th { padding:8px; border:1px solid #ddd; }
+
+canvas { background:white; border-radius:10px; }
 </style>
 </head>
 
 <body onload="inicio()">
 
-<div id="loginBox" class="login-box">
-<h3>Acceso Promotores</h3>
+<!-- LOGIN -->
+<div id="loginBox">
 <input id="u" placeholder="Correo">
 <input id="p" type="password" placeholder="Contraseña">
-<button class="btn-save" onclick="login()">Entrar</button>
+<button onclick="login()">Entrar</button>
 </div>
 
+<!-- APP -->
 <div id="appBox" class="app hidden">
 
-<form id="fReg">
-
+<!-- COMPAÑIA -->
 <div class="card">
-<label>TIPO</label>
-<select id="iTipo">
-<option>KIT</option>
-<option>CHIP</option>
-<option>PORTA</option>
-<option>RENUEVATE</option>
-</select>
-
 <label>COMPAÑÍA</label>
-<select id="iCompania">
+<select id="tipoCompania" onchange="mostrarSeccion()">
 <option value="TELCEL">TELCEL</option>
 <option value="ATT">AT&T</option>
 <option value="BAIT">BAIT</option>
 </select>
-
-<label>FECHA DE ACTIVACIÓN</label>
-<input id="iFec">
-
-<label>NÚMERO</label>
-<input id="iTel">
-
-<label>ICCID</label>
-<input id="iIcc">
 </div>
 
-<button class="btn-save">GUARDAR VENTA</button>
+<!-- TELCEL -->
+<div id="secTelcel" class="card">
+<select id="telcelTipo">
+<option>RENUEVATE</option>
+<option>CHIP</option>
+<option>PORTA</option>
+</select>
+<input id="telcelNumero" placeholder="Número">
+<input id="telcelICCID" placeholder="ICCID">
+<input id="telcelIMEI" placeholder="IMEI">
+<input id="telcelMarca" placeholder="Marca">
+</div>
 
-</form>
+<!-- ATT -->
+<div id="secATT" class="card hidden">
+<select id="attChip">
+<option value="NO">NO CHIP TELCEL</option>
+<option value="SI">SI CHIP TELCEL</option>
+</select>
+<input id="attNumero" placeholder="Número">
+<input id="attICCID" placeholder="ICCID">
+<input id="attMarca" placeholder="Marca">
+</div>
+
+<!-- BAIT -->
+<div id="secBAIT" class="card hidden">
+<select id="baitChip">
+<option value="NO">NO CHIP TELCEL</option>
+<option value="SI">SI CHIP TELCEL</option>
+</select>
+<input id="baitNumero" placeholder="Número">
+<input id="baitICCID" placeholder="ICCID">
+<input id="baitMarca" placeholder="Marca">
+</div>
+
+<button onclick="guardar()">GUARDAR VENTA</button>
 
 <!-- CALENDARIO + GRAFICA -->
 <div class="card">
-<label>SELECCIONA FECHA</label>
-<input type="date" id="fechaFiltro" onchange="actualizarGrafica()">
-
-<canvas id="graficaVentas"></canvas>
+<label>CALENDARIO</label>
+<input type="date" id="fechaFiltro" onchange="grafica()">
+<canvas id="c"></canvas>
 </div>
 
-<div class="table-container">
+<button onclick="generarReporte()">📄 GENERAR REPORTE PRO</button>
+
+<!-- TABLA -->
 <table>
 <thead>
 <tr>
+<th>COMP</th>
 <th>NUM</th>
-<th>TIPO</th>
-<th>COMPAÑÍA</th>
+<th>MARCA</th>
 <th>FECHA</th>
 <th>X</th>
 </tr>
 </thead>
-<tbody id="bodyVentas"></tbody>
+<tbody id="body"></tbody>
 </table>
-</div>
 
 </div>
 
@@ -152,102 +132,122 @@ let chart;
 function inicio(){
 firebase.initializeApp(firebaseConfig);
 
-firebase.auth().onAuthStateChanged(user=>{
-if(user){
-loginBox.classList.add("hidden");
+firebase.auth().onAuthStateChanged(u=>{
+if(u){
+loginBox.style.display="none";
 appBox.classList.remove("hidden");
-cargarLocal();
-actualizarGrafica();
+cargar();
+grafica();
 }
 });
-
-iFec.value = new Date().toLocaleDateString('es-MX');
 }
 
 function login(){
 firebase.auth().signInWithEmailAndPassword(u.value,p.value)
-.catch(()=>alert("Error en login"));
+.catch(()=>alert("Error login"));
 }
 
-document.getElementById('fReg').onsubmit = e=>{
-e.preventDefault();
+function mostrarSeccion(){
+secTelcel.classList.add("hidden");
+secATT.classList.add("hidden");
+secBAIT.classList.add("hidden");
 
-const v = {
+let t = tipoCompania.value;
+
+if(t==="TELCEL") secTelcel.classList.remove("hidden");
+if(t==="ATT") secATT.classList.remove("hidden");
+if(t==="BAIT") secBAIT.classList.remove("hidden");
+}
+
+function guardar(){
+
+let tipo = tipoCompania.value;
+
+let v = {
 id: Date.now(),
-NUM: iTel.value,
-TIPO: iTipo.value,
-COMPAÑIA: iCompania.value,
-FECHA: iFec.value
+COMPANIA: tipo,
+FECHA: new Date().toLocaleDateString('es-MX')
 };
+
+if(tipo==="TELCEL"){
+v.NUM = telcelNumero.value;
+v.ICCID = telcelICCID.value;
+v.IMEI = telcelIMEI.value;
+v.MARCA = telcelMarca.value;
+}
+
+if(tipo==="ATT"){
+v.NUM = attNumero.value;
+v.ICCID = attICCID.value;
+v.CHIP = attChip.value;
+v.MARCA = attMarca.value;
+}
+
+if(tipo==="BAIT"){
+v.NUM = baitNumero.value;
+v.ICCID = baitICCID.value;
+v.CHIP = baitChip.value;
+v.MARCA = baitMarca.value;
+}
 
 let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
 l.unshift(v);
 localStorage.setItem("ventas_omar", JSON.stringify(l));
 
-cargarLocal();
-actualizarGrafica();
-
-e.target.reset();
-iFec.value = new Date().toLocaleDateString('es-MX');
-};
-
-function eliminar(id){
-let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-l = l.filter(v => v.id !== id);
-localStorage.setItem("ventas_omar", JSON.stringify(l));
-cargarLocal();
-actualizarGrafica();
+cargar();
+grafica();
 }
 
-function cargarLocal(){
+function cargar(){
 let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
 
-bodyVentas.innerHTML = l.map(v=>`
+body.innerHTML = l.map(v=>`
 <tr>
+<td>${v.COMPANIA}</td>
 <td>${v.NUM}</td>
-<td>${v.TIPO}</td>
-<td>${v.COMPAÑIA}</td>
+<td>${v.MARCA}</td>
 <td>${v.FECHA}</td>
-<td onclick="eliminar(${v.id})" style="color:red;cursor:pointer;">X</td>
+<td onclick="del(${v.id})" style="color:red;cursor:pointer;">X</td>
 </tr>
 `).join("");
 }
 
-/* FORMATO FECHA */
-function formatearFecha(fechaInput) {
-let f = new Date(fechaInput);
-let d = ("0" + f.getDate()).slice(-2);
-let m = ("0" + (f.getMonth()+1)).slice(-2);
-let y = f.getFullYear();
+function del(id){
+let l = JSON.parse(localStorage.getItem("ventas_omar"));
+l = l.filter(v=>v.id!==id);
+localStorage.setItem("ventas_omar", JSON.stringify(l));
+cargar();grafica();
+}
+
+function formatear(fecha){
+let f=new Date(fecha);
+let d=("0"+f.getDate()).slice(-2);
+let m=("0"+(f.getMonth()+1)).slice(-2);
+let y=f.getFullYear();
 return `${d}/${m}/${y}`;
 }
 
-/* GRAFICA POR CALENDARIO */
-function actualizarGrafica(){
+function grafica(){
 
 let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
 
-let fechaInput = document.getElementById("fechaFiltro").value;
+let fecha = fechaFiltro.value ? formatear(fechaFiltro.value) : new Date().toLocaleDateString('es-MX');
 
-let fechaSeleccionada = fechaInput 
-? formatearFecha(fechaInput)
-: new Date().toLocaleDateString('es-MX');
-
-let telcel=0, att=0, bait=0;
+let t=0,a=0,b=0;
 
 l.forEach(v=>{
-if(v.FECHA !== fechaSeleccionada) return;
+if(v.FECHA!==fecha) return;
 
-if(v.COMPAÑIA==="TELCEL") telcel++;
-if(v.COMPAÑIA==="ATT") att++;
-if(v.COMPAÑIA==="BAIT") bait++;
+if(v.COMPANIA==="TELCEL") t++;
+if(v.COMPANIA==="ATT") a++;
+if(v.COMPANIA==="BAIT") b++;
 });
 
-const data = {
+let data={
 labels:["Telcel","AT&T","BAIT"],
 datasets:[{
-label:`Ventas del ${fechaSeleccionada}`,
-data:[telcel,att,bait]
+label:`Ventas ${fecha}`,
+data:[t,a,b]
 }]
 };
 
@@ -255,15 +255,50 @@ if(chart){
 chart.data=data;
 chart.update();
 }else{
-chart = new Chart(document.getElementById("graficaVentas"),{
-type:"bar",
-data:data,
-options:{
-responsive:true,
-scales:{ y:{ beginAtZero:true } }
+chart=new Chart(c,{type:"bar",data:data});
 }
+
+}
+
+/* REPORTE PRO WORD */
+function generarReporte(){
+
+let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
+
+let fecha = fechaFiltro.value 
+? formatear(fechaFiltro.value)
+: new Date().toLocaleDateString('es-MX');
+
+let t=0,a=0,b=0;
+
+l.forEach(v=>{
+if(v.FECHA!==fecha) return;
+
+if(v.COMPANIA==="TELCEL") t++;
+if(v.COMPANIA==="ATT") a++;
+if(v.COMPANIA==="BAIT") b++;
 });
-}
+
+let total = t+a+b;
+
+let contenido = `
+<html><body>
+<h1>REPORTE DE VENTAS</h1>
+<p>Fecha: ${fecha}</p>
+<p>Total: ${total}</p>
+<p>Telcel: ${t}</p>
+<p>AT&T: ${a}</p>
+<p>BAIT: ${b}</p>
+</body></html>
+`;
+
+let blob = new Blob(['\ufeff', contenido], {type:'application/msword'});
+let url = URL.createObjectURL(blob);
+
+let aTag = document.createElement("a");
+aTag.href = url;
+aTag.download = "Reporte.doc";
+aTag.click();
 
 }
 
