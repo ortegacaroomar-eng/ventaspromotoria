@@ -9,273 +9,147 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
 <style>
-body { margin:0; font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#001d3d,#003566,#000814); color:white; }
-.app { max-width:1000px; margin:auto; padding:20px; }
-
-.card { background:rgba(255,255,255,.08); backdrop-filter:blur(10px); border-radius:15px; padding:20px; margin-bottom:15px; }
-
-label { font-size:10px; color:#ffc300; font-weight:bold; }
-
-input, select {
-width:100%;
-padding:10px;
-margin-bottom:10px;
-border-radius:8px;
-border:none;
-background:rgba(255,255,255,.12);
-color:white;
-}
-
-.btn-save {
-background:#ffc300;
-color:#001d3d;
-padding:15px;
-border:none;
-border-radius:10px;
-width:100%;
-font-weight:bold;
-cursor:pointer;
-}
-
-.table-container {
-overflow-x:auto;
-background:white;
-border-radius:10px;
-margin-top:20px;
-}
-
-table { width:100%; border-collapse:collapse; color:black; font-size:11px; }
-
-th { background:black; color:white; padding:10px; }
-
-td { padding:8px; border:1px solid #ddd; }
-
+body { margin:0; font-family:'Segoe UI'; background:#001d3d; color:white; }
+.app { max-width:900px; margin:auto; padding:20px; }
+.card { background:#003566; padding:15px; border-radius:10px; margin-bottom:10px; }
+input, select { width:100%; padding:10px; margin:5px 0; }
+button { padding:10px; width:100%; }
+table { width:100%; background:white; color:black; }
 .hidden { display:none; }
-
-.login-box {
-max-width:350px;
-margin:100px auto;
-background:white;
-padding:30px;
-border-radius:20px;
-color:black;
-text-align:center;
-}
-
-canvas {
-background:white;
-border-radius:10px;
-}
 </style>
 </head>
 
 <body onload="inicio()">
 
-<div id="loginBox" class="login-box">
-<h3>Acceso</h3>
+<div id="loginBox">
 <input id="u" placeholder="Correo">
 <input id="p" type="password" placeholder="Contraseña">
-<button class="btn-save" onclick="manejarAuth()">Entrar</button>
+<button onclick="login()">Entrar</button>
 </div>
 
-<div id="appBox" class="app hidden">
+<div id="appBox" class="hidden app">
 
 <form id="fReg">
-
 <div class="card">
-<label>TIPO</label>
 <select id="iTipo">
 <option>KIT</option>
 <option>CHIP</option>
 <option>PORTA</option>
-<option>RENUEVATE</option>
 </select>
 
-<label>COMPAÑÍA</label>
 <select id="iCompania">
 <option value="TELCEL">TELCEL</option>
 <option value="ATT">AT&T</option>
 <option value="BAIT">BAIT</option>
 </select>
 
-<label>FECHA</label>
 <input id="iFec">
-
-<label>NÚMERO</label>
 <input id="iTel">
-
-<label>ICCID</label>
-<input id="iIcc">
 </div>
 
-<button class="btn-save">GUARDAR VENTA</button>
-
+<button>Guardar</button>
 </form>
 
 <div class="card">
-<label>FILTRO</label>
-<select id="filtroTiempo" onchange="actualizarGrafica()">
-<option value="hoy">HOY</option>
-<option value="semana">SEMANA</option>
-<option value="todo">TODO</option>
+<select id="filtro" onchange="grafica()">
+<option value="hoy">Hoy</option>
+<option value="todo">Todo</option>
 </select>
-
-<canvas id="graficaVentas"></canvas>
+<canvas id="c"></canvas>
 </div>
 
-<div class="table-container">
 <table>
-<thead>
-<tr>
-<th>NUM</th>
-<th>TIPO</th>
-<th>COMPAÑÍA</th>
-<th>FECHA</th>
-<th>X</th>
-</tr>
-</thead>
-<tbody id="bodyVentas"></tbody>
+<tbody id="body"></tbody>
 </table>
-</div>
 
 </div>
 
 <script>
 
-let auth;
+const firebaseConfig = {
+apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
+authDomain: "ventastelcel4029.firebaseapp.com"
+};
+
 let chart;
 
 function inicio(){
-
-firebase.initializeApp({
-apiKey:"test",
-authDomain:"test"
-});
-
-auth = firebase.auth();
-
-document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX');
-
-auth.onAuthStateChanged(user=>{
-if(user){
+firebase.initializeApp(firebaseConfig);
+firebase.auth().onAuthStateChanged(u=>{
+if(u){
 loginBox.classList.add("hidden");
 appBox.classList.remove("hidden");
-cargarLocal();
-actualizarGrafica();
+cargar();
+grafica();
 }
 });
-
+iFec.value = new Date().toLocaleDateString('es-MX');
 }
 
-function manejarAuth(){
-auth.signInAnonymously();
+function login(){
+firebase.auth().signInWithEmailAndPassword(u.value,p.value)
+.catch(()=>alert("Error login"));
 }
 
-document.getElementById('fReg').onsubmit = e=>{
+fReg.onsubmit=e=>{
 e.preventDefault();
 
-const v = {
-id: Date.now(),
-NUM: iTel.value,
-TIPO: iTipo.value,
-COMPAÑIA: iCompania.value,
-FECHA: iFec.value
+let v={
+id:Date.now(),
+num:iTel.value,
+tipo:iTipo.value,
+comp:iCompania.value,
+fecha:iFec.value
 };
 
-let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-
+let l=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
 l.unshift(v);
+localStorage.setItem("ventas_omar",JSON.stringify(l));
 
-localStorage.setItem("ventas_omar", JSON.stringify(l));
-
-cargarLocal();
-actualizarGrafica();
-
-e.target.reset();
-
-iFec.value = new Date().toLocaleDateString('es-MX');
+cargar();
+grafica();
 };
 
-function eliminar(id){
-
-let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-
-l = l.filter(v => v.id !== id);
-
-localStorage.setItem("ventas_omar", JSON.stringify(l));
-
-cargarLocal();
-actualizarGrafica();
-
-}
-
-function cargarLocal(){
-
-let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-
-bodyVentas.innerHTML = l.map(v=>`
+function cargar(){
+let l=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
+body.innerHTML=l.map(v=>`
 <tr>
-<td>${v.NUM}</td>
-<td>${v.TIPO}</td>
-<td>${v.COMPAÑIA}</td>
-<td>${v.FECHA}</td>
-<td onclick="eliminar(${v.id})" style="cursor:pointer;color:red;">X</td>
+<td>${v.num}</td>
+<td>${v.tipo}</td>
+<td>${v.comp}</td>
+<td>${v.fecha}</td>
+<td onclick="del(${v.id})">X</td>
 </tr>
 `).join("");
-
 }
 
-function actualizarGrafica(){
+function del(id){
+let l=JSON.parse(localStorage.getItem("ventas_omar"));
+l=l.filter(v=>v.id!==id);
+localStorage.setItem("ventas_omar",JSON.stringify(l));
+cargar();grafica();
+}
 
-let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
+function grafica(){
 
-let filtro = filtroTiempo.value;
+let l=JSON.parse(localStorage.getItem("ventas_omar")||"[]");
+let hoy=new Date().toLocaleDateString('es-MX');
 
-let hoy = new Date().toLocaleDateString('es-MX');
-
-let telcel=0, att=0, bait=0;
+let t=0,a=0,b=0;
 
 l.forEach(v=>{
+if(filtro.value==="hoy" && v.fecha!==hoy) return;
 
-if(filtro==="hoy" && v.FECHA!==hoy) return;
-
-if(filtro==="semana"){
-let f = new Date(v.FECHA.split("/").reverse().join("-"));
-let now = new Date();
-let inicio = new Date(now.setDate(now.getDate() - now.getDay()));
-if(f < inicio) return;
-}
-
-if(v.COMPAÑIA==="TELCEL") telcel++;
-if(v.COMPAÑIA==="ATT") att++;
-if(v.COMPAÑIA==="BAIT") bait++;
-
+if(v.comp==="TELCEL") t++;
+if(v.comp==="ATT") a++;
+if(v.comp==="BAIT") b++;
 });
 
-const data = {
-labels:["Telcel","AT&T","BAIT"],
-datasets:[{
-label:"Ventas",
-data:[telcel,att,bait]
-}]
-};
+let data={labels:["Telcel","AT&T","BAIT"],datasets:[{data:[t,a,b]}]};
 
-if(chart){
-chart.data = data;
-chart.update();
-}else{
-chart = new Chart(document.getElementById("graficaVentas"),{
-type:"bar",
-data:data,
-options:{
-responsive:true,
-scales:{ y:{ beginAtZero:true } }
-}
-});
-}
+if(chart){chart.data=data;chart.update();}
+else{chart=new Chart(c,{type:"bar",data:data});}
 
 }
 
