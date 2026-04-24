@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Ventas PRO Estable</title>
+<title>Ventas PRO Auditoría</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -48,14 +47,28 @@ button { background:#ffc300; font-weight:bold;}
 
 <form id="fReg">
 <div class="card">
+
 <select id="comp">
 <option>TELCEL</option>
 <option>ATT</option>
 <option>BAIT</option>
 </select>
 
-<input id="tel" placeholder="Teléfono">
+<select id="tipo" onchange="cambiarFormulario()">
+<option value="">Tipo de venta</option>
+<option value="PORTA">PORTA</option>
+<option value="AK">AK</option>
+<option value="CHIP">CHIP</option>
+<option value="RENUEVATE">RENUEVATE</option>
+</select>
+
+<input id="fecha" placeholder="Fecha">
+<input id="numero" placeholder="Número">
+
+<div id="camposExtra"></div>
+
 <input id="prom" placeholder="Promotor">
+
 </div>
 
 <button>Guardar</button>
@@ -107,13 +120,12 @@ return;
 }
 
 if(!online){
-estado.innerText="Modo offline activo";
+estado.innerText="Modo offline";
 mostrarApp();
 return;
 }
 
 auth.signInWithEmailAndPassword(email,pass)
-.then(()=>{})
 .catch(err=>{
 if(err.code==="auth/user-not-found"){
 auth.createUserWithEmailAndPassword(email,pass)
@@ -131,19 +143,64 @@ appBox.classList.remove("hidden");
 cargar();
 }
 
-fReg.onsubmit=e=>{
+function cambiarFormulario(){
+let t = tipo.value;
+
+if(t==="PORTA"){
+camposExtra.innerHTML=`
+<input id="cliente" placeholder="Nombre cliente">
+<input id="nip" placeholder="NIP">
+`;
+}
+else if(t==="AK"){
+camposExtra.innerHTML=`
+<input id="icc" placeholder="ICCID">
+<input id="imei" placeholder="IMEI">
+<input id="marca" placeholder="Marca">
+<input id="modelo" placeholder="Modelo">
+`;
+}
+else if(t==="CHIP"){
+camposExtra.innerHTML=`
+<input id="icc" placeholder="ICCID">
+<input id="recarga" placeholder="Monto recarga">
+`;
+}
+else if(t==="RENUEVATE"){
+camposExtra.innerHTML=`
+<input id="icc" placeholder="ICCID">
+<input id="imei" placeholder="IMEI">
+<input id="modelo" placeholder="Modelo">
+`;
+}
+else{
+camposExtra.innerHTML="";
+}
+}
+
+fReg.onsubmit = e=>{
 e.preventDefault();
 
-let v={
-id:Date.now(),
-comp:comp.value,
-tel:tel.value,
-prom:prom.value
+let v = {
+id: Date.now(),
+comp: comp.value,
+tipo: tipo.value,
+fecha: fecha.value,
+numero: numero.value,
+prom: prom.value,
+
+cliente: document.getElementById("cliente")?.value || "",
+nip: document.getElementById("nip")?.value || "",
+icc: document.getElementById("icc")?.value || "",
+imei: document.getElementById("imei")?.value || "",
+marca: document.getElementById("marca")?.value || "",
+modelo: document.getElementById("modelo")?.value || "",
+recarga: document.getElementById("recarga")?.value || ""
 };
 
-let local=JSON.parse(localStorage.getItem("ventas")||"[]");
+let local = JSON.parse(localStorage.getItem("ventas")||"[]");
 local.unshift(v);
-localStorage.setItem("ventas",JSON.stringify(local));
+localStorage.setItem("ventas", JSON.stringify(local));
 
 if(online && auth.currentUser){
 db.ref("ventas").push(v);
@@ -151,13 +208,33 @@ db.ref("ventas").push(v);
 
 cargar();
 fReg.reset();
+camposExtra.innerHTML="";
 };
 
 function cargar(){
 let local=JSON.parse(localStorage.getItem("ventas")||"[]");
 
-lista.innerHTML=local.map(v=>`
-<div class="card">${v.comp} - ${v.tel}</div>`).join("");
+lista.innerHTML = local.map(v=>`
+<div class="card">
+
+<b>${v.comp} - ${v.tipo}</b><br>
+📅 ${v.fecha}<br>
+📱 ${v.numero}<br>
+
+${v.cliente ? "👤 "+v.cliente+"<br>" : ""}
+${v.nip ? "🔑 NIP: "+v.nip+"<br>" : ""}
+
+${v.icc ? "ICCID: "+v.icc+"<br>" : ""}
+${v.imei ? "IMEI: "+v.imei+"<br>" : ""}
+${v.marca ? "Marca: "+v.marca+"<br>" : ""}
+${v.modelo ? "Modelo: "+v.modelo+"<br>" : ""}
+
+${v.recarga ? "💰 Recarga: "+v.recarga+"<br>" : ""}
+
+👤 ${v.prom}
+
+</div>
+`).join("");
 
 dashboardGen(local);
 graficaGen(local);
@@ -211,7 +288,7 @@ map[v.prom]=(map[v.prom]||0)+1;
 
 let orden=Object.entries(map).sort((a,b)=>b[1]-a[1]);
 
-ranking.innerHTML="<b>Ranking</b><br>"+
+ranking.innerHTML="<b>Ranking Promotores</b><br>"+
 orden.map((p,i)=>`${i+1}. ${p[0]} (${p[1]})`).join("<br>");
 }
 
