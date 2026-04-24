@@ -16,6 +16,7 @@ body { margin:0; font-family:'Segoe UI'; background:linear-gradient(135deg,#001d
 .card { background:rgba(255,255,255,.08); backdrop-filter:blur(10px); border-radius:15px; padding:15px; margin-bottom:15px;}
 input,select,button { width:100%; padding:12px; border-radius:10px; border:none; margin-top:8px;}
 button { background:#ffc300; font-weight:bold; color:#003566;}
+.btn-google { background:#db4437; color:white; }
 .login { max-width:350px; margin:100px auto; background:white; color:black; padding:25px; border-radius:15px;}
 .hidden { display:none;}
 </style>
@@ -27,8 +28,8 @@ button { background:#ffc300; font-weight:bold; color:#003566;}
 <h2>Acceso</h2>
 <input id="u" placeholder="Correo">
 <input id="p" type="password" placeholder="Contraseña">
-<button onclick="loginEmail()">Entrar</button>
-<button onclick="loginGoogle()" style="background:#db4437;color:white;">Entrar con Google</button>
+<button onclick="loginEmail()">Entrar con correo</button>
+<button class="btn-google" onclick="loginGoogle()">Entrar con Google</button>
 <p id="estado"></p>
 </div>
 
@@ -103,6 +104,18 @@ mostrarApp();
 estado.innerText="Conectado ☁️";
 }
 });
+
+// 🔥 LOGIN GOOGLE REDIRECT (SOLUCIÓN)
+auth.getRedirectResult()
+.then(result=>{
+if(result.user){
+console.log("Google login correcto");
+}
+})
+.catch(err=>{
+alert("Error Google: "+err.message);
+});
+
 }catch(e){
 estado.innerText="Modo offline";
 }
@@ -119,9 +132,10 @@ alert(err.message);
 });
 }
 
+// 🔥 GOOGLE FUNCIONANDO EN CELULAR
 function loginGoogle(){
 let provider=new firebase.auth.GoogleAuthProvider();
-auth.signInWithPopup(provider);
+auth.signInWithRedirect(provider);
 }
 
 function mostrarApp(){
