@@ -1,203 +1,199 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Ventas PRO | Auditor Elite</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Auditor Telcel PRO | Google Auth</title>
 
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-    <style>
-        :root { --gold: #ffd60a; --dark: #000814; --glass: rgba(255, 255, 255, 0.08); }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: radial-gradient(circle at top, #003566, var(--dark)); color: white; min-height: 100vh; }
-        .app { max-width: 1100px; margin: auto; padding: 20px; }
-        .card { background: var(--glass); backdrop-filter: blur(12px); border-radius: 16px; padding: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); }
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        label { color: var(--gold); font-weight: bold; font-size: 0.85em; margin-bottom: 5px; display: block; }
-        input, select { width: 100%; padding: 12px; border-radius: 10px; border: none; background: rgba(0,0,0,0.3); color: white; margin-bottom: 10px; box-sizing: border-box; }
-        button { background: linear-gradient(135deg, #ffc300, var(--gold)); color: #001d3d; padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s; }
-        .btn-exit { background: #d00000; color: white; width: auto; padding: 8px 15px; font-size: 0.8em; }
-        .btn-excel { background: #2b9348; color: white; width: auto; padding: 8px 15px; font-size: 0.8em; }
-        .hidden { display: none; }
-        .table-container { background: white; border-radius: 12px; overflow-x: auto; margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; color: #333; font-size: 0.85em; min-width: 800px; }
-        th { background: #f1f1f1; padding: 12px; text-align: left; border-bottom: 2px solid #ddd; }
-        td { padding: 10px; border-bottom: 1px solid #eee; }
-        .tag-telcel { background: var(--gold); padding: 4px 8px; border-radius: 5px; font-weight: bold; color: black; }
-    </style>
+<style>
+body { margin:0; font-family:'Segoe UI', sans-serif; background: #000814; color:white; }
+.app { max-width:1100px; margin:auto; padding:20px; }
+.card { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius:15px; padding:20px; margin-bottom:15px; border: 1px solid rgba(255,255,255,0.1); }
+input, select { width:100%; padding:12px; border-radius:10px; border:none; background:rgba(255,255,255,0.2); color:white; margin-bottom:10px; box-sizing: border-box; }
+button { background: #ffc300; color:#001d3d; padding:14px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; margin-bottom:10px; transition: 0.3s; }
+button:hover { opacity: 0.9; transform: scale(1.01); }
+.btn-google { background: white; color: #444; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.hidden { display:none; }
+table { width:100%; background:white; color:black; border-collapse: collapse; border-radius: 10px; overflow: hidden; }
+td, th { border:1px solid #ddd; padding:10px; text-align: left; }
+th { background: #eee; }
+.btn-salir { background: #d00000; color: white; width: auto; padding: 5px 15px; float: right; }
+</style>
 </head>
+
 <body onload="inicio()">
 
-<div id="loginBox" class="card" style="max-width:400px; margin:80px auto; text-align:center;">
-    <h2 style="color:var(--gold)">🔐 Acceso Auditor</h2>
-    <input id="correo" type="email" placeholder="Correo">
-    <input id="pass" type="password" placeholder="Contraseña">
+<div id="loginBox" class="card" style="max-width:400px;margin:80px auto;text-align:center;">
+    <h2 style="color:#ffc300;">🗂️ Acceso Auditor</h2>
+    
+    <button class="btn-google" onclick="loginGoogle()">
+        <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" width="20"> 
+        Entrar con Google
+    </button>
+    
+    <div style="margin: 15px 0; opacity: 0.5;">— o usa tu correo —</div>
+
+    <input id="correo" type="email" placeholder="Tu Correo">
+    <input id="pass" type="password" placeholder="Tu Contraseña">
     <button onclick="login()">ENTRAR</button>
-    <div style="margin-top:15px; font-size: 0.85em;">
-        <a href="javascript:void(0)" onclick="registro()" style="color:var(--gold)">Registrar Nuevo</a>
-    </div>
+    <button style="background:transparent; color:white; border:1px solid white;" onclick="registro()">REGISTRAR NUEVO</button>
 </div>
 
 <div id="appBox" class="app hidden">
-    <header>
-        <h2 style="color: var(--gold); margin: 0;">Panel Auditor Pro</h2>
-        <button class="btn-exit" onclick="salir()">CERRAR SESIÓN</button>
-    </header>
+    <button class="btn-salir" onclick="salir()">Salir</button>
+    <h2 id="saludo" style="color:#ffc300; margin: 0 0 20px 0;">Panel de Ventas</h2>
 
-    <div class="card">
-        <label>📅 FECHA</label>
-        <input type="date" id="fecha">
-        <label>📡 COMPAÑÍA</label>
-        <select id="tipo" onchange="mostrarForm()">
-            <option value="TELCEL">TELCEL</option>
-            <option value="ATT">AT&T</option>
-            <option value="BAIT">BAIT</option>
-        </select>
+<div class="card">
+    <label>📅 Fecha</label>
+    <input type="date" id="fecha">
+    <label>📡 Compañía</label>
+    <select id="tipo" onchange="mostrarCampos()">
+        <option value="TELCEL">TELCEL</option>
+        <option value="ATT">AT&T</option>
+        <option value="BAIT">BAIT</option>
+    </select>
+</div>
+
+<div id="telcelBox" class="card">
+    <select id="tTipo"><option>PORTA</option><option>RENUEVATE</option><option>CHIP</option><option>AK</option></select>
+    <input id="tNum" placeholder="Número">
+    <input id="tMarca" placeholder="Marca">
+    <input id="tModelo" placeholder="Modelo">
+    <input id="tIMEI" placeholder="IMEI">
+    <input id="tICCID" placeholder="ICCID Telcel">
+</div>
+
+<div id="attBox" class="card hidden">
+    <select id="aChip"><option value="NO">SIN CHIP TELCEL</option><option value="SI">CON CHIP TELCEL</option></select>
+    <input id="aNum" placeholder="Número">
+    <input id="aMarca" placeholder="Marca/Modelo">
+</div>
+
+<div id="baitBox" class="card hidden">
+    <select id="bChip"><option value="NO">SIN CHIP TELCEL</option><option value="SI">CON CHIP TELCEL</option></select>
+    <input id="bNum" placeholder="Número">
+    <input id="bMarca" placeholder="Marca/Modelo">
+</div>
+
+<button onclick="guardar()">💾 GUARDAR VENTA</button>
+
+<div class="card"><canvas id="grafica"></canvas></div>
+
+<div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3>📋 Historial Unificado</h3>
+        <button onclick="descargarExcel()" style="width:auto; background:#2b9348; color:white;">📊 EXCEL</button>
     </div>
-
-    <div id="telcelBox" class="card">
-        <label>PROCESO</label>
-        <select id="tTipo">
-            <option value="PORTA">PORTA</option>
-            <option value="RENUEVATE">RENUEVATE</option>
-            <option value="CHIP">CHIP</option>
-            <option value="AK">AK</option>
-        </select>
-        <input id="tNum" placeholder="Número Telefónico">
-        <input id="tMarca" placeholder="Marca">
-        <input id="tModelo" placeholder="Modelo">
-        <input id="tIMEI" placeholder="IMEI">
-        <input id="tICCID" placeholder="ICCID Telcel">
-    </div>
-
-    <div id="attBox" class="card hidden">
-        <label>¿CHIP TELCEL APARTE?</label>
-        <select id="aChip"><option value="NO">NO</option><option value="SI">SÍ</option></select>
-        <input id="aNum" placeholder="Número">
-        <input id="aMarca" placeholder="Marca/Modelo">
-    </div>
-
-    <div id="baitBox" class="card hidden">
-        <label>¿CHIP TELCEL APARTE?</label>
-        <select id="bChip"><option value="NO">NO</option><option value="SI">SÍ</option></select>
-        <input id="bNum" placeholder="Número">
-        <input id="bMarca" placeholder="Marca/Modelo">
-    </div>
-
-    <button onclick="guardarVenta()">💾 GUARDAR VENTA</button>
-
-    <div class="card" style="margin-top:20px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <h3 style="color: var(--gold); margin: 0;">📋 Historial Unificado (Todo)</h3>
-            <button class="btn-excel" onclick="descargarExcel()">📥 Descargar Excel</button>
-        </div>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr><th>Compañía</th><th>Número</th><th>Marca/Modelo</th><th>Detalle</th><th>Fecha</th></tr>
-                </thead>
-                <tbody id="tablaGral"></tbody>
-            </table>
-        </div>
-    </div>
-
-    <div class="card">
-        <h3 style="color: var(--gold); margin: 0;">🔍 Detalle Técnico Telcel</h3>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr><th>Fecha</th><th>Proceso</th><th>Modelo</th><th>IMEI</th><th>ICCID</th></tr>
-                </thead>
-                <tbody id="tablaTel"></tbody>
-            </table>
-        </div>
+    <div style="overflow-x:auto;">
+        <table>
+            <thead>
+                <tr><th>Comp</th><th>Número</th><th>Marca</th><th>Modelo/Chip</th><th>Fecha</th></tr>
+            </thead>
+            <tbody id="cuerpoGral"></tbody>
+        </table>
     </div>
 </div>
 
+<div class="card">
+    <h3>🔍 Auditoría Técnica Telcel</h3>
+    <div style="overflow-x:auto;">
+        <table>
+            <thead>
+                <tr><th>Fecha</th><th>Proceso</th><th>Marca/Mod</th><th>IMEI</th><th>ICCID</th></tr>
+            </thead>
+            <tbody id="cuerpoTel"></tbody>
+        </table>
+    </div>
+</div>
+
+</div>
+
 <script>
-    const firebaseConfig = { apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc", authDomain: "ventastelcel4029.firebaseapp.com" };
-    firebase.initializeApp(firebaseConfig);
-    let auth = firebase.auth();
+const firebaseConfig = { apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc", authDomain: "ventastelcel4029.firebaseapp.com" };
+firebase.initializeApp(firebaseConfig);
+let auth = firebase.auth();
 
-    function inicio() {
-        fecha.value = new Date().toISOString().split("T")[0];
-        auth.onAuthStateChanged(user => {
-            if(user) {
-                loginBox.classList.add("hidden");
-                appBox.classList.remove("hidden");
-                cargarTablas();
-            }
-        });
-    }
-
-    function login() {
-        auth.signInWithEmailAndPassword(correo.value, pass.value).catch(e => alert("Error: " + e.message));
-    }
-
-    function registro() {
-        auth.createUserWithEmailAndPassword(correo.value, pass.value).then(() => alert("Registrado")).catch(e => alert(e.message));
-    }
-
-    function salir() { auth.signOut().then(() => window.location.reload()); }
-
-    function mostrarForm() {
-        telcelBox.classList.toggle("hidden", tipo.value !== "TELCEL");
-        attBox.classList.toggle("hidden", tipo.value !== "ATT");
-        baitBox.classList.toggle("hidden", tipo.value !== "BAIT");
-    }
-
-    function guardarVenta() {
-        let f = fecha.value;
-        let gen = JSON.parse(localStorage.getItem("ventas_gen") || "[]");
-        let tel = JSON.parse(localStorage.getItem("ventas_tel") || "[]");
-
-        if(tipo.value === "TELCEL") {
-            let v = { comp: "TELCEL", num: tNum.value, marca: `${tMarca.value} ${tModelo.value}`, detalle: tTipo.value, fecha: f, imei: tIMEI.value, iccid: tICCID.value };
-            gen.unshift(v);
-            tel.unshift(v);
-            localStorage.setItem("ventas_tel", JSON.stringify(tel));
-        } else if(tipo.value === "ATT") {
-            gen.unshift({ comp: "ATT", num: aNum.value, marca: aMarca.value, detalle: `Chip: ${aChip.value}`, fecha: f });
-        } else {
-            gen.unshift({ comp: "BAIT", num: bNum.value, marca: bMarca.value, detalle: `Chip: ${bChip.value}`, fecha: f });
+function inicio(){
+    fecha.value = new Date().toISOString().split("T")[0];
+    auth.onAuthStateChanged(user => {
+        if(user){
+            loginBox.classList.add("hidden");
+            appBox.classList.remove("hidden");
+            saludo.innerText = "Bienvenido, " + (user.displayName || user.email);
+            cargarTablas();
         }
+    });
+}
 
-        localStorage.setItem("ventas_gen", JSON.stringify(gen));
-        cargarTablas();
-        alert("Guardado");
+// LOGIN CON GOOGLE
+function loginGoogle() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).catch(e => alert(e.message));
+}
+
+function login(){ auth.signInWithEmailAndPassword(correo.value, pass.value).catch(e=>alert(e.message)); }
+function registro(){ auth.createUserWithEmailAndPassword(correo.value, pass.value).then(()=>alert("Creado")).catch(e=>alert(e.message)); }
+function salir(){ auth.signOut().then(()=>window.location.reload()); }
+
+function mostrarCampos(){
+    telcelBox.classList.toggle("hidden", tipo.value !== "TELCEL");
+    attBox.classList.toggle("hidden", tipo.value !== "ATT");
+    baitBox.classList.toggle("hidden", tipo.value !== "BAIT");
+}
+
+function guardar(){
+    let f = fecha.value;
+    let gen = JSON.parse(localStorage.getItem("data_gen") || "[]");
+    let tel = JSON.parse(localStorage.getItem("data_tel") || "[]");
+
+    if(tipo.value === "TELCEL"){
+        let v = { comp:"TELCEL", num:tNum.value, marca:tMarca.value, modelo:tModelo.value, chip:tTipo.value, fecha:f, imei:tIMEI.value, iccid:tICCID.value };
+        gen.unshift(v);
+        tel.unshift(v);
+        localStorage.setItem("data_tel", JSON.stringify(tel));
+    } else if(tipo.value === "ATT") {
+        gen.unshift({ comp:"ATT", num:aNum.value, marca:aMarca.value, modelo:aChip.value, chip:aChip.value, fecha:f });
+    } else {
+        gen.unshift({ comp:"BAIT", num:bNum.value, marca:bMarca.value, modelo:bChip.value, chip:bChip.value, fecha:f });
     }
 
-    function cargarTablas() {
-        let gen = JSON.parse(localStorage.getItem("ventas_gen") || "[]");
-        let tel = JSON.parse(localStorage.getItem("ventas_tel") || "[]");
+    localStorage.setItem("data_gen", JSON.stringify(gen));
+    cargarTablas();
+    alert("Venta registrada");
+}
 
-        tablaGral.innerHTML = gen.map(v => `<tr><td><span class="tag-telcel">${v.comp}</span></td><td>${v.num}</td><td>${v.marca}</td><td>${v.detalle}</td><td>${v.fecha}</td></tr>`).join("");
-        tablaTel.innerHTML = tel.map(v => `<tr><td>${v.fecha}</td><td>${v.detalle}</td><td>${v.marca}</td><td>${v.imei}</td><td>${v.iccid}</td></tr>`).join("");
-    }
+function cargarTablas(){
+    let gen = JSON.parse(localStorage.getItem("data_gen") || "[]");
+    let tel = JSON.parse(localStorage.getItem("data_tel") || "[]");
 
-    function descargarExcel() {
-        let gen = JSON.parse(localStorage.getItem("ventas_gen") || "[]");
-        if (gen.length === 0) return alert("No hay datos");
+    cuerpoGral.innerHTML = gen.map(v=>`<tr><td><b>${v.comp}</b></td><td>${v.num}</td><td>${v.marca}</td><td>${v.modelo}</td><td>${v.fecha}</td></tr>`).join("");
+    cuerpoTel.innerHTML = tel.map(v=>`<tr><td>${v.fecha}</td><td>${v.chip}</td><td>${v.marca} ${v.modelo}</td><td>${v.imei}</td><td>${v.iccid}</td></tr>`).join("");
+}
 
-        const wb = XLSX.utils.book_new();
-        const data = gen.map(v => ({
-            "COMPAÑÍA": v.comp,
-            "FECHA": v.fecha,
-            "NÚMERO": v.num,
-            "MODELO": v.marca,
-            "PROCESO": v.detalle,
-            "IMEI/ICCID": v.iccid || v.imei || "N/A"
-        }));
+function descargarExcel(){
+    let gen = JSON.parse(localStorage.getItem("data_gen") || "[]");
+    if(gen.length === 0) return alert("No hay datos");
 
-        const ws = XLSX.utils.json_to_sheet(data);
-        // Ajuste de columnas para que no se amontone
-        ws['!cols'] = [{wch:12}, {wch:15}, {wch:15}, {wch:25}, {wch:15}, {wch:25}];
-        XLSX.utils.book_append_sheet(wb, ws, "Ventas");
-        XLSX.writeFile(wb, `Reporte_Auditor.xlsx`);
-    }
+    const wb = XLSX.utils.book_new();
+    const cleanData = gen.map(v=>({
+        "COMPAÑÍA": v.comp,
+        "FECHA": v.fecha,
+        "NÚMERO": v.num,
+        "MARCA": v.marca,
+        "MODELO/PROCESO": v.modelo,
+        "ID (IMEI/ICCID)": v.iccid || v.imei || "N/A"
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(cleanData);
+    ws['!cols'] = [{wch:12}, {wch:15}, {wch:15}, {wch:20}, {wch:20}, {wch:25}];
+    XLSX.utils.book_append_sheet(wb, ws, "Auditoria");
+    XLSX.writeFile(wb, "Reporte_Auditoria.xlsx");
+}
 </script>
 </body>
 </html>
