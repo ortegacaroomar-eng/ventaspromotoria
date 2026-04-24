@@ -1,245 +1,393 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Auditor PRO - Telcel</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --gold: #ffd60a;
-            --blue-dark: #000814;
-            --glass: rgba(255, 255, 255, 0.1);
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema Ventas PRO</title>
 
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', sans-serif;
-            background: radial-gradient(circle at top, #001d3d, var(--blue-dark));
-            color: white;
-            min-height: 100vh;
-        }
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 
-        .app { max-width: 1200px; margin: auto; padding: 20px; }
+<!-- Chart -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-        .card {
-            background: var(--glass);
-            backdrop-filter: blur(15px);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+<style>
+body {
+margin:0;
+font-family:'Segoe UI', sans-serif;
+background: linear-gradient(135deg,#001d3d,#003566,#000814);
+color:white;
+}
 
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+.app { max-width:1100px; margin:auto; padding:20px; }
 
-        input, select {
-            width: 100%;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.2);
-            background: rgba(0,0,0,0.3);
-            color: white;
-            margin-bottom: 15px;
-            box-sizing: border-box;
-        }
+.card {
+background: rgba(255,255,255,0.08);
+backdrop-filter: blur(12px);
+border-radius:16px;
+padding:20px;
+margin-bottom:15px;
+}
 
-        button {
-            background: linear-gradient(135deg, var(--gold), #ffc300);
-            color: #000;
-            padding: 14px;
-            border: none;
-            border-radius: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-        }
+input, select {
+width:100%;
+padding:12px;
+border-radius:10px;
+border:none;
+background:rgba(255,255,255,0.12);
+color:white;
+margin-bottom:10px;
+}
 
-        .table-container { background: white; border-radius: 15px; overflow: hidden; margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; color: #333; font-size: 0.85em; }
-        th { background: #eee; padding: 10px; }
-        td { padding: 8px 10px; border-bottom: 1px solid #ddd; }
+button {
+background: linear-gradient(135deg,#ffc300,#ffd60a);
+color:#001d3d;
+padding:14px;
+border:none;
+border-radius:12px;
+font-weight:bold;
+cursor:pointer;
+}
 
-        .hidden { display: none; }
-        .label-gold { color: var(--gold); font-weight: bold; font-size: 0.9em; display: block; margin-bottom: 5px; }
-    </style>
+.hidden { display:none; }
+
+table { width:100%; background:white; color:black; }
+td, th { border:1px solid #ddd; padding:8px; }
+</style>
 </head>
+
 <body onload="inicio()">
 
-<div class="app">
-    <div class="grid">
-        <div class="card">
-            <h2 style="color:var(--gold); margin-top:0;">📱 Nueva Venta</h2>
-            
-            <span class="label-gold">Fecha Operación</span>
-            <input type="date" id="fechaIn">
+<!-- LOGIN -->
+<div id="loginBox" class="card" style="max-width:400px;margin:80px auto;text-align:center;">
+<h2>🔐 Acceso</h2>
 
-            <span class="label-gold">Compañía</span>
-            <select id="compIn" onchange="alternarCampos()">
-                <option value="TELCEL">TELCEL</option>
-                <option value="ATT">AT&T</option>
-                <option value="BAIT">BAIT</option>
-            </select>
+<input id="correo" type="email" placeholder="Correo">
+<input id="pass" type="password" placeholder="Contraseña">
 
-            <input id="numIn" type="tel" placeholder="Número (10 dígitos)">
-            <input id="marcaIn" placeholder="Marca (Ej: Samsung)">
-            <input id="modeloIn" placeholder="Modelo (Ej: Galaxy A54)">
+<div style="background:#000;padding:10px;border-radius:10px;">
+<span id="captchaText"></span>
+<input id="captchaInput" placeholder="Escribe el código">
+</div>
 
-            <div id="boxTelcel">
-                <span class="label-gold">Tipo Telcel</span>
-                <select id="tipoTelcel">
-                    <option value="PORTA">PORTA</option>
-                    <option value="RENUEVATE">RENUEVATE</option>
-                    <option value="CHIP">CHIP</option>
-                </select>
-            </div>
+<button onclick="login()">Entrar</button>
+<button onclick="registro()">Registrar</button>
+<button onclick="recuperar()">¿Olvidaste contraseña?</button>
+</div>
 
-            <div id="boxOtras" class="hidden">
-                <span class="label-gold">¿Se entregó con Chip Telcel?</span>
-                <select id="chipTelcelPregunta">
-                    <option value="SI">SÍ</option>
-                    <option value="NO">NO</option>
-                </select>
-            </div>
+<!-- APP -->
+<div id="appBox" class="app hidden">
 
-            <button onclick="guardar()">💾 Registrar Localmente</button>
-        </div>
+<div class="card">
+<label>📅 Fecha</label>
+<input type="date" id="fecha">
+</div>
 
-        <div class="card">
-            <h2 style="color:var(--gold); margin-top:0;">📊 Detalle de Inventario</h2>
-            <p style="font-size: 0.8em;">Desglose por Marcas y Modelos</p>
-            <canvas id="chartDetallado"></canvas>
-        </div>
-    </div>
+<div class="card">
+<select id="tipo" onchange="mostrar()">
+<option value="TELCEL">TELCEL</option>
+<option value="ATT">AT&T</option>
+<option value="BAIT">BAIT</option>
+</select>
+</div>
 
-    <div class="grid">
-        <div class="card">
-            <h3 style="color:var(--gold);">📋 Historial Telcel (Aparte)</h3>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr><th>Fecha</th><th>Tipo</th><th>Número</th><th>Marca/Mod</th></tr>
-                    </thead>
-                    <tbody id="tablaTelcel"></tbody>
-                </table>
-            </div>
-        </div>
+<!-- TELCEL -->
+<div id="telcelBox" class="card">
+<select id="tTipo">
+<option>RENUEVATE</option>
+<option>CHIP</option>
+<option>PORTA</option>
+</select>
+<input id="tNum" placeholder="Número">
+<input id="tICCID" placeholder="ICCID">
+<input id="tIMEI" placeholder="IMEI">
+<input id="tMarca" placeholder="Marca">
+</div>
 
-        <div class="card">
-            <h3 style="color:var(--gold);">📋 Historial Competencia</h3>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr><th>Fecha</th><th>Comp</th><th>Chip Tel</th><th>Número</th></tr>
-                    </thead>
-                    <tbody id="tablaOtras"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+<!-- ATT -->
+<div id="attBox" class="card hidden">
+<select id="aChip">
+<option value="NO">NO CHIP TELCEL</option>
+<option value="SI">SI CHIP TELCEL</option>
+</select>
+<input id="aNum" placeholder="Número">
+<input id="aICCID" placeholder="ICCID">
+<input id="aMarca" placeholder="Marca">
+</div>
+
+<!-- BAIT -->
+<div id="baitBox" class="card hidden">
+<select id="bChip">
+<option value="NO">NO CHIP TELCEL</option>
+<option value="SI">SI CHIP TELCEL</option>
+</select>
+<input id="bNum" placeholder="Número">
+<input id="bICCID" placeholder="ICCID">
+<input id="bMarca" placeholder="Marca">
+</div>
+
+<button onclick="guardar()">💾 Guardar Venta</button>
+
+<div class="card">
+<canvas id="grafica"></canvas>
+</div>
+
+<button onclick="reporte()">📄 Generar Reporte Word</button>
+
+<div class="card">
+<table>
+<thead>
+<tr>
+<th>Comp</th>
+<th>Número</th>
+<th>Marca</th>
+<th>Chip</th>
+<th>Fecha</th>
+</tr>
+</thead>
+<tbody id="tabla"></tbody>
+</table>
+</div>
+
 </div>
 
 <script>
-    let chartObj;
 
-    function inicio() {
-        document.getElementById('fechaIn').value = new Date().toISOString().split('T')[0];
-        actualizarTodo();
-    }
+/* FIREBASE */
+const firebaseConfig = {
+apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
+authDomain: "ventastelcel4029.firebaseapp.com"
+};
 
-    function alternarCampos() {
-        const c = document.getElementById('compIn').value;
-        document.getElementById('boxTelcel').classList.toggle('hidden', c !== 'TELCEL');
-        document.getElementById('boxOtras').classList.toggle('hidden', c === 'TELCEL');
-    }
+firebase.initializeApp(firebaseConfig);
+let auth = firebase.auth();
 
-    function formatFecha(f) {
-        const [y, m, d] = f.split('-');
-        return `${d}/${m}/${y}`;
-    }
+/* CAPTCHA */
+let captcha="";
+function generarCaptcha(){
+let chars="ABCDEFG123456789";
+captcha="";
+for(let i=0;i<5;i++){
+captcha+=chars[Math.floor(Math.random()*chars.length)];
+}
+captchaText.innerText=captcha;
+}
 
-    function guardar() {
-        const comp = document.getElementById('compIn').value;
-        const num = document.getElementById('numIn').value;
-        const fRaw = document.getElementById('fechaIn').value;
-        const marca = document.getElementById('marcaIn').value || "Genérico";
-        const modelo = document.getElementById('modeloIn').value || "S/M";
+/* INICIO */
+function inicio(){
+generarCaptcha();
+let hoy=new Date();
+fecha.value=hoy.toISOString().split("T")[0];
 
-        if(!num) return alert("Número requerido");
+auth.onAuthStateChanged(user=>{
+if(user){
+loginBox.classList.add("hidden");
+appBox.classList.remove("hidden");
+cargar();
+actualizarGrafica();
+}
+});
+}
 
-        const item = {
-            fecha: formatFecha(fRaw),
-            num, marca, modelo, comp,
-            detalle: comp === 'TELCEL' ? tipoTelcel.value : chipTelcelPregunta.value
-        };
+/* LOGIN */
+function login(){
+if(captchaInput.value!==captcha){
+alert("Captcha incorrecto");
+generarCaptcha();
+return;
+}
+auth.signInWithEmailAndPassword(correo.value,pass.value)
+.catch(e=>alert(e.message));
+}
 
-        // GUARDADO APARTE
-        if(comp === 'TELCEL') {
-            let tel = JSON.parse(localStorage.getItem('db_telcel') || '[]');
-            tel.unshift(item);
-            localStorage.setItem('db_telcel', JSON.stringify(tel));
-        } else {
-            let otr = JSON.parse(localStorage.getItem('db_otras') || '[]');
-            otr.unshift(item);
-            localStorage.setItem('db_otras', JSON.stringify(otr));
-        }
+/* REGISTRO */
+function registro(){
+auth.createUserWithEmailAndPassword(correo.value,pass.value)
+.then(()=>alert("Registrado"))
+.catch(e=>alert(e.message));
+}
 
-        // Guardar para la gráfica (general)
-        let gen = JSON.parse(localStorage.getItem('db_grafica') || '[]');
-        gen.unshift(item);
-        localStorage.setItem('db_grafica', JSON.stringify(gen));
+/* RECUPERAR */
+function recuperar(){
+auth.sendPasswordResetEmail(correo.value)
+.then(()=>alert("Correo enviado"))
+.catch(e=>alert(e.message));
+}
 
-        // Limpiar campos
-        document.getElementById('numIn').value = "";
-        document.getElementById('marcaIn').value = "";
-        document.getElementById('modeloIn').value = "";
-        
-        actualizarTodo();
-    }
+/* UI */
+function mostrar(){
+telcelBox.classList.add("hidden");
+attBox.classList.add("hidden");
+baitBox.classList.add("hidden");
 
-    function actualizarTodo() {
-        const tel = JSON.parse(localStorage.getItem('db_telcel') || '[]');
-        const otr = JSON.parse(localStorage.getItem('db_otras') || '[]');
-        const gen = JSON.parse(localStorage.getItem('db_grafica') || '[]');
+if(tipo.value==="TELCEL") telcelBox.classList.remove("hidden");
+if(tipo.value==="ATT") attBox.classList.remove("hidden");
+if(tipo.value==="BAIT") baitBox.classList.remove("hidden");
+}
 
-        // Llenar Tablas
-        tablaTelcel.innerHTML = tel.map(i => `<tr><td>${i.fecha}</td><td>${i.detalle}</td><td>${i.num}</td><td>${i.marca} ${i.modelo}</td></tr>`).join('');
-        tablaOtras.innerHTML = otr.map(i => `<tr><td>${i.fecha}</td><td>${i.comp}</td><td>${i.detalle}</td><td>${i.num}</td></tr>`).join('');
+/* FORMATO */
+function formatoFecha(f){
+return new Date(f).toLocaleDateString('es-MX');
+}
 
-        renderGrafica(gen);
-    }
+/* GUARDAR */
+function guardar(){
 
-    function renderGrafica(datos) {
-        const ctx = document.getElementById('chartDetallado').getContext('2d');
-        if(chartObj) chartObj.destroy();
+let f=formatoFecha(fecha.value);
 
-        // Procesar datos para detalle de marcas y modelos
-        const etiquetas = [...new Set(datos.map(d => `${d.marca} ${d.modelo}`))].slice(0, 8); // Top 8 modelos
-        
-        const dataTelcel = etiquetas.map(label => datos.filter(d => `${d.marca} ${d.modelo}` === label && d.comp === 'TELCEL').length);
-        const dataATT = etiquetas.map(label => datos.filter(d => `${d.marca} ${d.modelo}` === label && d.comp === 'ATT').length);
-        const dataBAIT = etiquetas.map(label => datos.filter(d => `${d.marca} ${d.modelo}` === label && d.comp === 'BAIT').length);
+let gen=JSON.parse(localStorage.getItem("gen")||"[]");
+let tel=JSON.parse(localStorage.getItem("telcel")||"[]");
 
-        chartObj = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: etiquetas,
-                datasets: [
-                    { label: 'Telcel', data: dataTelcel, backgroundColor: '#ffd60a' },
-                    { label: 'AT&T', data: dataATT, backgroundColor: '#00b4d8' },
-                    { label: 'BAIT', data: dataBAIT, backgroundColor: '#ef233c' }
-                ]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { labels: { color: 'white' } } },
-                scales: {
-                    x: { stacked: true, ticks: { color: 'white', font: { size: 10 } } },
-                    y: { stacked: true, ticks: { color: 'white' } }
-                }
-            }
-        });
-    }
+if(tipo.value==="TELCEL"){
+let v={
+tipo:tTipo.value,
+num:tNum.value,
+iccid:tICCID.value,
+imei:tIMEI.value,
+marca:tMarca.value,
+fecha:f
+};
+tel.unshift(v);
+localStorage.setItem("telcel",JSON.stringify(tel));
+gen.unshift({comp:"TELCEL",num:v.num,marca:v.marca,chip:"N/A",fecha:f});
+}
+
+if(tipo.value==="ATT"){
+gen.unshift({
+comp:"ATT",
+num:aNum.value,
+marca:aMarca.value,
+chip:aChip.value,
+fecha:f
+});
+}
+
+if(tipo.value==="BAIT"){
+gen.unshift({
+comp:"BAIT",
+num:bNum.value,
+marca:bMarca.value,
+chip:bChip.value,
+fecha:f
+});
+}
+
+localStorage.setItem("gen",JSON.stringify(gen));
+
+cargar();
+actualizarGrafica();
+}
+
+/* TABLA */
+function cargar(){
+let gen=JSON.parse(localStorage.getItem("gen")||"[]");
+tabla.innerHTML=gen.map(v=>`
+<tr>
+<td>${v.comp}</td>
+<td>${v.num}</td>
+<td>${v.marca}</td>
+<td>${v.chip}</td>
+<td>${v.fecha}</td>
+</tr>
+`).join("");
+}
+
+/* GRAFICA CORRECTA */
+let chart;
+
+function actualizarGrafica(){
+
+let gen=JSON.parse(localStorage.getItem("gen")||"[]");
+let f=formatoFecha(fecha.value);
+
+let t=0,a=0,b=0;
+
+gen.forEach(v=>{
+if(v.fecha!==f) return;
+if(v.comp==="TELCEL") t++;
+if(v.comp==="ATT") a++;
+if(v.comp==="BAIT") b++;
+});
+
+const ctx=document.getElementById("grafica").getContext("2d");
+
+let data={
+labels:["Telcel","AT&T","BAIT"],
+datasets:[{
+label:`Ventas ${f}`,
+data:[t,a,b],
+borderWidth:1
+}]
+};
+
+if(chart){
+chart.data=data;
+chart.update();
+}else{
+chart=new Chart(ctx,{
+type:"bar",
+data:data,
+options:{responsive:true}
+});
+}
+}
+
+/* REPORTE FUNCIONAL */
+function reporte(){
+
+let gen=JSON.parse(localStorage.getItem("gen")||"[]");
+
+if(gen.length===0){
+alert("No hay datos");
+return;
+}
+
+let f=formatoFecha(fecha.value);
+
+let t=0,a=0,b=0;
+
+gen.forEach(v=>{
+if(v.fecha!==f) return;
+if(v.comp==="TELCEL") t++;
+if(v.comp==="ATT") a++;
+if(v.comp==="BAIT") b++;
+});
+
+let total=t+a+b;
+
+let contenido=`
+<!DOCTYPE html>
+<html>
+<body style="font-family:Arial;">
+<h1>REPORTE DE VENTAS</h1>
+<p>Fecha: ${f}</p>
+
+<table border="1" style="border-collapse:collapse;">
+<tr><th>Compañía</th><th>Ventas</th></tr>
+<tr><td>Telcel</td><td>${t}</td></tr>
+<tr><td>AT&T</td><td>${a}</td></tr>
+<tr><td>BAIT</td><td>${b}</td></tr>
+</table>
+
+<h3>Total: ${total}</h3>
+</body>
+</html>
+`;
+
+let blob=new Blob(['\ufeff',contenido],{type:"application/msword"});
+let url=URL.createObjectURL(blob);
+
+let link=document.createElement("a");
+link.href=url;
+link.download=`Reporte_${f}.doc`;
+
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
+}
+
 </script>
+
 </body>
 </html>
