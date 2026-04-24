@@ -143,30 +143,26 @@ function renderForm() {
 
     if(compActiva === "TELCEL") {
         if(tp === "PORTA") {
-            html = `<div class="fade"><input id="f_num" placeholder="Número (10 dígitos)"><input id="f_icc" placeholder="ICCID"><input id="f_nip" placeholder="NIP"></div>`;
+            html = `<div class="fade"><input id="f_num" placeholder="Número"><input id="f_icc" placeholder="ICCID"><input id="f_nip" placeholder="NIP"></div>`;
         } 
         else if(tp === "RENUEVATE") {
+            html = `<div class="fade"><input id="f_num" placeholder="Número"><input id="f_marca" placeholder="Marca"><input id="f_mod" placeholder="Modelo"><input id="f_icc" placeholder="ICCID"><input id="f_imei" placeholder="IMEI"></div>`;
+        }
+        else if(tp === "AK") {
+            // CORREGIDO: Se agregó el campo ICCID
             html = `<div class="fade">
                 <input id="f_num" placeholder="Número">
                 <input id="f_marca" placeholder="Marca">
                 <input id="f_mod" placeholder="Modelo">
-                <input id="f_icc" placeholder="ICCID">
                 <input id="f_imei" placeholder="IMEI">
+                <input id="f_icc" placeholder="ICCID">
             </div>`;
-        }
-        else if(tp === "AK") {
-            html = `<div class="fade"><input id="f_num" placeholder="Número"><input id="f_marca" placeholder="Marca"><input id="f_mod" placeholder="Modelo"><input id="f_imei" placeholder="IMEI"></div>`;
         }
         else {
             html = `<div class="fade"><input id="f_num" placeholder="Número"><input id="f_icc" placeholder="ICCID"></div>`;
         }
     } else {
-        html = `<div class="fade">
-            <input id="f_num" placeholder="Número">
-            <input id="f_marca" placeholder="Marca">
-            <input id="f_mod" placeholder="Modelo">
-            <input id="f_icc" placeholder="ICCID">
-        </div>`;
+        html = `<div class="fade"><input id="f_num" placeholder="Número"><input id="f_marca" placeholder="Marca"><input id="f_mod" placeholder="Modelo"><input id="f_icc" placeholder="ICCID"></div>`;
     }
     document.getElementById("formContainer").innerHTML = html;
 }
@@ -231,11 +227,8 @@ function cargarTodo() {
 
 function eliminar(id) { if(confirm("¿Eliminar registro?")) db.ref('ventas/' + id).remove(); }
 
-// FUNCIÓN DE EXCEL OPTIMIZADA
 function descargarExcel() {
     const rawData = Object.values(todasVentas);
-    
-    // 1. Estructura ordenada de los datos
     const excelData = rawData.map(v => ({
         "FECHA": v.fecha,
         "COMPAÑÍA": v.comp,
@@ -255,21 +248,7 @@ function descargarExcel() {
     meses.forEach(mes => {
         const porMes = excelData.filter(v => v.FECHA.startsWith(mes));
         const ws = XLSX.utils.json_to_sheet(porMes);
-        
-        // Configuración de anchos de columna (anchos en caracteres)
-        ws['!cols'] = [
-            {wch: 12}, // Fecha
-            {wch: 12}, // Compañía
-            {wch: 15}, // Número
-            {wch: 15}, // Proceso
-            {wch: 12}, // Marca
-            {wch: 15}, // Modelo
-            {wch: 22}, // ICCID
-            {wch: 20}, // IMEI
-            {wch: 8},  // NIP
-            {wch: 40}  // Zona
-        ];
-        
+        ws['!cols'] = [{wch: 12}, {wch: 12}, {wch: 15}, {wch: 15}, {wch: 12}, {wch: 15}, {wch: 22}, {wch: 20}, {wch: 8}, {wch: 40}];
         XLSX.utils.book_append_sheet(wb, ws, "Ventas " + mes);
     });
 
