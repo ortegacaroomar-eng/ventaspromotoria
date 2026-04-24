@@ -3,65 +3,69 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ventas PRO MAX</title>
+<title>Sistema Ventas PRO</title>
 
-<!-- PWA Tags -->
+<!-- PWA -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#001d3d">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="apple-touch-icon" href="icon-192.png">
 
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<!-- Chart -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-:root {--amarillo:#ffc300; --azul:#003566; --cyan:#00b4d8; --rojo:#d90429; --verde:#2a9d8f;}
-body{
+:root {--amarillo:#ffc300; --azul:#003566; --cyan:#00b4d8; --rojo:#d90429;}
+body {
 margin:0;
-font-family:'Segoe UI',sans-serif;
-background:linear-gradient(135deg,#000814,#001d3d,#003566);
+font-family:'Segoe UI', sans-serif;
+background: linear-gradient(135deg,#000814,#001d3d,#003566);
 color:white;
 min-height:100vh;
 }
-.app { max-width:500px; margin:auto; padding:15px;}
-.card{
-background:rgba(255,255,255,.08);
-backdrop-filter:blur(12px);
-padding:18px;
+.app { max-width:1100px; margin:auto; padding:20px; }
+.card {
+background: rgba(255,255,255,0.08);
+backdrop-filter: blur(12px);
 border-radius:16px;
-margin:12px 0;
+padding:20px;
+margin-bottom:15px;
 border:1px solid rgba(255,255,255,.1);
 box-shadow:0 8px 32px rgba(0,0,0,.3);
 }
-input,select,button{
+input, select {
 width:100%;
 padding:12px;
-margin:6px 0;
-border:none;
 border-radius:10px;
-box-sizing:border-box;
-font-size:15px;
-}
-input,select{
-background:rgba(255,255,255,.12);
+border:none;
+background:rgba(255,255,255,0.12);
 color:white;
+margin-bottom:10px;
+box-sizing:border-box;
 }
 input::placeholder{color:#ccc;}
-button{
-background:linear-gradient(135deg,#ffd60a,#ffc300);
+button {
+background: linear-gradient(135deg,#ffd60a,#ffc300);
+color:#000814;
+padding:14px;
+border:none;
+border-radius:12px;
 font-weight:bold;
 cursor:pointer;
+width:100%;
+margin-top:5px;
 transition:.3s;
-color:#000814;
 }
-button:hover{transform:scale(1.03); box-shadow:0 5px 20px rgba(255,195,0,.4);}
-.header { text-align:center; font-size:26px; color:var(--amarillo); font-weight:900; text-shadow:0 0 15px rgba(255,195,0,.5);}
-.login { max-width:350px; margin:80px auto; background:white; color:black; padding:25px; border-radius:20px;}
-.hidden{display:none;}
-table{width:100%;background:white;color:black;border-radius:10px; overflow:hidden;}
-td,th{padding:10px;border-bottom:1px solid #eee; text-align:left;}
+button:hover{transform:scale(1.02); box-shadow:0 5px 20px rgba(255,195,0,.4);}
+.hidden { display:none; }
+table { width:100%; background:white; color:black; border-radius:10px; overflow:hidden;}
+td, th { border-bottom:1px solid #eee; padding:10px; text-align:left;}
 th{background:#003566; color:white;}
+.header { text-align:center; font-size:26px; color:var(--amarillo); font-weight:900; text-shadow:0 0 15px rgba(255,195,0,.5);}
 .lider{
 background:linear-gradient(135deg,rgba(255,195,0,.25),rgba(255,195,0,.1));
 border:2px solid var(--amarillo);
@@ -73,13 +77,13 @@ animation:pulse 2s infinite;
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,195,0,.4)}50%{box-shadow:0 0 0 10px rgba(255,195,0,0)}}
 .corona{font-size:32px; animation:bounce 1s infinite;}
 @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
-.alerta{background:rgba(217,4,41,.25); border:1px solid var(--rojo); padding:10px; border-radius:10px; font-size:13px; margin-top:10px;}
 .barra-compania{display:flex; align-items:center; margin:8px 0; gap:10px;}
 .barra-fondo{flex:1; background:rgba(255,255,255,.1); height:24px; border-radius:12px; overflow:hidden;}
 .barra-progreso{height:100%; transition:width.8s ease; display:flex; align-items:center; justify-content:flex-end; padding-right:8px; font-size:11px; font-weight:bold;}
-.install-banner{background:var(--amarillo); color:#000814; padding:12px; text-align:center; font-weight:bold; cursor:pointer; display:none; position:sticky; top:0; z-index:100;}
 .label-comp{width:65px; font-weight:bold; font-size:13px;}
 #captchaText{background:#000; color:var(--amarillo); padding:8px; border-radius:8px; letter-spacing:3px; font-weight:bold; display:inline-block; margin:5px 0;}
+.install-banner{background:var(--amarillo); color:#000814; padding:12px; text-align:center; font-weight:bold; cursor:pointer; display:none; position:sticky; top:0; z-index:100;}
+.msg { margin:10px 0; color:#ff4d4d; font-size:12px; min-height:16px; text-align:center; }
 </style>
 </head>
 
@@ -89,29 +93,32 @@ animation:pulse 2s infinite;
     📲 INSTALAR APP EN TU CELULAR
 </div>
 
-<div id="loginBox" class="login">
+<!-- LOGIN -->
+<div id="loginBox" class="card" style="max-width:400px;margin:80px auto;text-align:center;">
 <h2>🔐 Acceso PRO</h2>
 <input id="correo" type="email" placeholder="Correo">
 <input id="pass" type="password" placeholder="Contraseña">
-<div style="background:#f1f1f1; padding:10px; border-radius:10px; margin:10px 0;">
+<div style="background:#f1f1f1; padding:10px; border-radius:10px; margin:10px 0; color:black;">
 <div>Captcha: <span id="captchaText"></span></div>
-<input id="captchaInput" placeholder="Escribe el captcha" style="background:white; color:black;">
+<input id="captchaInput" placeholder="Escribe el código" style="background:white; color:black;">
 </div>
 <button onclick="login()">Entrar</button>
 <button onclick="registro()">Registrar</button>
-<button onclick="recuperar()">Recuperar</button>
-<div id="msgLogin" style="color:#d90429; font-size:12px; margin-top:10px; min-height:16px;"></div>
+<button onclick="recuperar()">¿Olvidaste contraseña?</button>
+<div id="msgLogin" class="msg"></div>
 </div>
 
+<!-- APP -->
 <div id="appBox" class="app hidden">
 
-<div class="header">🔥 VENTAS PRO MAX</div>
+<div class="header">🔥 SISTEMA VENTAS PRO</div>
 
-<!-- TARJETA LÍDER -->
+<!-- COMPAÑÍA LÍDER -->
 <div id="liderCompania"></div>
 
 <div class="card">
-<input type="date" id="fecha">
+<label>📅 Fecha de filtro</label>
+<input type="date" id="fecha" onchange="actualizarTodo()">
 </div>
 
 <div class="card">
@@ -122,34 +129,59 @@ animation:pulse 2s infinite;
 </select>
 </div>
 
+<!-- TELCEL -->
 <div id="telcelBox" class="card">
+<select id="tTipo">
+<option>RENUEVATE</option>
+<option>CHIP</option>
+<option>PORTA</option>
+</select>
 <input id="tNum" placeholder="Número" maxlength="10">
+<input id="tICCID" placeholder="ICCID">
+<input id="tIMEI" placeholder="IMEI">
 <input id="tMarca" placeholder="Marca">
 </div>
 
+<!-- ATT -->
 <div id="attBox" class="card hidden">
+<select id="aChip">
+<option value="NO">NO CHIP TELCEL</option>
+<option value="SI">SI CHIP TELCEL</option>
+</select>
 <input id="aNum" placeholder="Número" maxlength="10">
+<input id="aICCID" placeholder="ICCID">
 <input id="aMarca" placeholder="Marca">
 </div>
 
+<!-- BAIT -->
 <div id="baitBox" class="card hidden">
+<select id="bChip">
+<option value="NO">NO CHIP TELCEL</option>
+<option value="SI">SI CHIP TELCEL</option>
+</select>
 <input id="bNum" placeholder="Número" maxlength="10">
+<input id="bICCID" placeholder="ICCID">
 <input id="bMarca" placeholder="Marca">
 </div>
 
 <button onclick="guardar()">💾 Guardar Venta</button>
 
 <div class="card">
+<h3 style="margin-top:0; color:var(--amarillo)">📊 Resumen por Compañía</h3>
+<div id="resumenCompanias"></div>
+</div>
+
+<div class="card">
 <canvas id="grafica"></canvas>
 </div>
 
-<button onclick="reporte()">📄 Descargar Reporte Word</button>
+<button onclick="reporte()">📄 Generar Reporte Word</button>
 <button onclick="salir()" style="background:linear-gradient(135deg,#d90429,#9d0208); color:white;">🚪 Cerrar Sesión</button>
 
 <div class="card">
 <table>
 <thead>
-<tr><th>Comp</th><th>Número</th><th>Marca</th><th>Fecha</th></tr>
+<tr><th>Comp</th><th>Número</th><th>Marca</th><th>Chip</th><th>Fecha</th></tr>
 </thead>
 <tbody id="tabla"></tbody>
 </table>
@@ -160,16 +192,21 @@ animation:pulse 2s infinite;
 <audio id="sonidoGuardar" src="https://cdn.pixabay.com/audio/2022/03/15/audio_2b28c3e4a8.mp3"></audio>
 
 <script>
-/* FIREBASE - CAMBIA ESTOS DATOS POR LOS TUYOS */
+
+/* FIREBASE COMPLETO - YA NO FALLA */
 const firebaseConfig = {
 apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
 authDomain: "ventastelcel4029.firebaseapp.com",
+databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com",
 projectId: "ventastelcel4029",
+storageBucket: "ventastelcel4029.firebasestorage.app",
+messagingSenderId: "480758010888",
 appId: "1:480758010888:web:e948c54f0217536aa9adbd"
 };
 
 firebase.initializeApp(firebaseConfig);
 let auth = firebase.auth();
+let db = firebase.database();
 auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
 let chart;
@@ -196,10 +233,10 @@ if ('serviceWorker' in navigator) {
 /* CAPTCHA */
 let captcha="";
 function generarCaptcha(){
-let c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+let chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 captcha="";
 for(let i=0;i<5;i++){
-captcha+=c[Math.floor(Math.random()*c.length)];
+captcha+=chars[Math.floor(Math.random()*chars.length)];
 }
 document.getElementById('captchaText').innerText=captcha;
 }
@@ -213,8 +250,7 @@ auth.onAuthStateChanged(user=>{
 if(user){
 document.getElementById('loginBox').classList.add("hidden");
 document.getElementById('appBox').classList.remove("hidden");
-cargar();
-grafica();
+actualizarTodo();
 }else{
 document.getElementById('loginBox').classList.remove("hidden");
 document.getElementById('appBox').classList.add("hidden");
@@ -229,7 +265,6 @@ document.getElementById('msgLogin').innerText="Captcha incorrecto";
 generarCaptcha();
 return;
 }
-
 auth.signInWithEmailAndPassword(document.getElementById('correo').value.trim(),document.getElementById('pass').value)
 .catch(e=>{
 document.getElementById('msgLogin').innerText = e.code==="auth/user-not-found"? "Usuario no registrado" :
@@ -270,78 +305,104 @@ if(document.getElementById('tipo').value==="ATT") document.getElementById('attBo
 if(document.getElementById('tipo').value==="BAIT") document.getElementById('baitBox').classList.remove("hidden");
 }
 
+/* FORMATO FECHA CORREGIDO */
+function formatoFecha(f){
+    const fecha = new Date(f + 'T00:00:00');
+    return fecha.toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
+}
+
 /* GUARDAR */
 function guardar(){
-let f=document.getElementById('fecha').value;
-let data=JSON.parse(localStorage.getItem("ventas")||"[]");
+let f=formatoFecha(document.getElementById('fecha').value);
+let data=JSON.parse(localStorage.getItem("gen")||"[]");
 let tipo = document.getElementById('tipo').value;
 
 let venta = {comp:tipo, fecha:f, id:Date.now()};
 
 if(tipo==="TELCEL"){
     if(!document.getElementById('tNum').value){alert("Falta número"); return;}
+    venta.tipo=document.getElementById('tTipo').value;
     venta.num=document.getElementById('tNum').value;
+    venta.iccid=document.getElementById('tICCID').value;
+    venta.imei=document.getElementById('tIMEI').value;
     venta.marca=document.getElementById('tMarca').value || "N/A";
+    venta.chip="N/A";
 }
+
 if(tipo==="ATT"){
     if(!document.getElementById('aNum').value){alert("Falta número"); return;}
     venta.num=document.getElementById('aNum').value;
+    venta.iccid=document.getElementById('aICCID').value;
     venta.marca=document.getElementById('aMarca').value || "N/A";
+    venta.chip=document.getElementById('aChip').value;
 }
+
 if(tipo==="BAIT"){
     if(!document.getElementById('bNum').value){alert("Falta número"); return;}
     venta.num=document.getElementById('bNum').value;
+    venta.iccid=document.getElementById('bICCID').value;
     venta.marca=document.getElementById('bMarca').value || "N/A";
+    venta.chip=document.getElementById('bChip').value;
 }
 
 data.unshift(venta);
-localStorage.setItem("ventas",JSON.stringify(data));
+localStorage.setItem("gen",JSON.stringify(data));
 
 // Sonido
 document.getElementById('sonidoGuardar').play();
 
-document.getElementById('fReg').reset();
-document.getElementById('fecha').value=new Date().toISOString().split("T")[0];
-mostrar();
-cargar();
-grafica();
+// Limpiar campos
+if(tipo==="TELCEL"){document.getElementById('tNum').value='';document.getElementById('tICCID').value='';document.getElementById('tIMEI').value='';document.getElementById('tMarca').value='';}
+if(tipo==="ATT"){document.getElementById('aNum').value='';document.getElementById('aICCID').value='';document.getElementById('aMarca').value='';}
+if(tipo==="BAIT"){document.getElementById('bNum').value='';document.getElementById('bICCID').value='';document.getElementById('bMarca').value='';}
+
+actualizarTodo();
+}
+
+/* ACTUALIZAR TODO */
+function actualizarTodo(){
+    cargar();
+    actualizarGrafica();
+    mostrarLider();
+    resumenCompanias();
 }
 
 /* TABLA */
 function cargar(){
-let data=JSON.parse(localStorage.getItem("ventas")||"[]");
+let data=JSON.parse(localStorage.getItem("gen")||"[]");
+let fechaFiltro = formatoFecha(document.getElementById('fecha').value);
+let dataFiltrada = data.filter(v => v.fecha === fechaFiltro);
 
-document.getElementById('tabla').innerHTML=data.slice(0,10).map(v=>`
+document.getElementById('tabla').innerHTML=dataFiltrada.slice(0,20).map(v=>`
 <tr>
 <td><b>${v.comp}</b></td>
 <td>${v.num}</td>
 <td>${v.marca}</td>
+<td>${v.chip}</td>
 <td>${v.fecha}</td>
 </tr>
 `).join("");
-
-mostrarLider(data);
 }
 
-/* COMPAÑÍA LÍDER - LO CHIDO */
-function mostrarLider(local){
-    if(local.length === 0){
-        document.getElementById('liderCompania').innerHTML = '';
+/* COMPAÑÍA LÍDER */
+function mostrarLider(){
+    let data=JSON.parse(localStorage.getItem("gen")||"[]");
+    let fechaFiltro = formatoFecha(document.getElementById('fecha').value);
+    let dataDia = data.filter(v => v.fecha === fechaFiltro);
+
+    if(dataDia.length === 0){
+        document.getElementById('liderCompania').innerHTML = '<div class="card" style="text-align:center;">No hay ventas en esta fecha</div>';
         return;
     }
 
     let conteo = {TELCEL:0, ATT:0, BAIT:0};
-    local.forEach(v => conteo[v.comp]++);
+    dataDia.forEach(v => conteo[v.comp]++);
 
-    let total = local.length;
+    let total = dataDia.length;
     let ordenado = Object.entries(conteo).sort((a,b) => b[1] - a[1]);
     let lider = ordenado[0];
-    let segundo = ordenado[1];
-    let tercero = ordenado[2];
 
     let porcLider = ((lider[1]/total)*100).toFixed(1);
-    let diferencia = lider[1] - segundo[1];
-
     let colorLider = lider[0] === 'TELCEL'? '#003566' : lider[0] === 'ATT'? '#00b4d8' : '#ffc300';
     let emojiLider = lider[0] === 'TELCEL'? '📱' : lider[0] === 'ATT'? '📶' : '🚀';
 
@@ -349,28 +410,64 @@ function mostrarLider(local){
         <div class="lider" style="border-color:${colorLider}">
             <div class="corona">👑</div>
             <div style="color:${colorLider}; font-size:20px;">${emojiLider} ${lider[0]} ES LÍDER</div>
-            <div style="font-size:16px; margin-top:6px;">${lider[1]} ventas - ${porcLider}% del total</div>
-            <div style="font-size:13px; color:#ccc; margin-top:4px;">${diferencia} ventas arriba de ${segundo[0]}</div>
+            <div style="font-size:16px; margin-top:6px;">${lider[1]} ventas - ${porcLider}% del día</div>
         </div>
     `;
-
-    // Alertas si alguna va muy baja
-    ordenado.forEach(c => {
-        let porc = (c[1]/total)*100;
-        if(porc < 15 && porc > 0 && total > 5){
-            html += `<div class="alerta">⚠️ Ojo: ${c[0]} solo trae ${porc.toFixed(1)}%. Échale ganas a esa compañía</div>`;
-        }
-    });
 
     document.getElementById('liderCompania').innerHTML = html;
 }
 
-/* GRAFICA */
-function grafica(){
-let data=JSON.parse(localStorage.getItem("ventas")||"[]");
-let t=0,a=0,b=0;
+/* RESUMEN CON BARRAS */
+function resumenCompanias(){
+    let data=JSON.parse(localStorage.getItem("gen")||"[]");
+    let fechaFiltro = formatoFecha(document.getElementById('fecha').value);
+    let dataDia = data.filter(v => v.fecha === fechaFiltro);
 
+    let t=0,a=0,b=0;
+    dataDia.forEach(v=>{
+        if(v.comp==="TELCEL") t++;
+        if(v.comp==="ATT") a++;
+        if(v.comp==="BAIT") b++;
+    });
+
+    let total = dataDia.length || 1;
+
+    document.getElementById('resumenCompanias').innerHTML = `
+        <div class="barra-compania">
+            <div class="label-comp" style="color:#003566;">TELCEL</div>
+            <div class="barra-fondo">
+                <div class="barra-progreso" style="background:#003566; width:${(t/total)*100}%">${t}</div>
+            </div>
+            <b>${(t/total*100).toFixed(0)}%</b>
+        </div>
+        <div class="barra-compania">
+            <div class="label-comp" style="color:#00b4d8;">ATT</div>
+            <div class="barra-fondo">
+                <div class="barra-progreso" style="background:#00b4d8; width:${(a/total)*100}%">${a}</div>
+            </div>
+            <b>${(a/total*100).toFixed(0)}%</b>
+        </div>
+        <div class="barra-compania">
+            <div class="label-comp" style="color:#ffc300;">BAIT</div>
+            <div class="barra-fondo">
+                <div class="barra-progreso" style="background:#ffc300; width:${(b/total)*100}%">${b}</div>
+            </div>
+            <b>${(b/total*100).toFixed(0)}%</b>
+        </div>
+        <div style="margin-top:10px; text-align:center; font-size:18px;">
+            <b>Total del día: ${dataDia.length} ventas</b>
+        </div>
+    `;
+}
+
+/* GRAFICA CORREGIDA */
+function actualizarGrafica(){
+let data=JSON.parse(localStorage.getItem("gen")||"[]");
+let f=formatoFecha(document.getElementById('fecha').value);
+
+let t=0,a=0,b=0;
 data.forEach(v=>{
+if(v.fecha!==f) return;
 if(v.comp==="TELCEL") t++;
 if(v.comp==="ATT") a++;
 if(v.comp==="BAIT") b++;
@@ -382,12 +479,12 @@ const ctx=document.getElementById("grafica").getContext("2d");
 let datos={
 labels:["Telcel","AT&T","BAIT"],
 datasets:[{
-    label:"Ventas",
+    label:`Ventas ${f}`,
     data:[t,a,b],
     backgroundColor:[
-        t === maxValor? '#ffd60a' : '#003566',
-        a === maxValor? '#ffd60a' : '#00b4d8',
-        b === maxValor? '#ffd60a' : '#ffc300'
+        t === maxValor && t > 0? '#ffd60a' : '#003566',
+        a === maxValor && a > 0? '#ffd60a' : '#00b4d8',
+        b === maxValor && b > 0? '#ffd60a' : '#ffc300'
     ],
     borderWidth:2,
     borderColor:'#000814'
@@ -402,9 +499,12 @@ chart=new Chart(ctx,{
     type:"bar",
     data:datos,
     options:{
+        responsive:true,
         plugins:{legend:{display:false}},
-        scales:{y:{beginAtZero:true, ticks:{color:'white'}, grid:{color:'rgba(255,255,255,.1)'}},
-                x:{ticks:{color:'white'}, grid:{display:false}}}
+        scales:{
+            y:{beginAtZero:true, ticks:{color:'white'}, grid:{color:'rgba(255,255,255,.1)'}},
+            x:{ticks:{color:'white'}, grid:{display:false}}
+        }
     }
 });
 }
@@ -412,41 +512,62 @@ chart=new Chart(ctx,{
 
 /* REPORTE */
 function reporte(){
-let data=JSON.parse(localStorage.getItem("ventas")||"[]");
+let data=JSON.parse(localStorage.getItem("gen")||"[]");
+let f=formatoFecha(document.getElementById('fecha').value);
+let dataDia = data.filter(v => v.fecha === f);
+
+if(dataDia.length===0){
+alert("No hay datos para esta fecha");
+return;
+}
 
 let t=0,a=0,b=0;
-data.forEach(v=>{
+dataDia.forEach(v=>{
 if(v.comp==="TELCEL") t++;
 if(v.comp==="ATT") a++;
 if(v.comp==="BAIT") b++;
 });
-let lider = t>a && t>b? 'TELCEL' : a>b? 'ATT' : 'BAIT';
+
+let lider = t>a && t>b? 'TELCEL' : a>b? 'AT&T' : 'BAIT';
 
 let contenido=`
-<html><body style="font-family:Arial">
-<h2>Reporte Ventas PRO MAX</h2>
-<h3>Compañía Líder: ${lider} 👑</h3>
-<p>Total: ${data.length} | Telcel: ${t} | ATT: ${a} | BAIT: ${b}</p>
+<!DOCTYPE html>
+<html>
+<body style="font-family:Arial; padding:20px;">
+<h1>REPORTE DE VENTAS PRO</h1>
+<h2>Fecha: ${f}</h2>
+<h3>🏆 Compañía Líder: ${lider}</h3>
+<table border="1" cellpadding="10" style="border-collapse:collapse; width:100%; margin:20px 0;">
+<tr style="background:#003566; color:white;"><th>Compañía</th><th>Ventas</th><th>Porcentaje</th></tr>
+<tr><td><b>Telcel</b></td><td>${t}</td><td>${(t/dataDia.length*100).toFixed(1)}%</td></tr>
+<tr><td><b>AT&T</b></td><td>${a}</td><td>${(a/dataDia.length*100).toFixed(1)}%</td></tr>
+<tr><td><b>BAIT</b></td><td>${b}</td><td>${(b/dataDia.length*100).toFixed(1)}%</td></tr>
+<tr style="background:#ffc300; color:#000814;"><td><b>TOTAL</b></td><td><b>${dataDia.length}</b></td><td><b>100%</b></td></tr>
+</table>
+<h3>Detalle de Ventas</h3>
 <table border="1" cellpadding="8" style="border-collapse:collapse; width:100%;">
-<tr style="background:#003566; color:white;"><th>Comp</th><th>Número</th><th>Marca</th><th>Fecha</th></tr>
-${data.map(v=>`
+<tr style="background:#003566; color:white;"><th>Comp</th><th>Número</th><th>Marca</th><th>Chip</th></tr>
+${dataDia.map(v=>`
 <tr>
 <td><b>${v.comp}</b></td>
 <td>${v.num}</td>
 <td>${v.marca}</td>
-<td>${v.fecha}</td>
+<td>${v.chip}</td>
 </tr>`).join("")}
 </table>
-<p>Generado: ${new Date().toLocaleString('es-MX')}</p>
-</body></html>
+<p style="margin-top:30px; color:#666;">Generado: ${new Date().toLocaleString('es-MX')}</p>
+</body>
+</html>
 `;
 
 let blob=new Blob(['\ufeff',contenido],{type:"application/msword"});
 let url=URL.createObjectURL(blob);
-let a=document.createElement("a");
-a.href=url;
-a.download=`reporte_ventas_${new Date().toLocaleDateString('es-MX')}.doc`;
-a.click();
+let link=document.createElement("a");
+link.href=url;
+link.download=`Reporte_Ventas_${f.replace(/\//g,'-')}.doc`;
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
 }
 
 </script>
