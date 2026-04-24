@@ -18,7 +18,7 @@ body { margin:0; font-family:'Segoe UI', sans-serif; background: #000814; color:
 .nav-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
 .btn-salir { background: #d00000; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 12px; }
 .tabs { display: flex; gap: 8px; margin-bottom: 15px; }
-.tab { flex: 1; padding: 10px; border-radius: 10px; background: rgba(255,255,255,0.1); text-align: center; cursor: pointer; font-size: 13px; transition: 0.3s; }
+.tab { flex: 1; padding: 10px; border-radius: 10px; background: rgba(255,255,255,0.1); text-align: center; cursor: pointer; font-size: 13px; }
 .tab.active { background: #ffc300; color: #003566; font-weight: bold; }
 input, select { width: 100%; padding: 12px; border-radius: 10px; border: none; background: rgba(255,255,255,0.2); color: white; margin-top: 8px; box-sizing: border-box; }
 button { background: #ffc300; color: #003566; padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
@@ -51,7 +51,7 @@ th { background: rgba(255,195,0,0.2); color: #ffc300; }
     </div>
     
     <div class="card">
-        <label style="font-size: 11px; color: #ffc300;">📅 FECHA DE REGISTRO:</label>
+        <label style="font-size: 11px; color: #ffc300;">📅 FECHA SELECCIONADA:</label>
         <input type="date" id="fechaFiltro" onchange="cargarTodo()">
     </div>
 
@@ -72,10 +72,10 @@ th { background: rgba(255,195,0,0.2); color: #ffc300; }
         <div id="formContainer"></div>
     </div>
 
-    <button onclick="obtenerUbicacionYGuardar()">💾 GUARDAR EN LA NUBE</button>
+    <button onclick="obtenerUbicacionYGuardar()">💾 REGISTRAR VENTA</button>
     
     <div class="card" style="border: 1px solid #ffc300;">
-        <h3 style="color:#ffc300; margin:0 0 10px 0; font-size: 14px;">📁 Reporte Técnico (Hoy)</h3>
+        <h3 style="color:#ffc300; margin:0 0 10px 0; font-size: 14px;">📁 Reporte Técnico (Nube)</h3>
         <div style="overflow-x: auto;">
             <table>
                 <thead>
@@ -93,7 +93,7 @@ th { background: rgba(255,195,0,0.2); color: #ffc300; }
 
     <div class="card"><canvas id="grafica"></canvas></div>
 
-    <button style="background:#2b9348; color:white;" onclick="descargarExcel()">📊 DESCARGAR EXCEL ORDENADO</button>
+    <button style="background:#2b9348; color:white;" onclick="descargarExcel()">📊 GENERAR EXCEL ORDENADO</button>
 </div>
 
 <script>
@@ -131,10 +131,7 @@ function setComp(c) {
     compActiva = c;
     document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
     document.getElementById("tab" + c).classList.add("active");
-    
-    // Ocultar selector de proceso si no es Telcel
     document.getElementById("tipoProceso").style.display = (c === "TELCEL") ? "block" : "none";
-    
     renderForm();
 }
 
@@ -143,12 +140,27 @@ function renderForm() {
     const tp = document.getElementById("tipoProceso").value;
 
     if(compActiva === "TELCEL") {
-        if(tp === "PORTA") html = `<div class="fade"><input id="f_num" placeholder="Número"><input id="f_icc" placeholder="ICCID"><input id="f_nip" placeholder="NIP"></div>`;
-        else if(tp === "RENUEVATE") html = `<div class="fade"><input id="f_num" placeholder="Número"><input id="f_imei" placeholder="IMEI"><input id="f_icc" placeholder="ICCID Nuevo"></div>`;
-        else if(tp === "AK") html = `<div class="fade"><input id="f_num" placeholder="Número"><input id="f_marca" placeholder="Marca"><input id="f_mod" placeholder="Modelo"><input id="f_imei" placeholder="IMEI"></div>`;
-        else html = `<div class="fade"><input id="f_num" placeholder="Número"><input id="f_icc" placeholder="ICCID"></div>`;
+        if(tp === "PORTA") {
+            html = `<div class="fade"><input id="f_num" placeholder="Número"><input id="f_icc" placeholder="ICCID"><input id="f_nip" placeholder="NIP"></div>`;
+        } 
+        else if(tp === "RENUEVATE") {
+            // AJUSTE: Número, Marca, Modelo, ICCID, IMEI
+            html = `<div class="fade">
+                <input id="f_num" placeholder="Número">
+                <input id="f_marca" placeholder="Marca">
+                <input id="f_mod" placeholder="Modelo">
+                <input id="f_icc" placeholder="ICCID">
+                <input id="f_imei" placeholder="IMEI">
+            </div>`;
+        }
+        else if(tp === "AK") {
+            html = `<div class="fade"><input id="f_num" placeholder="Número"><input id="f_marca" placeholder="Marca"><input id="f_mod" placeholder="Modelo"><input id="f_imei" placeholder="IMEI"></div>`;
+        }
+        else {
+            html = `<div class="fade"><input id="f_num" placeholder="Número"><input id="f_icc" placeholder="ICCID"></div>`;
+        }
     } else {
-        // FORMULARIO PARA ATT Y BAIT (Solo Número, Modelo, Marca e ICCID)
+        // Formulario para ATT y BAIT (Número, Marca, Modelo e ICCID)
         html = `<div class="fade">
             <input id="f_num" placeholder="Número">
             <input id="f_marca" placeholder="Marca">
@@ -165,10 +177,10 @@ async function obtenerUbicacionYGuardar() {
             try {
                 const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`);
                 const data = await res.json();
-                guardar(data.display_name || "Sin dirección");
-            } catch { guardar("Ubicación GPS"); }
-        }, () => guardar("Sin GPS"));
-    } else { guardar("No soportado"); }
+                guardar(data.display_name || "Dirección manual");
+            } catch { guardar("Ubicación por GPS"); }
+        }, () => guardar("Sin acceso GPS"));
+    } else { guardar("GPS no soportado"); }
 }
 
 function guardar(calle) {
@@ -181,10 +193,11 @@ function guardar(calle) {
         icc: document.getElementById("f_icc")?.value || "",
         marca: document.getElementById("f_marca")?.value || "",
         modelo: document.getElementById("f_mod")?.value || "",
-        imei: document.getElementById("f_imei")?.value || ""
+        imei: document.getElementById("f_imei")?.value || "",
+        nip: document.getElementById("f_nip")?.value || ""
     };
     db.ref('ventas').push(data).then(() => {
-        alert("¡Venta Sincronizada!");
+        alert("¡Venta Sincronizada con éxito!");
         renderForm();
     });
 }
@@ -216,7 +229,7 @@ function cargarTodo() {
     });
 }
 
-function eliminar(id) { if(confirm("¿Eliminar?")) db.ref('ventas/' + id).remove(); }
+function eliminar(id) { if(confirm("¿Eliminar registro permanentemente?")) db.ref('ventas/' + id).remove(); }
 
 function descargarExcel() {
     const rawData = Object.values(todasVentas);
@@ -228,8 +241,9 @@ function descargarExcel() {
         "ICCID": v.icc || "N/A",
         "MARCA": v.marca || "N/A",
         "MODELO": v.modelo || "N/A",
-        "IMEI (TELCEL)": v.imei || "N/A",
-        "UBICACIÓN": v.ubicacion.split(',').slice(0, 2).join(',')
+        "IMEI": v.imei || "N/A",
+        "NIP (PORTA)": v.nip || "N/A",
+        "LUGAR": v.ubicacion.split(',').slice(0, 2).join(',')
     }));
 
     const wb = XLSX.utils.book_new();
@@ -238,7 +252,7 @@ function descargarExcel() {
     meses.forEach(mes => {
         const porMes = excelData.filter(v => v.FECHA.startsWith(mes));
         const ws = XLSX.utils.json_to_sheet(porMes);
-        ws['!cols'] = [{wch:12}, {wch:12}, {wch:12}, {wch:12}, {wch:20}, {wch:15}, {wch:15}, {wch:18}, {wch:30}];
+        ws['!cols'] = [{wch:12}, {wch:12}, {wch:12}, {wch:12}, {wch:20}, {wch:15}, {wch:15}, {wch:18}, {wch:12}, {wch:30}];
         XLSX.utils.book_append_sheet(wb, ws, mes);
     });
 
