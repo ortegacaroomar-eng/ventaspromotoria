@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Auditor PRO | Calendario Inteligente</title>
+<title>Auditor PRO | Acceso Total</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -14,41 +14,17 @@
 <style>
 body { margin:0; font-family:'Segoe UI', sans-serif; background: #000814; color:white; }
 .app { max-width:480px; margin:auto; padding:20px; }
-
-.card { 
-    background: rgba(255,255,255,0.08); 
-    backdrop-filter: blur(12px); 
-    border-radius: 16px; 
-    padding: 15px; 
-    margin-bottom: 15px; 
-    border: 1px solid rgba(255,255,255,0.1);
-}
-
+.card { background: rgba(255,255,255,0.08); backdrop-filter: blur(12px); border-radius: 16px; padding: 15px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); }
 .tabs { display: flex; gap: 8px; margin-bottom: 15px; }
-.tab { 
-    flex: 1; padding: 10px; border-radius: 10px; 
-    background: rgba(255,255,255,0.1); text-align: center; 
-    cursor: pointer; font-size: 13px; transition: 0.3s;
-}
+.tab { flex: 1; padding: 10px; border-radius: 10px; background: rgba(255,255,255,0.1); text-align: center; cursor: pointer; font-size: 13px; transition: 0.3s; }
 .tab.active { background: #ffc300; color: #003566; font-weight: bold; }
-
-input, select { 
-    width: 100%; padding: 12px; border-radius: 10px; border: none; 
-    background: rgba(255,255,255,0.2); color: white; margin-top: 8px; box-sizing: border-box; 
-}
-input[type="date"] { border: 1px solid #ffc300; font-weight: bold; }
-
-button { 
-    background: #ffc300; color: #003566; padding: 14px; border: none; 
-    border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; 
-}
-
+input, select { width: 100%; padding: 12px; border-radius: 10px; border: none; background: rgba(255,255,255,0.2); color: white; margin-top: 8px; box-sizing: border-box; }
+button { background: #ffc300; color: #003566; padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
+.btn-google { background: white; color: #444; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; }
+.btn-reg { background: transparent; color: white; border: 1px solid white; font-size: 12px; }
+.hidden { display: none !important; }
 .fade { animation: fade 0.3s ease; }
 @keyframes fade { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; } }
-
-.btn-excel { background: #2b9348; color: white; margin-top: 20px; }
-.btn-del { background: #ff4d4d; color: white; width: auto; padding: 5px 10px; font-size: 11px; margin-top: 5px; border-radius: 5px; border:none; }
-.header-lista { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #ffc300; padding-bottom: 5px; }
 </style>
 </head>
 
@@ -56,15 +32,26 @@ button {
 
 <div id="loginBox" class="app">
     <div class="card" style="margin-top: 50px; text-align: center;">
-        <h2 style="color:#ffc300;">🗂️ Acceso Auditor</h2>
-        <input id="correo" type="email" placeholder="Correo">
+        <h2 style="color:#ffc300; margin-bottom:20px;">🗂️ Acceso Auditor</h2>
+        
+        <button class="btn-google" onclick="loginGoogle()">
+            <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" width="18"> Entrar con Google
+        </button>
+
+        <div style="margin: 15px 0; opacity: 0.5; font-size: 12px;">— o usa tu cuenta —</div>
+        
+        <input id="correo" type="email" placeholder="Correo electrónico">
         <input id="pass" type="password" placeholder="Contraseña">
-        <button onclick="login()">ENTRAR</button>
+        
+        <button onclick="loginEmail()">ENTRAR</button>
+        <button class="btn-reg" onclick="registroEmail()">REGISTRAR NUEVO USUARIO</button>
     </div>
 </div>
 
-<div id="appBox" class="app" style="display:none;">
-    
+<div id="appBox" class="app hidden">
+    <button onclick="salir()" style="background:#d00000; color:white; width:auto; padding:5px 12px; float:right; font-size:11px; margin:0;">Cerrar Sesión</button>
+    <h3 id="txtUser" style="font-size:12px; color:#ffc300;">...</h3>
+
     <div class="card">
         <label style="font-size: 12px; color: #ffc300;">📅 Selecciona día para ver ventas:</label>
         <input type="date" id="fechaFiltro" onchange="cargarLista()">
@@ -89,18 +76,15 @@ button {
 
     <button onclick="obtenerUbicacionYGuardar()">💾 GUARDAR VENTA</button>
     
-    <div class="card">
-        <canvas id="grafica"></canvas>
-    </div>
+    <div class="card"><canvas id="grafica"></canvas></div>
 
-    <div class="header-lista">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
         <h3 style="margin:0; font-size: 16px;">📋 Ventas del día</h3>
         <span id="contadorVentas" style="background:#ffc300; color:#001d3d; padding:2px 8px; border-radius:10px; font-weight:bold; font-size:12px;">0</span>
     </div>
     
     <div id="listaVentas"></div>
-
-    <button class="btn-excel" onclick="descargarExcel()">📊 EXPORTAR TODO A EXCEL</button>
+    <button style="background:#2b9348; color:white;" onclick="descargarExcel()">📊 EXPORTAR TODO (EXCEL)</button>
 </div>
 
 <script>
@@ -118,23 +102,39 @@ let chart;
 let todasVentas = {};
 
 function inicio() {
-    // Ponemos la fecha de hoy en el calendario
-    const hoy = new Date().toISOString().split("T")[0];
-    document.getElementById("fechaFiltro").value = hoy;
-    
+    document.getElementById("fechaFiltro").value = new Date().toISOString().split("T")[0];
     auth.onAuthStateChanged(user => {
         if(user) {
-            document.getElementById("loginBox").style.display = "none";
-            document.getElementById("appBox").style.display = "block";
+            document.getElementById("loginBox").classList.add("hidden");
+            document.getElementById("appBox").classList.remove("hidden");
+            document.getElementById("txtUser").innerText = "Usuario: " + (user.displayName || user.email);
             escucharDatos();
+        } else {
+            document.getElementById("loginBox").classList.remove("hidden");
+            document.getElementById("appBox").classList.add("hidden");
         }
     });
 }
 
-function login() {
-    auth.signInWithEmailAndPassword(correo.value, pass.value).catch(e => alert("Revisa tus datos"));
+// FUNCIONES DE ACCESO
+function loginGoogle() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).catch(e => alert("Error Google: " + e.message));
 }
 
+function loginEmail() {
+    auth.signInWithEmailAndPassword(correo.value, pass.value).catch(e => alert("Error: " + e.message));
+}
+
+function registroEmail() {
+    auth.createUserWithEmailAndPassword(correo.value, pass.value)
+        .then(() => alert("¡Usuario creado con éxito! Ya puedes entrar."))
+        .catch(e => alert("Error al registrar: " + e.message));
+}
+
+function salir() { auth.signOut().then(() => window.location.reload()); }
+
+// LÓGICA DE VENTAS
 function setComp(c) {
     compActiva = c;
     document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
@@ -164,28 +164,25 @@ async function obtenerUbicacionYGuardar() {
             try {
                 const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`);
                 const data = await res.json();
-                guardar(data.display_name || "Calle desconocida");
-            } catch { guardar("Ubicación no disponible"); }
-        }, () => guardar("Sin GPS"));
-    } else { guardar("No soportado"); }
+                guardar(data.display_name || "Ubicación detectada");
+            } catch { guardar("Ubicación GPS"); }
+        }, () => guardar("Sin acceso GPS"));
+    } else { guardar("GPS no soportado"); }
 }
 
 function guardar(calle) {
     const data = {
         comp: compActiva,
         proceso: tipoProceso.value || "VENTA EXT",
-        fecha: document.getElementById("fechaFiltro").value, // Se guarda con la fecha seleccionada
+        fecha: document.getElementById("fechaFiltro").value,
         ubicacion: calle,
         num: document.getElementById("f_num")?.value || "",
         icc: document.getElementById("f_icc")?.value || "",
-        icc_ant: document.getElementById("f_icc_ant")?.value || "",
         imei: document.getElementById("f_imei")?.value || "",
-        marca: document.getElementById("f_marca")?.value || document.getElementById("f_mod")?.value || "",
-        nip: document.getElementById("f_nip")?.value || "",
-        ak: document.getElementById("f_ak")?.value || ""
+        marca: document.getElementById("f_marca")?.value || document.getElementById("f_mod")?.value || ""
     };
     db.ref('ventas').push(data).then(() => {
-        alert("Guardado correctamente");
+        alert("Guardado");
         formContainer.innerHTML = "";
         tipoProceso.value = "";
     });
@@ -203,46 +200,24 @@ function cargarLista() {
     const filtro = document.getElementById("fechaFiltro").value;
     lista.innerHTML = "";
     let contador = 0;
-    
-    // Obtenemos los IDs y filtramos por la fecha del calendario
-    const ids = Object.keys(todasVentas).reverse();
-    ids.forEach(id => {
+    Object.keys(todasVentas).reverse().forEach(id => {
         const v = todasVentas[id];
         if(v.fecha === filtro) {
             contador++;
-            lista.innerHTML += `
-                <div class="card fade">
-                    <b>${v.comp} - ${v.proceso}</b><br>
-                    📱 ${v.num} <br>
-                    📍 <small style="color:#ffc300">${v.ubicacion.split(',')[0]}</small><br>
-                    <button class="btn-del" onclick="eliminar('${id}')">Eliminar</button>
-                </div>`;
+            lista.innerHTML += `<div class="card fade"><b>${v.comp}</b> - ${v.num}<br><small>${v.ubicacion.split(',')[0]}</small></div>`;
         }
     });
-    
     document.getElementById("contadorVentas").innerText = contador;
     graficaGen(filtro);
 }
 
-function eliminar(id) { if(confirm("¿Borrar venta?")) db.ref('ventas/'+id).remove(); }
-
-function graficaGen(fechaF) {
-    let stats = { TELCEL:0, ATT:0, BAIT:0 };
-    Object.values(todasVentas).forEach(v => { 
-        if(v.fecha === fechaF && stats[v.comp] !== undefined) stats[v.comp]++; 
-    });
-    
+function graficaGen(f) {
+    let s = { TELCEL:0, ATT:0, BAIT:0 };
+    Object.values(todasVentas).forEach(v => { if(v.fecha === f && s[v.comp] !== undefined) s[v.comp]++; });
     if(chart) chart.destroy();
     chart = new Chart(document.getElementById("grafica"), {
         type: 'doughnut',
-        data: {
-            labels: ["TELCEL", "ATT", "BAIT"],
-            datasets: [{ 
-                data: [stats.TELCEL, stats.ATT, stats.BAIT], 
-                backgroundColor: ['#ffc300', '#00b4d8', '#ef233c'],
-                borderWidth: 0 
-            }]
-        },
+        data: { labels: ["TELCEL", "ATT", "BAIT"], datasets: [{ data: [s.TELCEL, s.ATT, s.BAIT], backgroundColor: ['#ffc300', '#00b4d8', '#ef233c'], borderWidth: 0 }] },
         options: { plugins: { legend: { labels: { color: "white" } } } }
     });
 }
@@ -252,13 +227,10 @@ function descargarExcel() {
     const wb = XLSX.utils.book_new();
     const meses = [...new Set(array.map(v => v.fecha.substring(0, 7)))].sort().reverse();
     meses.forEach(mes => {
-        const datosMes = array.filter(v => v.fecha.startsWith(mes)).map(v => ({
-            "FECHA": v.fecha, "COMPAÑÍA": v.comp, "PROCESO": v.proceso, "NÚMERO": v.num,
-            "ICCID": v.icc, "IMEI": v.imei, "UBICACIÓN": v.ubicacion
-        }));
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(datosMes), mes);
+        const datos = array.filter(v => v.fecha.startsWith(mes));
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(datos), mes);
     });
-    XLSX.writeFile(wb, "Reporte_Omar.xlsx");
+    XLSX.writeFile(wb, "Reporte_Auditoria.xlsx");
 }
 </script>
 </body>
