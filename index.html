@@ -87,14 +87,14 @@ th { background: #eee; }
     <input id="bMarca" placeholder="Marca/Modelo">
 </div>
 
-<button onclick="guardar()">💾 GUARDAR Y SINCRONIZAR</button>
+<button onclick="guardar()">💾 REGISTRAR VENTA</button>
 
 <div class="card"><canvas id="grafica"></canvas></div>
 
 <div class="card">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
         <h3>📋 Historial Unificado (Nube)</h3>
-        <button onclick="descargarExcel()" style="width:auto; background:#2b9348; color:white; padding: 8px 15px;">📊 EXCEL PRO</button>
+        <button onclick="descargarExcel()" style="width:auto; background:#2b9348; color:white; padding: 8px 15px;">📊 EXCEL UNIFICADO</button>
     </div>
     <div style="overflow-x:auto;">
         <table>
@@ -124,7 +124,7 @@ th { background: #eee; }
 const firebaseConfig = { 
     apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc", 
     authDomain: "ventastelcel4029.firebaseapp.com",
-    databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com" // Asegúrate de que esta URL sea la correcta de tu consola
+    databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com"
 };
 firebase.initializeApp(firebaseConfig);
 
@@ -146,7 +146,6 @@ function inicio(){
 }
 
 function escucharDatos() {
-    // Escucha cambios en la base de datos en tiempo real
     db.ref('ventas').on('value', (snapshot) => {
         const data = snapshot.val();
         todasVentas = data ? Object.values(data).reverse() : [];
@@ -172,8 +171,10 @@ function mostrarCampos(){
 
 function guardar(){
     let f = fecha.value;
-    let nuevaVenta = {};
+    let user = auth.currentUser;
+    if(!user) return alert("Debes iniciar sesión");
 
+    let nuevaVenta = {};
     if(tipo.value === "TELCEL"){
         nuevaVenta = { 
             comp:"TELCEL", num:tNum.value, marca:tMarca.value, modelo:tModelo.value, 
@@ -185,10 +186,9 @@ function guardar(){
         nuevaVenta = { comp:"BAIT", num:bNum.value, marca:bMarca.value, modelo:bChip.value, chip:bChip.value, fecha:f };
     }
 
-    // Guardar en Firebase (Nube) en lugar de LocalStorage
     db.ref('ventas').push(nuevaVenta)
-        .then(() => alert("Venta Sincronizada en la Nube"))
-        .catch(e => alert("Error al sincronizar: " + e.message));
+        .then(() => alert("Venta Sincronizada"))
+        .catch(e => alert("Error: " + e.message));
 }
 
 function cargarTablas(){
@@ -225,7 +225,7 @@ function actualizarGrafica() {
         data: {
             labels: ["Telcel", "AT&T", "BAIT"],
             datasets: [{ 
-                label: 'Ventas Hoy', 
+                label: 'Ventas del Día', 
                 data: [counts.TELCEL, counts.ATT, counts.BAIT], 
                 backgroundColor: ['#ffc300', '#00b4d8', '#ef233c'] 
             }]
@@ -235,20 +235,34 @@ function actualizarGrafica() {
 }
 
 function descargarExcel(){
-    if(todasVentas.length === 0) return alert("No hay datos");
+    if(todasVentas.length === 0) return alert("No hay datos para exportar");
+
     const wb = XLSX.utils.book_new();
-    const cleanData = todasVentas.map(v=>({
-        "COMPAÑÍA": v.comp,
-        "FECHA": v.fecha,
-        "NÚMERO": v.num,
-        "MARCA": v.marca,
-        "MODELO/PROCESO": v.modelo || v.chip,
-        "ID (IMEI/ICCID)": v.iccid || v.imei || "N/A"
-    }));
-    const ws = XLSX.utils.json_to_sheet(cleanData);
-    ws['!cols'] = [{wch:12}, {wch:15}, {wch:15}, {wch:20}, {wch:20}, {wch:25}]; 
-    XLSX.utils.book_append_sheet(wb, ws, "Auditoria");
-    XLSX.writeFile(wb, `Reporte_Sincronizado.xlsx`);
+    
+    // Obtener todos los meses únicos presentes en los datos
+    const meses = [...new Set(todasVentas.map(v => v.fecha.substring(0, 7)))].sort().reverse();
+
+    meses.forEach(mesAnio => {
+        let ventasMes = todasVentas.filter(v => v.fecha.startsWith(mesAnio));
+        
+        const cleanData = ventasMes.map(v => ({
+            "COMPAÑÍA": v.comp,
+            "FECHA": v.fecha,
+            "NÚMERO": v.num,
+            "MARCA": v.marca,
+            "MODELO/PROCESO": v.modelo || v.chip,
+            "ID (IMEI/ICCID)": v.iccid || v.imei || "N/A"
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(cleanData);
+        ws['!cols'] = [{wch:12}, {wch:15}, {wch:15}, {wch:20}, {wch:20}, {wch:25}]; 
+
+        // Añadir una pestaña por cada mes
+        XLSX.utils.book_append_sheet(wb, ws, mesAnio);
+    });
+
+    // Descarga un único archivo unificado
+    XLSX.writeFile(wb, "Auditoria_Ventas_Unificado.xlsx");
 }
 </script>
 </body>
