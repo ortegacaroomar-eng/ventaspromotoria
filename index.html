@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ventas PRO MAX</title>
+
+<title>Ventas PRO Estable</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 
 <style>
 body { margin:0; font-family:sans-serif; background:#000814; color:white;}
@@ -17,7 +17,6 @@ body { margin:0; font-family:sans-serif; background:#000814; color:white;}
 .card { background:rgba(255,255,255,.08); padding:15px; border-radius:15px; margin-bottom:15px;}
 input,select,button { width:100%; padding:10px; margin-top:5px; border-radius:10px; border:none;}
 button { background:#ffc300; font-weight:bold;}
-.header { text-align:center; font-size:22px; color:#ffc300;}
 .login { max-width:300px; margin:100px auto; background:white; color:black; padding:20px; border-radius:15px;}
 .hidden { display:none;}
 </style>
@@ -26,19 +25,17 @@ button { background:#ffc300; font-weight:bold;}
 <body onload="inicio()">
 
 <div id="loginBox" class="login">
-<h2>Login</h2>
+<h2>Acceso</h2>
 <input id="u" placeholder="Correo">
 <input id="p" type="password" placeholder="Contraseña">
-<button onclick="entrar()">Entrar</button>
-<button onclick="toggleRegistro()">Registro</button>
+<button onclick="login()">Entrar / Crear</button>
+<p id="estado"></p>
 </div>
 
 <div id="appBox" class="app hidden">
 
-<div class="header">🔥 DASHBOARD PRO MAX</div>
-
 <div class="card">
-<input id="metaMensual" placeholder="Meta mensual ($)">
+<input id="meta" placeholder="Meta mensual">
 </div>
 
 <div class="card" id="dashboard"></div>
@@ -47,68 +44,91 @@ button { background:#ffc300; font-weight:bold;}
 <canvas id="grafica"></canvas>
 </div>
 
-<div class="card">
-<div id="ranking"></div>
-</div>
+<div class="card" id="ranking"></div>
 
 <form id="fReg">
 <div class="card">
-
-<select id="iCompania">
+<select id="comp">
 <option>TELCEL</option>
 <option>ATT</option>
 <option>BAIT</option>
 </select>
 
-<select id="iTipo">
-<option>KIT</option>
-<option>CHIP</option>
-<option>PORTA</option>
-<option>RENUEVATE</option>
-</select>
-
-<input id="iFec">
-<input id="iTel" placeholder="Teléfono">
-<input id="iIcc" placeholder="ICCID">
-<input id="iProm" placeholder="Promotor">
-
+<input id="tel" placeholder="Teléfono">
+<input id="prom" placeholder="Promotor">
 </div>
 
 <button>Guardar</button>
 </form>
 
-<button onclick="exportarExcel()">Excel</button>
-
-<div id="listaLocal"></div>
+<div id="lista"></div>
 
 </div>
 
 <script>
 
-const firebaseConfig={
-apiKey:"TU_API",
-authDomain:"TU_AUTH",
-databaseURL:"TU_DB",
-projectId:"TU_ID"
+let db=null, auth=null, online=false, chart=null;
+
+const firebaseConfig = {
+apiKey: "TU_API",
+authDomain: "TU_AUTH",
+databaseURL: "TU_DB",
+projectId: "TU_ID"
 };
 
-let db,auth,grafica;
-
 function inicio(){
+try{
 firebase.initializeApp(firebaseConfig);
-db=firebase.database();
-auth=firebase.auth();
+auth = firebase.auth();
+db = firebase.database();
+online = true;
 
-iFec.value=new Date().toLocaleDateString('es-MX');
+auth.onAuthStateChanged(user=>{
+if(user){
+estado.innerText="Conectado ☁️";
+mostrarApp();
+}else{
+estado.innerText="No autenticado";
+}
+});
+}catch(e){
+estado.innerText="Modo offline ⚠️";
+online=false;
+}
+}
 
-auth.onAuthStateChanged(u=>{
-if(u){ appBox.classList.remove("hidden"); loginBox.classList.add("hidden"); cargar();}
+function login(){
+let email=u.value.trim();
+let pass=p.value.trim();
+
+if(!email || !pass){
+alert("Llena campos");
+return;
+}
+
+if(!online){
+estado.innerText="Modo offline activo";
+mostrarApp();
+return;
+}
+
+auth.signInWithEmailAndPassword(email,pass)
+.then(()=>{})
+.catch(err=>{
+if(err.code==="auth/user-not-found"){
+auth.createUserWithEmailAndPassword(email,pass)
+.then(()=>alert("Usuario creado"))
+.catch(e=>alert(e.message));
+}else{
+alert(err.message);
+}
 });
 }
 
-function entrar(){
-auth.signInWithEmailAndPassword(u.value,p.value)
-.catch(()=>auth.createUserWithEmailAndPassword(u.value,p.value));
+function mostrarApp(){
+loginBox.classList.add("hidden");
+appBox.classList.remove("hidden");
+cargar();
 }
 
 fReg.onsubmit=e=>{
@@ -116,28 +136,28 @@ e.preventDefault();
 
 let v={
 id:Date.now(),
-COMP:iCompania.value,
-TIPO:iTipo.value,
-FECHA:iFec.value,
-TEL:iTel.value,
-ICCID:iIcc.value,
-PROM:iProm.value
+comp:comp.value,
+tel:tel.value,
+prom:prom.value
 };
 
 let local=JSON.parse(localStorage.getItem("ventas")||"[]");
 local.unshift(v);
 localStorage.setItem("ventas",JSON.stringify(local));
 
+if(online && auth.currentUser){
 db.ref("ventas").push(v);
+}
 
 cargar();
+fReg.reset();
 };
 
 function cargar(){
 let local=JSON.parse(localStorage.getItem("ventas")||"[]");
 
-listaLocal.innerHTML=local.map(v=>`
-<div class="card">${v.COMP} - ${v.TEL}</div>`).join("");
+lista.innerHTML=local.map(v=>`
+<div class="card">${v.comp} - ${v.tel}</div>`).join("");
 
 dashboardGen(local);
 graficaGen(local);
@@ -148,32 +168,32 @@ function dashboardGen(local){
 let t=0,a=0,b=0;
 
 local.forEach(v=>{
-if(v.COMP==="TELCEL")t++;
-if(v.COMP==="ATT")a++;
-if(v.COMP==="BAIT")b++;
+if(v.comp==="TELCEL")t++;
+if(v.comp==="ATT")a++;
+if(v.comp==="BAIT")b++;
 });
 
-let meta=parseFloat(metaMensual.value)||0;
 let ingreso=local.length*100;
-let porc=meta?((ingreso/meta)*100).toFixed(1):0;
+let metaVal=parseFloat(meta.value)||0;
+let porc=metaVal?((ingreso/metaVal)*100).toFixed(1):0;
 
 dashboard.innerHTML=`
-Total:${local.length}<br>
-Telcel:${t}<br>
-ATT:${a}<br>
-BAIT:${b}<br><br>
-💰${ingreso}/${meta}<br>${porc}%
+Total: ${local.length}<br>
+Telcel: ${t}<br>
+ATT: ${a}<br>
+BAIT: ${b}<br><br>
+💰 ${ingreso} / ${metaVal}<br>${porc}%
 `;
 }
 
 function graficaGen(local){
 let data={TELCEL:0,ATT:0,BAIT:0};
 
-local.forEach(v=>data[v.COMP]++);
+local.forEach(v=>data[v.comp]++);
 
-if(grafica) grafica.destroy();
+if(chart) chart.destroy();
 
-grafica=new Chart(document.getElementById("grafica"),{
+chart=new Chart(grafica,{
 type:"bar",
 data:{
 labels:["Telcel","ATT","BAIT"],
@@ -186,21 +206,13 @@ function rankingGen(local){
 let map={};
 
 local.forEach(v=>{
-map[v.PROM]=(map[v.PROM]||0)+1;
+map[v.prom]=(map[v.prom]||0)+1;
 });
 
 let orden=Object.entries(map).sort((a,b)=>b[1]-a[1]);
 
-ranking.innerHTML="<b>Ranking Promotores</b><br>"+
+ranking.innerHTML="<b>Ranking</b><br>"+
 orden.map((p,i)=>`${i+1}. ${p[0]} (${p[1]})`).join("<br>");
-}
-
-function exportarExcel(){
-let local=JSON.parse(localStorage.getItem("ventas")||"[]");
-let ws=XLSX.utils.json_to_sheet(local);
-let wb=XLSX.utils.book_new();
-XLSX.utils.book_append_sheet(wb,ws,"Ventas");
-XLSX.writeFile(wb,"ventas_pro.xlsx");
 }
 
 </script>
