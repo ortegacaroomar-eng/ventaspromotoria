@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Auditor Telcel PRO | Completo</title>
+<title>Auditor Telcel PRO | Privacidad Excel</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -19,11 +19,10 @@ input, select { width:100%; padding:12px; border-radius:10px; border:none; backg
 button { background: #ffc300; color:#001d3d; padding:14px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; margin-bottom:10px; transition: 0.3s; }
 button:hover { opacity: 0.9; transform: scale(1.01); }
 .hidden { display:none; }
-table { width:100%; background:white; color:black; border-collapse: collapse; border-radius: 10px; overflow: hidden; font-size: 13px; margin-top:10px; }
+table { width:100%; background:white; color:black; border-collapse: collapse; border-radius: 10px; overflow: hidden; font-size: 13px; }
 td, th { border:1px solid #ddd; padding:10px; text-align: left; }
 th { background: #eee; }
 .btn-salir { background: #d00000; color: white; width: auto; padding: 5px 15px; float: right; margin-bottom: 10px; }
-.tag-telcel { background: #ffc300; padding: 3px 7px; border-radius: 5px; font-weight: bold; font-size: 11px; }
 .btn-del { background: #ff4d4d; color: white; padding: 5px 8px; border-radius: 5px; cursor: pointer; border: none; font-size: 12px; }
 label { display: block; margin-bottom: 5px; font-size: 12px; color: #ffc300; font-weight: bold; }
 </style>
@@ -43,8 +42,8 @@ label { display: block; margin-bottom: 5px; font-size: 12px; color: #ffc300; fon
     <h2 id="saludo" style="color:#ffc300; margin: 0 0 20px 0;">Panel de Ventas</h2>
 
 <div class="card">
-    <label>📅 Fecha de Registro</label>
-    <input type="date" id="fecha" onchange="actualizarGrafica()">
+    <label>📅 Fecha</label>
+    <input type="date" id="fecha">
     <label>📡 Compañía</label>
     <select id="tipo" onchange="mostrarCampos()">
         <option value="TELCEL">TELCEL</option>
@@ -71,43 +70,19 @@ label { display: block; margin-bottom: 5px; font-size: 12px; color: #ffc300; fon
     <div id="f_ak_nuevo"><input id="tAkNuevo" placeholder="AK Nuevo"></div>
 </div>
 
-<div id="attBox" class="card hidden">
-    <select id="aChip"><option value="NO">SIN CHIP TELCEL</option><option value="SI">CON CHIP TELCEL</option></select>
-    <input id="aNum" placeholder="Número AT&T">
-    <input id="aMarca" placeholder="Marca/Modelo">
-</div>
-
-<div id="baitBox" class="card hidden">
-    <select id="bChip"><option value="NO">SIN CHIP TELCEL</option><option value="SI">CON CHIP TELCEL</option></select>
-    <input id="bNum" placeholder="Número BAIT">
-    <input id="bMarca" placeholder="Marca/Modelo">
-</div>
-
 <button onclick="guardar()">💾 GUARDAR VENTA</button>
 
 <div class="card"><canvas id="grafica"></canvas></div>
 
 <div class="card">
-    <h3>📋 Historial Unificado (Resumen)</h3>
-    <div style="overflow-x:auto;">
-        <table>
-            <thead>
-                <tr><th>Comp</th><th>Número</th><th>Proceso/Modelo</th><th>Fecha</th><th>Acción</th></tr>
-            </thead>
-            <tbody id="cuerpoGral"></tbody>
-        </table>
-    </div>
-</div>
-
-<div class="card">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
         <h3 style="color:#ffc300;">🔍 Detalle Técnico Telcel</h3>
-        <button onclick="descargarExcel()" style="width:auto; background:#2b9348; color:white; padding: 8px 15px;">📊 EXCEL MENSUAL</button>
+        <button onclick="descargarExcel()" style="width:auto; background:#2b9348; color:white; padding: 8px 15px;">📊 EXCEL (SIN NIP/AK)</button>
     </div>
     <div style="overflow-x:auto;">
         <table>
             <thead>
-                <tr><th>Fecha</th><th>Número</th><th>Proceso</th><th>Datos Técnicos</th><th>Acción</th></tr>
+                <tr><th>Fecha</th><th>Número</th><th>Proceso</th><th>Detalles Técnicos</th><th>Borrar</th></tr>
             </thead>
             <tbody id="cuerpoTel"></tbody>
         </table>
@@ -159,12 +134,6 @@ function ajustarFormularioTelcel() {
     else if(p === "RENUEVATE") ["f_num", "f_iccid", "f_iccid_ant", "f_imei", "f_ak_nuevo"].forEach(c => document.getElementById(c).classList.remove("hidden"));
 }
 
-function mostrarCampos(){
-    telcelBox.classList.toggle("hidden", tipo.value !== "TELCEL");
-    attBox.classList.toggle("hidden", tipo.value !== "ATT");
-    baitBox.classList.toggle("hidden", tipo.value !== "BAIT");
-}
-
 function login(){ auth.signInWithEmailAndPassword(correo.value, pass.value); }
 function salir(){ auth.signOut().then(()=>window.location.reload()); }
 
@@ -172,36 +141,30 @@ function guardar(){
     let v = { 
         comp: tipo.value, 
         fecha: fecha.value, 
-        num: (tipo.value === "TELCEL" ? tNum.value : (tipo.value === "ATT" ? aNum.value : bNum.value))
+        num: tNum.value,
+        proceso: tTipo.value,
+        marca: tMarca.value, 
+        modelo: tModelo.value,
+        iccid: tICCID.value, 
+        iccid_ant: tICCID_ant.value,
+        imei: tIMEI.value, 
+        nip: tNip.value, 
+        ak_nuevo: tAkNuevo.value 
     };
-    if(tipo.value === "TELCEL"){
-        v.proceso = tTipo.value; v.marca = tMarca.value; v.modelo = tModelo.value;
-        v.iccid = tICCID.value; v.iccid_ant = tICCID_ant.value;
-        v.imei = tIMEI.value; v.nip = tNip.value; v.ak_nuevo = tAkNuevo.value;
-    } else {
-        v.proceso = "EXTERNA"; v.marca = (tipo.value === "ATT" ? aMarca.value : bMarca.value);
-    }
     db.ref('ventas').push(v).then(() => alert("Guardado"));
 }
 
 function eliminarVenta(id) { if(confirm("¿Borrar?")) db.ref('ventas/' + id).remove(); }
 
 function cargarTablas(){
-    cuerpoGral.innerHTML = ""; cuerpoTel.innerHTML = "";
-    const ids = Object.keys(todasVentasRaw).reverse();
-
-    ids.forEach(id => {
+    cuerpoTel.innerHTML = "";
+    Object.keys(todasVentasRaw).reverse().forEach(id => {
         const v = todasVentasRaw[id];
-        // Historial Unificado
-        cuerpoGral.innerHTML += `<tr><td><span class="tag-telcel">${v.comp}</span></td><td>${v.num}</td><td>${v.proceso || v.modelo || '--'}</td><td>${v.fecha}</td><td><button class="btn-del" onclick="eliminarVenta('${id}')">🗑️</button></td></tr>`;
-
-        // Detalle Técnico Telcel
         if(v.comp === "TELCEL") {
             let detalles = `<b>ICCID:</b> ${v.iccid || '--'}`;
             if(v.imei) detalles += ` | <b>IMEI:</b> ${v.imei}`;
             if(v.nip) detalles += ` | <b>NIP:</b> ${v.nip}`;
             if(v.ak_nuevo) detalles += ` | <b>AK:</b> ${v.ak_nuevo}`;
-            if(v.iccid_ant) detalles += ` | <b>ANT:</b> ${v.iccid_ant}`;
 
             cuerpoTel.innerHTML += `<tr><td>${v.fecha}</td><td>${v.num}</td><td>${v.proceso}</td><td>${detalles}</td><td><button class="btn-del" onclick="eliminarVenta('${id}')">🗑️</button></td></tr>`;
         }
@@ -212,14 +175,22 @@ function descargarExcel(){
     const ventasArray = Object.values(todasVentasRaw);
     const wb = XLSX.utils.book_new();
     const meses = [...new Set(ventasArray.map(v => v.fecha.substring(0, 7)))].sort().reverse();
+    
     meses.forEach(mes => {
         let datos = ventasArray.filter(v => v.fecha.startsWith(mes)).map(v => ({
-            "FECHA": v.fecha, "COMPAÑÍA": v.comp, "PROCESO": v.proceso, "NÚMERO": v.num,
-            "MARCA/MOD": `${v.marca || ''} ${v.modelo || ''}`, "ICCID": v.iccid, "ICCID ANT": v.iccid_ant, "IMEI": v.imei
+            "FECHA": v.fecha, 
+            "COMPAÑÍA": v.comp, 
+            "PROCESO": v.proceso, 
+            "NÚMERO": v.num,
+            "MARCA/MOD": `${v.marca || ''} ${v.modelo || ''}`, 
+            "ICCID": v.iccid, 
+            "ICCID ANT": v.iccid_ant,
+            "IMEI": v.imei
+            // El NIP y AK han sido eliminados de aquí para que no salgan en el Excel
         }));
         XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(datos), mes);
     });
-    XLSX.writeFile(wb, "Reporte_Auditoria_Omar.xlsx");
+    XLSX.writeFile(wb, "Reporte_Auditoria_Ventas.xlsx");
 }
 
 function actualizarGrafica() {
@@ -229,11 +200,9 @@ function actualizarGrafica() {
     if(chart) chart.destroy();
     chart = new Chart(ctx, {
         type: "bar",
-        data: { labels: ["Telcel", "AT&T", "BAIT"], datasets: [{ label: 'Ventas de Hoy', data: [counts.TELCEL, counts.ATT, counts.BAIT], backgroundColor: ['#ffc300', '#00b4d8', '#ef233c'] }] }
+        data: { labels: ["Telcel", "AT&T", "BAIT"], datasets: [{ label: 'Hoy', data: [counts.TELCEL, counts.ATT, counts.BAIT], backgroundColor: ['#ffc300', '#00b4d8', '#ef233c'] }] }
     });
 }
 </script>
 </body>
 </html>
-
-
