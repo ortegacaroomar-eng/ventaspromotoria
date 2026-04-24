@@ -15,6 +15,11 @@
 body { margin:0; font-family:'Segoe UI', sans-serif; background: #000814; color:white; }
 .app { max-width:480px; margin:auto; padding:20px; }
 .card { background: rgba(255,255,255,0.08); backdrop-filter: blur(12px); border-radius: 16px; padding: 15px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); }
+
+/* Estilo del Botón de Salida */
+.nav-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.btn-salir { background: #d00000; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 12px; }
+
 .tabs { display: flex; gap: 8px; margin-bottom: 15px; }
 .tab { flex: 1; padding: 10px; border-radius: 10px; background: rgba(255,255,255,0.1); text-align: center; cursor: pointer; font-size: 13px; transition: 0.3s; }
 .tab.active { background: #ffc300; color: #003566; font-weight: bold; }
@@ -42,7 +47,10 @@ th { background: rgba(255,195,0,0.2); color: #ffc300; }
 </div>
 
 <div id="appBox" class="app hidden">
-    <button onclick="salir()" style="background:#d00000; color:white; width:auto; padding:4px 10px; float:right; font-size:10px; border-radius:5px; border:none;">Salir</button>
+    <div class="nav-header">
+        <span id="txtUser" style="font-size: 11px; color: #ffc300;">Cargando usuario...</span>
+        <button class="btn-salir" onclick="salir()">Cerrar Sesión</button>
+    </div>
     
     <div class="card">
         <label style="font-size: 11px; color: #ffc300;">📅 FILTRAR POR DÍA:</label>
@@ -79,7 +87,7 @@ th { background: rgba(255,195,0,0.2); color: #ffc300; }
                         <th>ICCID</th>
                         <th>IMEI</th>
                         <th>Marca/Mod</th>
-                        <th>Eliminar</th>
+                        <th>Borrar</th>
                     </tr>
                 </thead>
                 <tbody id="cuerpoSincro"></tbody>
@@ -93,7 +101,6 @@ th { background: rgba(255,195,0,0.2); color: #ffc300; }
 </div>
 
 <script>
-// CONFIGURACIÓN DE TU FIREBASE
 const firebaseConfig = { 
     apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc", 
     authDomain: "ventastelcel4029.firebaseapp.com",
@@ -113,6 +120,7 @@ function inicio() {
         if(user) {
             document.getElementById("loginBox").classList.add("hidden");
             document.getElementById("appBox").classList.remove("hidden");
+            document.getElementById("txtUser").innerText = "👤 " + (user.displayName || user.email);
             escucharDatos();
         } else {
             document.getElementById("loginBox").classList.remove("hidden");
@@ -123,7 +131,15 @@ function inicio() {
 
 function loginEmail() { auth.signInWithEmailAndPassword(correo.value, pass.value).catch(e => alert(e.message)); }
 function loginGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
-function salir() { auth.signOut().then(() => window.location.reload()); }
+
+// Función de salida corregida
+function salir() { 
+    if(confirm("¿Seguro que quieres cerrar sesión?")) {
+        auth.signOut().then(() => {
+            window.location.reload();
+        });
+    }
+}
 
 function setComp(c) {
     compActiva = c;
@@ -176,7 +192,6 @@ function guardar(calle) {
         modelo: document.getElementById("f_mod")?.value || ""
     };
 
-    // Guardar en Firebase (Nube - Sincronización Automática)
     db.ref('ventas').push(data).then(() => {
         alert("¡Venta Sincronizada!");
         gpsTxt.innerText = "📍 GPS Listo";
@@ -185,7 +200,6 @@ function guardar(calle) {
 }
 
 function escucharDatos() {
-    // Escucha cambios en la nube y actualiza todos los teléfonos conectados
     db.ref('ventas').on('value', snap => {
         todasVentas = snap.val() || {};
         cargarTodo();
@@ -196,24 +210,20 @@ function cargarTodo() {
     const filtro = document.getElementById("fechaFiltro").value;
     const cuerpo = document.getElementById("cuerpoSincro");
     cuerpo.innerHTML = "";
-    
     let stats = { TELCEL:0, ATT:0, BAIT:0 };
     const ids = Object.keys(todasVentas).reverse();
 
     ids.forEach(id => {
         const v = todasVentas[id];
         if(v.fecha === filtro) {
-            // Llenar tabla técnica (Solo Telcel o lo que tenga datos)
             cuerpo.innerHTML += `
                 <tr>
                     <td>${v.num}</td>
                     <td>${v.icc || '---'}</td>
                     <td>${v.imei || '---'}</td>
                     <td>${v.marca} ${v.modelo || ''}</td>
-                    <td><button class="btn-del" onclick="eliminar('${id}')">❌</button></td>
+                    <td><button class="btn-del" onclick="eliminar('${id}')">🗑️</button></td>
                 </tr>`;
-            
-            // Contar para la gráfica
             if(stats[v.comp] !== undefined) stats[v.comp]++;
         }
     });
@@ -244,7 +254,7 @@ function descargarExcel() {
         const datos = array.filter(v => v.fecha.startsWith(mes));
         XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(datos), mes);
     });
-    XLSX.writeFile(wb, "Reporte_Sincronizado.xlsx");
+    XLSX.writeFile(wb, "Reporte_Sincronizado_Omar.xlsx");
 }
 </script>
 </body>
