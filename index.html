@@ -3,216 +3,450 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ventas PRO MAX</title>
 
-<title>Ventas PRO Estable</title>
+<!-- PWA Tags -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#001d3d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="icon-192.png">
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body { margin:0; font-family:sans-serif; background:#000814; color:white;}
-.app { max-width:500px; margin:auto; padding:20px;}
-.card { background:rgba(255,255,255,.08); padding:15px; border-radius:15px; margin-bottom:15px;}
-input,select,button { width:100%; padding:10px; margin-top:5px; border-radius:10px; border:none;}
-button { background:#ffc300; font-weight:bold;}
-.login { max-width:300px; margin:100px auto; background:white; color:black; padding:20px; border-radius:15px;}
-.hidden { display:none;}
+:root {--amarillo:#ffc300; --azul:#003566; --cyan:#00b4d8; --rojo:#d90429; --verde:#2a9d8f;}
+body{
+margin:0;
+font-family:'Segoe UI',sans-serif;
+background:linear-gradient(135deg,#000814,#001d3d,#003566);
+color:white;
+min-height:100vh;
+}
+.app { max-width:500px; margin:auto; padding:15px;}
+.card{
+background:rgba(255,255,255,.08);
+backdrop-filter:blur(12px);
+padding:18px;
+border-radius:16px;
+margin:12px 0;
+border:1px solid rgba(255,255,255,.1);
+box-shadow:0 8px 32px rgba(0,0,0,.3);
+}
+input,select,button{
+width:100%;
+padding:12px;
+margin:6px 0;
+border:none;
+border-radius:10px;
+box-sizing:border-box;
+font-size:15px;
+}
+input,select{
+background:rgba(255,255,255,.12);
+color:white;
+}
+input::placeholder{color:#ccc;}
+button{
+background:linear-gradient(135deg,#ffd60a,#ffc300);
+font-weight:bold;
+cursor:pointer;
+transition:.3s;
+color:#000814;
+}
+button:hover{transform:scale(1.03); box-shadow:0 5px 20px rgba(255,195,0,.4);}
+.header { text-align:center; font-size:26px; color:var(--amarillo); font-weight:900; text-shadow:0 0 15px rgba(255,195,0,.5);}
+.login { max-width:350px; margin:80px auto; background:white; color:black; padding:25px; border-radius:20px;}
+.hidden{display:none;}
+table{width:100%;background:white;color:black;border-radius:10px; overflow:hidden;}
+td,th{padding:10px;border-bottom:1px solid #eee; text-align:left;}
+th{background:#003566; color:white;}
+.lider{
+background:linear-gradient(135deg,rgba(255,195,0,.25),rgba(255,195,0,.1));
+border:2px solid var(--amarillo);
+padding:16px;
+border-radius:16px;
+text-align:center;
+animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,195,0,.4)}50%{box-shadow:0 0 0 10px rgba(255,195,0,0)}}
+.corona{font-size:32px; animation:bounce 1s infinite;}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.alerta{background:rgba(217,4,41,.25); border:1px solid var(--rojo); padding:10px; border-radius:10px; font-size:13px; margin-top:10px;}
+.barra-compania{display:flex; align-items:center; margin:8px 0; gap:10px;}
+.barra-fondo{flex:1; background:rgba(255,255,255,.1); height:24px; border-radius:12px; overflow:hidden;}
+.barra-progreso{height:100%; transition:width.8s ease; display:flex; align-items:center; justify-content:flex-end; padding-right:8px; font-size:11px; font-weight:bold;}
+.install-banner{background:var(--amarillo); color:#000814; padding:12px; text-align:center; font-weight:bold; cursor:pointer; display:none; position:sticky; top:0; z-index:100;}
+.label-comp{width:65px; font-weight:bold; font-size:13px;}
+#captchaText{background:#000; color:var(--amarillo); padding:8px; border-radius:8px; letter-spacing:3px; font-weight:bold; display:inline-block; margin:5px 0;}
 </style>
 </head>
 
 <body onload="inicio()">
 
+<div id="installBanner" class="install-banner" onclick="instalarApp()">
+    📲 INSTALAR APP EN TU CELULAR
+</div>
+
 <div id="loginBox" class="login">
-<h2>Acceso</h2>
-<input id="u" placeholder="Correo">
-<input id="p" type="password" placeholder="Contraseña">
-<button onclick="login()">Entrar / Crear</button>
-<p id="estado"></p>
+<h2>🔐 Acceso PRO</h2>
+<input id="correo" type="email" placeholder="Correo">
+<input id="pass" type="password" placeholder="Contraseña">
+<div style="background:#f1f1f1; padding:10px; border-radius:10px; margin:10px 0;">
+<div>Captcha: <span id="captchaText"></span></div>
+<input id="captchaInput" placeholder="Escribe el captcha" style="background:white; color:black;">
+</div>
+<button onclick="login()">Entrar</button>
+<button onclick="registro()">Registrar</button>
+<button onclick="recuperar()">Recuperar</button>
+<div id="msgLogin" style="color:#d90429; font-size:12px; margin-top:10px; min-height:16px;"></div>
 </div>
 
 <div id="appBox" class="app hidden">
 
+<div class="header">🔥 VENTAS PRO MAX</div>
+
+<!-- TARJETA LÍDER -->
+<div id="liderCompania"></div>
+
 <div class="card">
-<input id="meta" placeholder="Meta mensual">
+<input type="date" id="fecha">
 </div>
 
-<div class="card" id="dashboard"></div>
+<div class="card">
+<select id="tipo" onchange="mostrar()">
+<option value="TELCEL">TELCEL</option>
+<option value="ATT">AT&T</option>
+<option value="BAIT">BAIT</option>
+</select>
+</div>
+
+<div id="telcelBox" class="card">
+<input id="tNum" placeholder="Número" maxlength="10">
+<input id="tMarca" placeholder="Marca">
+</div>
+
+<div id="attBox" class="card hidden">
+<input id="aNum" placeholder="Número" maxlength="10">
+<input id="aMarca" placeholder="Marca">
+</div>
+
+<div id="baitBox" class="card hidden">
+<input id="bNum" placeholder="Número" maxlength="10">
+<input id="bMarca" placeholder="Marca">
+</div>
+
+<button onclick="guardar()">💾 Guardar Venta</button>
 
 <div class="card">
 <canvas id="grafica"></canvas>
 </div>
 
-<div class="card" id="ranking"></div>
+<button onclick="reporte()">📄 Descargar Reporte Word</button>
+<button onclick="salir()" style="background:linear-gradient(135deg,#d90429,#9d0208); color:white;">🚪 Cerrar Sesión</button>
 
-<form id="fReg">
 <div class="card">
-<select id="comp">
-<option>TELCEL</option>
-<option>ATT</option>
-<option>BAIT</option>
-</select>
-
-<input id="tel" placeholder="Teléfono">
-<input id="prom" placeholder="Promotor">
+<table>
+<thead>
+<tr><th>Comp</th><th>Número</th><th>Marca</th><th>Fecha</th></tr>
+</thead>
+<tbody id="tabla"></tbody>
+</table>
 </div>
 
-<button>Guardar</button>
-</form>
-
-<div id="lista"></div>
-
 </div>
+
+<audio id="sonidoGuardar" src="https://cdn.pixabay.com/audio/2022/03/15/audio_2b28c3e4a8.mp3"></audio>
 
 <script>
-
-let db=null, auth=null, online=false, chart=null;
-
+/* FIREBASE - CAMBIA ESTOS DATOS POR LOS TUYOS */
 const firebaseConfig = {
-apiKey: "TU_API",
-authDomain: "TU_AUTH",
-databaseURL: "TU_DB",
-projectId: "TU_ID"
+apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
+authDomain: "ventastelcel4029.firebaseapp.com",
+projectId: "ventastelcel4029",
+appId: "1:480758010888:web:e948c54f0217536aa9adbd"
 };
 
-function inicio(){
-try{
 firebase.initializeApp(firebaseConfig);
-auth = firebase.auth();
-db = firebase.database();
-online = true;
+let auth = firebase.auth();
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+let chart;
+let deferredPrompt;
+
+/* PWA */
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('installBanner').style.display = 'block';
+});
+
+function instalarApp(){
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => {
+        document.getElementById('installBanner').style.display = 'none';
+    });
+}
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+}
+
+/* CAPTCHA */
+let captcha="";
+function generarCaptcha(){
+let c="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+captcha="";
+for(let i=0;i<5;i++){
+captcha+=c[Math.floor(Math.random()*c.length)];
+}
+document.getElementById('captchaText').innerText=captcha;
+}
+
+/* INICIO */
+function inicio(){
+generarCaptcha();
+document.getElementById('fecha').value=new Date().toISOString().split("T")[0];
 
 auth.onAuthStateChanged(user=>{
 if(user){
-estado.innerText="Conectado ☁️";
-mostrarApp();
+document.getElementById('loginBox').classList.add("hidden");
+document.getElementById('appBox').classList.remove("hidden");
+cargar();
+grafica();
 }else{
-estado.innerText="No autenticado";
+document.getElementById('loginBox').classList.remove("hidden");
+document.getElementById('appBox').classList.add("hidden");
 }
 });
-}catch(e){
-estado.innerText="Modo offline ⚠️";
-online=false;
-}
 }
 
+/* LOGIN */
 function login(){
-let email=u.value.trim();
-let pass=p.value.trim();
-
-if(!email || !pass){
-alert("Llena campos");
+if(document.getElementById('captchaInput').value!==captcha){
+document.getElementById('msgLogin').innerText="Captcha incorrecto";
+generarCaptcha();
 return;
 }
 
-if(!online){
-estado.innerText="Modo offline activo";
-mostrarApp();
-return;
-}
-
-auth.signInWithEmailAndPassword(email,pass)
-.then(()=>{})
-.catch(err=>{
-if(err.code==="auth/user-not-found"){
-auth.createUserWithEmailAndPassword(email,pass)
-.then(()=>alert("Usuario creado"))
-.catch(e=>alert(e.message));
-}else{
-alert(err.message);
-}
+auth.signInWithEmailAndPassword(document.getElementById('correo').value.trim(),document.getElementById('pass').value)
+.catch(e=>{
+document.getElementById('msgLogin').innerText = e.code==="auth/user-not-found"? "Usuario no registrado" :
+e.code==="auth/wrong-password"? "Contraseña incorrecta" : e.message;
+generarCaptcha();
 });
 }
 
-function mostrarApp(){
-loginBox.classList.add("hidden");
-appBox.classList.remove("hidden");
-cargar();
+/* REGISTRO */
+function registro(){
+auth.createUserWithEmailAndPassword(document.getElementById('correo').value.trim(),document.getElementById('pass').value)
+.then(()=> {
+    document.getElementById('msgLogin').style.color='#2a9d8f';
+    document.getElementById('msgLogin').innerText="Registrado. Ahora da clic en Entrar";
+})
+.catch(e=>document.getElementById('msgLogin').innerText=e.message);
 }
 
-fReg.onsubmit=e=>{
-e.preventDefault();
-
-let v={
-id:Date.now(),
-comp:comp.value,
-tel:tel.value,
-prom:prom.value
-};
-
-let local=JSON.parse(localStorage.getItem("ventas")||"[]");
-local.unshift(v);
-localStorage.setItem("ventas",JSON.stringify(local));
-
-if(online && auth.currentUser){
-db.ref("ventas").push(v);
+/* RECUPERAR */
+function recuperar(){
+auth.sendPasswordResetEmail(document.getElementById('correo').value)
+.then(()=>alert("Correo de recuperación enviado"))
+.catch(e=>alert(e.message));
 }
 
-cargar();
-fReg.reset();
-};
+function salir(){
+    auth.signOut();
+}
 
+/* UI */
+function mostrar(){
+document.getElementById('telcelBox').classList.add("hidden");
+document.getElementById('attBox').classList.add("hidden");
+document.getElementById('baitBox').classList.add("hidden");
+
+if(document.getElementById('tipo').value==="TELCEL") document.getElementById('telcelBox').classList.remove("hidden");
+if(document.getElementById('tipo').value==="ATT") document.getElementById('attBox').classList.remove("hidden");
+if(document.getElementById('tipo').value==="BAIT") document.getElementById('baitBox').classList.remove("hidden");
+}
+
+/* GUARDAR */
+function guardar(){
+let f=document.getElementById('fecha').value;
+let data=JSON.parse(localStorage.getItem("ventas")||"[]");
+let tipo = document.getElementById('tipo').value;
+
+let venta = {comp:tipo, fecha:f, id:Date.now()};
+
+if(tipo==="TELCEL"){
+    if(!document.getElementById('tNum').value){alert("Falta número"); return;}
+    venta.num=document.getElementById('tNum').value;
+    venta.marca=document.getElementById('tMarca').value || "N/A";
+}
+if(tipo==="ATT"){
+    if(!document.getElementById('aNum').value){alert("Falta número"); return;}
+    venta.num=document.getElementById('aNum').value;
+    venta.marca=document.getElementById('aMarca').value || "N/A";
+}
+if(tipo==="BAIT"){
+    if(!document.getElementById('bNum').value){alert("Falta número"); return;}
+    venta.num=document.getElementById('bNum').value;
+    venta.marca=document.getElementById('bMarca').value || "N/A";
+}
+
+data.unshift(venta);
+localStorage.setItem("ventas",JSON.stringify(data));
+
+// Sonido
+document.getElementById('sonidoGuardar').play();
+
+document.getElementById('fReg').reset();
+document.getElementById('fecha').value=new Date().toISOString().split("T")[0];
+mostrar();
+cargar();
+grafica();
+}
+
+/* TABLA */
 function cargar(){
-let local=JSON.parse(localStorage.getItem("ventas")||"[]");
+let data=JSON.parse(localStorage.getItem("ventas")||"[]");
 
-lista.innerHTML=local.map(v=>`
-<div class="card">${v.comp} - ${v.tel}</div>`).join("");
+document.getElementById('tabla').innerHTML=data.slice(0,10).map(v=>`
+<tr>
+<td><b>${v.comp}</b></td>
+<td>${v.num}</td>
+<td>${v.marca}</td>
+<td>${v.fecha}</td>
+</tr>
+`).join("");
 
-dashboardGen(local);
-graficaGen(local);
-rankingGen(local);
+mostrarLider(data);
 }
 
-function dashboardGen(local){
+/* COMPAÑÍA LÍDER - LO CHIDO */
+function mostrarLider(local){
+    if(local.length === 0){
+        document.getElementById('liderCompania').innerHTML = '';
+        return;
+    }
+
+    let conteo = {TELCEL:0, ATT:0, BAIT:0};
+    local.forEach(v => conteo[v.comp]++);
+
+    let total = local.length;
+    let ordenado = Object.entries(conteo).sort((a,b) => b[1] - a[1]);
+    let lider = ordenado[0];
+    let segundo = ordenado[1];
+    let tercero = ordenado[2];
+
+    let porcLider = ((lider[1]/total)*100).toFixed(1);
+    let diferencia = lider[1] - segundo[1];
+
+    let colorLider = lider[0] === 'TELCEL'? '#003566' : lider[0] === 'ATT'? '#00b4d8' : '#ffc300';
+    let emojiLider = lider[0] === 'TELCEL'? '📱' : lider[0] === 'ATT'? '📶' : '🚀';
+
+    let html = `
+        <div class="lider" style="border-color:${colorLider}">
+            <div class="corona">👑</div>
+            <div style="color:${colorLider}; font-size:20px;">${emojiLider} ${lider[0]} ES LÍDER</div>
+            <div style="font-size:16px; margin-top:6px;">${lider[1]} ventas - ${porcLider}% del total</div>
+            <div style="font-size:13px; color:#ccc; margin-top:4px;">${diferencia} ventas arriba de ${segundo[0]}</div>
+        </div>
+    `;
+
+    // Alertas si alguna va muy baja
+    ordenado.forEach(c => {
+        let porc = (c[1]/total)*100;
+        if(porc < 15 && porc > 0 && total > 5){
+            html += `<div class="alerta">⚠️ Ojo: ${c[0]} solo trae ${porc.toFixed(1)}%. Échale ganas a esa compañía</div>`;
+        }
+    });
+
+    document.getElementById('liderCompania').innerHTML = html;
+}
+
+/* GRAFICA */
+function grafica(){
+let data=JSON.parse(localStorage.getItem("ventas")||"[]");
 let t=0,a=0,b=0;
 
-local.forEach(v=>{
-if(v.comp==="TELCEL")t++;
-if(v.comp==="ATT")a++;
-if(v.comp==="BAIT")b++;
+data.forEach(v=>{
+if(v.comp==="TELCEL") t++;
+if(v.comp==="ATT") a++;
+if(v.comp==="BAIT") b++;
 });
 
-let ingreso=local.length*100;
-let metaVal=parseFloat(meta.value)||0;
-let porc=metaVal?((ingreso/metaVal)*100).toFixed(1):0;
+let maxValor = Math.max(t,a,b);
+const ctx=document.getElementById("grafica").getContext("2d");
 
-dashboard.innerHTML=`
-Total: ${local.length}<br>
-Telcel: ${t}<br>
-ATT: ${a}<br>
-BAIT: ${b}<br><br>
-💰 ${ingreso} / ${metaVal}<br>${porc}%
+let datos={
+labels:["Telcel","AT&T","BAIT"],
+datasets:[{
+    label:"Ventas",
+    data:[t,a,b],
+    backgroundColor:[
+        t === maxValor? '#ffd60a' : '#003566',
+        a === maxValor? '#ffd60a' : '#00b4d8',
+        b === maxValor? '#ffd60a' : '#ffc300'
+    ],
+    borderWidth:2,
+    borderColor:'#000814'
+}]
+};
+
+if(chart){
+chart.data=datos;
+chart.update();
+}else{
+chart=new Chart(ctx,{
+    type:"bar",
+    data:datos,
+    options:{
+        plugins:{legend:{display:false}},
+        scales:{y:{beginAtZero:true, ticks:{color:'white'}, grid:{color:'rgba(255,255,255,.1)'}},
+                x:{ticks:{color:'white'}, grid:{display:false}}}
+    }
+});
+}
+}
+
+/* REPORTE */
+function reporte(){
+let data=JSON.parse(localStorage.getItem("ventas")||"[]");
+
+let t=0,a=0,b=0;
+data.forEach(v=>{
+if(v.comp==="TELCEL") t++;
+if(v.comp==="ATT") a++;
+if(v.comp==="BAIT") b++;
+});
+let lider = t>a && t>b? 'TELCEL' : a>b? 'ATT' : 'BAIT';
+
+let contenido=`
+<html><body style="font-family:Arial">
+<h2>Reporte Ventas PRO MAX</h2>
+<h3>Compañía Líder: ${lider} 👑</h3>
+<p>Total: ${data.length} | Telcel: ${t} | ATT: ${a} | BAIT: ${b}</p>
+<table border="1" cellpadding="8" style="border-collapse:collapse; width:100%;">
+<tr style="background:#003566; color:white;"><th>Comp</th><th>Número</th><th>Marca</th><th>Fecha</th></tr>
+${data.map(v=>`
+<tr>
+<td><b>${v.comp}</b></td>
+<td>${v.num}</td>
+<td>${v.marca}</td>
+<td>${v.fecha}</td>
+</tr>`).join("")}
+</table>
+<p>Generado: ${new Date().toLocaleString('es-MX')}</p>
+</body></html>
 `;
-}
 
-function graficaGen(local){
-let data={TELCEL:0,ATT:0,BAIT:0};
-
-local.forEach(v=>data[v.comp]++);
-
-if(chart) chart.destroy();
-
-chart=new Chart(grafica,{
-type:"bar",
-data:{
-labels:["Telcel","ATT","BAIT"],
-datasets:[{data:[data.TELCEL,data.ATT,data.BAIT]}]
-}
-});
-}
-
-function rankingGen(local){
-let map={};
-
-local.forEach(v=>{
-map[v.prom]=(map[v.prom]||0)+1;
-});
-
-let orden=Object.entries(map).sort((a,b)=>b[1]-a[1]);
-
-ranking.innerHTML="<b>Ranking</b><br>"+
-orden.map((p,i)=>`${i+1}. ${p[0]} (${p[1]})`).join("<br>");
+let blob=new Blob(['\ufeff',contenido],{type:"application/msword"});
+let url=URL.createObjectURL(blob);
+let a=document.createElement("a");
+a.href=url;
+a.download=`reporte_ventas_${new Date().toLocaleDateString('es-MX')}.doc`;
+a.click();
 }
 
 </script>
