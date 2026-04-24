@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ventas PRO Auditoría</title>
+<title>Ventas PRO Elite</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -11,12 +11,12 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body { margin:0; font-family:sans-serif; background:#000814; color:white;}
-.app { max-width:500px; margin:auto; padding:20px;}
-.card { background:rgba(255,255,255,.08); padding:15px; border-radius:15px; margin-bottom:15px;}
-input,select,button { width:100%; padding:10px; margin-top:5px; border-radius:10px; border:none;}
-button { background:#ffc300; font-weight:bold;}
-.login { max-width:300px; margin:100px auto; background:white; color:black; padding:20px; border-radius:15px;}
+body { margin:0; font-family:'Segoe UI'; background:linear-gradient(135deg,#001d3d,#003566,#000814); color:white;}
+.app { max-width:480px; margin:auto; padding:20px;}
+.card { background:rgba(255,255,255,.08); backdrop-filter:blur(10px); border-radius:15px; padding:15px; margin-bottom:15px;}
+input,select,button { width:100%; padding:12px; border-radius:10px; border:none; margin-top:8px;}
+button { background:#ffc300; font-weight:bold; color:#003566;}
+.login { max-width:350px; margin:100px auto; background:white; color:black; padding:25px; border-radius:15px;}
 .hidden { display:none;}
 </style>
 </head>
@@ -27,7 +27,8 @@ button { background:#ffc300; font-weight:bold;}
 <h2>Acceso</h2>
 <input id="u" placeholder="Correo">
 <input id="p" type="password" placeholder="Contraseña">
-<button onclick="login()">Entrar / Crear</button>
+<button onclick="loginEmail()">Entrar</button>
+<button onclick="loginGoogle()" style="background:#db4437;color:white;">Entrar con Google</button>
 <p id="estado"></p>
 </div>
 
@@ -55,7 +56,7 @@ button { background:#ffc300; font-weight:bold;}
 </select>
 
 <select id="tipo" onchange="cambiarFormulario()">
-<option value="">Tipo de venta</option>
+<option value="">Tipo</option>
 <option value="PORTA">PORTA</option>
 <option value="AK">AK</option>
 <option value="CHIP">CHIP</option>
@@ -80,61 +81,47 @@ button { background:#ffc300; font-weight:bold;}
 
 <script>
 
-let db=null, auth=null, online=false, chart=null;
+let db, auth, chart, online=false;
 
-const firebaseConfig = {
-apiKey: "TU_API",
-authDomain: "TU_AUTH",
-databaseURL: "TU_DB",
-projectId: "TU_ID"
+const firebaseConfig={
+apiKey:"TU_API",
+authDomain:"TU_AUTH",
+databaseURL:"TU_DB",
+projectId:"TU_ID"
 };
 
 function inicio(){
 try{
 firebase.initializeApp(firebaseConfig);
-auth = firebase.auth();
-db = firebase.database();
-online = true;
+auth=firebase.auth();
+db=firebase.database();
+online=true;
 
 auth.onAuthStateChanged(user=>{
 if(user){
-estado.innerText="Conectado ☁️";
 mostrarApp();
-}else{
-estado.innerText="No autenticado";
+estado.innerText="Conectado ☁️";
 }
 });
 }catch(e){
-estado.innerText="Modo offline ⚠️";
-online=false;
-}
-}
-
-function login(){
-let email=u.value.trim();
-let pass=p.value.trim();
-
-if(!email || !pass){
-alert("Llena campos");
-return;
-}
-
-if(!online){
 estado.innerText="Modo offline";
-mostrarApp();
-return;
+}
 }
 
-auth.signInWithEmailAndPassword(email,pass)
+function loginEmail(){
+auth.signInWithEmailAndPassword(u.value,p.value)
 .catch(err=>{
 if(err.code==="auth/user-not-found"){
-auth.createUserWithEmailAndPassword(email,pass)
-.then(()=>alert("Usuario creado"))
-.catch(e=>alert(e.message));
+auth.createUserWithEmailAndPassword(u.value,p.value);
 }else{
 alert(err.message);
 }
 });
+}
+
+function loginGoogle(){
+let provider=new firebase.auth.GoogleAuthProvider();
+auth.signInWithPopup(provider);
 }
 
 function mostrarApp(){
@@ -144,7 +131,7 @@ cargar();
 }
 
 function cambiarFormulario(){
-let t = tipo.value;
+let t=tipo.value;
 
 if(t==="PORTA"){
 camposExtra.innerHTML=`
@@ -163,7 +150,7 @@ camposExtra.innerHTML=`
 else if(t==="CHIP"){
 camposExtra.innerHTML=`
 <input id="icc" placeholder="ICCID">
-<input id="recarga" placeholder="Monto recarga">
+<input id="recarga" placeholder="Recarga">
 `;
 }
 else if(t==="RENUEVATE"){
@@ -178,29 +165,29 @@ camposExtra.innerHTML="";
 }
 }
 
-fReg.onsubmit = e=>{
+fReg.onsubmit=e=>{
 e.preventDefault();
 
-let v = {
-id: Date.now(),
-comp: comp.value,
-tipo: tipo.value,
-fecha: fecha.value,
-numero: numero.value,
-prom: prom.value,
+let v={
+id:Date.now(),
+comp:comp.value,
+tipo:tipo.value,
+fecha:fecha.value,
+numero:numero.value,
+prom:prom.value,
 
-cliente: document.getElementById("cliente")?.value || "",
-nip: document.getElementById("nip")?.value || "",
-icc: document.getElementById("icc")?.value || "",
-imei: document.getElementById("imei")?.value || "",
-marca: document.getElementById("marca")?.value || "",
-modelo: document.getElementById("modelo")?.value || "",
-recarga: document.getElementById("recarga")?.value || ""
+cliente:document.getElementById("cliente")?.value||"",
+nip:document.getElementById("nip")?.value||"",
+icc:document.getElementById("icc")?.value||"",
+imei:document.getElementById("imei")?.value||"",
+marca:document.getElementById("marca")?.value||"",
+modelo:document.getElementById("modelo")?.value||"",
+recarga:document.getElementById("recarga")?.value||""
 };
 
-let local = JSON.parse(localStorage.getItem("ventas")||"[]");
+let local=JSON.parse(localStorage.getItem("ventas")||"[]");
 local.unshift(v);
-localStorage.setItem("ventas", JSON.stringify(local));
+localStorage.setItem("ventas",JSON.stringify(local));
 
 if(online && auth.currentUser){
 db.ref("ventas").push(v);
@@ -214,25 +201,19 @@ camposExtra.innerHTML="";
 function cargar(){
 let local=JSON.parse(localStorage.getItem("ventas")||"[]");
 
-lista.innerHTML = local.map(v=>`
+lista.innerHTML=local.map(v=>`
 <div class="card">
-
 <b>${v.comp} - ${v.tipo}</b><br>
 📅 ${v.fecha}<br>
 📱 ${v.numero}<br>
-
-${v.cliente ? "👤 "+v.cliente+"<br>" : ""}
-${v.nip ? "🔑 NIP: "+v.nip+"<br>" : ""}
-
-${v.icc ? "ICCID: "+v.icc+"<br>" : ""}
-${v.imei ? "IMEI: "+v.imei+"<br>" : ""}
-${v.marca ? "Marca: "+v.marca+"<br>" : ""}
-${v.modelo ? "Modelo: "+v.modelo+"<br>" : ""}
-
-${v.recarga ? "💰 Recarga: "+v.recarga+"<br>" : ""}
-
+${v.cliente?"👤 "+v.cliente+"<br>":""}
+${v.nip?"🔑 "+v.nip+"<br>":""}
+${v.icc?"ICCID: "+v.icc+"<br>":""}
+${v.imei?"IMEI: "+v.imei+"<br>":""}
+${v.marca?"Marca: "+v.marca+"<br>":""}
+${v.modelo?"Modelo: "+v.modelo+"<br>":""}
+${v.recarga?"💰 "+v.recarga+"<br>":""}
 👤 ${v.prom}
-
 </div>
 `).join("");
 
@@ -250,25 +231,19 @@ if(v.comp==="ATT")a++;
 if(v.comp==="BAIT")b++;
 });
 
-let ingreso=local.length*100;
-let metaVal=parseFloat(meta.value)||0;
-let porc=metaVal?((ingreso/metaVal)*100).toFixed(1):0;
-
 dashboard.innerHTML=`
-Total: ${local.length}<br>
-Telcel: ${t}<br>
-ATT: ${a}<br>
-BAIT: ${b}<br><br>
-💰 ${ingreso} / ${metaVal}<br>${porc}%
+Total:${local.length}<br>
+Telcel:${t}<br>
+ATT:${a}<br>
+BAIT:${b}
 `;
 }
 
 function graficaGen(local){
 let data={TELCEL:0,ATT:0,BAIT:0};
-
 local.forEach(v=>data[v.comp]++);
 
-if(chart) chart.destroy();
+if(chart)chart.destroy();
 
 chart=new Chart(grafica,{
 type:"bar",
@@ -281,14 +256,13 @@ datasets:[{data:[data.TELCEL,data.ATT,data.BAIT]}]
 
 function rankingGen(local){
 let map={};
-
 local.forEach(v=>{
 map[v.prom]=(map[v.prom]||0)+1;
 });
 
 let orden=Object.entries(map).sort((a,b)=>b[1]-a[1]);
 
-ranking.innerHTML="<b>Ranking Promotores</b><br>"+
+ranking.innerHTML="<b>Ranking</b><br>"+
 orden.map((p,i)=>`${i+1}. ${p[0]} (${p[1]})`).join("<br>");
 }
 
