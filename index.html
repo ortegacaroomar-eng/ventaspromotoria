@@ -3,359 +3,242 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auditor Pro | Enterprise Edition</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-    
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <title>Sistema Auditor PRO - Telcel</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
     <style>
         :root {
-            --primary: #ffd60a;
-            --accent: #00f2ff;
-            --bg: #000814;
-            --card-bg: rgba(255, 255, 255, 0.04);
-            --border: rgba(255, 255, 255, 0.1);
+            --gold: #ffd60a;
+            --blue-dark: #000814;
+            --glass: rgba(255, 255, 255, 0.1);
         }
 
         body {
             margin: 0;
-            font-family: 'Inter', sans-serif;
-            background: radial-gradient(circle at 50% 0%, #001d3d 0%, var(--bg) 70%);
-            color: #e0e0e0;
+            font-family: 'Segoe UI', sans-serif;
+            background: radial-gradient(circle at top, #001d3d, var(--blue-dark));
+            color: white;
             min-height: 100vh;
         }
 
-        /* Contenedores Principales */
-        .container { max-width: 1300px; margin: auto; padding: 30px; }
-        
-        .glass {
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            padding: 25px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        .app { max-width: 1200px; margin: auto; padding: 20px; }
+
+        .card {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        /* Header */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 40px;
-        }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
 
-        .logo { font-weight: 800; font-size: 1.8em; letter-spacing: -1px; color: var(--primary); }
-        .logo span { color: #fff; font-weight: 300; }
-
-        /* Formulario Profesional */
-        .grid-layout {
-            display: grid;
-            grid-template-columns: 1fr 1.5fr;
-            gap: 30px;
-        }
-
-        .form-group { margin-bottom: 20px; }
-        label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); font-weight: 700; margin-bottom: 8px; display: block; }
-        
         input, select {
             width: 100%;
-            background: rgba(0,0,0,0.5);
-            border: 1px solid var(--border);
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(0,0,0,0.3);
+            color: white;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--gold), #ffc300);
+            color: #000;
             padding: 14px;
-            border-radius: 12px;
-            color: #fff;
-            transition: 0.3s;
-            font-size: 1rem;
-        }
-
-        input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 15px rgba(0,242,255,0.2); }
-
-        /* Botones Pro */
-        .btn {
-            padding: 16px;
-            border-radius: 14px;
-            font-weight: 700;
-            cursor: pointer;
             border: none;
-            text-transform: uppercase;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .btn-primary { background: var(--primary); color: #000; width: 100%; }
-        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(255,214,10,0.3); }
-
-        .btn-excel { background: transparent; border: 1px solid #2b9348; color: #2b9348; margin-top: 10px; width: 100%; }
-        .btn-excel:hover { background: #2b9348; color: #fff; }
-
-        /* IA Insights */
-        .ai-card {
-            background: linear-gradient(90deg, rgba(0,242,255,0.1), transparent);
-            border-left: 4px solid var(--accent);
-            padding: 20px;
             border-radius: 12px;
-            margin-bottom: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
         }
 
-        /* Tabla de Datos */
-        .table-wrapper { margin-top: 30px; overflow-x: auto; background: rgba(255,255,255,0.02); border-radius: 20px; }
-        table { width: 100%; border-collapse: collapse; min-width: 900px; }
-        th { padding: 18px; text-align: left; font-size: 0.75rem; color: var(--primary); border-bottom: 1px solid var(--border); }
-        td { padding: 18px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
-        
-        .badge { padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.7em; }
-        .badge-telcel { background: rgba(255,214,10,0.1); color: var(--primary); }
-        .badge-other { background: rgba(255,255,255,0.1); color: #fff; }
+        .table-container { background: white; border-radius: 15px; overflow: hidden; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; color: #333; font-size: 0.85em; }
+        th { background: #eee; padding: 10px; }
+        td { padding: 8px 10px; border-bottom: 1px solid #ddd; }
 
         .hidden { display: none; }
-
-        @media (max-width: 900px) { .grid-layout { grid-template-columns: 1fr; } }
+        .label-gold { color: var(--gold); font-weight: bold; font-size: 0.9em; display: block; margin-bottom: 5px; }
     </style>
 </head>
-<body onload="initApp()">
+<body onload="inicio()">
 
-<div id="loginSection" class="container" style="max-width: 450px; margin-top: 10vh;">
-    <div class="glass" style="text-align: center;">
-        <div class="logo">AUDITOR<span>PRO</span></div>
-        <p style="opacity: 0.6; margin-bottom: 30px;">Enterprise Management System</p>
-        
-        <div class="form-group" id="userInputs">
-            <input id="email" type="email" placeholder="Usuario Corporativo">
-            <input id="password" type="password" placeholder="Contraseña" style="margin-top:10px">
-        </div>
-
-        <div id="captchaBox" class="hidden">
-            <div style="background: #fff; color: #000; padding: 10px; border-radius: 8px; margin-bottom: 10px; font-weight: bold;" id="capTxt"></div>
-            <input id="capAns" type="number" placeholder="Resultado">
-        </div>
-
-        <button id="mainBtn" class="btn btn-primary" onclick="handleLogin()">Acceder al Sistema</button>
-        
-        <div style="margin-top: 20px; font-size: 0.8em;">
-            <a href="#" onclick="showRec()" style="color: var(--accent); text-decoration: none;">¿Problemas de acceso?</a>
-        </div>
-    </div>
-</div>
-
-<div id="mainApp" class="container hidden">
-    <header>
-        <div class="logo">AUDITOR<span>PRO</span></div>
-        <button class="btn" style="background: rgba(208,0,0,0.2); color: #ff4d4d; border: 1px solid #ff4d4d;" onclick="logout()">
-            Cerrar Sesión
-        </button>
-    </header>
-
-    <div class="ai-card">
-        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
-            <span style="font-size: 1.2em;">🤖</span>
-            <strong style="color: var(--accent); font-size: 0.9em;">ANALÍTICA IA EN TIEMPO REAL</strong>
-        </div>
-        <div id="aiInsight" style="font-size: 1.1em; font-weight: 300;">Analizando flujo de ventas actual...</div>
-    </div>
-
-    <div class="grid-layout">
-        <div class="glass">
-            <label>Configuración de Registro</label>
-            <div class="form-group">
-                <input type="date" id="f_op">
-            </div>
+<div class="app">
+    <div class="grid">
+        <div class="card">
+            <h2 style="color:var(--gold); margin-top:0;">📱 Nueva Venta</h2>
             
-            <div class="form-group">
-                <select id="f_comp" onchange="renderSpecifics()">
-                    <option value="TELCEL">TELCEL MÉXICO</option>
-                    <option value="ATT">AT&T USA/MX</option>
-                    <option value="BAIT">BAIT WALMART</option>
+            <span class="label-gold">Fecha Operación</span>
+            <input type="date" id="fechaIn">
+
+            <span class="label-gold">Compañía</span>
+            <select id="compIn" onchange="alternarCampos()">
+                <option value="TELCEL">TELCEL</option>
+                <option value="ATT">AT&T</option>
+                <option value="BAIT">BAIT</option>
+            </select>
+
+            <input id="numIn" type="tel" placeholder="Número (10 dígitos)">
+            <input id="marcaIn" placeholder="Marca (Ej: Samsung)">
+            <input id="modeloIn" placeholder="Modelo (Ej: Galaxy A54)">
+
+            <div id="boxTelcel">
+                <span class="label-gold">Tipo Telcel</span>
+                <select id="tipoTelcel">
+                    <option value="PORTA">PORTA</option>
+                    <option value="RENUEVATE">RENUEVATE</option>
+                    <option value="CHIP">CHIP</option>
                 </select>
             </div>
 
-            <div class="form-group">
-                <input id="f_num" type="tel" placeholder="Número (10 dígitos)">
+            <div id="boxOtras" class="hidden">
+                <span class="label-gold">¿Se entregó con Chip Telcel?</span>
+                <select id="chipTelcelPregunta">
+                    <option value="SI">SÍ</option>
+                    <option value="NO">NO</option>
+                </select>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <input id="f_marca" type="text" placeholder="Marca">
-                <input id="f_modelo" type="text" placeholder="Modelo">
-            </div>
-
-            <div id="sec_telcel" style="margin-top: 15px;">
-                <select id="f_tipo"><option>PORTABILIDAD</option><option>RENOVACIÓN</option><option>CHIP SOLO</option></select>
-                <input id="f_imei" placeholder="IMEI Equipo" style="margin-top:10px">
-                <input id="f_iccid" placeholder="ICCID Telcel" style="margin-top:10px">
-            </div>
-
-            <div id="sec_competencia" class="hidden" style="margin-top: 15px;">
-                <input id="f_icc_o" placeholder="ICC Original Origen">
-                <label style="margin-top:10px">Entrega de Chip Telcel</label>
-                <select id="f_chip_a"><option value="NO">NO ENTREGADO</option><option value="SI">ENTREGA COMPLEMENTARIA</option></select>
-            </div>
-
-            <button class="btn btn-primary" style="margin-top: 20px;" onclick="saveEntry()">
-                Sincronizar con Nube ☁️
-            </button>
-            <button class="btn btn-excel" onclick="exportData()">
-                Exportar Reporte Élite 📊
-            </button>
+            <button onclick="guardar()">💾 Registrar Localmente</button>
         </div>
 
-        <div class="glass">
-            <label>Métricas de Rendimiento</label>
-            <canvas id="mainChart" height="250"></canvas>
+        <div class="card">
+            <h2 style="color:var(--gold); margin-top:0;">📊 Detalle de Inventario</h2>
+            <p style="font-size: 0.8em;">Desglose por Marcas y Modelos</p>
+            <canvas id="chartDetallado"></canvas>
         </div>
     </div>
 
-    <div class="table-wrapper">
-        <div style="padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between;">
-            <strong style="color: var(--primary)">HISTORIAL DE AUDITORÍA</strong>
-            <span id="counter" style="font-size: 0.8em; opacity: 0.6">Registros: 0</span>
+    <div class="grid">
+        <div class="card">
+            <h3 style="color:var(--gold);">📋 Historial Telcel (Aparte)</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr><th>Fecha</th><th>Tipo</th><th>Número</th><th>Marca/Mod</th></tr>
+                    </thead>
+                    <tbody id="tablaTelcel"></tbody>
+                </table>
+            </div>
         </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>OPERADOR</th>
-                    <th>FECHA</th>
-                    <th>MOVIMIENTO</th>
-                    <th>DISPOSITIVO</th>
-                    <th>IDENTIFICADOR</th>
-                    <th>ESTADO</th>
-                </tr>
-            </thead>
-            <tbody id="dataTable"></tbody>
-        </table>
+
+        <div class="card">
+            <h3 style="color:var(--gold);">📋 Historial Competencia</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr><th>Fecha</th><th>Comp</th><th>Chip Tel</th><th>Número</th></tr>
+                    </thead>
+                    <tbody id="tablaOtras"></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
-    // Configuración Segura
-    const config = {
-        apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
-        authDomain: "ventastelcel4029.firebaseapp.com",
-        projectId: "ventastelcel4029",
-        storageBucket: "ventastelcel4029.appspot.com",
-        appId: "1:542284923420:web:4887352d12e86095690623"
-    };
+    let chartObj;
 
-    firebase.initializeApp(config);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-    let myChart;
-    let capValue = 0;
-
-    function initApp() {
-        f_op.value = new Date().toISOString().split('T')[0];
-        auth.onAuthStateChanged(u => {
-            if(u) { loginSection.classList.add('hidden'); mainApp.classList.remove('hidden'); liveSync(); }
-            else { loginSection.classList.remove('hidden'); mainApp.classList.add('hidden'); }
-        });
+    function inicio() {
+        document.getElementById('fechaIn').value = new Date().toISOString().split('T')[0];
+        actualizarTodo();
     }
 
-    // Auth Professionals
-    function showRec() {
-        password.classList.add('hidden');
-        captchaBox.classList.remove('hidden');
-        mainBtn.innerText = "Verificar y Recuperar";
-        mainBtn.onclick = resetPass;
-        const n1 = Math.floor(Math.random()*10); const n2 = Math.floor(Math.random()*10);
-        capValue = n1 + n2;
-        capTxt.innerText = `Captcha: ¿Cuánto es ${n1} + ${n2}?`;
+    function alternarCampos() {
+        const c = document.getElementById('compIn').value;
+        document.getElementById('boxTelcel').classList.toggle('hidden', c !== 'TELCEL');
+        document.getElementById('boxOtras').classList.toggle('hidden', c === 'TELCEL');
     }
 
-    function handleLogin() {
-        auth.signInWithEmailAndPassword(email.value, password.value).catch(e => alert("Error Corporativo: Credenciales no válidas."));
+    function formatFecha(f) {
+        const [y, m, d] = f.split('-');
+        return `${d}/${m}/${y}`;
     }
 
-    function resetPass() {
-        if(parseInt(capAns.value) === capValue) {
-            auth.sendPasswordResetEmail(email.value).then(() => alert("Enlace enviado.")).catch(e => alert(e.message));
-        } else { alert("Captcha fallido."); }
+    function guardar() {
+        const comp = document.getElementById('compIn').value;
+        const num = document.getElementById('numIn').value;
+        const fRaw = document.getElementById('fechaIn').value;
+        const marca = document.getElementById('marcaIn').value || "Genérico";
+        const modelo = document.getElementById('modeloIn').value || "S/M";
+
+        if(!num) return alert("Número requerido");
+
+        const item = {
+            fecha: formatFecha(fRaw),
+            num, marca, modelo, comp,
+            detalle: comp === 'TELCEL' ? tipoTelcel.value : chipTelcelPregunta.value
+        };
+
+        // GUARDADO APARTE
+        if(comp === 'TELCEL') {
+            let tel = JSON.parse(localStorage.getItem('db_telcel') || '[]');
+            tel.unshift(item);
+            localStorage.setItem('db_telcel', JSON.stringify(tel));
+        } else {
+            let otr = JSON.parse(localStorage.getItem('db_otras') || '[]');
+            otr.unshift(item);
+            localStorage.setItem('db_otras', JSON.stringify(otr));
+        }
+
+        // Guardar para la gráfica (general)
+        let gen = JSON.parse(localStorage.getItem('db_grafica') || '[]');
+        gen.unshift(item);
+        localStorage.setItem('db_grafica', JSON.stringify(gen));
+
+        // Limpiar campos
+        document.getElementById('numIn').value = "";
+        document.getElementById('marcaIn').value = "";
+        document.getElementById('modeloIn').value = "";
+        
+        actualizarTodo();
     }
 
-    function logout() { auth.signOut(); }
+    function actualizarTodo() {
+        const tel = JSON.parse(localStorage.getItem('db_telcel') || '[]');
+        const otr = JSON.parse(localStorage.getItem('db_otras') || '[]');
+        const gen = JSON.parse(localStorage.getItem('db_grafica') || '[]');
 
-    // Logic Professionals
-    function renderSpecifics() {
-        const t = f_comp.value === 'TELCEL';
-        sec_telcel.classList.toggle('hidden', !t);
-        sec_competencia.classList.toggle('hidden', t);
+        // Llenar Tablas
+        tablaTelcel.innerHTML = tel.map(i => `<tr><td>${i.fecha}</td><td>${i.detalle}</td><td>${i.num}</td><td>${i.marca} ${i.modelo}</td></tr>`).join('');
+        tablaOtras.innerHTML = otr.map(i => `<tr><td>${i.fecha}</td><td>${i.comp}</td><td>${i.detalle}</td><td>${i.num}</td></tr>`).join('');
+
+        renderGrafica(gen);
     }
 
-    function saveEntry() {
-        const comp = f_comp.value;
-        db.collection("ventas_pro").add({
-            fecha: f_op.value, compania: comp, numero: f_num.value, 
-            equipo: `${f_marca.value} ${f_modelo.value}`,
-            id: comp === 'TELCEL' ? f_iccid.value : f_icc_o.value,
-            tipo: comp === 'TELCEL' ? f_tipo.value : "COMPETENCIA",
-            meta: comp === 'TELCEL' ? `IMEI: ${f_imei.value}` : `CHIP ADICIONAL: ${f_chip_a.value}`,
-            ts: firebase.firestore.FieldValue.serverTimestamp()
-        }).then(() => {
-            document.querySelectorAll('input:not([type="date"])').forEach(i => i.value = "");
-        });
-    }
+    function renderGrafica(datos) {
+        const ctx = document.getElementById('chartDetallado').getContext('2d');
+        if(chartObj) chartObj.destroy();
 
-    function liveSync() {
-        db.collection("ventas_pro").orderBy("ts", "desc").onSnapshot(snap => {
-            let h = ""; let stats = { TELCEL: 0, COMPETENCIA: 0 };
-            snap.forEach(doc => {
-                const d = doc.data();
-                stats[d.compania === 'TELCEL' ? 'TELCEL' : 'COMPETENCIA']++;
-                h += `<tr>
-                    <td><span class="badge ${d.compania === 'TELCEL' ? 'badge-telcel' : 'badge-other'}">${d.compania}</span></td>
-                    <td>${d.fecha}</td>
-                    <td><b>${d.tipo}</b></td>
-                    <td>${d.equipo}</td>
-                    <td style="font-family: monospace">${d.id}</td>
-                    <td style="color: #2b9348">Sincronizado ✓</td>
-                </tr>`;
-            });
-            dataTable.innerHTML = h;
-            counter.innerText = `Registros Totales: ${snap.size}`;
-            updateChart(stats);
-            generateAIAdvice(stats, snap.size);
-        });
-    }
+        // Procesar datos para detalle de marcas y modelos
+        const etiquetas = [...new Set(datos.map(d => `${d.marca} ${d.modelo}`))].slice(0, 8); // Top 8 modelos
+        
+        const dataTelcel = etiquetas.map(label => datos.filter(d => `${d.marca} ${d.modelo}` === label && d.comp === 'TELCEL').length);
+        const dataATT = etiquetas.map(label => datos.filter(d => `${d.marca} ${d.modelo}` === label && d.comp === 'ATT').length);
+        const dataBAIT = etiquetas.map(label => datos.filter(d => `${d.marca} ${d.modelo}` === label && d.comp === 'BAIT').length);
 
-    function updateChart(s) {
-        const ctx = document.getElementById('mainChart').getContext('2d');
-        if(myChart) myChart.destroy();
-        myChart = new Chart(ctx, {
-            type: 'doughnut',
+        chartObj = new Chart(ctx, {
+            type: 'bar',
             data: {
-                labels: ['Telcel México', 'Competencia'],
-                datasets: [{
-                    data: [s.TELCEL, s.COMPETENCIA],
-                    backgroundColor: ['#ffd60a', '#00f2ff'],
-                    borderWidth: 0
-                }]
+                labels: etiquetas,
+                datasets: [
+                    { label: 'Telcel', data: dataTelcel, backgroundColor: '#ffd60a' },
+                    { label: 'AT&T', data: dataATT, backgroundColor: '#00b4d8' },
+                    { label: 'BAIT', data: dataBAIT, backgroundColor: '#ef233c' }
+                ]
             },
-            options: { cutout: '80%', plugins: { legend: { position: 'bottom', labels: { color: '#fff' } } } }
+            options: {
+                responsive: true,
+                plugins: { legend: { labels: { color: 'white' } } },
+                scales: {
+                    x: { stacked: true, ticks: { color: 'white', font: { size: 10 } } },
+                    y: { stacked: true, ticks: { color: 'white' } }
+                }
+            }
         });
-    }
-
-    function generateAIAdvice(s, total) {
-        if(total === 0) return;
-        const ratio = (s.TELCEL / total) * 100;
-        let msg = "";
-        if(ratio > 70) msg = "Rendimiento crítico excepcional. Telcel domina el 70% del flujo de hoy. Sugerencia: Priorizar stock de modelos gama media.";
-        else if(ratio < 40) msg = "Alerta de mercado: La competencia está captando más tráfico. Recomendable activar promociones de Portabilidad.";
-        else msg = "Estabilidad detectada. El flujo entre Telcel y Competencia es saludable para el cierre del día.";
-        aiInsight.innerText = msg;
-    }
-
-    function exportData() {
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.table_to_sheet(document.querySelector("table"));
-        XLSX.utils.book_append_sheet(wb, ws, "Auditoria_Enterprise");
-        XLSX.writeFile(wb, "Reporte_Auditoria_Pro.xlsx");
     }
 </script>
 </body>
