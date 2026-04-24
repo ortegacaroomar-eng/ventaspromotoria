@@ -1,576 +1,226 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistema Ventas PRO</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Auditor Pro + Seguridad AI</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-<!-- PWA -->
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#001d3d">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<link rel="apple-touch-icon" href="icon-192.png">
+    <style>
+        :root { --gold: #ffd60a; --dark: #000814; --glass: rgba(255, 255, 255, 0.1); --ai-blue: #00f2ff; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: radial-gradient(circle at top, #001d3d, var(--dark)); color: white; min-height: 100vh; }
+        .app { max-width: 1200px; margin: auto; padding: 20px; }
+        .card { background: var(--glass); backdrop-filter: blur(15px); border-radius: 20px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
+        .ai-box { background: rgba(0, 242, 255, 0.05); border: 1px dashed var(--ai-blue); padding: 15px; border-radius: 15px; margin-bottom: 20px; }
+        .ai-title { color: var(--ai-blue); font-size: 0.9em; font-weight: bold; margin-bottom: 5px; }
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-<!-- Chart -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<style>
-:root {--amarillo:#ffc300; --azul:#003566; --cyan:#00b4d8; --rojo:#d90429;}
-body {
-margin:0;
-font-family:'Segoe UI', sans-serif;
-background: linear-gradient(135deg,#000814,#001d3d,#003566);
-color:white;
-min-height:100vh;
-}
-.app { max-width:1100px; margin:auto; padding:20px; }
-.card {
-background: rgba(255,255,255,0.08);
-backdrop-filter: blur(12px);
-border-radius:16px;
-padding:20px;
-margin-bottom:15px;
-border:1px solid rgba(255,255,255,.1);
-box-shadow:0 8px 32px rgba(0,0,0,.3);
-}
-input, select {
-width:100%;
-padding:12px;
-border-radius:10px;
-border:none;
-background:rgba(255,255,255,0.12);
-color:white;
-margin-bottom:10px;
-box-sizing:border-box;
-}
-input::placeholder{color:#ccc;}
-button {
-background: linear-gradient(135deg,#ffd60a,#ffc300);
-color:#000814;
-padding:14px;
-border:none;
-border-radius:12px;
-font-weight:bold;
-cursor:pointer;
-width:100%;
-margin-top:5px;
-transition:.3s;
-}
-button:hover{transform:scale(1.02); box-shadow:0 5px 20px rgba(255,195,0,.4);}
-.hidden { display:none; }
-table { width:100%; background:white; color:black; border-radius:10px; overflow:hidden;}
-td, th { border-bottom:1px solid #eee; padding:10px; text-align:left;}
-th{background:#003566; color:white;}
-.header { text-align:center; font-size:26px; color:var(--amarillo); font-weight:900; text-shadow:0 0 15px rgba(255,195,0,.5);}
-.lider{
-background:linear-gradient(135deg,rgba(255,195,0,.25),rgba(255,195,0,.1));
-border:2px solid var(--amarillo);
-padding:16px;
-border-radius:16px;
-text-align:center;
-animation:pulse 2s infinite;
-}
-@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,195,0,.4)}50%{box-shadow:0 0 0 10px rgba(255,195,0,0)}}
-.corona{font-size:32px; animation:bounce 1s infinite;}
-@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
-.barra-compania{display:flex; align-items:center; margin:8px 0; gap:10px;}
-.barra-fondo{flex:1; background:rgba(255,255,255,.1); height:24px; border-radius:12px; overflow:hidden;}
-.barra-progreso{height:100%; transition:width.8s ease; display:flex; align-items:center; justify-content:flex-end; padding-right:8px; font-size:11px; font-weight:bold;}
-.label-comp{width:65px; font-weight:bold; font-size:13px;}
-#captchaText{background:#000; color:var(--amarillo); padding:8px; border-radius:8px; letter-spacing:3px; font-weight:bold; display:inline-block; margin:5px 0;}
-.install-banner{background:var(--amarillo); color:#000814; padding:12px; text-align:center; font-weight:bold; cursor:pointer; display:none; position:sticky; top:0; z-index:100;}
-.msg { margin:10px 0; color:#ff4d4d; font-size:12px; min-height:16px; text-align:center; }
-</style>
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        label { color: var(--gold); font-size: 0.85em; font-weight: bold; margin-bottom: 5px; display: block; }
+        input, select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; margin-bottom: 12px; box-sizing: border-box; }
+        
+        .btn { background: #b08d00; color: #000; padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; text-transform: uppercase; transition: 0.3s; margin-bottom: 10px; }
+        .btn-sync { background: var(--gold); }
+        .btn-excel { background: #2b9348; color: white; }
+        .btn-logout { background: #d00000; color: white; width: auto; padding: 8px 15px; font-size: 0.8em; }
+        
+        .table-container { background: white; border-radius: 15px; overflow-x: auto; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; color: #222; font-size: 0.85em; min-width: 800px; }
+        th { background: #f1f1f1; padding: 12px; text-align: left; }
+        td { padding: 10px; border-bottom: 1px solid #eee; }
+        .hidden { display: none; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
+        
+        /* Estilos Recuperar Pass */
+        .captcha-text { background: #fff; color: #000; padding: 5px; font-weight: bold; border-radius: 5px; letter-spacing: 3px; }
+    </style>
 </head>
-
 <body onload="inicio()">
 
-<div id="installBanner" class="install-banner" onclick="instalarApp()">
-    📲 INSTALAR APP EN TU CELULAR
+<div id="loginBox" class="card" style="max-width:400px; margin: 80px auto; text-align: center;">
+    <h2 id="loginTitle" style="color: var(--gold);">☁️ Acceso Auditor Pro</h2>
+    <input id="correo" type="email" placeholder="Correo Electrónico">
+    <input id="pass" type="password" placeholder="Contraseña">
+    
+    <div id="captchaBox" class="hidden" style="margin-bottom: 15px; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 10px;">
+        <p style="font-size: 0.8em; margin-bottom: 5px;">Resuelve el Captcha para recuperar:</p>
+        <span id="captchaLabel" class="captcha-text"></span>
+        <input id="captchaInput" type="number" placeholder="Resultado" style="margin-top:10px; width: 80px; text-align:center;">
+    </div>
+
+    <button id="btnPrincipal" class="btn btn-sync" onclick="login()">ENTRAR</button>
+    
+    <p style="font-size: 0.85em;">
+        <a href="javascript:void(0)" onclick="mostrarRegistro()" style="color:var(--gold)">Crear cuenta nueva</a> | 
+        <a href="javascript:void(0)" onclick="mostrarRecuperar()" style="color:var(--ai-blue)">¿Olvidaste tu contraseña?</a>
+    </p>
+    <button id="btnVolver" class="hidden btn" onclick="window.location.reload()">VOLVER AL LOGIN</button>
 </div>
 
-<!-- LOGIN -->
-<div id="loginBox" class="card" style="max-width:400px;margin:80px auto;text-align:center;">
-<h2>🔐 Acceso PRO</h2>
-<input id="correo" type="email" placeholder="Correo">
-<input id="pass" type="password" placeholder="Contraseña">
-<div style="background:#f1f1f1; padding:10px; border-radius:10px; margin:10px 0; color:black;">
-<div>Captcha: <span id="captchaText"></span></div>
-<input id="captchaInput" placeholder="Escribe el código" style="background:white; color:black;">
-</div>
-<button onclick="login()">Entrar</button>
-<button onclick="registro()">Registrar</button>
-<button onclick="recuperar()">¿Olvidaste contraseña?</button>
-<div id="msgLogin" class="msg"></div>
-</div>
-
-<!-- APP -->
 <div id="appBox" class="app hidden">
+    <header>
+        <h1 style="color:var(--gold); margin:0; font-size: 1.5em;">Panel Auditor Pro</h1>
+        <button class="btn btn-logout" onclick="logout()">CERRAR SESIÓN</button>
+    </header>
 
-<div class="header">🔥 SISTEMA VENTAS PRO</div>
+    <div class="ai-box">
+        <div class="ai-title">🤖 IA ANALYTICS: Diagnóstico en Vivo</div>
+        <div id="aiAdvice">Analizando ventas...</div>
+    </div>
 
-<!-- COMPAÑÍA LÍDER -->
-<div id="liderCompania"></div>
+    <div class="grid">
+        <div class="card">
+            <label>Fecha Operación</label>
+            <input type="date" id="fechaIn">
+            <label>Compañía</label>
+            <select id="compIn" onchange="alternar()">
+                <option value="TELCEL">TELCEL</option>
+                <option value="ATT">AT&T</option>
+                <option value="BAIT">BAIT</option>
+            </select>
+            <input id="numIn" type="tel" placeholder="Número Telefónico">
+            <input id="marcaIn" type="text" placeholder="Marca (AK)">
+            <input id="modeloIn" type="text" placeholder="Modelo">
 
-<div class="card">
-<label>📅 Fecha de filtro</label>
-<input type="date" id="fecha" onchange="actualizarTodo()">
+            <div id="boxTelcel">
+                <select id="tipoTelcel"><option>PORTA</option><option>RENUEVATE</option><option>CHIP</option></select>
+                <input id="imeiIn" placeholder="IMEI">
+                <input id="iccidIn" placeholder="ICCID Telcel">
+            </div>
+
+            <div id="boxOtras" class="hidden">
+                <input id="iccOtras" placeholder="ICC Original (Competencia)">
+                <label>¿Con Chip Telcel aparte?</label>
+                <select id="chipTelcelPregunta"><option value="NO">NO</option><option value="SI">SÍ</option></select>
+            </div>
+
+            <button class="btn btn-sync" onclick="guardarFirebase()">🚀 SINCRONIZAR VENTA</button>
+            <button class="btn btn-excel" onclick="exportarExcel()">📊 GENERAR EXCEL ÉLITE</button>
+        </div>
+
+        <div class="card"><canvas id="chartCloud"></canvas></div>
+    </div>
+
+    <div class="card">
+        <h3 style="color:var(--gold);">📋 Historial Sincronizado</h3>
+        <div class="table-container"><table><thead><tr><th>Fecha</th><th>Comp.</th><th>Número</th><th>Equipo</th><th>ICCID/ICC</th><th>Info Extra</th></tr></thead><tbody id="tablaGlobal"></tbody></table></div>
+    </div>
 </div>
-
-<div class="card">
-<select id="tipo" onchange="mostrar()">
-<option value="TELCEL">TELCEL</option>
-<option value="ATT">AT&T</option>
-<option value="BAIT">BAIT</option>
-</select>
-</div>
-
-<!-- TELCEL -->
-<div id="telcelBox" class="card">
-<select id="tTipo">
-<option>RENUEVATE</option>
-<option>CHIP</option>
-<option>PORTA</option>
-</select>
-<input id="tNum" placeholder="Número" maxlength="10">
-<input id="tICCID" placeholder="ICCID">
-<input id="tIMEI" placeholder="IMEI">
-<input id="tMarca" placeholder="Marca">
-</div>
-
-<!-- ATT -->
-<div id="attBox" class="card hidden">
-<select id="aChip">
-<option value="NO">NO CHIP TELCEL</option>
-<option value="SI">SI CHIP TELCEL</option>
-</select>
-<input id="aNum" placeholder="Número" maxlength="10">
-<input id="aICCID" placeholder="ICCID">
-<input id="aMarca" placeholder="Marca">
-</div>
-
-<!-- BAIT -->
-<div id="baitBox" class="card hidden">
-<select id="bChip">
-<option value="NO">NO CHIP TELCEL</option>
-<option value="SI">SI CHIP TELCEL</option>
-</select>
-<input id="bNum" placeholder="Número" maxlength="10">
-<input id="bICCID" placeholder="ICCID">
-<input id="bMarca" placeholder="Marca">
-</div>
-
-<button onclick="guardar()">💾 Guardar Venta</button>
-
-<div class="card">
-<h3 style="margin-top:0; color:var(--amarillo)">📊 Resumen por Compañía</h3>
-<div id="resumenCompanias"></div>
-</div>
-
-<div class="card">
-<canvas id="grafica"></canvas>
-</div>
-
-<button onclick="reporte()">📄 Generar Reporte Word</button>
-<button onclick="salir()" style="background:linear-gradient(135deg,#d90429,#9d0208); color:white;">🚪 Cerrar Sesión</button>
-
-<div class="card">
-<table>
-<thead>
-<tr><th>Comp</th><th>Número</th><th>Marca</th><th>Chip</th><th>Fecha</th></tr>
-</thead>
-<tbody id="tabla"></tbody>
-</table>
-</div>
-
-</div>
-
-<audio id="sonidoGuardar" src="https://cdn.pixabay.com/audio/2022/03/15/audio_2b28c3e4a8.mp3"></audio>
 
 <script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
+        authDomain: "ventastelcel4029.firebaseapp.com",
+        projectId: "ventastelcel4029",
+        storageBucket: "ventastelcel4029.appspot.com",
+        messagingSenderId: "542284923420",
+        appId: "1:542284923420:web:4887352d12e86095690623"
+    };
 
-/* FIREBASE COMPLETO - YA NO FALLA */
-const firebaseConfig = {
-apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
-authDomain: "ventastelcel4029.firebaseapp.com",
-databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com",
-projectId: "ventastelcel4029",
-storageBucket: "ventastelcel4029.firebasestorage.app",
-messagingSenderId: "480758010888",
-appId: "1:480758010888:web:e948c54f0217536aa9adbd"
-};
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    let chart;
+    let captchaSol = 0;
 
-firebase.initializeApp(firebaseConfig);
-let auth = firebase.auth();
-let db = firebase.database();
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-
-let chart;
-let deferredPrompt;
-
-/* PWA */
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    document.getElementById('installBanner').style.display = 'block';
-});
-
-function instalarApp(){
-    deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(() => {
-        document.getElementById('installBanner').style.display = 'none';
-    });
-}
-
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js');
-}
-
-/* CAPTCHA */
-let captcha="";
-function generarCaptcha(){
-let chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-captcha="";
-for(let i=0;i<5;i++){
-captcha+=chars[Math.floor(Math.random()*chars.length)];
-}
-document.getElementById('captchaText').innerText=captcha;
-}
-
-/* INICIO */
-function inicio(){
-generarCaptcha();
-document.getElementById('fecha').value=new Date().toISOString().split("T")[0];
-
-auth.onAuthStateChanged(user=>{
-if(user){
-document.getElementById('loginBox').classList.add("hidden");
-document.getElementById('appBox').classList.remove("hidden");
-actualizarTodo();
-}else{
-document.getElementById('loginBox').classList.remove("hidden");
-document.getElementById('appBox').classList.add("hidden");
-}
-});
-}
-
-/* LOGIN */
-function login(){
-if(document.getElementById('captchaInput').value!==captcha){
-document.getElementById('msgLogin').innerText="Captcha incorrecto";
-generarCaptcha();
-return;
-}
-auth.signInWithEmailAndPassword(document.getElementById('correo').value.trim(),document.getElementById('pass').value)
-.catch(e=>{
-document.getElementById('msgLogin').innerText = e.code==="auth/user-not-found"? "Usuario no registrado" :
-e.code==="auth/wrong-password"? "Contraseña incorrecta" : e.message;
-generarCaptcha();
-});
-}
-
-/* REGISTRO */
-function registro(){
-auth.createUserWithEmailAndPassword(document.getElementById('correo').value.trim(),document.getElementById('pass').value)
-.then(()=> {
-    document.getElementById('msgLogin').style.color='#2a9d8f';
-    document.getElementById('msgLogin').innerText="Registrado. Ahora da clic en Entrar";
-})
-.catch(e=>document.getElementById('msgLogin').innerText=e.message);
-}
-
-/* RECUPERAR */
-function recuperar(){
-auth.sendPasswordResetEmail(document.getElementById('correo').value)
-.then(()=>alert("Correo de recuperación enviado"))
-.catch(e=>alert(e.message));
-}
-
-function salir(){
-    auth.signOut();
-}
-
-/* UI */
-function mostrar(){
-document.getElementById('telcelBox').classList.add("hidden");
-document.getElementById('attBox').classList.add("hidden");
-document.getElementById('baitBox').classList.add("hidden");
-
-if(document.getElementById('tipo').value==="TELCEL") document.getElementById('telcelBox').classList.remove("hidden");
-if(document.getElementById('tipo').value==="ATT") document.getElementById('attBox').classList.remove("hidden");
-if(document.getElementById('tipo').value==="BAIT") document.getElementById('baitBox').classList.remove("hidden");
-}
-
-/* FORMATO FECHA CORREGIDO */
-function formatoFecha(f){
-    const fecha = new Date(f + 'T00:00:00');
-    return fecha.toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
-}
-
-/* GUARDAR */
-function guardar(){
-let f=formatoFecha(document.getElementById('fecha').value);
-let data=JSON.parse(localStorage.getItem("gen")||"[]");
-let tipo = document.getElementById('tipo').value;
-
-let venta = {comp:tipo, fecha:f, id:Date.now()};
-
-if(tipo==="TELCEL"){
-    if(!document.getElementById('tNum').value){alert("Falta número"); return;}
-    venta.tipo=document.getElementById('tTipo').value;
-    venta.num=document.getElementById('tNum').value;
-    venta.iccid=document.getElementById('tICCID').value;
-    venta.imei=document.getElementById('tIMEI').value;
-    venta.marca=document.getElementById('tMarca').value || "N/A";
-    venta.chip="N/A";
-}
-
-if(tipo==="ATT"){
-    if(!document.getElementById('aNum').value){alert("Falta número"); return;}
-    venta.num=document.getElementById('aNum').value;
-    venta.iccid=document.getElementById('aICCID').value;
-    venta.marca=document.getElementById('aMarca').value || "N/A";
-    venta.chip=document.getElementById('aChip').value;
-}
-
-if(tipo==="BAIT"){
-    if(!document.getElementById('bNum').value){alert("Falta número"); return;}
-    venta.num=document.getElementById('bNum').value;
-    venta.iccid=document.getElementById('bICCID').value;
-    venta.marca=document.getElementById('bMarca').value || "N/A";
-    venta.chip=document.getElementById('bChip').value;
-}
-
-data.unshift(venta);
-localStorage.setItem("gen",JSON.stringify(data));
-
-// Sonido
-document.getElementById('sonidoGuardar').play();
-
-// Limpiar campos
-if(tipo==="TELCEL"){document.getElementById('tNum').value='';document.getElementById('tICCID').value='';document.getElementById('tIMEI').value='';document.getElementById('tMarca').value='';}
-if(tipo==="ATT"){document.getElementById('aNum').value='';document.getElementById('aICCID').value='';document.getElementById('aMarca').value='';}
-if(tipo==="BAIT"){document.getElementById('bNum').value='';document.getElementById('bICCID').value='';document.getElementById('bMarca').value='';}
-
-actualizarTodo();
-}
-
-/* ACTUALIZAR TODO */
-function actualizarTodo(){
-    cargar();
-    actualizarGrafica();
-    mostrarLider();
-    resumenCompanias();
-}
-
-/* TABLA */
-function cargar(){
-let data=JSON.parse(localStorage.getItem("gen")||"[]");
-let fechaFiltro = formatoFecha(document.getElementById('fecha').value);
-let dataFiltrada = data.filter(v => v.fecha === fechaFiltro);
-
-document.getElementById('tabla').innerHTML=dataFiltrada.slice(0,20).map(v=>`
-<tr>
-<td><b>${v.comp}</b></td>
-<td>${v.num}</td>
-<td>${v.marca}</td>
-<td>${v.chip}</td>
-<td>${v.fecha}</td>
-</tr>
-`).join("");
-}
-
-/* COMPAÑÍA LÍDER */
-function mostrarLider(){
-    let data=JSON.parse(localStorage.getItem("gen")||"[]");
-    let fechaFiltro = formatoFecha(document.getElementById('fecha').value);
-    let dataDia = data.filter(v => v.fecha === fechaFiltro);
-
-    if(dataDia.length === 0){
-        document.getElementById('liderCompania').innerHTML = '<div class="card" style="text-align:center;">No hay ventas en esta fecha</div>';
-        return;
+    function inicio() {
+        document.getElementById('fechaIn').value = new Date().toISOString().split('T')[0];
+        auth.onAuthStateChanged(user => {
+            if (user) { loginBox.classList.add('hidden'); appBox.classList.remove('hidden'); escucharDatos(); }
+            else { loginBox.classList.remove('hidden'); appBox.classList.add('hidden'); }
+        });
     }
 
-    let conteo = {TELCEL:0, ATT:0, BAIT:0};
-    dataDia.forEach(v => conteo[v.comp]++);
-
-    let total = dataDia.length;
-    let ordenado = Object.entries(conteo).sort((a,b) => b[1] - a[1]);
-    let lider = ordenado[0];
-
-    let porcLider = ((lider[1]/total)*100).toFixed(1);
-    let colorLider = lider[0] === 'TELCEL'? '#003566' : lider[0] === 'ATT'? '#00b4d8' : '#ffc300';
-    let emojiLider = lider[0] === 'TELCEL'? '📱' : lider[0] === 'ATT'? '📶' : '🚀';
-
-    let html = `
-        <div class="lider" style="border-color:${colorLider}">
-            <div class="corona">👑</div>
-            <div style="color:${colorLider}; font-size:20px;">${emojiLider} ${lider[0]} ES LÍDER</div>
-            <div style="font-size:16px; margin-top:6px;">${lider[1]} ventas - ${porcLider}% del día</div>
-        </div>
-    `;
-
-    document.getElementById('liderCompania').innerHTML = html;
-}
-
-/* RESUMEN CON BARRAS */
-function resumenCompanias(){
-    let data=JSON.parse(localStorage.getItem("gen")||"[]");
-    let fechaFiltro = formatoFecha(document.getElementById('fecha').value);
-    let dataDia = data.filter(v => v.fecha === fechaFiltro);
-
-    let t=0,a=0,b=0;
-    dataDia.forEach(v=>{
-        if(v.comp==="TELCEL") t++;
-        if(v.comp==="ATT") a++;
-        if(v.comp==="BAIT") b++;
-    });
-
-    let total = dataDia.length || 1;
-
-    document.getElementById('resumenCompanias').innerHTML = `
-        <div class="barra-compania">
-            <div class="label-comp" style="color:#003566;">TELCEL</div>
-            <div class="barra-fondo">
-                <div class="barra-progreso" style="background:#003566; width:${(t/total)*100}%">${t}</div>
-            </div>
-            <b>${(t/total*100).toFixed(0)}%</b>
-        </div>
-        <div class="barra-compania">
-            <div class="label-comp" style="color:#00b4d8;">ATT</div>
-            <div class="barra-fondo">
-                <div class="barra-progreso" style="background:#00b4d8; width:${(a/total)*100}%">${a}</div>
-            </div>
-            <b>${(a/total*100).toFixed(0)}%</b>
-        </div>
-        <div class="barra-compania">
-            <div class="label-comp" style="color:#ffc300;">BAIT</div>
-            <div class="barra-fondo">
-                <div class="barra-progreso" style="background:#ffc300; width:${(b/total)*100}%">${b}</div>
-            </div>
-            <b>${(b/total*100).toFixed(0)}%</b>
-        </div>
-        <div style="margin-top:10px; text-align:center; font-size:18px;">
-            <b>Total del día: ${dataDia.length} ventas</b>
-        </div>
-    `;
-}
-
-/* GRAFICA CORREGIDA */
-function actualizarGrafica(){
-let data=JSON.parse(localStorage.getItem("gen")||"[]");
-let f=formatoFecha(document.getElementById('fecha').value);
-
-let t=0,a=0,b=0;
-data.forEach(v=>{
-if(v.fecha!==f) return;
-if(v.comp==="TELCEL") t++;
-if(v.comp==="ATT") a++;
-if(v.comp==="BAIT") b++;
-});
-
-let maxValor = Math.max(t,a,b);
-const ctx=document.getElementById("grafica").getContext("2d");
-
-let datos={
-labels:["Telcel","AT&T","BAIT"],
-datasets:[{
-    label:`Ventas ${f}`,
-    data:[t,a,b],
-    backgroundColor:[
-        t === maxValor && t > 0? '#ffd60a' : '#003566',
-        a === maxValor && a > 0? '#ffd60a' : '#00b4d8',
-        b === maxValor && b > 0? '#ffd60a' : '#ffc300'
-    ],
-    borderWidth:2,
-    borderColor:'#000814'
-}]
-};
-
-if(chart){
-chart.data=datos;
-chart.update();
-}else{
-chart=new Chart(ctx,{
-    type:"bar",
-    data:datos,
-    options:{
-        responsive:true,
-        plugins:{legend:{display:false}},
-        scales:{
-            y:{beginAtZero:true, ticks:{color:'white'}, grid:{color:'rgba(255,255,255,.1)'}},
-            x:{ticks:{color:'white'}, grid:{display:false}}
-        }
+    // --- SEGURIDAD Y ACCESO ---
+    function mostrarRegistro() {
+        loginTitle.innerText = "Registrar Nuevo Usuario";
+        btnPrincipal.innerText = "CREAR CUENTA";
+        btnPrincipal.setAttribute("onclick", "registrar()");
+        btnVolver.classList.remove('hidden');
     }
-});
-}
-}
 
-/* REPORTE */
-function reporte(){
-let data=JSON.parse(localStorage.getItem("gen")||"[]");
-let f=formatoFecha(document.getElementById('fecha').value);
-let dataDia = data.filter(v => v.fecha === f);
+    function mostrarRecuperar() {
+        loginTitle.innerText = "Recuperar Contraseña";
+        pass.classList.add('hidden');
+        captchaBox.classList.remove('hidden');
+        btnPrincipal.innerText = "ENVIAR CORREO";
+        btnPrincipal.setAttribute("onclick", "recuperarPass()");
+        btnVolver.classList.remove('hidden');
+        generarCaptcha();
+    }
 
-if(dataDia.length===0){
-alert("No hay datos para esta fecha");
-return;
-}
+    function generarCaptcha() {
+        const n1 = Math.floor(Math.random() * 10) + 1;
+        const n2 = Math.floor(Math.random() * 10) + 1;
+        captchaSol = n1 + n2;
+        document.getElementById('captchaLabel').innerText = `${n1} + ${n2} = ?`;
+    }
 
-let t=0,a=0,b=0;
-dataDia.forEach(v=>{
-if(v.comp==="TELCEL") t++;
-if(v.comp==="ATT") a++;
-if(v.comp==="BAIT") b++;
-});
+    function registrar() {
+        auth.createUserWithEmailAndPassword(correo.value, pass.value).then(() => alert("Cuenta creada con éxito")).catch(e => alert(e.message));
+    }
 
-let lider = t>a && t>b? 'TELCEL' : a>b? 'AT&T' : 'BAIT';
+    function recuperarPass() {
+        if(parseInt(captchaInput.value) !== captchaSol) return alert("Captcha incorrecto. Intenta de nuevo.");
+        if(!correo.value) return alert("Escribe tu correo");
+        
+        auth.sendPasswordResetEmail(correo.value)
+            .then(() => alert("Enlace enviado a tu correo. Revisa Spam."))
+            .catch(e => alert(e.message));
+    }
 
-let contenido=`
-<!DOCTYPE html>
-<html>
-<body style="font-family:Arial; padding:20px;">
-<h1>REPORTE DE VENTAS PRO</h1>
-<h2>Fecha: ${f}</h2>
-<h3>🏆 Compañía Líder: ${lider}</h3>
-<table border="1" cellpadding="10" style="border-collapse:collapse; width:100%; margin:20px 0;">
-<tr style="background:#003566; color:white;"><th>Compañía</th><th>Ventas</th><th>Porcentaje</th></tr>
-<tr><td><b>Telcel</b></td><td>${t}</td><td>${(t/dataDia.length*100).toFixed(1)}%</td></tr>
-<tr><td><b>AT&T</b></td><td>${a}</td><td>${(a/dataDia.length*100).toFixed(1)}%</td></tr>
-<tr><td><b>BAIT</b></td><td>${b}</td><td>${(b/dataDia.length*100).toFixed(1)}%</td></tr>
-<tr style="background:#ffc300; color:#000814;"><td><b>TOTAL</b></td><td><b>${dataDia.length}</b></td><td><b>100%</b></td></tr>
-</table>
-<h3>Detalle de Ventas</h3>
-<table border="1" cellpadding="8" style="border-collapse:collapse; width:100%;">
-<tr style="background:#003566; color:white;"><th>Comp</th><th>Número</th><th>Marca</th><th>Chip</th></tr>
-${dataDia.map(v=>`
-<tr>
-<td><b>${v.comp}</b></td>
-<td>${v.num}</td>
-<td>${v.marca}</td>
-<td>${v.chip}</td>
-</tr>`).join("")}
-</table>
-<p style="margin-top:30px; color:#666;">Generado: ${new Date().toLocaleString('es-MX')}</p>
-</body>
-</html>
-`;
+    function login() { auth.signInWithEmailAndPassword(correo.value, pass.value).catch(e => alert("Error: " + e.message)); }
+    function logout() { if(confirm("¿Cerrar sesión?")) auth.signOut(); }
 
-let blob=new Blob(['\ufeff',contenido],{type:"application/msword"});
-let url=URL.createObjectURL(blob);
-let link=document.createElement("a");
-link.href=url;
-link.download=`Reporte_Ventas_${f.replace(/\//g,'-')}.doc`;
-document.body.appendChild(link);
-link.click();
-document.body.removeChild(link);
-}
+    // --- LÓGICA DE NEGOCIO ---
+    function alternar() {
+        const c = document.getElementById('compIn').value;
+        document.getElementById('boxTelcel').classList.toggle('hidden', c !== 'TELCEL');
+        document.getElementById('boxOtras').classList.toggle('hidden', c === 'TELCEL');
+    }
 
+    function guardarFirebase() {
+        const comp = document.getElementById('compIn').value;
+        db.collection("ventas").add({
+            fecha: fechaIn.value, compania: comp, numero: numIn.value, marca: marcaIn.value || "AK", modelo: modeloIn.value || "S/M",
+            iccid: comp === 'TELCEL' ? iccidIn.value : iccOtras.value,
+            chip_telcel_aparte: comp !== 'TELCEL' ? chipTelcelPregunta.value : "N/A",
+            detalle: comp === 'TELCEL' ? tipoTelcel.value : "COMPETENCIA",
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(() => { alert("🚀 Sincronizado"); document.querySelectorAll('input:not([type="date"])').forEach(i => i.value = ""); });
+    }
+
+    function escucharDatos() {
+        db.collection("ventas").orderBy("timestamp", "desc").onSnapshot(snapshot => {
+            let html = ""; let c = { TELCEL: 0, ATT: 0, BAIT: 0 }; let data = [];
+            snapshot.forEach(doc => {
+                const v = doc.data(); data.push(v); c[v.compania]++;
+                html += `<tr><td>${v.fecha}</td><td><b>${v.compania}</b></td><td>${v.numero}</td><td>${v.marca} ${v.modelo}</td><td>${v.iccid}</td><td>${v.detalle}</td></tr>`;
+            });
+            document.getElementById('tablaGlobal').innerHTML = html;
+            window.datosActuales = data;
+            actualizarGrafica(c);
+            document.getElementById('aiAdvice').innerHTML = `Dominio actual: <b>Telcel (${c.TELCEL})</b> vs Otros (${c.ATT+c.BAIT})`;
+        });
+    }
+
+    function actualizarGrafica(c) {
+        const ctx = document.getElementById('chartCloud').getContext('2d');
+        if(chart) chart.destroy();
+        chart = new Chart(ctx, { type: 'bar', data: { labels: ['Telcel', 'AT&T', 'BAIT'], datasets: [{ data: [c.TELCEL, c.ATT, c.BAIT], backgroundColor: ['#ffd60a', '#00b4d8', '#ef233c'] }] }, options: { scales: { y: { ticks: { color: 'white' } }, x: { ticks: { color: 'white' } } } } });
+    }
+
+    function exportarExcel() {
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(window.datosActuales);
+        XLSX.utils.book_append_sheet(wb, ws, "Reporte");
+        XLSX.writeFile(wb, "Auditoria_Elite_Cloud.xlsx");
+    }
 </script>
-
 </body>
 </html>
