@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Auditor Pro - Elite v3.0</title>
+    <title>Panel Auditor Pro - Elite</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -26,7 +26,7 @@
         .btn-logout { background: #d00000; color: white; width: auto; padding: 8px 15px; font-size: 0.8em; }
         
         .table-container { background: white; border-radius: 15px; overflow-x: auto; margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; color: #222; font-size: 0.85em; min-width: 800px; }
+        table { width: 100%; border-collapse: collapse; color: #222; font-size: 0.85em; }
         th { background: #f1f1f1; padding: 12px; text-align: left; }
         td { padding: 10px; border-bottom: 1px solid #eee; }
         .hidden { display: none; }
@@ -62,8 +62,8 @@
 
             <input id="numIn" type="tel" placeholder="Número Telefónico">
             
-            <input id="marcaIn" type="text" placeholder="Marca (AK)">
-            <input id="modeloIn" type="text" placeholder="Modelo">
+            <input id="marcaIn" type="text" placeholder="Marca (Ej. Samsung)">
+            <input id="modeloIn" type="text" placeholder="Modelo (Ej. Galaxy A54)">
 
             <div id="boxTelcel">
                 <label>Tipo de Operación</label>
@@ -157,7 +157,7 @@
     }
 
     function login() { auth.signInWithEmailAndPassword(correo.value, pass.value).catch(e => alert(e.message)); }
-    function logout() { if(confirm("¿Cerrar sesión?")) auth.signOut(); }
+    function logout() { auth.signOut(); }
 
     function guardarFirebase() {
         const comp = document.getElementById('compIn').value;
@@ -175,7 +175,7 @@
         };
 
         db.collection("ventas").add(venta).then(() => {
-            alert("✅ Sincronizado");
+            alert("✅ Sincronizado en la nube");
             document.querySelectorAll('input:not([type="date"])').forEach(i => i.value = "");
         });
     }
@@ -222,30 +222,25 @@
     }
 
     function exportarExcel() {
-        if(!window.datosActuales) return alert("Sin datos");
         const wb = XLSX.utils.book_new();
         const d = window.datosActuales;
 
-        // Pestaña Telcel
         const tel = d.filter(x => x.compania === 'TELCEL').map(v => ({
-            "COMPAÑÍA": v.compania, "FECHA": v.fecha, "TIPO": v.detalle_telcel, "NÚMERO": v.numero, "MARCA": v.marca, "MODELO": v.modelo, "IMEI": v.imei, "ICCID": v.iccid
+            "FECHA": v.fecha, "TIPO": v.detalle_telcel, "NÚMERO": v.numero, "MARCA": v.marca, "MODELO": v.modelo, "IMEI": v.imei, "ICCID": v.iccid
         }));
         const ws1 = XLSX.utils.json_to_sheet(tel);
-        ws1['!cols'] = [{wch:12},{wch:12},{wch:12},{wch:15},{wch:15},{wch:15},{wch:20},{wch:25}];
+        ws1['!cols'] = [{wch:12},{wch:12},{wch:15},{wch:15},{wch:15},{wch:20},{wch:25}];
         XLSX.utils.book_append_sheet(wb, ws1, "TELCEL");
 
-        // Pestaña Competencia
         const otr = d.filter(x => x.compania !== 'TELCEL').map(v => ({
-            "COMPAÑÍA": v.compania, "FECHA": v.fecha, "NÚMERO": v.numero, "MARCA": v.marca, "MODELO": v.modelo, "ICC ORIGINAL": v.iccid, "CHIP TELCEL APARTE": v.chip_telcel_aparte
+            "FECHA": v.fecha, "COMPAÑÍA": v.compania, "NÚMERO": v.numero, "MARCA": v.marca, "MODELO": v.modelo, "ICC ORIGINAL": v.iccid, "CHIP TELCEL APARTE": v.chip_telcel_aparte
         }));
         const ws2 = XLSX.utils.json_to_sheet(otr);
         ws2['!cols'] = [{wch:12},{wch:12},{wch:15},{wch:15},{wch:15},{wch:25},{wch:18}];
         XLSX.utils.book_append_sheet(wb, ws2, "COMPETENCIA");
 
-        XLSX.writeFile(wb, `Reporte_Auditoria_Elite_${new Date().getTime()}.xlsx`);
+        XLSX.writeFile(wb, `Auditoria_Elite_${new Date().toLocaleDateString('es-MX').replace(/\//g,'-')}.xlsx`);
     }
 </script>
 </body>
 </html>
-
-
