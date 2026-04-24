@@ -3,206 +3,274 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Auditor Telcel PRO | Privacidad Excel</title>
+<title>Ventas PRO Elite</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <style>
-body { margin:0; font-family:'Segoe UI', sans-serif; background: #000814; color:white; }
-.app { max-width:1100px; margin:auto; padding:20px; }
-.card { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius:15px; padding:20px; margin-bottom:15px; border: 1px solid rgba(255,255,255,0.1); }
-input, select { width:100%; padding:12px; border-radius:10px; border:none; background:rgba(255,255,255,0.2); color:white; margin-bottom:10px; box-sizing: border-box; }
-button { background: #ffc300; color:#001d3d; padding:14px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; margin-bottom:10px; transition: 0.3s; }
-button:hover { opacity: 0.9; transform: scale(1.01); }
-.hidden { display:none; }
-table { width:100%; background:white; color:black; border-collapse: collapse; border-radius: 10px; overflow: hidden; font-size: 13px; }
-td, th { border:1px solid #ddd; padding:10px; text-align: left; }
-th { background: #eee; }
-.btn-salir { background: #d00000; color: white; width: auto; padding: 5px 15px; float: right; margin-bottom: 10px; }
-.btn-del { background: #ff4d4d; color: white; padding: 5px 8px; border-radius: 5px; cursor: pointer; border: none; font-size: 12px; }
-label { display: block; margin-bottom: 5px; font-size: 12px; color: #ffc300; font-weight: bold; }
+body { margin:0; font-family:'Segoe UI'; background:linear-gradient(135deg,#001d3d,#003566,#000814); color:white;}
+.app { max-width:480px; margin:auto; padding:20px;}
+.card { background:rgba(255,255,255,.08); backdrop-filter:blur(10px); border-radius:15px; padding:15px; margin-bottom:15px;}
+input,select,button { width:100%; padding:12px; border-radius:10px; border:none; margin-top:8px;}
+button { background:#ffc300; font-weight:bold; color:#003566;}
+.btn-google { background:#db4437; color:white; }
+.login { max-width:350px; margin:100px auto; background:white; color:black; padding:25px; border-radius:15px;}
+.hidden { display:none;}
 </style>
 </head>
 
 <body onload="inicio()">
 
-<div id="loginBox" class="card" style="max-width:400px;margin:80px auto;text-align:center;">
-    <h2 style="color:#ffc300;">🗂️ Acceso Auditor</h2>
-    <input id="correo" type="email" placeholder="Tu Correo">
-    <input id="pass" type="password" placeholder="Tu Contraseña">
-    <button onclick="login()">ENTRAR</button>
+<div id="loginBox" class="login">
+<h2>Acceso</h2>
+<input id="u" placeholder="Correo">
+<input id="p" type="password" placeholder="Contraseña">
+
+<button onclick="loginEmail()">Entrar con correo</button>
+<button class="btn-google" onclick="loginGoogle()">Entrar con Google</button>
+
+<p id="estado"></p>
 </div>
 
 <div id="appBox" class="app hidden">
-    <button class="btn-salir" onclick="salir()">Cerrar Sesión</button>
-    <h2 id="saludo" style="color:#ffc300; margin: 0 0 20px 0;">Panel de Ventas</h2>
 
 <div class="card">
-    <label>📅 Fecha</label>
-    <input type="date" id="fecha">
-    <label>📡 Compañía</label>
-    <select id="tipo" onchange="mostrarCampos()">
-        <option value="TELCEL">TELCEL</option>
-        <option value="ATT">AT&T</option>
-        <option value="BAIT">BAIT</option>
-    </select>
+<input id="meta" placeholder="Meta mensual">
 </div>
 
-<div id="telcelBox" class="card">
-    <label>Tipo de Proceso</label>
-    <select id="tTipo" onchange="ajustarFormularioTelcel()">
-        <option value="AK">AK</option>
-        <option value="CHIP">CHIP</option>
-        <option value="PORTA">PORTA</option>
-        <option value="RENUEVATE">RENUEVATE</option>
-    </select>
-    <div id="f_num"><input id="tNum" placeholder="Número Telefónico"></div>
-    <div id="f_marca"><input id="tMarca" placeholder="Marca"></div>
-    <div id="f_modelo"><input id="tModelo" placeholder="Modelo"></div>
-    <div id="f_iccid"><input id="tICCID" placeholder="ICCID Nuevo / Chip"></div>
-    <div id="f_iccid_ant"><input id="tICCID_ant" placeholder="ICCID Antiguo"></div>
-    <div id="f_imei"><input id="tIMEI" placeholder="IMEI"></div>
-    <div id="f_nip"><input id="tNip" placeholder="NIP"></div>
-    <div id="f_ak_nuevo"><input id="tAkNuevo" placeholder="AK Nuevo"></div>
-</div>
-
-<button onclick="guardar()">💾 GUARDAR VENTA</button>
-
-<div class="card"><canvas id="grafica"></canvas></div>
+<div class="card" id="dashboard"></div>
 
 <div class="card">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <h3 style="color:#ffc300;">🔍 Detalle Técnico Telcel</h3>
-        <button onclick="descargarExcel()" style="width:auto; background:#2b9348; color:white; padding: 8px 15px;">📊 EXCEL (SIN NIP/AK)</button>
-    </div>
-    <div style="overflow-x:auto;">
-        <table>
-            <thead>
-                <tr><th>Fecha</th><th>Número</th><th>Proceso</th><th>Detalles Técnicos</th><th>Borrar</th></tr>
-            </thead>
-            <tbody id="cuerpoTel"></tbody>
-        </table>
-    </div>
+<canvas id="grafica"></canvas>
 </div>
+
+<div class="card" id="ranking"></div>
+
+<form id="fReg">
+<div class="card">
+
+<select id="comp">
+<option>TELCEL</option>
+<option>ATT</option>
+<option>BAIT</option>
+</select>
+
+<select id="tipo" onchange="cambiarFormulario()">
+<option value="">Tipo</option>
+<option value="PORTA">PORTA</option>
+<option value="AK">AK</option>
+<option value="CHIP">CHIP</option>
+<option value="RENUEVATE">RENUEVATE</option>
+</select>
+
+<input id="fecha" placeholder="Fecha">
+<input id="numero" placeholder="Número">
+
+<div id="camposExtra"></div>
+
+<input id="prom" placeholder="Promotor">
+
+</div>
+
+<button>Guardar</button>
+</form>
+
+<div id="lista"></div>
 
 </div>
 
 <script>
-const firebaseConfig = { 
-    apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc", 
-    authDomain: "ventastelcel4029.firebaseapp.com",
-    databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com"
+
+let db, auth, chart, online=false;
+
+const firebaseConfig={
+apiKey:"TU_API",
+authDomain:"TU_AUTH",
+databaseURL:"TU_DB",
+projectId:"TU_ID"
 };
-firebase.initializeApp(firebaseConfig);
-let auth = firebase.auth();
-let db = firebase.database();
-let chart;
-let todasVentasRaw = {};
 
 function inicio(){
-    fecha.value = new Date().toISOString().split("T")[0];
-    ajustarFormularioTelcel();
-    auth.onAuthStateChanged(user => {
-        if(user){
-            loginBox.classList.add("hidden");
-            appBox.classList.remove("hidden");
-            escucharDatos();
-        }
-    });
+try{
+firebase.initializeApp(firebaseConfig);
+auth=firebase.auth();
+db=firebase.database();
+online=true;
+
+auth.onAuthStateChanged(user=>{
+if(user){
+mostrarApp();
+estado.innerText="Conectado ☁️";
+}
+});
+}catch(e){
+estado.innerText="Modo offline";
+}
 }
 
-function escucharDatos() {
-    db.ref('ventas').on('value', (snapshot) => {
-        todasVentasRaw = snapshot.val() || {};
-        cargarTablas();
-        actualizarGrafica();
-    });
+function loginEmail(){
+auth.signInWithEmailAndPassword(u.value,p.value)
+.catch(err=>{
+if(err.code==="auth/user-not-found"){
+auth.createUserWithEmailAndPassword(u.value,p.value);
+}else{
+alert(err.message);
+}
+});
 }
 
-function ajustarFormularioTelcel() {
-    const p = tTipo.value;
-    const campos = ["f_num", "f_marca", "f_modelo", "f_iccid", "f_iccid_ant", "f_imei", "f_nip", "f_ak_nuevo"];
-    campos.forEach(c => document.getElementById(c).classList.add("hidden"));
-
-    if(p === "AK") ["f_num", "f_marca", "f_modelo", "f_iccid", "f_imei"].forEach(c => document.getElementById(c).classList.remove("hidden"));
-    else if(p === "CHIP") ["f_num", "f_iccid"].forEach(c => document.getElementById(c).classList.remove("hidden"));
-    else if(p === "PORTA") ["f_num", "f_iccid", "f_nip"].forEach(c => document.getElementById(c).classList.remove("hidden"));
-    else if(p === "RENUEVATE") ["f_num", "f_iccid", "f_iccid_ant", "f_imei", "f_ak_nuevo"].forEach(c => document.getElementById(c).classList.remove("hidden"));
+function loginGoogle(){
+let provider=new firebase.auth.GoogleAuthProvider();
+auth.signInWithPopup(provider)
+.catch(err=>alert(err.message));
 }
 
-function login(){ auth.signInWithEmailAndPassword(correo.value, pass.value); }
-function salir(){ auth.signOut().then(()=>window.location.reload()); }
-
-function guardar(){
-    let v = { 
-        comp: tipo.value, 
-        fecha: fecha.value, 
-        num: tNum.value,
-        proceso: tTipo.value,
-        marca: tMarca.value, 
-        modelo: tModelo.value,
-        iccid: tICCID.value, 
-        iccid_ant: tICCID_ant.value,
-        imei: tIMEI.value, 
-        nip: tNip.value, 
-        ak_nuevo: tAkNuevo.value 
-    };
-    db.ref('ventas').push(v).then(() => alert("Guardado"));
+function mostrarApp(){
+loginBox.classList.add("hidden");
+appBox.classList.remove("hidden");
+cargar();
 }
 
-function eliminarVenta(id) { if(confirm("¿Borrar?")) db.ref('ventas/' + id).remove(); }
+function cambiarFormulario(){
+let t=tipo.value;
 
-function cargarTablas(){
-    cuerpoTel.innerHTML = "";
-    Object.keys(todasVentasRaw).reverse().forEach(id => {
-        const v = todasVentasRaw[id];
-        if(v.comp === "TELCEL") {
-            let detalles = `<b>ICCID:</b> ${v.iccid || '--'}`;
-            if(v.imei) detalles += ` | <b>IMEI:</b> ${v.imei}`;
-            if(v.nip) detalles += ` | <b>NIP:</b> ${v.nip}`;
-            if(v.ak_nuevo) detalles += ` | <b>AK:</b> ${v.ak_nuevo}`;
-
-            cuerpoTel.innerHTML += `<tr><td>${v.fecha}</td><td>${v.num}</td><td>${v.proceso}</td><td>${detalles}</td><td><button class="btn-del" onclick="eliminarVenta('${id}')">🗑️</button></td></tr>`;
-        }
-    });
+if(t==="PORTA"){
+camposExtra.innerHTML=`
+<input id="cliente" placeholder="Nombre cliente">
+<input id="nip" placeholder="NIP">
+`;
+}
+else if(t==="AK"){
+camposExtra.innerHTML=`
+<input id="icc" placeholder="ICCID">
+<input id="imei" placeholder="IMEI">
+<input id="marca" placeholder="Marca">
+<input id="modelo" placeholder="Modelo">
+`;
+}
+else if(t==="CHIP"){
+camposExtra.innerHTML=`
+<input id="icc" placeholder="ICCID">
+<input id="recarga" placeholder="Recarga">
+`;
+}
+else if(t==="RENUEVATE"){
+camposExtra.innerHTML=`
+<input id="icc" placeholder="ICCID">
+<input id="imei" placeholder="IMEI">
+<input id="modelo" placeholder="Modelo">
+`;
+}
+else{
+camposExtra.innerHTML="";
+}
 }
 
-function descargarExcel(){
-    const ventasArray = Object.values(todasVentasRaw);
-    const wb = XLSX.utils.book_new();
-    const meses = [...new Set(ventasArray.map(v => v.fecha.substring(0, 7)))].sort().reverse();
-    
-    meses.forEach(mes => {
-        let datos = ventasArray.filter(v => v.fecha.startsWith(mes)).map(v => ({
-            "FECHA": v.fecha, 
-            "COMPAÑÍA": v.comp, 
-            "PROCESO": v.proceso, 
-            "NÚMERO": v.num,
-            "MARCA/MOD": `${v.marca || ''} ${v.modelo || ''}`, 
-            "ICCID": v.iccid, 
-            "ICCID ANT": v.iccid_ant,
-            "IMEI": v.imei
-            // El NIP y AK han sido eliminados de aquí para que no salgan en el Excel
-        }));
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(datos), mes);
-    });
-    XLSX.writeFile(wb, "Reporte_Auditoria_Ventas.xlsx");
+fReg.onsubmit=e=>{
+e.preventDefault();
+
+let v={
+id:Date.now(),
+comp:comp.value,
+tipo:tipo.value,
+fecha:fecha.value,
+numero:numero.value,
+prom:prom.value,
+
+cliente:document.getElementById("cliente")?.value||"",
+nip:document.getElementById("nip")?.value||"",
+icc:document.getElementById("icc")?.value||"",
+imei:document.getElementById("imei")?.value||"",
+marca:document.getElementById("marca")?.value||"",
+modelo:document.getElementById("modelo")?.value||"",
+recarga:document.getElementById("recarga")?.value||""
+};
+
+let local=JSON.parse(localStorage.getItem("ventas")||"[]");
+local.unshift(v);
+localStorage.setItem("ventas",JSON.stringify(local));
+
+if(online && auth.currentUser){
+db.ref("ventas").push(v);
 }
 
-function actualizarGrafica() {
-    let counts = { TELCEL: 0, ATT: 0, BAIT: 0 };
-    Object.values(todasVentasRaw).forEach(v => { if(v.fecha === fecha.value) counts[v.comp]++; });
-    const ctx = document.getElementById("grafica").getContext("2d");
-    if(chart) chart.destroy();
-    chart = new Chart(ctx, {
-        type: "bar",
-        data: { labels: ["Telcel", "AT&T", "BAIT"], datasets: [{ label: 'Hoy', data: [counts.TELCEL, counts.ATT, counts.BAIT], backgroundColor: ['#ffc300', '#00b4d8', '#ef233c'] }] }
-    });
+cargar();
+fReg.reset();
+camposExtra.innerHTML="";
+};
+
+function cargar(){
+let local=JSON.parse(localStorage.getItem("ventas")||"[]");
+
+lista.innerHTML=local.map(v=>`
+<div class="card">
+<b>${v.comp} - ${v.tipo}</b><br>
+📅 ${v.fecha}<br>
+📱 ${v.numero}<br>
+${v.cliente?"👤 "+v.cliente+"<br>":""}
+${v.nip?"🔑 "+v.nip+"<br>":""}
+${v.icc?"ICCID: "+v.icc+"<br>":""}
+${v.imei?"IMEI: "+v.imei+"<br>":""}
+${v.marca?"Marca: "+v.marca+"<br>":""}
+${v.modelo?"Modelo: "+v.modelo+"<br>":""}
+${v.recarga?"💰 "+v.recarga+"<br>":""}
+👤 ${v.prom}
+</div>
+`).join("");
+
+dashboardGen(local);
+graficaGen(local);
+rankingGen(local);
 }
+
+function dashboardGen(local){
+let t=0,a=0,b=0;
+
+local.forEach(v=>{
+if(v.comp==="TELCEL")t++;
+if(v.comp==="ATT")a++;
+if(v.comp==="BAIT")b++;
+});
+
+dashboard.innerHTML=`
+Total:${local.length}<br>
+Telcel:${t}<br>
+ATT:${a}<br>
+BAIT:${b}
+`;
+}
+
+function graficaGen(local){
+let data={TELCEL:0,ATT:0,BAIT:0};
+local.forEach(v=>data[v.comp]++);
+
+if(chart)chart.destroy();
+
+chart=new Chart(grafica,{
+type:"bar",
+data:{
+labels:["Telcel","ATT","BAIT"],
+datasets:[{data:[data.TELCEL,data.ATT,data.BAIT]}]
+}
+});
+}
+
+function rankingGen(local){
+let map={};
+local.forEach(v=>{
+map[v.prom]=(map[v.prom]||0)+1;
+});
+
+let orden=Object.entries(map).sort((a,b)=>b[1]-a[1]);
+
+ranking.innerHTML="<b>Ranking</b><br>"+
+orden.map((p,i)=>`${i+1}. ${p[0]} (${p[1]})`).join("<br>");
+}
+
 </script>
+
 </body>
 </html>
