@@ -3,10 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Auditor Telcel PRO | Google Auth</title>
+<title>Auditor Telcel PRO | Sincronizado</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
@@ -31,14 +32,11 @@ th { background: #eee; }
 
 <div id="loginBox" class="card" style="max-width:400px;margin:80px auto;text-align:center;">
     <h2 style="color:#ffc300;">🗂️ Acceso Auditor</h2>
-    
     <button class="btn-google" onclick="loginGoogle()">
         <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" width="20"> 
         Entrar con Google
     </button>
-    
     <div style="margin: 15px 0; opacity: 0.5;">— o usa tu correo —</div>
-
     <input id="correo" type="email" placeholder="Tu Correo">
     <input id="pass" type="password" placeholder="Tu Contraseña">
     <button onclick="login()">ENTRAR</button>
@@ -51,7 +49,7 @@ th { background: #eee; }
 
 <div class="card">
     <label>📅 Fecha</label>
-    <input type="date" id="fecha">
+    <input type="date" id="fecha" onchange="actualizarGrafica()">
     <label>📡 Compañía</label>
     <select id="tipo" onchange="mostrarCampos()">
         <option value="TELCEL">TELCEL</option>
@@ -89,13 +87,13 @@ th { background: #eee; }
     <input id="bMarca" placeholder="Marca/Modelo">
 </div>
 
-<button onclick="guardar()">💾 GUARDAR VENTA</button>
+<button onclick="guardar()">💾 GUARDAR Y SINCRONIZAR</button>
 
 <div class="card"><canvas id="grafica"></canvas></div>
 
 <div class="card">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <h3>📋 Historial Unificado (Todas)</h3>
+        <h3>📋 Historial Unificado (Nube)</h3>
         <button onclick="descargarExcel()" style="width:auto; background:#2b9348; color:white; padding: 8px 15px;">📊 EXCEL PRO</button>
     </div>
     <div style="overflow-x:auto;">
@@ -123,22 +121,37 @@ th { background: #eee; }
 </div>
 
 <script>
-const firebaseConfig = { apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc", authDomain: "ventastelcel4029.firebaseapp.com" };
+const firebaseConfig = { 
+    apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc", 
+    authDomain: "ventastelcel4029.firebaseapp.com",
+    databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com" // Asegúrate de que esta URL sea la correcta de tu consola
+};
 firebase.initializeApp(firebaseConfig);
+
 let auth = firebase.auth();
+let db = firebase.database();
 let chart;
+let todasVentas = [];
 
 function inicio(){
-    let hoy = new Date().toISOString().split("T")[0];
-    fecha.value = hoy;
+    fecha.value = new Date().toISOString().split("T")[0];
     auth.onAuthStateChanged(user => {
         if(user){
             loginBox.classList.add("hidden");
             appBox.classList.remove("hidden");
             saludo.innerText = "Bienvenido: " + (user.displayName || user.email);
-            cargarTablas();
-            actualizarGrafica();
+            escucharDatos();
         }
+    });
+}
+
+function escucharDatos() {
+    // Escucha cambios en la base de datos en tiempo real
+    db.ref('ventas').on('value', (snapshot) => {
+        const data = snapshot.val();
+        todasVentas = data ? Object.values(data).reverse() : [];
+        cargarTablas();
+        actualizarGrafica();
     });
 }
 
@@ -159,34 +172,27 @@ function mostrarCampos(){
 
 function guardar(){
     let f = fecha.value;
-    let gen = JSON.parse(localStorage.getItem("data_gen") || "[]");
-    let tel = JSON.parse(localStorage.getItem("data_tel") || "[]");
+    let nuevaVenta = {};
 
     if(tipo.value === "TELCEL"){
-        let v = { 
+        nuevaVenta = { 
             comp:"TELCEL", num:tNum.value, marca:tMarca.value, modelo:tModelo.value, 
             chip:tTipo.value, fecha:f, imei:tIMEI.value, iccid:tICCID.value 
         };
-        gen.unshift(v);
-        tel.unshift(v);
-        localStorage.setItem("data_tel", JSON.stringify(tel));
     } else if(tipo.value === "ATT") {
-        gen.unshift({ comp:"ATT", num:aNum.value, marca:aMarca.value, modelo:aChip.value, chip:aChip.value, fecha:f });
+        nuevaVenta = { comp:"ATT", num:aNum.value, marca:aMarca.value, modelo:aChip.value, chip:aChip.value, fecha:f };
     } else {
-        gen.unshift({ comp:"BAIT", num:bNum.value, marca:bMarca.value, modelo:bChip.value, chip:bChip.value, fecha:f });
+        nuevaVenta = { comp:"BAIT", num:bNum.value, marca:bMarca.value, modelo:bChip.value, chip:bChip.value, fecha:f };
     }
 
-    localStorage.setItem("data_gen", JSON.stringify(gen));
-    cargarTablas();
-    actualizarGrafica();
-    alert("Venta registrada con éxito");
+    // Guardar en Firebase (Nube) en lugar de LocalStorage
+    db.ref('ventas').push(nuevaVenta)
+        .then(() => alert("Venta Sincronizada en la Nube"))
+        .catch(e => alert("Error al sincronizar: " + e.message));
 }
 
 function cargarTablas(){
-    let gen = JSON.parse(localStorage.getItem("data_gen") || "[]");
-    let tel = JSON.parse(localStorage.getItem("data_tel") || "[]");
-
-    cuerpoGral.innerHTML = gen.map(v=>`
+    cuerpoGral.innerHTML = todasVentas.map(v=>`
         <tr>
             <td><span class="tag-telcel">${v.comp}</span></td>
             <td>${v.num}</td>
@@ -196,7 +202,8 @@ function cargarTablas(){
         </tr>
     `).join("");
 
-    cuerpoTel.innerHTML = tel.map(v=>`
+    const soloTelcel = todasVentas.filter(v => v.comp === "TELCEL");
+    cuerpoTel.innerHTML = soloTelcel.map(v=>`
         <tr>
             <td>${v.fecha}</td>
             <td><b>${v.chip}</b></td>
@@ -208,9 +215,8 @@ function cargarTablas(){
 }
 
 function actualizarGrafica() {
-    let gen = JSON.parse(localStorage.getItem("data_gen") || "[]");
     let counts = { TELCEL: 0, ATT: 0, BAIT: 0 };
-    gen.forEach(v => { if(v.fecha === fecha.value) counts[v.comp]++; });
+    todasVentas.forEach(v => { if(v.fecha === fecha.value) counts[v.comp]++; });
 
     const ctx = document.getElementById("grafica").getContext("2d");
     if(chart) chart.destroy();
@@ -229,11 +235,9 @@ function actualizarGrafica() {
 }
 
 function descargarExcel(){
-    let gen = JSON.parse(localStorage.getItem("data_gen") || "[]");
-    if(gen.length === 0) return alert("No hay datos");
-
+    if(todasVentas.length === 0) return alert("No hay datos");
     const wb = XLSX.utils.book_new();
-    const cleanData = gen.map(v=>({
+    const cleanData = todasVentas.map(v=>({
         "COMPAÑÍA": v.comp,
         "FECHA": v.fecha,
         "NÚMERO": v.num,
@@ -241,12 +245,10 @@ function descargarExcel(){
         "MODELO/PROCESO": v.modelo || v.chip,
         "ID (IMEI/ICCID)": v.iccid || v.imei || "N/A"
     }));
-
     const ws = XLSX.utils.json_to_sheet(cleanData);
-    // Configuración de ancho de columnas (wch: caracteres de ancho)
     ws['!cols'] = [{wch:12}, {wch:15}, {wch:15}, {wch:20}, {wch:20}, {wch:25}]; 
-    XLSX.utils.book_append_sheet(wb, ws, "Auditoria_Ventas");
-    XLSX.writeFile(wb, `Reporte_Auditoria_${fecha.value}.xlsx`);
+    XLSX.utils.book_append_sheet(wb, ws, "Auditoria");
+    XLSX.writeFile(wb, `Reporte_Sincronizado.xlsx`);
 }
 </script>
 </body>
