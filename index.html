@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Auditor PRO Sincronizado | Omar</title>
+<title>Auditor PRO | Reporte Ordenado</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -15,13 +15,10 @@
 body { margin:0; font-family:'Segoe UI', sans-serif; background: #000814; color:white; }
 .app { max-width:480px; margin:auto; padding:20px; }
 .card { background: rgba(255,255,255,0.08); backdrop-filter: blur(12px); border-radius: 16px; padding: 15px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); }
-
-/* Estilo del Botón de Salida */
 .nav-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
 .btn-salir { background: #d00000; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 12px; }
-
 .tabs { display: flex; gap: 8px; margin-bottom: 15px; }
-.tab { flex: 1; padding: 10px; border-radius: 10px; background: rgba(255,255,255,0.1); text-align: center; cursor: pointer; font-size: 13px; transition: 0.3s; }
+.tab { flex: 1; padding: 10px; border-radius: 10px; background: rgba(255,255,255,0.1); text-align: center; cursor: pointer; font-size: 13px; }
 .tab.active { background: #ffc300; color: #003566; font-weight: bold; }
 input, select { width: 100%; padding: 12px; border-radius: 10px; border: none; background: rgba(255,255,255,0.2); color: white; margin-top: 8px; box-sizing: border-box; }
 button { background: #ffc300; color: #003566; padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
@@ -30,7 +27,6 @@ button { background: #ffc300; color: #003566; padding: 14px; border: none; borde
 table { width: 100%; font-size: 10px; border-collapse: collapse; margin-top: 10px; color: #eee; }
 th, td { border: 1px solid rgba(255,255,255,0.1); padding: 6px; text-align: left; }
 th { background: rgba(255,195,0,0.2); color: #ffc300; }
-.status-gps { font-size: 10px; color: #ffc300; text-align: center; display: block; margin-top: 5px; }
 </style>
 </head>
 
@@ -38,9 +34,9 @@ th { background: rgba(255,195,0,0.2); color: #ffc300; }
 
 <div id="loginBox" class="app">
     <div class="card" style="margin-top: 50px; text-align: center;">
-        <h2 style="color:#ffc300;">🗂️ Acceso Multidispositivo</h2>
-        <input id="correo" type="email" placeholder="Tu Correo">
-        <input id="pass" type="password" placeholder="Tu Contraseña">
+        <h2 style="color:#ffc300;">🗂️ Auditoría Omar</h2>
+        <input id="correo" type="email" placeholder="Correo">
+        <input id="pass" type="password" placeholder="Contraseña">
         <button onclick="loginEmail()">ENTRAR</button>
         <button onclick="loginGoogle()" style="background:white; color:#444; font-size:12px;">Entrar con Google</button>
     </div>
@@ -48,12 +44,12 @@ th { background: rgba(255,195,0,0.2); color: #ffc300; }
 
 <div id="appBox" class="app hidden">
     <div class="nav-header">
-        <span id="txtUser" style="font-size: 11px; color: #ffc300;">Cargando usuario...</span>
+        <span id="txtUser" style="font-size: 11px; color: #ffc300;">...</span>
         <button class="btn-salir" onclick="salir()">Cerrar Sesión</button>
     </div>
     
     <div class="card">
-        <label style="font-size: 11px; color: #ffc300;">📅 FILTRAR POR DÍA:</label>
+        <label style="font-size: 11px; color: #ffc300;">📅 VER VENTAS DEL DÍA:</label>
         <input type="date" id="fechaFiltro" onchange="cargarTodo()">
     </div>
 
@@ -65,20 +61,19 @@ th { background: rgba(255,195,0,0.2); color: #ffc300; }
 
     <div class="card">
         <select id="tipoProceso" onchange="renderForm()">
-            <option value="">Nuevo Registro...</option>
+            <option value="">Selecciona Proceso...</option>
             <option value="PORTA">PORTA</option>
             <option value="RENUEVATE">RENUEVATE</option>
             <option value="CHIP">CHIP</option>
             <option value="AK">AK</option>
         </select>
         <div id="formContainer"></div>
-        <span id="gpsTxt" class="status-gps">📍 GPS Listo</span>
     </div>
 
-    <button onclick="obtenerUbicacionYGuardar()">💾 GUARDAR VENTA</button>
+    <button onclick="obtenerUbicacionYGuardar()">💾 GUARDAR Y SINCRONIZAR</button>
     
     <div class="card" style="border: 1px solid #ffc300;">
-        <h3 style="color:#ffc300; margin:0 0 10px 0; font-size: 14px;">📁 Reporte Técnico (Sincronizado)</h3>
+        <h3 style="color:#ffc300; margin:0 0 10px 0; font-size: 14px;">📁 Reporte Técnico</h3>
         <div style="overflow-x: auto;">
             <table>
                 <thead>
@@ -86,8 +81,7 @@ th { background: rgba(255,195,0,0.2); color: #ffc300; }
                         <th>Número</th>
                         <th>ICCID</th>
                         <th>IMEI</th>
-                        <th>Marca/Mod</th>
-                        <th>Borrar</th>
+                        <th>Acción</th>
                     </tr>
                 </thead>
                 <tbody id="cuerpoSincro"></tbody>
@@ -97,7 +91,7 @@ th { background: rgba(255,195,0,0.2); color: #ffc300; }
 
     <div class="card"><canvas id="grafica"></canvas></div>
 
-    <button style="background:#2b9348; color:white;" onclick="descargarExcel()">📊 DESCARGAR EXCEL COMPLETO</button>
+    <button style="background:#2b9348; color:white; border: 2px solid #fff;" onclick="descargarExcel()">📊 GENERAR EXCEL ORDENADO</button>
 </div>
 
 <script>
@@ -131,21 +125,12 @@ function inicio() {
 
 function loginEmail() { auth.signInWithEmailAndPassword(correo.value, pass.value).catch(e => alert(e.message)); }
 function loginGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
-
-// Función de salida corregida
-function salir() { 
-    if(confirm("¿Seguro que quieres cerrar sesión?")) {
-        auth.signOut().then(() => {
-            window.location.reload();
-        });
-    }
-}
+function salir() { if(confirm("¿Cerrar sesión?")) auth.signOut().then(() => window.location.reload()); }
 
 function setComp(c) {
     compActiva = c;
     document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
     document.getElementById("tab" + c).classList.add("active");
-    tipoProceso.style.display = (c === "TELCEL") ? "block" : "none";
     renderForm();
 }
 
@@ -153,7 +138,7 @@ function renderForm() {
     const tp = tipoProceso.value;
     let html = "";
     if(compActiva === "TELCEL") {
-        html = `<div class="fade">
+        html = `<div>
             <input id="f_num" placeholder="Número">
             <input id="f_icc" placeholder="ICCID">
             <input id="f_imei" placeholder="IMEI">
@@ -161,22 +146,21 @@ function renderForm() {
             <input id="f_mod" placeholder="Modelo">
         </div>`;
     } else {
-        html = `<div class="fade"><input id="f_num" placeholder="Número"><input id="f_marca" placeholder="Marca/Modelo"></div>`;
+        html = `<div><input id="f_num" placeholder="Número"><input id="f_marca" placeholder="Marca/Modelo"></div>`;
     }
     formContainer.innerHTML = html;
 }
 
 async function obtenerUbicacionYGuardar() {
-    gpsTxt.innerText = "⏳ Obteniendo ubicación...";
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(async (pos) => {
             try {
                 const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`);
                 const data = await res.json();
-                guardar(data.display_name || "Dirección detectada");
-            } catch { guardar("Ubicación por GPS"); }
-        }, () => guardar("Sin GPS"));
-    } else { guardar("GPS no disponible"); }
+                guardar(data.display_name || "Sin dirección");
+            } catch { guardar("Ubicación GPS"); }
+        }, () => guardar("GPS Desactivado"));
+    } else { guardar("No soportado"); }
 }
 
 function guardar(calle) {
@@ -191,10 +175,8 @@ function guardar(calle) {
         marca: document.getElementById("f_marca")?.value || "",
         modelo: document.getElementById("f_mod")?.value || ""
     };
-
     db.ref('ventas').push(data).then(() => {
-        alert("¡Venta Sincronizada!");
-        gpsTxt.innerText = "📍 GPS Listo";
+        alert("¡Guardado!");
         renderForm();
     });
 }
@@ -210,51 +192,61 @@ function cargarTodo() {
     const filtro = document.getElementById("fechaFiltro").value;
     const cuerpo = document.getElementById("cuerpoSincro");
     cuerpo.innerHTML = "";
-    let stats = { TELCEL:0, ATT:0, BAIT:0 };
-    const ids = Object.keys(todasVentas).reverse();
-
-    ids.forEach(id => {
+    let s = { TELCEL:0, ATT:0, BAIT:0 };
+    Object.keys(todasVentas).reverse().forEach(id => {
         const v = todasVentas[id];
         if(v.fecha === filtro) {
-            cuerpo.innerHTML += `
-                <tr>
-                    <td>${v.num}</td>
-                    <td>${v.icc || '---'}</td>
-                    <td>${v.imei || '---'}</td>
-                    <td>${v.marca} ${v.modelo || ''}</td>
-                    <td><button class="btn-del" onclick="eliminar('${id}')">🗑️</button></td>
-                </tr>`;
-            if(stats[v.comp] !== undefined) stats[v.comp]++;
+            cuerpo.innerHTML += `<tr><td>${v.num}</td><td>${v.icc||'-'}</td><td>${v.imei||'-'}</td><td><button class="btn-del" onclick="eliminar('${id}')">🗑️</button></td></tr>`;
+            if(s[v.comp] !== undefined) s[v.comp]++;
         }
     });
-    graficaGen(stats);
-}
-
-function eliminar(id) {
-    if(confirm("¿Eliminar esta venta de la nube?")) db.ref('ventas/' + id).remove();
-}
-
-function graficaGen(s) {
     if(chart) chart.destroy();
     chart = new Chart(document.getElementById("grafica"), {
         type: 'doughnut',
-        data: {
-            labels: ["TELCEL", "ATT", "BAIT"],
-            datasets: [{ data: [s.TELCEL, s.ATT, s.BAIT], backgroundColor: ['#ffc300', '#00b4d8', '#ef233c'], borderWidth: 0 }]
-        },
+        data: { labels: ["TELCEL", "ATT", "BAIT"], datasets: [{ data: [s.TELCEL, s.ATT, s.BAIT], backgroundColor: ['#ffc300', '#00b4d8', '#ef233c'], borderWidth: 0 }] },
         options: { plugins: { legend: { labels: { color: "white" } } } }
     });
 }
 
+function eliminar(id) { if(confirm("¿Eliminar?")) db.ref('ventas/' + id).remove(); }
+
+// FUNCIÓN DE EXCEL MEJORADA Y ORDENADA
 function descargarExcel() {
-    const array = Object.values(todasVentas);
+    const rawData = Object.values(todasVentas);
+    
+    // 1. Definir el orden de las columnas y limpiar datos
+    const excelData = rawData.map(v => ({
+        "FECHA": v.fecha,
+        "COMPAÑÍA": v.comp,
+        "NÚMERO": v.num,
+        "PROCESO": v.proceso,
+        "ICCID": v.icc || "N/A",
+        "IMEI": v.imei || "N/A",
+        "MARCA": v.marca || "N/A",
+        "MODELO": v.modelo || "N/A",
+        "ZONA/CALLE": v.ubicacion.split(',').slice(0, 2).join(',') // Solo calle y colonia
+    }));
+
     const wb = XLSX.utils.book_new();
-    const meses = [...new Set(array.map(v => v.fecha.substring(0, 7)))].sort().reverse();
+    
+    // 2. Agrupar por Mes/Año para crear pestañas
+    const meses = [...new Set(excelData.map(v => v.FECHA.substring(0, 7)))].sort().reverse();
+    
     meses.forEach(mes => {
-        const datos = array.filter(v => v.fecha.startsWith(mes));
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(datos), mes);
+        const porMes = excelData.filter(v => v.FECHA.startsWith(mes));
+        const ws = XLSX.utils.json_to_sheet(porMes);
+        
+        // Ajustar ancho de columnas básico
+        const wscols = [
+            {wch:12}, {wch:10}, {wch:12}, {wch:12}, 
+            {wch:20}, {wch:18}, {wch:12}, {wch:12}, {wch:35}
+        ];
+        ws['!cols'] = wscols;
+        
+        XLSX.utils.book_append_sheet(wb, ws, "Ventas " + mes);
     });
-    XLSX.writeFile(wb, "Reporte_Sincronizado_Omar.xlsx");
+
+    XLSX.writeFile(wb, "Reporte_Auditoria_Omar.xlsx");
 }
 </script>
 </body>
