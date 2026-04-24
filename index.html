@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Auditor Telcel PRO | Sincronizado</title>
+<title>Auditor Telcel PRO | Gestión Total</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -20,11 +20,12 @@ button { background: #ffc300; color:#001d3d; padding:14px; border:none; border-r
 button:hover { opacity: 0.9; transform: scale(1.01); }
 .btn-google { background: white; color: #444; display: flex; align-items: center; justify-content: center; gap: 10px; }
 .hidden { display:none; }
-table { width:100%; background:white; color:black; border-collapse: collapse; border-radius: 10px; overflow: hidden; }
+table { width:100%; background:white; color:black; border-collapse: collapse; border-radius: 10px; overflow: hidden; font-size: 13px; }
 td, th { border:1px solid #ddd; padding:10px; text-align: left; }
 th { background: #eee; }
 .btn-salir { background: #d00000; color: white; width: auto; padding: 5px 15px; float: right; margin-bottom: 10px; }
-.tag-telcel { background: #ffc300; padding: 3px 7px; border-radius: 5px; font-weight: bold; font-size: 12px; }
+.tag-telcel { background: #ffc300; padding: 3px 7px; border-radius: 5px; font-weight: bold; font-size: 11px; }
+.btn-del { background: #ff4d4d; color: white; padding: 5px 8px; border-radius: 5px; cursor: pointer; border: none; font-size: 12px; }
 </style>
 </head>
 
@@ -99,7 +100,7 @@ th { background: #eee; }
     <div style="overflow-x:auto;">
         <table>
             <thead>
-                <tr><th>Comp</th><th>Número</th><th>Marca/Modelo</th><th>Detalle</th><th>Fecha</th></tr>
+                <tr><th>Comp</th><th>Número</th><th>Marca/Modelo</th><th>Fecha</th><th>Acción</th></tr>
             </thead>
             <tbody id="cuerpoGral"></tbody>
         </table>
@@ -111,7 +112,7 @@ th { background: #eee; }
     <div style="overflow-x:auto;">
         <table>
             <thead>
-                <tr><th>Fecha</th><th>Proceso</th><th>Marca/Mod</th><th>IMEI</th><th>ICCID</th></tr>
+                <tr><th>Fecha</th><th>Número</th><th>Proceso</th><th>Marca/Mod</th><th>IMEI</th><th>ICCID</th><th>Acción</th></tr>
             </thead>
             <tbody id="cuerpoTel"></tbody>
         </table>
@@ -131,7 +132,7 @@ firebase.initializeApp(firebaseConfig);
 let auth = firebase.auth();
 let db = firebase.database();
 let chart;
-let todasVentas = [];
+let todasVentasRaw = {};
 
 function inicio(){
     fecha.value = new Date().toISOString().split("T")[0];
@@ -147,8 +148,7 @@ function inicio(){
 
 function escucharDatos() {
     db.ref('ventas').on('value', (snapshot) => {
-        const data = snapshot.val();
-        todasVentas = data ? Object.values(data).reverse() : [];
+        todasVentasRaw = snapshot.val() || {};
         cargarTablas();
         actualizarGrafica();
     });
@@ -191,32 +191,56 @@ function guardar(){
         .catch(e => alert("Error: " + e.message));
 }
 
-function cargarTablas(){
-    cuerpoGral.innerHTML = todasVentas.map(v=>`
-        <tr>
-            <td><span class="tag-telcel">${v.comp}</span></td>
-            <td>${v.num}</td>
-            <td>${v.marca}</td>
-            <td>${v.modelo || v.chip}</td>
-            <td>${v.fecha}</td>
-        </tr>
-    `).join("");
+function eliminarVenta(id) {
+    if(confirm("¿Seguro que quieres eliminar esta venta de la nube?")) {
+        db.ref('ventas/' + id).remove()
+            .then(() => alert("Venta eliminada"))
+            .catch(e => alert("Error al eliminar: " + e.message));
+    }
+}
 
-    const soloTelcel = todasVentas.filter(v => v.comp === "TELCEL");
-    cuerpoTel.innerHTML = soloTelcel.map(v=>`
-        <tr>
-            <td>${v.fecha}</td>
-            <td><b>${v.chip}</b></td>
-            <td>${v.marca} ${v.modelo}</td>
-            <td>${v.imei}</td>
-            <td>${v.iccid}</td>
-        </tr>
-    `).join("");
+function cargarTablas(){
+    cuerpoGral.innerHTML = "";
+    cuerpoTel.innerHTML = "";
+
+    const ids = Object.keys(todasVentasRaw).reverse();
+
+    ids.forEach(id => {
+        const v = todasVentasRaw[id];
+        
+        // Tabla General
+        cuerpoGral.innerHTML += `
+            <tr>
+                <td><span class="tag-telcel">${v.comp}</span></td>
+                <td>${v.num}</td>
+                <td>${v.marca}</td>
+                <td>${v.fecha}</td>
+                <td><button class="btn-del" onclick="eliminarVenta('${id}')">🗑️</button></td>
+            </tr>
+        `;
+
+        // Tabla Telcel CORREGIDA (Se agregó columna Número)
+        if(v.comp === "TELCEL") {
+            cuerpoTel.innerHTML += `
+                <tr>
+                    <td>${v.fecha}</td>
+                    <td><b>${v.num}</b></td>
+                    <td>${v.chip}</td>
+                    <td>${v.marca} ${v.modelo}</td>
+                    <td>${v.imei}</td>
+                    <td>${v.iccid}</td>
+                    <td><button class="btn-del" onclick="eliminarVenta('${id}')">🗑️</button></td>
+                </tr>
+            `;
+        }
+    });
 }
 
 function actualizarGrafica() {
     let counts = { TELCEL: 0, ATT: 0, BAIT: 0 };
-    todasVentas.forEach(v => { if(v.fecha === fecha.value) counts[v.comp]++; });
+    Object.values(todasVentasRaw).forEach(v => { 
+        if(v.fecha === fecha.value) counts[v.comp]++; 
+    });
 
     const ctx = document.getElementById("grafica").getContext("2d");
     if(chart) chart.destroy();
@@ -235,16 +259,14 @@ function actualizarGrafica() {
 }
 
 function descargarExcel(){
-    if(todasVentas.length === 0) return alert("No hay datos para exportar");
+    const ventasArray = Object.values(todasVentasRaw);
+    if(ventasArray.length === 0) return alert("No hay datos para exportar");
 
     const wb = XLSX.utils.book_new();
-    
-    // Obtener todos los meses únicos presentes en los datos
-    const meses = [...new Set(todasVentas.map(v => v.fecha.substring(0, 7)))].sort().reverse();
+    const meses = [...new Set(ventasArray.map(v => v.fecha.substring(0, 7)))].sort().reverse();
 
     meses.forEach(mesAnio => {
-        let ventasMes = todasVentas.filter(v => v.fecha.startsWith(mesAnio));
-        
+        let ventasMes = ventasArray.filter(v => v.fecha.startsWith(mesAnio));
         const cleanData = ventasMes.map(v => ({
             "COMPAÑÍA": v.comp,
             "FECHA": v.fecha,
@@ -256,13 +278,10 @@ function descargarExcel(){
 
         const ws = XLSX.utils.json_to_sheet(cleanData);
         ws['!cols'] = [{wch:12}, {wch:15}, {wch:15}, {wch:20}, {wch:20}, {wch:25}]; 
-
-        // Añadir una pestaña por cada mes
         XLSX.utils.book_append_sheet(wb, ws, mesAnio);
     });
 
-    // Descarga un único archivo unificado
-    XLSX.writeFile(wb, "Auditoria_Ventas_Unificado.xlsx");
+    XLSX.writeFile(wb, "Auditoria_Ventas_Omar.xlsx");
 }
 </script>
 </body>
