@@ -3,16 +3,69 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ventas PRO Telcel</title>
+<title>Ventas PRO Dinámico</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body { margin:0; font-family:'Segoe UI'; background:linear-gradient(135deg,#001d3d,#003566,#000814); color:white;}
-.app { max-width:480px; margin:auto; padding:20px;}
-.card { background:rgba(255,255,255,.08); backdrop-filter:blur(10px); border-radius:15px; padding:15px; margin-bottom:15px;}
-input,select,button { width:100%; padding:12px; border-radius:10px; border:none; margin-top:8px;}
-button { background:#ffc300; font-weight:bold; color:#003566;}
+body {
+margin:0;
+font-family:'Segoe UI';
+background:linear-gradient(135deg,#001d3d,#003566,#000814);
+color:white;
+}
+
+.app { max-width:480px; margin:auto; padding:20px; }
+
+.card {
+background:rgba(255,255,255,.08);
+backdrop-filter:blur(12px);
+border-radius:16px;
+padding:15px;
+margin-bottom:15px;
+}
+
+.tabs {
+display:flex;
+gap:10px;
+margin-bottom:15px;
+}
+
+.tab {
+flex:1;
+padding:12px;
+border-radius:10px;
+background:rgba(255,255,255,.1);
+text-align:center;
+cursor:pointer;
+}
+
+.tab.active {
+background:#ffc300;
+color:#003566;
+font-weight:bold;
+}
+
+select,input,button {
+width:100%;
+padding:12px;
+border:none;
+border-radius:10px;
+margin-top:8px;
+}
+
+button {
+background:#ffc300;
+color:#003566;
+font-weight:bold;
+}
+
+.fade { animation:fade .2s ease; }
+
+@keyframes fade {
+from {opacity:0; transform:translateY(10px);}
+to {opacity:1;}
+}
 </style>
 </head>
 
@@ -20,15 +73,16 @@ button { background:#ffc300; font-weight:bold; color:#003566;}
 
 <div class="app">
 
-<div class="card">
-<select id="comp" onchange="cambiarComp()">
-<option value="TELCEL">TELCEL</option>
-<option value="ATT">ATT</option>
-<option value="BAIT">BAIT</option>
-</select>
+<div class="tabs">
+<div class="tab active" onclick="setComp('TELCEL',this)">TELCEL</div>
+<div class="tab" onclick="setComp('ATT',this)">ATT</div>
+<div class="tab" onclick="setComp('BAIT',this)">BAIT</div>
+</div>
 
-<select id="tipo" onchange="cambiarFormulario()">
-<option value="">Tipo</option>
+<div class="card">
+
+<select id="tipo" onchange="renderForm()">
+<option value="">Selecciona tipo</option>
 <option value="PORTA">PORTA</option>
 <option value="RENUEVATE">RENUEVATE</option>
 <option value="CHIP0">CHIP0</option>
@@ -36,6 +90,7 @@ button { background:#ffc300; font-weight:bold; color:#003566;}
 </select>
 
 <div id="form"></div>
+
 </div>
 
 <button onclick="guardar()">Guardar</button>
@@ -50,77 +105,74 @@ button { background:#ffc300; font-weight:bold; color:#003566;}
 
 <script>
 
+let comp="TELCEL";
 let chart;
 
-function cambiarComp(){
-form.innerHTML="";
+function setComp(c,el){
+comp=c;
+document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+el.classList.add("active");
 tipo.value="";
+form.innerHTML="";
 }
 
-function cambiarFormulario(){
-let c=comp.value;
-let t=tipo.value;
+function renderForm(){
 
-if(c==="TELCEL"){
+if(comp==="TELCEL"){
 
-if(t==="PORTA"){
+if(tipo.value==="PORTA"){
 form.innerHTML=`
+<div class="fade">
 <input id="compa" placeholder="Compañía anterior">
 <input id="numero" placeholder="Número">
 <input id="icc" placeholder="ICCD">
 <input id="fpro" placeholder="Fecha proceso">
 <input id="fent" placeholder="Fecha entrega">
 <input id="recarga" placeholder="Recarga">
-`;
+</div>`;
 }
 
-if(t==="RENUEVATE"){
+if(tipo.value==="RENUEVATE"){
 form.innerHTML=`
+<div class="fade">
 <input id="numero" placeholder="Número a renovar">
 <input id="imei" placeholder="IMEI">
 <input id="marca" placeholder="Marca">
 <input id="modelo" placeholder="Modelo">
 <input id="icc" placeholder="ICCD">
 <input id="recarga" placeholder="Recarga">
-`;
+</div>`;
 }
 
-if(t==="CHIP0"){
+if(tipo.value==="CHIP0"){
 form.innerHTML=`
+<div class="fade">
 <input id="numero" placeholder="Número">
 <input id="icc" placeholder="ICCD">
 <input id="recarga" placeholder="Monto recarga">
-`;
+</div>`;
 }
 
-if(t==="AK"){
+if(tipo.value==="AK"){
 form.innerHTML=`
+<div class="fade">
 <input id="numero" placeholder="Número">
 <input id="marca" placeholder="Marca">
 <input id="modelo" placeholder="Modelo">
 <input id="imei" placeholder="IMEI">
 <input id="icc" placeholder="ICCD">
 <input id="recarga" placeholder="Monto recarga">
-`;
+</div>`;
 }
 
 }
 
-if(c==="ATT"){
+if(comp==="ATT" || comp==="BAIT"){
 form.innerHTML=`
-<input id="numero" placeholder="Número con chip Telcel">
+<div class="fade">
+<input id="numero" placeholder="Número">
 <input id="icc" placeholder="ICCD">
-<input id="modelo" placeholder="Modelo">
-<input id="marca" placeholder="Marca">
-`;
-}
-
-if(c==="BAIT"){
-form.innerHTML=`
-<input id="icc" placeholder="ICCD">
-<input id="modelo" placeholder="Modelo">
-<input id="marca" placeholder="Marca">
-`;
+</div>`;
 }
 
 }
@@ -128,8 +180,8 @@ form.innerHTML=`
 function guardar(){
 
 let data={
-comp:comp.value,
-tipo:tipo.value,
+comp,
+tipo: tipo.value,
 
 numero:document.getElementById("numero")?.value||"",
 icc:document.getElementById("icc")?.value||"",
@@ -137,7 +189,6 @@ marca:document.getElementById("marca")?.value||"",
 modelo:document.getElementById("modelo")?.value||"",
 imei:document.getElementById("imei")?.value||"",
 recarga:document.getElementById("recarga")?.value||"",
-
 compa:document.getElementById("compa")?.value||"",
 fpro:document.getElementById("fpro")?.value||"",
 fent:document.getElementById("fent")?.value||""
@@ -147,19 +198,9 @@ let all=JSON.parse(localStorage.getItem("ventas_all")||"[]");
 all.unshift(data);
 localStorage.setItem("ventas_all",JSON.stringify(all));
 
-if(data.comp==="TELCEL"){
-let telcel=JSON.parse(localStorage.getItem("telcel_full")||"[]");
-telcel.unshift(data);
-localStorage.setItem("telcel_full",JSON.stringify(telcel));
-}
-
-if(data.comp==="ATT"||data.comp==="BAIT"){
-let otros=JSON.parse(localStorage.getItem("otros")||"[]");
-otros.unshift(data);
-localStorage.setItem("otros",JSON.stringify(otros));
-}
-
 cargar();
+form.innerHTML="";
+tipo.value="";
 }
 
 function cargar(){
@@ -168,13 +209,13 @@ let all=JSON.parse(localStorage.getItem("ventas_all")||"[]");
 
 lista.innerHTML=all.map(v=>`
 <div class="card">
-<b>${v.comp} - ${v.tipo}</b><br>
+<b>${v.comp} - ${v.tipo||"GENERAL"}</b><br>
 📱 ${v.numero||"-"}<br>
 ICCD: ${v.icc||"-"}<br>
-Marca: ${v.marca||"-"}<br>
-Modelo: ${v.modelo||"-"}<br>
-IMEI: ${v.imei||"-"}<br>
-💰 ${v.recarga||"-"}
+${v.marca?`Marca: ${v.marca}<br>`:""}
+${v.modelo?`Modelo: ${v.modelo}<br>`:""}
+${v.imei?`IMEI: ${v.imei}<br>`:""}
+${v.recarga?`💰 ${v.recarga}<br>`:""}
 </div>
 `).join("");
 
@@ -186,9 +227,7 @@ function graficaGen(all){
 let data={TELCEL:0,ATT:0,BAIT:0};
 
 all.forEach(v=>{
-if(v.comp==="TELCEL")data.TELCEL++;
-if(v.comp==="ATT")data.ATT++;
-if(v.comp==="BAIT")data.BAIT++;
+data[v.comp]++;
 });
 
 if(chart)chart.destroy();
