@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Ventas PRO Elite</title>
+<title>Ventas PRO Estable</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -12,12 +12,12 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body { margin:0; font-family:'Segoe UI'; background:linear-gradient(135deg,#001d3d,#003566,#000814); color:white;}
-.app { max-width:480px; margin:auto; padding:20px;}
-.card { background:rgba(255,255,255,.08); backdrop-filter:blur(10px); border-radius:15px; padding:15px; margin-bottom:15px;}
-input,select,button { width:100%; padding:12px; border-radius:10px; border:none; margin-top:8px;}
-button { background:#ffc300; font-weight:bold; color:#003566;}
-.login { max-width:350px; margin:100px auto; background:white; color:black; padding:25px; border-radius:15px;}
+body { margin:0; font-family:sans-serif; background:#000814; color:white;}
+.app { max-width:500px; margin:auto; padding:20px;}
+.card { background:rgba(255,255,255,.08); padding:15px; border-radius:15px; margin-bottom:15px;}
+input,select,button { width:100%; padding:10px; margin-top:5px; border-radius:10px; border:none;}
+button { background:#ffc300; font-weight:bold;}
+.login { max-width:300px; margin:100px auto; background:white; color:black; padding:20px; border-radius:15px;}
 .hidden { display:none;}
 </style>
 </head>
@@ -26,16 +26,9 @@ button { background:#ffc300; font-weight:bold; color:#003566;}
 
 <div id="loginBox" class="login">
 <h2>Acceso</h2>
-
 <input id="u" placeholder="Correo">
 <input id="p" type="password" placeholder="Contraseña">
-
-<button onclick="loginEmail()">Entrar</button>
-
-<button onclick="loginGoogle()" style="background:#db4437;color:white;">
-Entrar con Google
-</button>
-
+<button onclick="login()">Entrar / Crear</button>
 <p id="estado"></p>
 </div>
 
@@ -55,28 +48,14 @@ Entrar con Google
 
 <form id="fReg">
 <div class="card">
-
 <select id="comp">
 <option>TELCEL</option>
 <option>ATT</option>
 <option>BAIT</option>
 </select>
 
-<select id="tipo" onchange="cambiarFormulario()">
-<option value="">Tipo</option>
-<option value="PORTA">PORTA</option>
-<option value="AK">AK</option>
-<option value="CHIP">CHIP</option>
-<option value="RENUEVATE">RENUEVATE</option>
-</select>
-
-<input id="fecha" placeholder="Fecha">
-<input id="numero" placeholder="Número">
-
-<div id="camposExtra"></div>
-
+<input id="tel" placeholder="Teléfono">
 <input id="prom" placeholder="Promotor">
-
 </div>
 
 <button>Guardar</button>
@@ -88,47 +67,62 @@ Entrar con Google
 
 <script>
 
-let db, auth, chart, online=false;
+let db=null, auth=null, online=false, chart=null;
 
-const firebaseConfig={
-apiKey:"TU_API",
-authDomain:"TU_AUTH",
-databaseURL:"TU_DB",
-projectId:"TU_ID"
+const firebaseConfig = {
+apiKey: "TU_API",
+authDomain: "TU_AUTH",
+databaseURL: "TU_DB",
+projectId: "TU_ID"
 };
 
 function inicio(){
 try{
 firebase.initializeApp(firebaseConfig);
-auth=firebase.auth();
-db=firebase.database();
-online=true;
+auth = firebase.auth();
+db = firebase.database();
+online = true;
 
 auth.onAuthStateChanged(user=>{
 if(user){
-mostrarApp();
 estado.innerText="Conectado ☁️";
+mostrarApp();
+}else{
+estado.innerText="No autenticado";
 }
 });
 }catch(e){
-estado.innerText="Modo offline";
+estado.innerText="Modo offline ⚠️";
+online=false;
 }
 }
 
-function loginEmail(){
-auth.signInWithEmailAndPassword(u.value,p.value)
+function login(){
+let email=u.value.trim();
+let pass=p.value.trim();
+
+if(!email || !pass){
+alert("Llena campos");
+return;
+}
+
+if(!online){
+estado.innerText="Modo offline activo";
+mostrarApp();
+return;
+}
+
+auth.signInWithEmailAndPassword(email,pass)
+.then(()=>{})
 .catch(err=>{
 if(err.code==="auth/user-not-found"){
-auth.createUserWithEmailAndPassword(u.value,p.value);
+auth.createUserWithEmailAndPassword(email,pass)
+.then(()=>alert("Usuario creado"))
+.catch(e=>alert(e.message));
 }else{
 alert(err.message);
 }
 });
-}
-
-function loginGoogle(){
-let provider=new firebase.auth.GoogleAuthProvider();
-auth.signInWithPopup(provider);
 }
 
 function mostrarApp(){
@@ -137,59 +131,14 @@ appBox.classList.remove("hidden");
 cargar();
 }
 
-function cambiarFormulario(){
-let t=tipo.value;
-
-if(t==="PORTA"){
-camposExtra.innerHTML=`
-<input id="cliente" placeholder="Nombre cliente">
-<input id="nip" placeholder="NIP">
-`;
-}
-else if(t==="AK"){
-camposExtra.innerHTML=`
-<input id="icc" placeholder="ICCID">
-<input id="imei" placeholder="IMEI">
-<input id="marca" placeholder="Marca">
-<input id="modelo" placeholder="Modelo">
-`;
-}
-else if(t==="CHIP"){
-camposExtra.innerHTML=`
-<input id="icc" placeholder="ICCID">
-<input id="recarga" placeholder="Recarga">
-`;
-}
-else if(t==="RENUEVATE"){
-camposExtra.innerHTML=`
-<input id="icc" placeholder="ICCID">
-<input id="imei" placeholder="IMEI">
-<input id="modelo" placeholder="Modelo">
-`;
-}
-else{
-camposExtra.innerHTML="";
-}
-}
-
 fReg.onsubmit=e=>{
 e.preventDefault();
 
 let v={
 id:Date.now(),
 comp:comp.value,
-tipo:tipo.value,
-fecha:fecha.value,
-numero:numero.value,
-prom:prom.value,
-
-cliente:document.getElementById("cliente")?.value||"",
-nip:document.getElementById("nip")?.value||"",
-icc:document.getElementById("icc")?.value||"",
-imei:document.getElementById("imei")?.value||"",
-marca:document.getElementById("marca")?.value||"",
-modelo:document.getElementById("modelo")?.value||"",
-recarga:document.getElementById("recarga")?.value||""
+tel:tel.value,
+prom:prom.value
 };
 
 let local=JSON.parse(localStorage.getItem("ventas")||"[]");
@@ -202,27 +151,13 @@ db.ref("ventas").push(v);
 
 cargar();
 fReg.reset();
-camposExtra.innerHTML="";
 };
 
 function cargar(){
 let local=JSON.parse(localStorage.getItem("ventas")||"[]");
 
 lista.innerHTML=local.map(v=>`
-<div class="card">
-<b>${v.comp} - ${v.tipo}</b><br>
-📅 ${v.fecha}<br>
-📱 ${v.numero}<br>
-${v.cliente?"👤 "+v.cliente+"<br>":""}
-${v.nip?"🔑 "+v.nip+"<br>":""}
-${v.icc?"ICCID: "+v.icc+"<br>":""}
-${v.imei?"IMEI: "+v.imei+"<br>":""}
-${v.marca?"Marca: "+v.marca+"<br>":""}
-${v.modelo?"Modelo: "+v.modelo+"<br>":""}
-${v.recarga?"💰 "+v.recarga+"<br>":""}
-👤 ${v.prom}
-</div>
-`).join("");
+<div class="card">${v.comp} - ${v.tel}</div>`).join("");
 
 dashboardGen(local);
 graficaGen(local);
@@ -238,19 +173,25 @@ if(v.comp==="ATT")a++;
 if(v.comp==="BAIT")b++;
 });
 
+let ingreso=local.length*100;
+let metaVal=parseFloat(meta.value)||0;
+let porc=metaVal?((ingreso/metaVal)*100).toFixed(1):0;
+
 dashboard.innerHTML=`
-Total:${local.length}<br>
-Telcel:${t}<br>
-ATT:${a}<br>
-BAIT:${b}
+Total: ${local.length}<br>
+Telcel: ${t}<br>
+ATT: ${a}<br>
+BAIT: ${b}<br><br>
+💰 ${ingreso} / ${metaVal}<br>${porc}%
 `;
 }
 
 function graficaGen(local){
 let data={TELCEL:0,ATT:0,BAIT:0};
+
 local.forEach(v=>data[v.comp]++);
 
-if(chart)chart.destroy();
+if(chart) chart.destroy();
 
 chart=new Chart(grafica,{
 type:"bar",
@@ -263,6 +204,7 @@ datasets:[{data:[data.TELCEL,data.ATT,data.BAIT]}]
 
 function rankingGen(local){
 let map={};
+
 local.forEach(v=>{
 map[v.prom]=(map[v.prom]||0)+1;
 });
