@@ -19,7 +19,6 @@
         label { color: var(--gold); font-weight: bold; font-size: 0.85em; margin-bottom: 5px; display: block; }
         input, select { width: 100%; padding: 12px; border-radius: 10px; border: none; background: rgba(0,0,0,0.3); color: white; margin-bottom: 10px; box-sizing: border-box; }
         button { background: linear-gradient(135deg, #ffc300, var(--gold)); color: #001d3d; padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s; }
-        button:hover { transform: scale(1.01); filter: brightness(1.1); }
         .btn-exit { background: #d00000; color: white; width: auto; padding: 8px 15px; font-size: 0.8em; }
         .btn-excel { background: #2b9348; color: white; width: auto; padding: 8px 15px; font-size: 0.8em; }
         .hidden { display: none; }
@@ -27,24 +26,18 @@
         table { width: 100%; border-collapse: collapse; color: #333; font-size: 0.85em; min-width: 800px; }
         th { background: #f1f1f1; padding: 12px; text-align: left; border-bottom: 2px solid #ddd; }
         td { padding: 10px; border-bottom: 1px solid #eee; }
-        .tag { padding: 4px 8px; border-radius: 5px; font-weight: bold; font-size: 0.75em; color: black; }
-        .tag-telcel { background: var(--gold); }
+        .tag-telcel { background: var(--gold); padding: 4px 8px; border-radius: 5px; font-weight: bold; color: black; }
     </style>
 </head>
 <body onload="inicio()">
 
 <div id="loginBox" class="card" style="max-width:400px; margin:80px auto; text-align:center;">
-    <h2>🔐 Acceso Auditor</h2>
+    <h2 style="color:var(--gold)">🔐 Acceso Auditor</h2>
     <input id="correo" type="email" placeholder="Correo">
     <input id="pass" type="password" placeholder="Contraseña">
-    <div style="background:#000; padding:15px; border-radius:10px; margin-bottom:10px;">
-        <span id="captchaText" style="letter-spacing: 5px; font-weight: bold; color: var(--gold); font-size: 1.2em;"></span>
-        <input id="captchaInput" placeholder="Escribe el código" style="margin-top:10px; text-align: center;">
-    </div>
-    <button onclick="login()">ENTRAR AL PANEL</button>
+    <button onclick="login()">ENTRAR</button>
     <div style="margin-top:15px; font-size: 0.85em;">
-        <a href="javascript:void(0)" onclick="registro()" style="color:var(--gold)">Registrar</a> | 
-        <a href="javascript:void(0)" onclick="recuperar()" style="color:var(--gold)">¿Olvidaste contraseña?</a>
+        <a href="javascript:void(0)" onclick="registro()" style="color:var(--gold)">Registrar Nuevo</a>
     </div>
 </div>
 
@@ -55,7 +48,7 @@
     </header>
 
     <div class="card">
-        <label>📅 FECHA DE OPERACIÓN</label>
+        <label>📅 FECHA</label>
         <input type="date" id="fecha">
         <label>📡 COMPAÑÍA</label>
         <select id="tipo" onchange="mostrarForm()">
@@ -73,46 +66,38 @@
             <option value="CHIP">CHIP</option>
             <option value="AK">AK</option>
         </select>
-        <input id="tNum" type="tel" placeholder="Número Telefónico (10 dígitos)">
-        <div style="display: flex; gap: 10px;">
-            <input id="tMarca" placeholder="Marca">
-            <input id="tModelo" placeholder="Modelo">
-        </div>
-        <input id="tIMEI" placeholder="IMEI (15 dígitos)">
+        <input id="tNum" placeholder="Número Telefónico">
+        <input id="tMarca" placeholder="Marca">
+        <input id="tModelo" placeholder="Modelo">
+        <input id="tIMEI" placeholder="IMEI">
         <input id="tICCID" placeholder="ICCID Telcel">
     </div>
 
     <div id="attBox" class="card hidden">
-        <label>CHIP TELCEL APARTE</label>
+        <label>¿CHIP TELCEL APARTE?</label>
         <select id="aChip"><option value="NO">NO</option><option value="SI">SÍ</option></select>
         <input id="aNum" placeholder="Número">
         <input id="aMarca" placeholder="Marca/Modelo">
-        <input id="aICCID" placeholder="ICCID Origen">
     </div>
 
     <div id="baitBox" class="card hidden">
-        <label>CHIP TELCEL APARTE</label>
+        <label>¿CHIP TELCEL APARTE?</label>
         <select id="bChip"><option value="NO">NO</option><option value="SI">SÍ</option></select>
         <input id="bNum" placeholder="Número">
         <input id="bMarca" placeholder="Marca/Modelo">
-        <input id="bICCID" placeholder="ICCID Origen">
     </div>
 
-    <button onclick="guardarVenta()">🚀 GUARDAR Y SINCRONIZAR</button>
+    <button onclick="guardarVenta()">💾 GUARDAR VENTA</button>
 
-    <div class="card" style="margin-top: 20px;">
-        <canvas id="grafica"></canvas>
-    </div>
-
-    <div class="card">
+    <div class="card" style="margin-top:20px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <h3 style="color: var(--gold); margin: 0;">📋 Historial Unificado</h3>
-            <button class="btn-excel" onclick="descargarExcelPro()">📊 DESCARGAR EXCEL PRO</button>
+            <h3 style="color: var(--gold); margin: 0;">📋 Historial Unificado (Todo)</h3>
+            <button class="btn-excel" onclick="descargarExcel()">📥 Descargar Excel</button>
         </div>
         <div class="table-container">
             <table>
                 <thead>
-                    <tr><th>Comp</th><th>Número</th><th>Marca/Modelo</th><th>Info Extra</th><th>Fecha</th></tr>
+                    <tr><th>Compañía</th><th>Número</th><th>Marca/Modelo</th><th>Detalle</th><th>Fecha</th></tr>
                 </thead>
                 <tbody id="tablaGral"></tbody>
             </table>
@@ -120,13 +105,13 @@
     </div>
 
     <div class="card">
-        <h3 style="color: var(--gold); margin-top: 0;">🔍 Auditoría Específica Telcel</h3>
+        <h3 style="color: var(--gold); margin: 0;">🔍 Detalle Técnico Telcel</h3>
         <div class="table-container">
             <table>
                 <thead>
-                    <tr><th>Fecha</th><th>Proceso</th><th>Marca/Mod</th><th>IMEI</th><th>ICCID</th></tr>
+                    <tr><th>Fecha</th><th>Proceso</th><th>Modelo</th><th>IMEI</th><th>ICCID</th></tr>
                 </thead>
-                <tbody id="tablaTelAudit"></tbody>
+                <tbody id="tablaTel"></tbody>
             </table>
         </div>
     </div>
@@ -136,35 +121,27 @@
     const firebaseConfig = { apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc", authDomain: "ventastelcel4029.firebaseapp.com" };
     firebase.initializeApp(firebaseConfig);
     let auth = firebase.auth();
-    let captcha = "";
-    let chart;
-
-    function generarCaptcha() {
-        let chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-        captcha = "";
-        for(let i=0; i<5; i++) captcha += chars[Math.floor(Math.random()*chars.length)];
-        captchaText.innerText = captcha;
-    }
 
     function inicio() {
-        generarCaptcha();
         fecha.value = new Date().toISOString().split("T")[0];
         auth.onAuthStateChanged(user => {
             if(user) {
                 loginBox.classList.add("hidden");
                 appBox.classList.remove("hidden");
-                actualizarTablas();
-                actualizarGrafica();
+                cargarTablas();
             }
         });
     }
 
     function login() {
-        if(captchaInput.value.toUpperCase() !== captcha) { alert("Captcha incorrecto"); generarCaptcha(); return; }
-        auth.signInWithEmailAndPassword(correo.value, pass.value).catch(e => alert(e.message));
+        auth.signInWithEmailAndPassword(correo.value, pass.value).catch(e => alert("Error: " + e.message));
     }
 
-    function salir() { if(confirm("¿Cerrar sesión?")) auth.signOut().then(() => window.location.reload()); }
+    function registro() {
+        auth.createUserWithEmailAndPassword(correo.value, pass.value).then(() => alert("Registrado")).catch(e => alert(e.message));
+    }
+
+    function salir() { auth.signOut().then(() => window.location.reload()); }
 
     function mostrarForm() {
         telcelBox.classList.toggle("hidden", tipo.value !== "TELCEL");
@@ -174,86 +151,35 @@
 
     function guardarVenta() {
         let f = fecha.value;
-        let gen = JSON.parse(localStorage.getItem("gen") || "[]");
-        let telAudit = JSON.parse(localStorage.getItem("tel_audit") || "[]");
+        let gen = JSON.parse(localStorage.getItem("ventas_gen") || "[]");
+        let tel = JSON.parse(localStorage.getItem("ventas_tel") || "[]");
 
         if(tipo.value === "TELCEL") {
-            let v = { 
-                comp: "TELCEL", num: tNum.value, marca: `${tMarca.value} ${tModelo.value}`, 
-                extra: tTipo.value, fecha: f, imei: tIMEI.value, iccid: tICCID.value 
-            };
+            let v = { comp: "TELCEL", num: tNum.value, marca: `${tMarca.value} ${tModelo.value}`, detalle: tTipo.value, fecha: f, imei: tIMEI.value, iccid: tICCID.value };
             gen.unshift(v);
-            telAudit.unshift(v);
-            localStorage.setItem("tel_audit", JSON.stringify(telAudit));
+            tel.unshift(v);
+            localStorage.setItem("ventas_tel", JSON.stringify(tel));
         } else if(tipo.value === "ATT") {
-            gen.unshift({ comp: "ATT", num: aNum.value, marca: aMarca.value, extra: `Chip: ${aChip.value}`, fecha: f });
+            gen.unshift({ comp: "ATT", num: aNum.value, marca: aMarca.value, detalle: `Chip: ${aChip.value}`, fecha: f });
         } else {
-            gen.unshift({ comp: "BAIT", num: bNum.value, marca: bMarca.value, extra: `Chip: ${bChip.value}`, fecha: f });
+            gen.unshift({ comp: "BAIT", num: bNum.value, marca: bMarca.value, detalle: `Chip: ${bChip.value}`, fecha: f });
         }
 
-        localStorage.setItem("gen", JSON.stringify(gen));
-        actualizarTablas();
-        actualizarGrafica();
-        alert("Sincronizado Localmente");
+        localStorage.setItem("ventas_gen", JSON.stringify(gen));
+        cargarTablas();
+        alert("Guardado");
     }
 
-    function actualizarTablas() {
-        let gen = JSON.parse(localStorage.getItem("gen") || "[]");
-        let tel = JSON.parse(localStorage.getItem("tel_audit") || "[]");
+    function cargarTablas() {
+        let gen = JSON.parse(localStorage.getItem("ventas_gen") || "[]");
+        let tel = JSON.parse(localStorage.getItem("ventas_tel") || "[]");
 
-        tablaGral.innerHTML = gen.map(v => `
-            <tr>
-                <td><span class="tag tag-telcel">${v.comp}</span></td>
-                <td>${v.num}</td>
-                <td>${v.marca}</td>
-                <td>${v.extra}</td>
-                <td>${v.fecha}</td>
-            </tr>
-        `).join("");
-
-        tablaTelAudit.innerHTML = tel.map(v => `
-            <tr>
-                <td>${v.fecha}</td>
-                <td><b>${v.extra}</b></td>
-                <td>${v.marca}</td>
-                <td>${v.imei}</td>
-                <td>${v.iccid}</td>
-            </tr>
-        `).join("");
+        tablaGral.innerHTML = gen.map(v => `<tr><td><span class="tag-telcel">${v.comp}</span></td><td>${v.num}</td><td>${v.marca}</td><td>${v.detalle}</td><td>${v.fecha}</td></tr>`).join("");
+        tablaTel.innerHTML = tel.map(v => `<tr><td>${v.fecha}</td><td>${v.detalle}</td><td>${v.marca}</td><td>${v.imei}</td><td>${v.iccid}</td></tr>`).join("");
     }
 
-    function actualizarGrafica() {
-        let gen = JSON.parse(localStorage.getItem("gen") || "[]");
-        let counts = { TELCEL: 0, ATT: 0, BAIT: 0 };
-        gen.forEach(v => { if(v.fecha === fecha.value) counts[v.comp]++; });
-
-        const ctx = document.getElementById("grafica").getContext("2d");
-        const gradT = ctx.createLinearGradient(0,0,0,400); gradT.addColorStop(0,'#ffd60a'); gradT.addColorStop(1,'#ffc300');
-        const gradA = ctx.createLinearGradient(0,0,0,400); gradA.addColorStop(0,'#00b4d8'); gradA.addColorStop(1,'#0077b6');
-        const gradB = ctx.createLinearGradient(0,0,0,400); gradB.addColorStop(0,'#ef233c'); gradB.addColorStop(1,'#d90429');
-
-        if(chart) chart.destroy();
-        chart = new Chart(ctx, {
-            type: "bar",
-            data: {
-                labels: ["Telcel", "AT&T", "BAIT"],
-                datasets: [{ 
-                    label: 'Ventas del Día', 
-                    data: [counts.TELCEL, counts.ATT, counts.BAIT], 
-                    backgroundColor: [gradT, gradA, gradB],
-                    borderRadius: 10
-                }]
-            },
-            options: { 
-                responsive: true, 
-                plugins: { legend: { display: false } },
-                scales: { y: { ticks: { color: "white" } }, x: { ticks: { color: "white" } } } 
-            }
-        });
-    }
-
-    function descargarExcelPro() {
-        let gen = JSON.parse(localStorage.getItem("gen") || "[]");
+    function descargarExcel() {
+        let gen = JSON.parse(localStorage.getItem("ventas_gen") || "[]");
         if (gen.length === 0) return alert("No hay datos");
 
         const wb = XLSX.utils.book_new();
@@ -261,19 +187,17 @@
             "COMPAÑÍA": v.comp,
             "FECHA": v.fecha,
             "NÚMERO": v.num,
-            "MARCA/MODELO": v.marca,
-            "PROCESO/CHIP": v.extra,
-            "IDENTIFICADOR": v.iccid || v.imei || "S/D"
+            "MODELO": v.marca,
+            "PROCESO": v.detalle,
+            "IMEI/ICCID": v.iccid || v.imei || "N/A"
         }));
 
         const ws = XLSX.utils.json_to_sheet(data);
-        ws['!cols'] = [{wch:12},{wch:15},{wch:15},{wch:25},{wch:20},{wch:25}]; // Anchos ajustados
-        XLSX.utils.book_append_sheet(wb, ws, "Auditoria");
-        XLSX.writeFile(wb, `Reporte_Auditoria_${fecha.value}.xlsx`);
+        // Ajuste de columnas para que no se amontone
+        ws['!cols'] = [{wch:12}, {wch:15}, {wch:15}, {wch:25}, {wch:15}, {wch:25}];
+        XLSX.utils.book_append_sheet(wb, ws, "Ventas");
+        XLSX.writeFile(wb, `Reporte_Auditor.xlsx`);
     }
-
-    function registro() { auth.createUserWithEmailAndPassword(correo.value, pass.value).catch(e => alert(e.message)); }
-    function recuperar() { auth.sendPasswordResetEmail(correo.value).then(() => alert("Correo enviado")).catch(e => alert(e.message)); }
 </script>
 </body>
 </html>
