@@ -1,433 +1,312 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sistema de Ventas Telcel</title>
-  
-  <!-- PWA -->
-  <link rel="manifest" href="./manifest.json">
-  <meta name="theme-color" content="#0055B8">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Ventas Telcel">
-  <link rel="apple-touch-icon" href="./icon-192.png">
-  
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-  
-  <style>
-  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&display=swap');
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ventas Telcel PRO</title>
 
-  :root{
-    --telcel-blue:#002E6D;
-    --telcel-light:#0055B8;
-    --telcel-cyan:#00AEEF;
-    --bg:#F4F7FB;
-    --card:#FFFFFF;
-    --text:#0F172A;
-    --muted:#64748B;
-    --success:#10B981;
-    --danger:#EF4444;
-    --border:#E2E8F0;
-    --shadow:0 20px 25px -5px rgba(0,46,109,.1), 0 8px 10px -6px rgba(0,46,109,.1);
-    --gradient:linear-gradient(135deg, var(--telcel-blue) 0%, var(--telcel-light) 50%, var(--telcel-cyan) 100%);
-  }
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{
-    font-family:'Outfit',sans-serif;
-    background:var(--bg);color:var(--text);
-    min-height:100vh;
-  }
+<!-- Chart -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  /* LOGIN */
-  .auth-wrap{
-    min-height:100vh;display:flex;align-items:center;justify-content:center;
-    padding:20px;background:var(--gradient);position:relative;overflow:hidden;
-  }
-  .auth-wrap::before{
-    content:'';position:absolute;width:500px;height:500px;
-    background:radial-gradient(circle, rgba(255,255,255,.1) 0%, transparent 70%);
-    top:-200px;right:-200px;border-radius:50%;
-  }
-  .card{
-    background:var(--card);border-radius:24px;box-shadow:var(--shadow);
-    padding:36px;width:100%;max-width:440px;position:relative;z-index:1;
-    backdrop-filter:blur(10px);
-  }
-  .brand{text-align:center;margin-bottom:24px}
-  .brand .logo{
-    font-weight:900;font-size:36px;
-    background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
-    letter-spacing:2px;
-  }
-  .brand .sub{font-size:10px;letter-spacing:.4em;color:var(--muted);text-transform:uppercase;margin-top:6px}
-  h2{color:var(--telcel-blue);text-align:center;margin:12px 0 24px;font-size:24px;font-weight:700}
+<style>
+body{font-family:sans-serif;background:#f4f7fb;margin:0}
+.hidden{display:none}
 
-  input{
-    width:100%;padding:16px;margin:10px 0;border:2px solid var(--border);
-    border-radius:14px;font-size:16px;outline:none;transition:all .3s;
-    font-family:'Outfit',sans-serif;
-  }
-  input:focus{border-color:var(--telcel-cyan);box-shadow:0 0 0 4px rgba(0,174,239,.1)}
+header{
+background:#002E6D;color:#fff;padding:20px;
+display:flex;justify-content:space-between
+}
 
-  button{
-    width:100%;padding:16px;border:none;border-radius:14px;cursor:pointer;
-    font-weight:700;font-size:15px;margin-top:12px;transition:all .2s;
-    font-family:'Outfit',sans-serif;letter-spacing:.5px;
-  }
-  button:active{transform:scale(.97)}
-  button:disabled{opacity:.5;cursor:not-allowed}
+main{padding:20px;max-width:800px;margin:auto}
 
-  .btn-azul{
-    background:var(--gradient);color:#fff;box-shadow:0 4px 14px rgba(0,85,184,.4);
-  }
-  .btn-azul:hover{box-shadow:0 6px 20px rgba(0,85,184,.5)}
-  .btn-verde{background:var(--success);color:#fff}
-  .btn-rojo{background:var(--danger);color:#fff}
-  .btn-gris{background:var(--muted);color:#fff}
-  .btn-outline{background:transparent;color:var(--telcel-light);border:2px solid var(--telcel-light)}
+.panel{
+background:#fff;padding:20px;margin:10px 0;
+border-radius:12px
+}
 
-  .divider{margin:24px 0;border:0;height:1px;background:var(--border)}
-  .switch-text{text-align:center;color:var(--muted);font-size:14px;margin:8px 0}
-  .hidden{display:none !important}
+input,button{
+padding:10px;margin:5px 0;width:100%
+}
 
-  /* APP */
-  .app-header{
-    background:var(--gradient);color:#fff;padding:32px 20px 70px;
-    position:relative;overflow:hidden;
-  }
-  .app-header::after{
-    content:'';position:absolute;bottom:-50px;left:0;right:0;height:100px;
-    background:var(--bg);border-radius:50% 50% 0 0/100% 100% 0 0;
-  }
-  .app-header .row{
-    display:flex;align-items:center;justify-content:space-between;max-width:720px;margin:0 auto;position:relative;z-index:1;
-  }
-  .app-header .logo{font-weight:900;font-size:28px;letter-spacing:2px}
-  .app-header .sub{font-size:10px;letter-spacing:.3em;opacity:.9;text-transform:uppercase}
-  .app-header .user{
-    max-width:720px;margin:16px auto 0;font-size:13px;opacity:.95;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative;z-index:1;
-  }
-  .header-actions{display:flex;gap:8px}
-  .btn-logout{
-    width:auto;padding:10px 18px;background:rgba(255,255,255,.2);color:#fff;
-    border:1px solid rgba(255,255,255,.3);border-radius:12px;font-weight:600;
-    font-size:13px;margin:0;backdrop-filter:blur(10px);
-  }
-  .btn-logout:hover{background:rgba(255,255,255,.3)}
-  .btn-install{
-    width:auto;padding:10px 18px;background:#fff;color:var(--telcel-blue);
-    border:0;border-radius:12px;font-weight:700;font-size:13px;margin:0;
-    box-shadow:0 4px 12px rgba(0,0,0,.15);
-  }
-  .btn-install:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(0,0,0,.2)}
+button{background:#0055B8;color:#fff;border:none}
 
-  main{max-width:720px;margin:-50px auto 40px;padding:0 20px;display:grid;gap:20px;position:relative;z-index:2}
-
-  .stats{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-  .stat{
-    background:var(--card);border-radius:20px;padding:20px;box-shadow:var(--shadow);
-    border:1px solid var(--border);position:relative;overflow:hidden;
-  }
-  .stat::before{
-    content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--gradient);
-  }
-  .stat .label{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);font-weight:600}
-  .stat .value{font-size:28px;font-weight:900;color:var(--telcel-blue);margin-top:6px}
-
-  .panel{
-    background:var(--card);border-radius:20px;padding:24px;box-shadow:var(--shadow);
-    border:1px solid var(--border);
-  }
-  .panel h3{margin:0 0 16px;color:var(--text);font-size:18px;font-weight:700;display:flex;align-items:center;gap:8px}
-  .panel h3::before{content:'';width:4px;height:20px;background:var(--gradient);border-radius:2px}
-
-  ul{list-style:none}
-  li.venta{
-    display:flex;align-items:center;gap:12px;padding:16px 0;border-bottom:1px solid var(--border);
-    transition:background .2s;
-  }
-  li.venta:hover{background:#F8FAFC;margin:0 -24px;padding:16px 24px}
-  li.venta:last-child{border-bottom:0}
-  .venta .info{flex:1;min-width:0}
-  .venta .prod{font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .venta .fecha{font-size:12px;color:var(--muted);margin-top:4px}
-  .venta .precio{font-weight:800;color:var(--telcel-blue);font-size:18px}
-  .venta .del{
-    width:40px;height:40px;border-radius:12px;background:transparent;color:var(--danger);
-    font-size:18px;padding:0;margin:0;border:0;cursor:pointer;transition:all .2s;
-  }
-  .venta .del:hover{background:#FEE2E2;transform:scale(1.1)}
-  .empty{text-align:center;color:var(--muted);font-size:14px;padding:24px 0}
-
-  @media(max-width:480px){
-    .stats{grid-template-columns:1fr}
-    .stat .value{font-size:24px}
-    .header-actions{flex-direction:column}
-  }
-  </style>
+li{margin:10px 0}
+</style>
 </head>
+
 <body>
-  <!-- LOGIN / REGISTRO -->
-  <div class="auth-wrap" id="auth-container">
-    <div class="card">
-      <div class="brand">
-        <div class="logo">TELCEL</div>
-        <div class="sub">Sistema de Ventas</div>
-      </div>
-      <div id="login-form">
-        <h2>Iniciar Sesión</h2>
-        <input type="email" id="login-email" placeholder="Correo electrónico" />
-        <input type="password" id="login-password" placeholder="Contraseña" />
-        <button class="btn-azul" onclick="login()">ENTRAR AL SISTEMA</button>
-        <hr class="divider" />
-        <p class="switch-text">¿No tienes cuenta de promotor?</p>
-        <button class="btn-outline" onclick="mostrarRegistro()">REGISTRAR NUEVO PROMOTOR</button>
-      </div>
-      <div id="registro-form" class="hidden">
-        <h2>Registrar Promotor</h2>
-        <input type="email" id="reg-email" placeholder="Correo para el promotor" />
-        <input type="password" id="reg-password" placeholder="Crea una contraseña (mín. 6)" />
-        <button class="btn-verde" onclick="registrar()">CREAR CUENTA AHORA</button>
-        <button class="btn-gris" onclick="mostrarLogin()">← CANCELAR / VOLVER</button>
-      </div>
-    </div>
+
+<!-- LOGIN -->
+<div id="auth-container">
+  <div class="panel">
+    <h2>Login</h2>
+    <input id="login-email" placeholder="Correo">
+    <input id="login-password" type="password" placeholder="Contraseña">
+    <button onclick="login()">Entrar</button>
+
+    <h3>Registro</h3>
+    <input id="reg-email" placeholder="Correo">
+    <input id="reg-password" type="password" placeholder="Contraseña">
+    <button onclick="registrar()">Crear cuenta</button>
   </div>
+</div>
 
-  <!-- APP -->
-  <div id="app-container" class="hidden">
-    <header class="app-header">
-      <div class="row">
-        <div>
-          <div class="logo">TELCEL</div>
-          <div class="sub">Ventas</div>
-        </div>
-        <div class="header-actions">
-          <button class="btn-install hidden" id="btn-install" onclick="instalarPWA()">📲 Instalar App</button>
-          <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
-        </div>
-      </div>
-      <div class="user" id="user-info"></div>
-    </header>
-    <main>
-      <section class="stats">
-        <div class="stat">
-          <div class="label">Hoy</div>
-          <div class="value" id="total-hoy">$0</div>
-        </div>
-        <div class="stat">
-          <div class="label">Mes</div>
-          <div class="value" id="total-mes">$0</div>
-        </div>
-      </section>
-      <section class="panel">
-        <h3>+ Nueva venta</h3>
-        <input type="text" id="producto" placeholder="Nombre del Producto o Plan" />
-        <input type="number" id="precio" placeholder="Precio ($)" />
-        <button class="btn-azul" onclick="guardarVenta()">GUARDAR VENTA</button>
-      </section>
-      <section class="panel">
-        <h3 id="historial-titulo">Historial (0)</h3>
-        <ul id="lista-ventas"></ul>
-        <div class="empty hidden" id="empty-msg">Aún no hay ventas registradas.</div>
-      </section>
-    </main>
-  </div>
+<!-- APP -->
+<div id="app-container" class="hidden">
+<header>
+  <div>Ventas PRO</div>
+  <button onclick="logout()">Salir</button>
+</header>
 
-  <script>
-    // --- Configuración Firebase ---
-    const firebaseConfig = {
-      apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftB8Lp_S3Y-D3s",
-      authDomain: "ventastelcel4029.firebaseapp.com",
-      databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com",
-      projectId: "ventastelcel4029",
-      storageBucket: "ventastelcel4029.firebasestorage.app",
-      messagingSenderId: "480758010888",
-      appId: "1:480758010888:web:e948c54f028889498669c5"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.database();
-    let ventasRef = null;
-    let ventasCache = [];
-    let deferredPrompt = null;
+<main>
 
-    // --- PWA Install ---
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      document.getElementById('btn-install').classList.remove('hidden');
+<div class="panel">
+  <h3>Hoy: <span id="total-hoy">$0</span></h3>
+  <h3>Mes: <span id="total-mes">$0</span></h3>
+</div>
+
+<div class="panel">
+  <h3>Nueva venta</h3>
+  <input id="producto" placeholder="Producto">
+  <input id="precio" type="number" placeholder="Precio">
+  <button onclick="guardarVenta()">Guardar</button>
+</div>
+
+<div class="panel">
+  <h3>Historial</h3>
+  <ul id="lista-ventas"></ul>
+</div>
+
+<div class="panel">
+  <h3>🏆 Ranking</h3>
+  <ul id="ranking"></ul>
+</div>
+
+<div class="panel">
+  <h3>📊 Ventas por día</h3>
+  <canvas id="grafica"></canvas>
+</div>
+
+</main>
+</div>
+
+<script>
+// 🔥 CONFIG
+const firebaseConfig = {
+  apiKey: "TU_API_KEY",
+  authDomain: "TU_DOMINIO",
+  databaseURL: "TU_DB",
+  projectId: "TU_ID"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+const db = firebase.database();
+
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+const GERENTE_EMAIL = "tu_correo@ejemplo.com";
+
+let ventasRef=null;
+let ventasCache=[];
+let chart=null;
+
+// LOGIN
+function login(){
+  auth.signInWithEmailAndPassword(
+    login-email.value,
+    login-password.value
+  ).catch(e=>alert(e.message));
+}
+
+function registrar(){
+  auth.createUserWithEmailAndPassword(
+    reg-email.value,
+    reg-password.value
+  ).catch(e=>alert(e.message));
+}
+
+function logout(){auth.signOut()}
+
+// FECHA
+function fechaHoy(){
+  let d=new Date();
+  return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+}
+
+// GUARDAR
+function guardarVenta(){
+  let prod=producto.value.trim();
+  let prec=precio.value;
+  let user=auth.currentUser;
+
+  if(!prod||!prec)return alert("Datos");
+
+  if(isNaN(prec)||prec<=0)return alert("Precio inválido");
+
+  let venta={
+    producto:prod,
+    precio:prec,
+    fecha:fechaHoy(),
+    ts:Date.now()
+  };
+
+  db.ref('ventas/'+user.uid).push(venta);
+  db.ref('backup/'+user.uid).push(venta);
+
+  producto.value="";
+  precio.value="";
+}
+
+// ELIMINAR
+function eliminarVenta(id){
+  let user=auth.currentUser;
+  db.ref('ventas/'+user.uid+'/'+id).remove();
+}
+
+// USER NORMAL
+function suscribirVentas(uid){
+  if(ventasRef)ventasRef.off();
+
+  ventasRef=db.ref('ventas/'+uid);
+
+  ventasRef.on('value',snap=>{
+    let data=snap.val()||{};
+
+    ventasCache=Object.entries(data)
+    .map(([id,v])=>({id,...v}))
+    .sort((a,b)=>b.ts-a.ts);
+
+    render();
+  });
+}
+
+// GERENTE
+function suscribirTodasVentas(){
+  if(ventasRef)ventasRef.off();
+
+  ventasRef=db.ref('ventas');
+
+  ventasRef.on('value',snap=>{
+    let data=snap.val()||{};
+    let todas=[];
+
+    Object.keys(data).forEach(uid=>{
+      Object.entries(data[uid]).forEach(([id,v])=>{
+        todas.push({id,uid,...v});
+      });
     });
 
-    function instalarPWA() {
-      if (!deferredPrompt) return;
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then((choiceResult) => {
-        if (choiceResult.outcome === 'accepted') {
-          console.log('PWA instalada');
-          document.getElementById('btn-install').classList.add('hidden');
-        }
-        deferredPrompt = null;
-      });
+    ventasCache=todas.sort((a,b)=>b.ts-a.ts);
+
+    render();
+    renderRanking();
+  });
+}
+
+// RENDER
+function render(){
+  lista-ventas.innerHTML="";
+
+  ventasCache.forEach(v=>{
+    let li=document.createElement('li');
+
+    li.innerHTML=`
+      ${v.producto} - $${Number(v.precio).toLocaleString('es-MX')} (${v.fecha})
+      <button onclick="eliminarVenta('${v.id}')">❌</button>
+    `;
+
+    lista-ventas.appendChild(li);
+  });
+
+  calcularTotales();
+  renderGrafica();
+}
+
+// TOTALES
+function calcularTotales(){
+  let hoy=fechaHoy();
+  let mes=hoy.slice(3);
+
+  let th=0, tm=0;
+
+  ventasCache.forEach(v=>{
+    if(v.fecha===hoy) th+=Number(v.precio);
+    if(v.fecha.slice(3)===mes) tm+=Number(v.precio);
+  });
+
+  total-hoy.textContent="$"+th.toLocaleString('es-MX');
+  total-mes.textContent="$"+tm.toLocaleString('es-MX');
+}
+
+// RANKING
+function renderRanking(){
+  ranking.innerHTML="";
+
+  let totales={};
+
+  ventasCache.forEach(v=>{
+    if(!totales[v.uid])totales[v.uid]=0;
+    totales[v.uid]+=Number(v.precio);
+  });
+
+  Object.entries(totales)
+  .sort((a,b)=>b[1]-a[1])
+  .forEach(([uid,total],i)=>{
+    let li=document.createElement('li');
+    li.textContent=`#${i+1} ${uid} → $${total.toLocaleString('es-MX')}`;
+    ranking.appendChild(li);
+  });
+}
+
+// GRÁFICA
+function renderGrafica(){
+  let dias={};
+
+  ventasCache.forEach(v=>{
+    if(!dias[v.fecha])dias[v.fecha]=0;
+    dias[v.fecha]+=Number(v.precio);
+  });
+
+  if(chart)chart.destroy();
+
+  chart=new Chart(grafica,{
+    type:'line',
+    data:{
+      labels:Object.keys(dias),
+      datasets:[{
+        label:'Ventas',
+        data:Object.values(dias),
+        borderWidth:3
+      }]
+    }
+  });
+}
+
+// SESIÓN
+auth.onAuthStateChanged(user=>{
+  if(user){
+    auth-container.classList.add('hidden');
+    app-container.classList.remove('hidden');
+
+    if(user.email===GERENTE_EMAIL){
+      suscribirTodasVentas();
+    }else{
+      suscribirVentas(user.uid);
     }
 
-    window.addEventListener('appinstalled', () => {
-      document.getElementById('btn-install').classList.add('hidden');
-      deferredPrompt = null;
-    });
+  }else{
+    auth-container.classList.remove('hidden');
+    app-container.classList.add('hidden');
+  }
+});
+</script>
 
-    // --- Navegación entre formularios ---
-    function mostrarRegistro(){
-      document.getElementById('login-form').classList.add('hidden');
-      document.getElementById('registro-form').classList.remove('hidden');
-    }
-    function mostrarLogin(){
-      document.getElementById('registro-form').classList.add('hidden');
-      document.getElementById('login-form').classList.remove('hidden');
-    }
-
-    // --- Auth ---
-    function registrar(){
-      const email = document.getElementById('reg-email').value.trim();
-      const pass = document.getElementById('reg-password').value;
-      if(!email || !pass) return alert("Por favor, llena todos los campos");
-      auth.createUserWithEmailAndPassword(email, pass)
-      .then(()=>{
-        alert("¡Promotor registrado correctamente!");
-        mostrarLogin();
-      })
-      .catch(err=>alert("Error al registrar: " + err.message));
-    }
-    function login(){
-      const email = document.getElementById('login-email').value.trim();
-      const pass = document.getElementById('login-password').value;
-      if(!email || !pass) return alert("Escribe tu correo y contraseña");
-      auth.signInWithEmailAndPassword(email, pass)
-      .catch(err=>alert("Datos incorrectos: " + err.message));
-    }
-    function logout(){
-      auth.signOut();
-    }
-
-    // --- Fecha dd/mm/aaaa ---
-    function fechaHoy(){
-      const h = new Date();
-      const d = String(h.getDate()).padStart(2,'0');
-      const m = String(h.getMonth()+1).padStart(2,'0');
-      return `${d}/${m}/${h.getFullYear()}`;
-    }
-
-    // --- Guardar venta ---
-    function guardarVenta(){
-      const producto = document.getElementById('producto').value.trim();
-      const precio = document.getElementById('precio').value;
-      const user = auth.currentUser;
-      if(!producto || !precio) return alert("Completa los datos de la venta");
-      const fecha = fechaHoy();
-      db.ref('ventas').push({
-        promotor: user.email,
-        producto,
-        precio,
-        fecha,
-        ts: Date.now()
-      }).then(()=>{
-        document.getElementById('producto').value = "";
-        document.getElementById('precio').value = "";
-        alert("✅ Registrado el " + fecha);
-      }).catch(err=>alert("Error al guardar: " + err.message));
-    }
-
-    // --- Eliminar venta ---
-    function eliminarVenta(id){
-      if(!confirm("¿Eliminar esta venta?")) return;
-      db.ref('ventas/'+id).remove()
-      .catch(err=>alert("Error al eliminar: " + err.message));
-    }
-
-    // --- Render historial y totales ---
-    function render(){
-      const lista = document.getElementById('lista-ventas');
-      const empty = document.getElementById('empty-msg');
-      lista.innerHTML = "";
-      document.getElementById('historial-titulo').textContent = `Historial (${ventasCache.length})`;
-      if(ventasCache.length === 0){
-        empty.classList.remove('hidden');
-      } else {
-        empty.classList.add('hidden');
-        ventasCache.forEach(v=>{
-          const li = document.createElement('li');
-          li.className = 'venta';
-          li.innerHTML = `
-            <div class="info">
-              <div class="prod"></div>
-              <div class="fecha"></div>
-            </div>
-            <div class="precio"></div>
-            <button class="del" title="Eliminar">🗑</button>
-          `;
-          li.querySelector('.prod').textContent = v.producto;
-          li.querySelector('.fecha').textContent = v.fecha;
-          li.querySelector('.precio').textContent = "$" + Number(v.precio).toLocaleString('es-MX');
-          li.querySelector('.del').onclick = ()=>eliminarVenta(v.id);
-          lista.appendChild(li);
-        });
-      }
-      const hoy = fechaHoy();
-      const mes = hoy.slice(3); // mm/aaaa
-      const totalHoy = ventasCache
-        .filter(v => v.fecha === hoy)
-        .reduce((s,v)=> s + Number(v.precio||0), 0);
-      const totalMes = ventasCache
-        .filter(v => (v.fecha||"").slice(3) === mes)
-        .reduce((s,v)=> s + Number(v.precio||0), 0);
-      document.getElementById('total-hoy').textContent = "$" + totalHoy.toLocaleString('es-MX');
-      document.getElementById('total-mes').textContent = "$" + totalMes.toLocaleString('es-MX');
-    }
-
-    // --- Suscripción a ventas del promotor ---
-    function suscribirVentas(email){
-      if(ventasRef) ventasRef.off();
-      ventasRef = db.ref('ventas').orderByChild('promotor').equalTo(email);
-      ventasRef.on('value', snap=>{
-        const data = snap.val() || {};
-        ventasCache = Object.entries(data)
-          .map(([id,v]) => ({ id, ...v }))
-          .sort((a,b)=> (b.ts||0) - (a.ts||0));
-        render();
-      });
-    }
-
-    // --- Cambio de sesión ---
-    auth.onAuthStateChanged(user=>{
-      const authView = document.getElementById('auth-container');
-      const appView = document.getElementById('app-container');
-      if(user){
-        authView.classList.add('hidden');
-        appView.classList.remove('hidden');
-        document.getElementById('user-info').textContent = "Vendedor: " + user.email;
-        suscribirVentas(user.email);
-      } else {
-        if(ventasRef){
-          ventasRef.off();
-          ventasRef = null;
-        }
-        ventasCache = [];
-        authView.classList.remove('hidden');
-        appView.classList.add('hidden');
-      }
-    });
-
-    // --- PWA: Registrar Service Worker ---
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW error:', err));
-      });
-    }
-  </script>
 </body>
 </html>
