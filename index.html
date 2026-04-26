@@ -3,355 +3,257 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ventas Telcel PRO</title>
+<title>Auditor PRO | Omar</title>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
-<!-- Chart -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <style>
-:root{
---blue:#002E6D;
---light:#0055B8;
---bg:#F4F7FB;
---card:#fff;
---text:#0F172A;
-}
-
-body{
-font-family:sans-serif;
-background:var(--bg);
-margin:0;
-}
-
-.hidden{display:none}
-
-header{
-background:linear-gradient(135deg,var(--blue),var(--light));
-color:#fff;
-padding:25px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-}
-
-main{
-max-width:720px;
-margin:auto;
-padding:20px;
-}
-
-.panel{
-background:var(--card);
-border-radius:16px;
-padding:20px;
-margin-bottom:15px;
-box-shadow:0 10px 20px rgba(0,0,0,.05);
-}
-
-h3{margin-bottom:10px}
-
-input{
-width:100%;
-padding:12px;
-margin:8px 0;
-border-radius:10px;
-border:1px solid #ddd;
-}
-
-button{
-width:100%;
-padding:12px;
-background:var(--light);
-color:#fff;
-border:none;
-border-radius:10px;
-font-weight:bold;
-cursor:pointer;
-}
-
-li{
-display:flex;
-justify-content:space-between;
-padding:10px 0;
-border-bottom:1px solid #eee;
-}
-
-canvas{max-height:250px}
+body { margin:0; font-family:'Segoe UI', sans-serif; background: #0b0d17; color:white; }
+.app { max-width:480px; margin:auto; padding:20px; }
+.card { background: rgba(255,255,255,0.08); backdrop-filter: blur(12px); border-radius: 16px; padding: 15px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); }
+.nav-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.btn-salir { background: #e63946; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 11px; text-transform: uppercase; }
+.tabs { display: flex; gap: 8px; margin-bottom: 15px; }
+.tab { flex: 1; padding: 10px; border-radius: 10px; background: rgba(255,255,255,0.1); text-align: center; cursor: pointer; font-size: 12px; font-weight: 600; }
+.tab.active { background: #ffc300; color: #003566; }
+input, select { width: 100%; padding: 12px; border-radius: 10px; border: none; background: rgba(255,255,255,0.15); color: white; margin-top: 8px; box-sizing: border-box; outline: none; }
+input::placeholder { color: rgba(255,255,255,0.5); }
+button { background: #ffc300; color: #003566; padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; font-size: 14px; }
+.btn-del { background: #ff4d4d; color: white; border: none; padding: 5px 8px; border-radius: 6px; font-size: 10px; cursor: pointer; }
+.hidden { display: none !important; }
+table { width: 100%; font-size: 11px; border-collapse: collapse; margin-top: 10px; color: #eee; }
+th, td { border-bottom: 1px solid rgba(255,255,255,0.1); padding: 10px 5px; text-align: left; }
+th { color: #ffc300; font-weight: 600; text-transform: uppercase; font-size: 9px; }
+.fade { animation: fade 0.3s ease; }
+@keyframes fade { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; } }
 </style>
 </head>
 
-<body>
+<body onload="inicio()">
 
-<!-- LOGIN -->
-<div id="auth-container">
-  <main>
-    <div class="panel">
-      <h2>Iniciar sesión</h2>
-      <input id="login-email" placeholder="Correo">
-      <input id="login-password" type="password" placeholder="Contraseña">
-      <button onclick="login()">Entrar</button>
-
-      <hr>
-
-      <h3>Registro</h3>
-      <input id="reg-email" placeholder="Correo">
-      <input id="reg-password" type="password" placeholder="Contraseña">
-      <button onclick="registrar()">Crear cuenta</button>
+<div id="loginBox" class="app">
+    <div class="card" style="margin-top: 60px; text-align: center;">
+        <h1 style="color:#ffc300; font-size: 22px; margin-bottom: 5px;">AUDITOR SINCRO</h1>
+        <p style="font-size: 12px; opacity: 0.7;">Gestión de Ventas Multimarca</p>
+        <input id="correo" type="email" placeholder="Correo electrónico">
+        <input id="pass" type="password" placeholder="Contraseña">
+        <button onclick="loginEmail()">INGRESAR</button>
+        <button onclick="loginGoogle()" style="background:white; color:#444; font-size:12px; margin-top:10px;">Continuar con Google</button>
     </div>
-  </main>
 </div>
 
-<!-- APP -->
-<div id="app-container" class="hidden">
+<div id="appBox" class="app hidden">
+    <div class="nav-header">
+        <span id="txtUser" style="font-size: 11px; color: #ffc300; font-weight: bold;">...</span>
+        <button class="btn-salir" onclick="salir()">Salir</button>
+    </div>
+    
+    <div class="card">
+        <label style="font-size: 10px; color: #ffc300; font-weight: bold;">CONSULTAR FECHA:</label>
+        <input type="date" id="fechaFiltro" onchange="cargarTodo()">
+    </div>
 
-<header>
-  <div>Ventas Telcel</div>
-  <button onclick="logout()">Salir</button>
-</header>
+    <div class="tabs">
+        <div id="tabTELCEL" class="tab active" onclick="setComp('TELCEL')">TELCEL</div>
+        <div id="tabATT" class="tab" onclick="setComp('ATT')">AT&T</div>
+        <div id="tabBAIT" class="tab" onclick="setComp('BAIT')">BAIT</div>
+    </div>
 
-<main>
+    <div id="cardProceso" class="card">
+        <select id="tipoProceso" onchange="renderForm()">
+            <option value="VENTA">SELECCIONAR TIPO DE VENTA</option>
+            <option value="PORTA">PORTABILIDAD</option>
+            <option value="RENUEVATE">RENUÉVATE</option>
+            <option value="CHIP">CHIP EXPRESS</option>
+            <option value="AK">EQUIPO / AK</option>
+        </select>
+        <div id="formContainer"></div>
+    </div>
 
-<div class="panel">
-  <h3>Hoy: <span id="total-hoy">$0</span></h3>
-  <h3>Mes: <span id="total-mes">$0</span></h3>
-</div>
+    <button onclick="obtenerUbicacionYGuardar()">💾 GUARDAR REGISTRO</button>
+    
+    <div class="card" style="border-top: 2px solid #ffc300;">
+        <h3 style="color:#ffc300; margin:0 0 10px 0; font-size: 13px;">LISTADO DE SINCRONIZACIÓN</h3>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Número</th>
+                        <th>Proceso</th>
+                        <th>Compañía</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="cuerpoSincro"></tbody>
+            </table>
+        </div>
+    </div>
 
-<div class="panel">
-  <h3>Nueva venta</h3>
-  <input id="producto" placeholder="Producto">
-  <input id="precio" type="number" placeholder="Precio">
-  <button onclick="guardarVenta()">Guardar</button>
-</div>
+    <div class="card"><canvas id="grafica"></canvas></div>
 
-<div class="panel">
-  <h3>Historial</h3>
-  <ul id="lista-ventas"></ul>
-</div>
-
-<div class="panel">
-  <h3>🏆 Ranking</h3>
-  <ul id="ranking"></ul>
-</div>
-
-<div class="panel">
-  <h3>📊 Ventas</h3>
-  <canvas id="grafica"></canvas>
-</div>
-
-</main>
+    <button style="background:#1b4332; color:#74c69d; border: 1px solid #74c69d;" onclick="descargarExcel()">📊 DESCARGAR EXCEL ORDENADO</button>
 </div>
 
 <script>
-const firebaseConfig = {
-  apiKey: "TU_API",
-  authDomain: "TU_DOMINIO",
-  databaseURL: "TU_DB",
-  projectId: "TU_ID"
+const firebaseConfig = { 
+    apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc", 
+    authDomain: "ventastelcel4029.firebaseapp.com",
+    databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com"
 };
-
 firebase.initializeApp(firebaseConfig);
-
 const auth = firebase.auth();
 const db = firebase.database();
 
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+let compActiva = "TELCEL";
+let chart;
+let todasVentas = {};
 
-const GERENTE_EMAIL = "tu_correo@ejemplo.com";
-
-let ventasRef=null;
-let ventasCache=[];
-let chart=null;
-
-// LOGIN
-function login(){
-auth.signInWithEmailAndPassword(login-email.value,login-password.value)
-.catch(e=>alert(e.message));
+function inicio() {
+    document.getElementById("fechaFiltro").value = new Date().toISOString().split("T")[0];
+    auth.onAuthStateChanged(user => {
+        if(user) {
+            document.getElementById("loginBox").classList.add("hidden");
+            document.getElementById("appBox").classList.remove("hidden");
+            document.getElementById("txtUser").innerText = "👤 " + (user.displayName || user.email.split('@')[0]);
+            escucharDatos();
+            renderForm();
+        }
+    });
 }
 
-function registrar(){
-auth.createUserWithEmailAndPassword(reg-email.value,reg-password.value)
-.catch(e=>alert(e.message));
+function loginEmail() { auth.signInWithEmailAndPassword(correo.value, pass.value).catch(e => alert("Error: " + e.message)); }
+function loginGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+function salir() { if(confirm("¿Cerrar sesión?")) auth.signOut().then(() => window.location.reload()); }
+
+function setComp(c) {
+    compActiva = c;
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document.getElementById("tab" + c).classList.add("active");
+    document.getElementById("tipoProceso").style.display = (c === "TELCEL") ? "block" : "none";
+    renderForm();
 }
 
-function logout(){auth.signOut()}
+function renderForm() {
+    let html = "";
+    const tp = document.getElementById("tipoProceso").value;
 
-// FECHA
-function fechaHoy(){
-let d=new Date();
-return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+    if(compActiva === "TELCEL") {
+        if(tp === "PORTA") {
+            html = `<div class="fade"><input id="f_num" placeholder="Número"><input id="f_icc" placeholder="ICCID"><input id="f_nip" placeholder="NIP"></div>`;
+        } 
+        else if(tp === "RENUEVATE") {
+            html = `<div class="fade"><input id="f_num" placeholder="Número"><input id="f_marca" placeholder="Marca"><input id="f_mod" placeholder="Modelo"><input id="f_icc" placeholder="ICCID"><input id="f_imei" placeholder="IMEI"></div>`;
+        }
+        else if(tp === "AK") {
+            // CORREGIDO: Se agregó el campo ICCID
+            html = `<div class="fade">
+                <input id="f_num" placeholder="Número">
+                <input id="f_marca" placeholder="Marca">
+                <input id="f_mod" placeholder="Modelo">
+                <input id="f_imei" placeholder="IMEI">
+                <input id="f_icc" placeholder="ICCID">
+            </div>`;
+        }
+        else {
+            html = `<div class="fade"><input id="f_num" placeholder="Número"><input id="f_icc" placeholder="ICCID"></div>`;
+        }
+    } else {
+        html = `<div class="fade"><input id="f_num" placeholder="Número"><input id="f_marca" placeholder="Marca"><input id="f_mod" placeholder="Modelo"><input id="f_icc" placeholder="ICCID"></div>`;
+    }
+    document.getElementById("formContainer").innerHTML = html;
 }
 
-// GUARDAR
-function guardarVenta(){
-let prod=producto.value.trim();
-let prec=precio.value;
-let user=auth.currentUser;
-
-if(!prod||!prec)return alert("Datos");
-
-if(isNaN(prec)||prec<=0)return alert("Precio inválido");
-
-let venta={
-producto:prod,
-precio:prec,
-fecha:fechaHoy(),
-ts:Date.now()
-};
-
-db.ref('ventas/'+user.uid).push(venta);
-db.ref('backup/'+user.uid).push(venta);
-
-producto.value="";
-precio.value="";
+async function obtenerUbicacionYGuardar() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+            try {
+                const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`);
+                const data = await res.json();
+                guardar(data.display_name || "Ubicación detectada");
+            } catch { guardar("Ubicación GPS"); }
+        }, () => guardar("Sin acceso GPS"));
+    } else { guardar("GPS no disponible"); }
 }
 
-// ELIMINAR
-function eliminarVenta(id){
-let user=auth.currentUser;
-db.ref('ventas/'+user.uid+'/'+id).remove();
+function guardar(calle) {
+    const data = {
+        comp: compActiva,
+        proceso: (compActiva === "TELCEL") ? document.getElementById("tipoProceso").value : "EXTERNA",
+        fecha: document.getElementById("fechaFiltro").value,
+        ubicacion: calle,
+        num: document.getElementById("f_num")?.value || "",
+        icc: document.getElementById("f_icc")?.value || "",
+        marca: document.getElementById("f_marca")?.value || "",
+        modelo: document.getElementById("f_mod")?.value || "",
+        imei: document.getElementById("f_imei")?.value || "",
+        nip: document.getElementById("f_nip")?.value || ""
+    };
+    db.ref('ventas').push(data).then(() => {
+        alert("¡Registro sincronizado correctamente!");
+        renderForm();
+    });
 }
 
-// USER
-function suscribirVentas(uid){
-if(ventasRef)ventasRef.off();
-
-ventasRef=db.ref('ventas/'+uid);
-
-ventasRef.on('value',snap=>{
-let data=snap.val()||{};
-
-ventasCache=Object.entries(data)
-.map(([id,v])=>({id,...v}))
-.sort((a,b)=>b.ts-a.ts);
-
-render();
-});
+function escucharDatos() {
+    db.ref('ventas').on('value', snap => {
+        todasVentas = snap.val() || {};
+        cargarTodo();
+    });
 }
 
-// GERENTE
-function suscribirTodasVentas(){
-if(ventasRef)ventasRef.off();
-
-ventasRef=db.ref('ventas');
-
-ventasRef.on('value',snap=>{
-let data=snap.val()||{};
-let todas=[];
-
-Object.keys(data).forEach(uid=>{
-Object.entries(data[uid]).forEach(([id,v])=>{
-todas.push({id,uid,...v});
-});
-});
-
-ventasCache=todas.sort((a,b)=>b.ts-a.ts);
-
-render();
-renderRanking();
-});
+function cargarTodo() {
+    const filtro = document.getElementById("fechaFiltro").value;
+    const cuerpo = document.getElementById("cuerpoSincro");
+    cuerpo.innerHTML = "";
+    let s = { TELCEL:0, ATT:0, BAIT:0 };
+    Object.keys(todasVentas).reverse().forEach(id => {
+        const v = todasVentas[id];
+        if(v.fecha === filtro) {
+            cuerpo.innerHTML += `<tr><td>${v.num}</td><td>${v.proceso}</td><td>${v.comp}</td><td><button class="btn-del" onclick="eliminar('${id}')">🗑️</button></td></tr>`;
+            if(s[v.comp] !== undefined) s[v.comp]++;
+        }
+    });
+    if(chart) chart.destroy();
+    chart = new Chart(document.getElementById("grafica"), {
+        type: 'doughnut',
+        data: { labels: ["TELCEL", "ATT", "BAIT"], datasets: [{ data: [s.TELCEL, s.ATT, s.BAIT], backgroundColor: ['#ffc300', '#00b4d8', '#ef233c'], borderWidth: 0 }] },
+        options: { plugins: { legend: { position: 'bottom', labels: { color: "white", font: { size: 10 } } } } }
+    });
 }
 
-// RENDER
-function render(){
-lista-ventas.innerHTML="";
+function eliminar(id) { if(confirm("¿Eliminar registro?")) db.ref('ventas/' + id).remove(); }
 
-ventasCache.forEach(v=>{
-let li=document.createElement('li');
+function descargarExcel() {
+    const rawData = Object.values(todasVentas);
+    const excelData = rawData.map(v => ({
+        "FECHA": v.fecha,
+        "COMPAÑÍA": v.comp,
+        "NÚMERO": v.num,
+        "TIPO PROCESO": v.proceso,
+        "MARCA": v.marca || "---",
+        "MODELO": v.modelo || "---",
+        "ICCID / SERIE": v.icc || "---",
+        "IMEI": v.imei || "---",
+        "NIP": v.nip || "---",
+        "ZONA DE VENTA": v.ubicacion.split(',').slice(0, 3).join(',')
+    })).sort((a,b) => new Date(b.FECHA) - new Date(a.FECHA));
 
-li.innerHTML=`
-${v.producto} - $${Number(v.precio).toLocaleString('es-MX')}
-<button onclick="eliminarVenta('${v.id}')">❌</button>
-`;
+    const wb = XLSX.utils.book_new();
+    const meses = [...new Set(excelData.map(v => v.FECHA.substring(0, 7)))].sort().reverse();
+    
+    meses.forEach(mes => {
+        const porMes = excelData.filter(v => v.FECHA.startsWith(mes));
+        const ws = XLSX.utils.json_to_sheet(porMes);
+        ws['!cols'] = [{wch: 12}, {wch: 12}, {wch: 15}, {wch: 15}, {wch: 12}, {wch: 15}, {wch: 22}, {wch: 20}, {wch: 8}, {wch: 40}];
+        XLSX.utils.book_append_sheet(wb, ws, "Ventas " + mes);
+    });
 
-lista-ventas.appendChild(li);
-});
-
-totales();
-grafica();
+    XLSX.writeFile(wb, "Reporte_Omar_Ventas.xlsx");
 }
-
-// TOTALES
-function totales(){
-let hoy=fechaHoy();
-let mes=hoy.slice(3);
-
-let th=0,tm=0;
-
-ventasCache.forEach(v=>{
-if(v.fecha===hoy) th+=Number(v.precio);
-if(v.fecha.slice(3)===mes) tm+=Number(v.precio);
-});
-
-total-hoy.textContent="$"+th.toLocaleString('es-MX');
-total-mes.textContent="$"+tm.toLocaleString('es-MX');
-}
-
-// RANKING
-function renderRanking(){
-ranking.innerHTML="";
-let t={};
-
-ventasCache.forEach(v=>{
-if(!t[v.uid])t[v.uid]=0;
-t[v.uid]+=Number(v.precio);
-});
-
-Object.entries(t).sort((a,b)=>b[1]-a[1])
-.forEach(([uid,total],i)=>{
-let li=document.createElement('li');
-li.textContent=`#${i+1} ${uid} → $${total.toLocaleString('es-MX')}`;
-ranking.appendChild(li);
-});
-}
-
-// GRÁFICA
-function grafica(){
-let dias={};
-
-ventasCache.forEach(v=>{
-if(!dias[v.fecha])dias[v.fecha]=0;
-dias[v.fecha]+=Number(v.precio);
-});
-
-if(chart)chart.destroy();
-
-chart=new Chart(grafica,{
-type:'line',
-data:{
-labels:Object.keys(dias),
-datasets:[{
-label:'Ventas',
-data:Object.values(dias),
-borderWidth:3,
-tension:.3
-}]
-}
-});
-}
-
-// SESIÓN
-auth.onAuthStateChanged(user=>{
-if(user){
-auth-container.classList.add('hidden');
-app-container.classList.remove('hidden');
-
-if(user.email===GERENTE_EMAIL){
-suscribirTodasVentas();
-}else{
-suscribirVentas(user.uid);
-}
-
-}else{
-auth-container.classList.remove('hidden');
-app-container.classList.add('hidden');
-}
-});
 </script>
-
 </body>
 </html>
