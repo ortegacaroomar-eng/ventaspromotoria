@@ -14,28 +14,74 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{font-family:sans-serif;background:#f4f7fb;margin:0}
+:root{
+--blue:#002E6D;
+--light:#0055B8;
+--bg:#F4F7FB;
+--card:#fff;
+--text:#0F172A;
+}
+
+body{
+font-family:sans-serif;
+background:var(--bg);
+margin:0;
+}
+
 .hidden{display:none}
 
 header{
-background:#002E6D;color:#fff;padding:20px;
-display:flex;justify-content:space-between
+background:linear-gradient(135deg,var(--blue),var(--light));
+color:#fff;
+padding:25px;
+display:flex;
+justify-content:space-between;
+align-items:center;
 }
 
-main{padding:20px;max-width:800px;margin:auto}
+main{
+max-width:720px;
+margin:auto;
+padding:20px;
+}
 
 .panel{
-background:#fff;padding:20px;margin:10px 0;
-border-radius:12px
+background:var(--card);
+border-radius:16px;
+padding:20px;
+margin-bottom:15px;
+box-shadow:0 10px 20px rgba(0,0,0,.05);
 }
 
-input,button{
-padding:10px;margin:5px 0;width:100%
+h3{margin-bottom:10px}
+
+input{
+width:100%;
+padding:12px;
+margin:8px 0;
+border-radius:10px;
+border:1px solid #ddd;
 }
 
-button{background:#0055B8;color:#fff;border:none}
+button{
+width:100%;
+padding:12px;
+background:var(--light);
+color:#fff;
+border:none;
+border-radius:10px;
+font-weight:bold;
+cursor:pointer;
+}
 
-li{margin:10px 0}
+li{
+display:flex;
+justify-content:space-between;
+padding:10px 0;
+border-bottom:1px solid #eee;
+}
+
+canvas{max-height:250px}
 </style>
 </head>
 
@@ -43,23 +89,28 @@ li{margin:10px 0}
 
 <!-- LOGIN -->
 <div id="auth-container">
-  <div class="panel">
-    <h2>Login</h2>
-    <input id="login-email" placeholder="Correo">
-    <input id="login-password" type="password" placeholder="Contraseña">
-    <button onclick="login()">Entrar</button>
+  <main>
+    <div class="panel">
+      <h2>Iniciar sesión</h2>
+      <input id="login-email" placeholder="Correo">
+      <input id="login-password" type="password" placeholder="Contraseña">
+      <button onclick="login()">Entrar</button>
 
-    <h3>Registro</h3>
-    <input id="reg-email" placeholder="Correo">
-    <input id="reg-password" type="password" placeholder="Contraseña">
-    <button onclick="registrar()">Crear cuenta</button>
-  </div>
+      <hr>
+
+      <h3>Registro</h3>
+      <input id="reg-email" placeholder="Correo">
+      <input id="reg-password" type="password" placeholder="Contraseña">
+      <button onclick="registrar()">Crear cuenta</button>
+    </div>
+  </main>
 </div>
 
 <!-- APP -->
 <div id="app-container" class="hidden">
+
 <header>
-  <div>Ventas PRO</div>
+  <div>Ventas Telcel</div>
   <button onclick="logout()">Salir</button>
 </header>
 
@@ -88,7 +139,7 @@ li{margin:10px 0}
 </div>
 
 <div class="panel">
-  <h3>📊 Ventas por día</h3>
+  <h3>📊 Ventas</h3>
   <canvas id="grafica"></canvas>
 </div>
 
@@ -96,9 +147,8 @@ li{margin:10px 0}
 </div>
 
 <script>
-// 🔥 CONFIG
 const firebaseConfig = {
-  apiKey: "TU_API_KEY",
+  apiKey: "TU_API",
   authDomain: "TU_DOMINIO",
   databaseURL: "TU_DB",
   projectId: "TU_ID"
@@ -119,192 +169,187 @@ let chart=null;
 
 // LOGIN
 function login(){
-  auth.signInWithEmailAndPassword(
-    login-email.value,
-    login-password.value
-  ).catch(e=>alert(e.message));
+auth.signInWithEmailAndPassword(login-email.value,login-password.value)
+.catch(e=>alert(e.message));
 }
 
 function registrar(){
-  auth.createUserWithEmailAndPassword(
-    reg-email.value,
-    reg-password.value
-  ).catch(e=>alert(e.message));
+auth.createUserWithEmailAndPassword(reg-email.value,reg-password.value)
+.catch(e=>alert(e.message));
 }
 
 function logout(){auth.signOut()}
 
 // FECHA
 function fechaHoy(){
-  let d=new Date();
-  return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+let d=new Date();
+return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
 }
 
 // GUARDAR
 function guardarVenta(){
-  let prod=producto.value.trim();
-  let prec=precio.value;
-  let user=auth.currentUser;
+let prod=producto.value.trim();
+let prec=precio.value;
+let user=auth.currentUser;
 
-  if(!prod||!prec)return alert("Datos");
+if(!prod||!prec)return alert("Datos");
 
-  if(isNaN(prec)||prec<=0)return alert("Precio inválido");
+if(isNaN(prec)||prec<=0)return alert("Precio inválido");
 
-  let venta={
-    producto:prod,
-    precio:prec,
-    fecha:fechaHoy(),
-    ts:Date.now()
-  };
+let venta={
+producto:prod,
+precio:prec,
+fecha:fechaHoy(),
+ts:Date.now()
+};
 
-  db.ref('ventas/'+user.uid).push(venta);
-  db.ref('backup/'+user.uid).push(venta);
+db.ref('ventas/'+user.uid).push(venta);
+db.ref('backup/'+user.uid).push(venta);
 
-  producto.value="";
-  precio.value="";
+producto.value="";
+precio.value="";
 }
 
 // ELIMINAR
 function eliminarVenta(id){
-  let user=auth.currentUser;
-  db.ref('ventas/'+user.uid+'/'+id).remove();
+let user=auth.currentUser;
+db.ref('ventas/'+user.uid+'/'+id).remove();
 }
 
-// USER NORMAL
+// USER
 function suscribirVentas(uid){
-  if(ventasRef)ventasRef.off();
+if(ventasRef)ventasRef.off();
 
-  ventasRef=db.ref('ventas/'+uid);
+ventasRef=db.ref('ventas/'+uid);
 
-  ventasRef.on('value',snap=>{
-    let data=snap.val()||{};
+ventasRef.on('value',snap=>{
+let data=snap.val()||{};
 
-    ventasCache=Object.entries(data)
-    .map(([id,v])=>({id,...v}))
-    .sort((a,b)=>b.ts-a.ts);
+ventasCache=Object.entries(data)
+.map(([id,v])=>({id,...v}))
+.sort((a,b)=>b.ts-a.ts);
 
-    render();
-  });
+render();
+});
 }
 
 // GERENTE
 function suscribirTodasVentas(){
-  if(ventasRef)ventasRef.off();
+if(ventasRef)ventasRef.off();
 
-  ventasRef=db.ref('ventas');
+ventasRef=db.ref('ventas');
 
-  ventasRef.on('value',snap=>{
-    let data=snap.val()||{};
-    let todas=[];
+ventasRef.on('value',snap=>{
+let data=snap.val()||{};
+let todas=[];
 
-    Object.keys(data).forEach(uid=>{
-      Object.entries(data[uid]).forEach(([id,v])=>{
-        todas.push({id,uid,...v});
-      });
-    });
+Object.keys(data).forEach(uid=>{
+Object.entries(data[uid]).forEach(([id,v])=>{
+todas.push({id,uid,...v});
+});
+});
 
-    ventasCache=todas.sort((a,b)=>b.ts-a.ts);
+ventasCache=todas.sort((a,b)=>b.ts-a.ts);
 
-    render();
-    renderRanking();
-  });
+render();
+renderRanking();
+});
 }
 
 // RENDER
 function render(){
-  lista-ventas.innerHTML="";
+lista-ventas.innerHTML="";
 
-  ventasCache.forEach(v=>{
-    let li=document.createElement('li');
+ventasCache.forEach(v=>{
+let li=document.createElement('li');
 
-    li.innerHTML=`
-      ${v.producto} - $${Number(v.precio).toLocaleString('es-MX')} (${v.fecha})
-      <button onclick="eliminarVenta('${v.id}')">❌</button>
-    `;
+li.innerHTML=`
+${v.producto} - $${Number(v.precio).toLocaleString('es-MX')}
+<button onclick="eliminarVenta('${v.id}')">❌</button>
+`;
 
-    lista-ventas.appendChild(li);
-  });
+lista-ventas.appendChild(li);
+});
 
-  calcularTotales();
-  renderGrafica();
+totales();
+grafica();
 }
 
 // TOTALES
-function calcularTotales(){
-  let hoy=fechaHoy();
-  let mes=hoy.slice(3);
+function totales(){
+let hoy=fechaHoy();
+let mes=hoy.slice(3);
 
-  let th=0, tm=0;
+let th=0,tm=0;
 
-  ventasCache.forEach(v=>{
-    if(v.fecha===hoy) th+=Number(v.precio);
-    if(v.fecha.slice(3)===mes) tm+=Number(v.precio);
-  });
+ventasCache.forEach(v=>{
+if(v.fecha===hoy) th+=Number(v.precio);
+if(v.fecha.slice(3)===mes) tm+=Number(v.precio);
+});
 
-  total-hoy.textContent="$"+th.toLocaleString('es-MX');
-  total-mes.textContent="$"+tm.toLocaleString('es-MX');
+total-hoy.textContent="$"+th.toLocaleString('es-MX');
+total-mes.textContent="$"+tm.toLocaleString('es-MX');
 }
 
 // RANKING
 function renderRanking(){
-  ranking.innerHTML="";
+ranking.innerHTML="";
+let t={};
 
-  let totales={};
+ventasCache.forEach(v=>{
+if(!t[v.uid])t[v.uid]=0;
+t[v.uid]+=Number(v.precio);
+});
 
-  ventasCache.forEach(v=>{
-    if(!totales[v.uid])totales[v.uid]=0;
-    totales[v.uid]+=Number(v.precio);
-  });
-
-  Object.entries(totales)
-  .sort((a,b)=>b[1]-a[1])
-  .forEach(([uid,total],i)=>{
-    let li=document.createElement('li');
-    li.textContent=`#${i+1} ${uid} → $${total.toLocaleString('es-MX')}`;
-    ranking.appendChild(li);
-  });
+Object.entries(t).sort((a,b)=>b[1]-a[1])
+.forEach(([uid,total],i)=>{
+let li=document.createElement('li');
+li.textContent=`#${i+1} ${uid} → $${total.toLocaleString('es-MX')}`;
+ranking.appendChild(li);
+});
 }
 
 // GRÁFICA
-function renderGrafica(){
-  let dias={};
+function grafica(){
+let dias={};
 
-  ventasCache.forEach(v=>{
-    if(!dias[v.fecha])dias[v.fecha]=0;
-    dias[v.fecha]+=Number(v.precio);
-  });
+ventasCache.forEach(v=>{
+if(!dias[v.fecha])dias[v.fecha]=0;
+dias[v.fecha]+=Number(v.precio);
+});
 
-  if(chart)chart.destroy();
+if(chart)chart.destroy();
 
-  chart=new Chart(grafica,{
-    type:'line',
-    data:{
-      labels:Object.keys(dias),
-      datasets:[{
-        label:'Ventas',
-        data:Object.values(dias),
-        borderWidth:3
-      }]
-    }
-  });
+chart=new Chart(grafica,{
+type:'line',
+data:{
+labels:Object.keys(dias),
+datasets:[{
+label:'Ventas',
+data:Object.values(dias),
+borderWidth:3,
+tension:.3
+}]
+}
+});
 }
 
 // SESIÓN
 auth.onAuthStateChanged(user=>{
-  if(user){
-    auth-container.classList.add('hidden');
-    app-container.classList.remove('hidden');
+if(user){
+auth-container.classList.add('hidden');
+app-container.classList.remove('hidden');
 
-    if(user.email===GERENTE_EMAIL){
-      suscribirTodasVentas();
-    }else{
-      suscribirVentas(user.uid);
-    }
+if(user.email===GERENTE_EMAIL){
+suscribirTodasVentas();
+}else{
+suscribirVentas(user.uid);
+}
 
-  }else{
-    auth-container.classList.remove('hidden');
-    app-container.classList.add('hidden');
-  }
+}else{
+auth-container.classList.remove('hidden');
+app-container.classList.add('hidden');
+}
 });
 </script>
 
