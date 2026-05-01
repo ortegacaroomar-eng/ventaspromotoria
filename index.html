@@ -1,295 +1,398 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auditor Nexus | Omar</title>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Auditor Nexus | Omar</title>
 
-    <style>
-        :root { --accent: #ffc300; --att: #00a8e8; --bait: #ff00ff; --bg: #05070a; }
-        body { margin:0; font-family:'Segoe UI', sans-serif; background: var(--bg); color:white; }
-        .app { max-width:480px; margin:auto; padding:20px; }
-        
-        /* Reloj Neón */
-        .clock-card { text-align: center; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 20px; margin-bottom: 15px; border: 1px solid rgba(0,168,232,0.2); }
-        #clock { font-size: 32px; font-weight: 800; color: var(--accent); letter-spacing: 2px; }
-        #date-display { font-size: 11px; opacity: 0.6; text-transform: uppercase; margin-top: 5px; }
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-        .card { background: rgba(255,255,255,0.07); backdrop-filter: blur(12px); border-radius: 18px; padding: 18px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); }
-        .nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .btn-exit { background: #ff4d4d; color: white; border: none; padding: 8px 15px; border-radius: 10px; cursor: pointer; font-size: 10px; font-weight: bold; }
-        
-        /* Tabs con interacción */
-        .tabs { display: flex; gap: 8px; margin-bottom: 15px; }
-        .tab { flex: 1; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.08); text-align: center; cursor: pointer; font-size: 11px; font-weight: bold; transition: all 0.3s ease; }
-        .tab.active { background: var(--accent); color: #000; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,195,0,0.3); }
+<style>
+:root{
+--accent:#ffc300;
+--bg:#05070a;
+--card:rgba(255,255,255,.06);
+}
 
-        input, select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: #111; color: white; margin-top: 10px; box-sizing: border-box; font-size: 14px; }
-        input:focus { border-color: var(--accent); outline: none; background: #000; }
-        
-        .btn-main { background: var(--accent); color: #000; padding: 16px; border: none; border-radius: 14px; font-weight: 800; cursor: pointer; width: 100%; margin-top: 12px; font-size: 14px; text-transform: uppercase; }
-        .btn-main:active { transform: scale(0.98); }
+body{
+margin:0;
+font-family:Segoe UI,sans-serif;
+background:var(--bg);
+color:#fff;
+}
 
-        /* Gráfica contenedor */
-        .chart-box { position: relative; height: 250px; width: 100%; }
+.app{
+max-width:480px;
+margin:auto;
+padding:20px;
+}
 
-        .table-container { max-height: 200px; overflow-y: auto; margin-top: 10px; }
-        table { width: 100%; font-size: 12px; border-collapse: collapse; }
-        th { color: var(--accent); text-align: left; padding: 8px; border-bottom: 2px solid rgba(255,255,255,0.1); font-size: 10px; }
-        td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.card{
+background:var(--card);
+padding:18px;
+border-radius:18px;
+margin-bottom:15px;
+border:1px solid rgba(255,255,255,.08);
+backdrop-filter:blur(12px);
+}
 
-        .hidden { display: none !important; }
-        .fade { animation: fadeIn 0.5s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    </style>
+input,select{
+width:100%;
+padding:14px;
+margin-top:10px;
+border:none;
+border-radius:12px;
+background:#111;
+color:white;
+box-sizing:border-box;
+}
+
+button{
+width:100%;
+padding:14px;
+margin-top:12px;
+border:none;
+border-radius:12px;
+font-weight:700;
+cursor:pointer;
+}
+
+.btn-main{
+background:var(--accent);
+color:#000;
+}
+
+.btn-google{
+background:white;
+color:#222;
+}
+
+.hidden{display:none!important;}
+
+.tabs{
+display:flex;
+gap:8px;
+margin-bottom:15px;
+}
+
+.tab{
+flex:1;
+padding:12px;
+text-align:center;
+border-radius:12px;
+background:#111;
+cursor:pointer;
+font-size:12px;
+font-weight:bold;
+}
+
+.tab.active{
+background:var(--accent);
+color:black;
+}
+
+.clock{
+font-size:28px;
+font-weight:800;
+text-align:center;
+color:var(--accent);
+}
+
+table{
+width:100%;
+font-size:12px;
+border-collapse:collapse;
+}
+
+td,th{
+padding:8px;
+border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.chart-box{
+height:250px;
+}
+</style>
 </head>
 <body onload="init()">
 
 <div class="app">
-    <div id="loginScreen" class="fade" style="margin-top: 80px; text-align: center;">
-        <div class="card">
-            <h2 style="color:var(--accent); margin-bottom: 5px;">NEXUS AUDITOR</h2>
-            <p style="font-size: 12px; opacity: 0.7;">Sincronización multi-dispositivo activa</p>
-            <button class="btn-main" style="background:white; color:#333;" onclick="login()">
-                <img src="https://www.google.com/favicon.ico" width="16" style="vertical-align: middle; margin-right: 8px;"> Entrar con Google
-            </button>
-        </div>
-    </div>
 
-    <div id="mainScreen" class="hidden fade">
-        <div class="nav">
-            <span id="userName" style="font-size: 12px; font-weight: bold; color: var(--accent);"></span>
-            <button class="btn-exit" onclick="logout()">SALIR</button>
-        </div>
+<!-- LOGIN -->
+<div id="loginScreen">
+<div class="card">
+<h2 style="color:var(--accent)">NEXUS AUDITOR</h2>
 
-        <div class="clock-card">
-            <div id="clock">00:00:00</div>
-            <div id="date-display">...</div>
-        </div>
+<input id="email" type="email" placeholder="Correo">
+<input id="password" type="password" placeholder="Contraseña">
 
-        <div class="card">
-            <label style="font-size: 10px; color: var(--accent);">FILTRAR POR FECHA</label>
-            <input type="date" id="dateFilter" onchange="updateUI()">
-        </div>
+<button class="btn-main" onclick="register()">Registrarse</button>
+<button class="btn-main" onclick="loginEmail()">Iniciar sesión</button>
+<button onclick="resetPassword()">Recuperar contraseña</button>
 
-        <div class="tabs">
-            <div id="tabTELCEL" class="tab active" onclick="switchComp('TELCEL')">TELCEL</div>
-            <div id="tabATT" class="tab" onclick="switchComp('ATT')">AT&T</div>
-            <div id="tabBAIT" class="tab" onclick="switchComp('BAIT')">BAIT</div>
-        </div>
+<button class="btn-google" onclick="loginGoogle()">Entrar con Google</button>
+</div>
+</div>
 
-        <div class="card">
-            <div id="telcelMenu">
-                <select id="telcelProc" onchange="renderFields()">
-                    <option value="CHIP">CHIP EXPRESS / 0</option>
-                    <option value="PORTA">PORTABILIDAD</option>
-                    <option value="RENUEVATE">RENUÉVATE</option>
-                    <option value="AK">EQUIPO / AK</option>
-                </select>
-            </div>
-            <div id="fields"></div>
-        </div>
+<!-- APP -->
+<div id="mainScreen" class="hidden">
 
-        <button class="btn-main" onclick="saveData()">💾 GUARDAR Y SINCRONIZAR</button>
+<div class="card">
+<div id="userName"></div>
+<button onclick="logout()">Cerrar sesión</button>
+</div>
 
-        <div class="card">
-            <h4 style="margin:0 0 10px; font-size: 12px; color: var(--accent);">REGISTROS DEL DÍA</h4>
-            <div class="table-container">
-                <table>
-                    <thead><tr><th>Número</th><th>Proceso</th><th>Compañía</th></tr></thead>
-                    <tbody id="dataTable"></tbody>
-                </table>
-            </div>
-        </div>
+<div class="card">
+<div class="clock" id="clock">00:00:00</div>
+</div>
 
-        <div class="card">
-            <h4 style="margin:0 0 15px; font-size: 12px; color: var(--accent); text-align: center;">RESUMEN DE PRODUCTIVIDAD</h4>
-            <div class="chart-box">
-                <canvas id="myChart"></canvas>
-            </div>
-        </div>
+<div class="card">
+<input type="date" id="dateFilter" onchange="updateUI()">
+</div>
 
-        <button class="btn-main" style="background:#15803d; color:white;" onclick="exportExcel()">📊 DESCARGAR REPORTE EXCEL</button>
-    </div>
+<div class="tabs">
+<div id="tabTELCEL" class="tab active" onclick="switchComp('TELCEL')">TELCEL</div>
+<div id="tabATT" class="tab" onclick="switchComp('ATT')">AT&T</div>
+<div id="tabBAIT" class="tab" onclick="switchComp('BAIT')">BAIT</div>
+</div>
+
+<div class="card">
+<div id="telcelMenu">
+<select id="telcelProc" onchange="renderFields()">
+<option value="CHIP">CHIP</option>
+<option value="PORTA">PORTA</option>
+<option value="RENUEVATE">RENUEVATE</option>
+<option value="AK">AK</option>
+</select>
+</div>
+
+<div id="fields"></div>
+</div>
+
+<button class="btn-main" onclick="saveData()">Guardar</button>
+
+<div class="card">
+<table>
+<thead>
+<tr>
+<th>Número</th>
+<th>Proceso</th>
+<th>Compañía</th>
+</tr>
+</thead>
+<tbody id="dataTable"></tbody>
+</table>
+</div>
+
+<div class="card">
+<div class="chart-box">
+<canvas id="myChart"></canvas>
+</div>
+</div>
+
+<button class="btn-main" onclick="exportExcel()">Exportar Excel</button>
+</div>
 </div>
 
 <script>
-    // Configuración Firebase (La tuya propia)
-    const firebaseConfig = {
-        apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
-        authDomain: "ventastelcel4029.firebaseapp.com",
-        databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const auth = firebase.auth();
+const firebaseConfig = {
+apiKey:"TU_API_KEY",
+authDomain:"TU_AUTH_DOMAIN",
+databaseURL:"TU_DATABASE_URL"
+};
 
-    let currentComp = "TELCEL";
-    let chartInstance = null;
-    let allData = {};
+firebase.initializeApp(firebaseConfig);
 
-    function init() {
-        startClock();
-        document.getElementById("dateFilter").value = new Date().toISOString().split("T")[0];
-        
-        auth.onAuthStateChanged(user => {
-            if(user) {
-                document.getElementById("loginScreen").classList.add("hidden");
-                document.getElementById("mainScreen").classList.remove("hidden");
-                document.getElementById("userName").innerText = "👤 " + (user.displayName || "Omar");
-                syncFromCloud();
-                renderFields();
-            }
-        });
-    }
+const auth = firebase.auth();
+const db = firebase.database();
 
-    function startClock() {
-        setInterval(() => {
-            const d = new Date();
-            document.getElementById("clock").innerText = d.toLocaleTimeString();
-            document.getElementById("date-display").innerText = d.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
-        }, 1000);
-    }
+let currentComp="TELCEL";
+let allData={};
+let chartInstance=null;
 
-    function switchComp(c) {
-        currentComp = c;
-        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-        document.getElementById("tab" + c).classList.add("active");
-        document.getElementById("telcelMenu").classList.toggle("hidden", c !== "TELCEL");
-        renderFields();
-    }
+function init(){
+startClock();
+document.getElementById("dateFilter").value =
+new Date().toISOString().split("T")[0];
 
-    function renderFields() {
-        let html = "";
-        if(currentComp === "TELCEL") {
-            const p = document.getElementById("telcelProc").value;
-            html += `<input id="f_num" placeholder="Número Telefónico">`;
-            html += `<input id="f_icc" placeholder="ICCID (Serie)">`;
-            if(p === "AK" || p === "RENUEVATE") {
-                html += `<input id="f_marca" placeholder="Marca"><input id="f_mod" placeholder="Modelo"><input id="f_imei" placeholder="IMEI">`;
-            }
-        } else {
-            // Estructura solicitada para ATT y BAIT (Marca, Modelo, ICCID, Número)
-            html = `
-                <input id="f_marca" placeholder="Marca">
-                <input id="f_mod" placeholder="Modelo">
-                <input id="f_icc" placeholder="ICCID">
-                <input id="f_num" placeholder="Número">
-            `;
-        }
-        document.getElementById("fields").innerHTML = html;
-    }
+auth.onAuthStateChanged(user=>{
+if(user){
+document.getElementById("loginScreen").classList.add("hidden");
+document.getElementById("mainScreen").classList.remove("hidden");
+document.getElementById("userName").innerText =
+"👤 "+(user.displayName || user.email);
+syncFromCloud();
+renderFields();
+}
+});
+}
 
-    function saveData() {
-        const d = {
-            comp: currentComp,
-            proc: (currentComp === "TELCEL") ? document.getElementById("telcelProc").value : "VENTA EXTERNA",
-            fecha: document.getElementById("dateFilter").value,
-            num: document.getElementById("f_num")?.value || "N/A",
-            icc: document.getElementById("f_icc")?.value || "N/A",
-            marca: document.getElementById("f_marca")?.value || "---",
-            modelo: document.getElementById("f_mod")?.value || "---",
-            imei: document.getElementById("f_imei")?.value || "---",
-            timestamp: Date.now()
-        };
+function startClock(){
+setInterval(()=>{
+document.getElementById("clock").innerText=
+new Date().toLocaleTimeString();
+},1000);
+}
 
-        db.ref('ventas').push(d).then(() => {
-            renderFields(); // Limpiar campos
-            alert("✅ Registro sincronizado en la nube.");
-        });
-    }
+function register(){
+const email=document.getElementById("email").value;
+const password=document.getElementById("password").value;
 
-    function syncFromCloud() {
-        // Escucha cambios en tiempo real desde Firebase
-        db.ref('ventas').on('value', snap => {
-            allData = snap.val() || {};
-            updateUI();
-        });
-    }
+auth.createUserWithEmailAndPassword(email,password)
+.then(()=>alert("Usuario registrado"))
+.catch(e=>alert(e.message));
+}
 
-    function updateUI() {
-        const filter = document.getElementById("dateFilter").value;
-        const tbody = document.getElementById("dataTable");
-        tbody.innerHTML = "";
-        let stats = { TELCEL: 0, ATT: 0, BAIT: 0 };
+function loginEmail(){
+const email=document.getElementById("email").value;
+const password=document.getElementById("password").value;
 
-        // Filtrar y llenar tabla
-        Object.keys(allData).reverse().forEach(key => {
-            const r = allData[key];
-            if(r.fecha === filter) {
-                tbody.innerHTML += `<tr><td>${r.num}</td><td>${r.proc}</td><td><b>${r.comp}</b></td></tr>`;
-                if(stats[r.comp] !== undefined) stats[r.comp]++;
-            }
-        });
+auth.signInWithEmailAndPassword(email,password)
+.catch(e=>alert(e.message));
+}
 
-        drawChart(stats);
-    }
+function loginGoogle(){
+auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+}
 
-    function drawChart(s) {
-        const ctx = document.getElementById('myChart').getContext('2d');
-        
-        if(chartInstance) chartInstance.destroy();
+function resetPassword(){
+const email=document.getElementById("email").value;
 
-        chartInstance = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['TELCEL', 'AT&T', 'BAIT'],
-                datasets: [{
-                    data: [s.TELCEL, s.ATT, s.BAIT],
-                    backgroundColor: ['#ffc300', '#00a8e8', '#ff00ff'],
-                    hoverOffset: 15,
-                    borderWidth: 0,
-                    borderRadius: 10
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: { color: 'white', font: { size: 12 }, padding: 20 }
-                    },
-                    tooltip: {
-                        enabled: true,
-                        callbacks: {
-                            label: (item) => ` ${item.label}: ${item.raw} ventas`
-                        }
-                    }
-                },
-                animation: {
-                    animateRotate: true,
-                    animateScale: true,
-                    duration: 1000
-                }
-            }
-        });
-    }
+if(!email) return alert("Pon tu correo");
 
-    function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
-    function logout() { auth.signOut().then(() => window.location.reload()); }
+auth.sendPasswordResetEmail(email)
+.then(()=>alert("Correo enviado"))
+.catch(e=>alert(e.message));
+}
 
-    function exportExcel() {
-        const data = Object.values(allData).map(r => ({
-            "FECHA": r.fecha, 
-            "COMPAÑÍA": r.comp, 
-            "PROCESO": r.proc, 
-            "NÚMERO": r.num, 
-            "ICCID": r.icc, 
-            "MARCA": r.marca, 
-            "MODELO": r.modelo, 
-            "IMEI": r.imei
-        }));
-        const ws = XLSX.utils.json_to_sheet(data);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Reporte_Omar");
-        XLSX.writeFile(wb, `Reporte_Ventas_${new Date().toLocaleDateString()}.xlsx`);
-    }
+function logout(){
+auth.signOut();
+location.reload();
+}
+
+function switchComp(c){
+currentComp=c;
+
+document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+document.getElementById("tab"+c).classList.add("active");
+
+document.getElementById("telcelMenu").style.display=
+c==="TELCEL"?"block":"none";
+
+renderFields();
+}
+
+function renderFields(){
+let html="";
+
+if(currentComp==="TELCEL"){
+const p=document.getElementById("telcelProc").value;
+
+html+=`<input id="f_num" placeholder="Número">`;
+html+=`<input id="f_icc" placeholder="ICCID">`;
+
+if(p==="AK"||p==="RENUEVATE"){
+html+=`<input id="f_marca" placeholder="Marca">`;
+html+=`<input id="f_mod" placeholder="Modelo">`;
+html+=`<input id="f_imei" placeholder="IMEI">`;
+}
+}else{
+html=`
+<input id="f_marca" placeholder="Marca">
+<input id="f_mod" placeholder="Modelo">
+<input id="f_icc" placeholder="ICCID">
+<input id="f_num" placeholder="Número">
+`;
+}
+
+document.getElementById("fields").innerHTML=html;
+}
+
+function saveData(){
+const d={
+comp:currentComp,
+proc:currentComp==="TELCEL"
+?document.getElementById("telcelProc").value
+:"VENTA EXTERNA",
+fecha:document.getElementById("dateFilter").value,
+num:document.getElementById("f_num")?.value||"",
+icc:document.getElementById("f_icc")?.value||"",
+marca:document.getElementById("f_marca")?.value||"",
+modelo:document.getElementById("f_mod")?.value||"",
+imei:document.getElementById("f_imei")?.value||"",
+timestamp:Date.now()
+};
+
+db.ref("ventas").push(d).then(()=>{
+document.querySelectorAll("#fields input")
+.forEach(i=>i.value="");
+updateUI();
+});
+}
+
+function syncFromCloud(){
+db.ref("ventas").on("value",snap=>{
+allData=snap.val()||{};
+updateUI();
+});
+}
+
+function updateUI(){
+const filter=document.getElementById("dateFilter").value;
+const tbody=document.getElementById("dataTable");
+
+tbody.innerHTML="";
+
+let stats={TELCEL:0,ATT:0,BAIT:0};
+
+Object.values(allData).reverse().forEach(r=>{
+if(r.fecha===filter){
+tbody.innerHTML+=`
+<tr>
+<td>${r.num}</td>
+<td>${r.proc}</td>
+<td>${r.comp}</td>
+</tr>`;
+
+if(stats[r.comp]!==undefined){
+stats[r.comp]++;
+}
+}
+});
+
+drawChart(stats);
+}
+
+function drawChart(stats){
+const ctx=document.getElementById("myChart").getContext("2d");
+
+if(chartInstance) chartInstance.destroy();
+
+chartInstance=new Chart(ctx,{
+type:"bar",
+data:{
+labels:["TELCEL","AT&T","BAIT"],
+datasets:[{
+data:[stats.TELCEL,stats.ATT,stats.BAIT]
+}]
+},
+options:{
+responsive:true,
+maintainAspectRatio:false
+}
+});
+}
+
+function exportExcel(){
+const ws=XLSX.utils.json_to_sheet(Object.values(allData));
+const wb=XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(wb,ws,"Reporte");
+XLSX.writeFile(wb,"Reporte.xlsx");
+}
 </script>
 </body>
 </html>
