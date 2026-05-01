@@ -13,108 +13,121 @@
 
 <style>
 :root{
---accent:#ffc300;
---bg:#05070a;
---card:rgba(255,255,255,.06);
+    --accent:#ffc300;
+    --bg:#05070a;
+    --card:rgba(255,255,255,.06);
+    --danger:#ff4d4d;
 }
 
 body{
-margin:0;
-font-family:Segoe UI,sans-serif;
-background:var(--bg);
-color:#fff;
+    margin:0;
+    font-family:Segoe UI,sans-serif;
+    background:var(--bg);
+    color:white;
 }
 
+*{box-sizing:border-box;}
+
 .app{
-max-width:480px;
-margin:auto;
-padding:20px;
+    max-width:480px;
+    margin:auto;
+    padding:20px;
 }
 
 .card{
-background:var(--card);
-padding:18px;
-border-radius:18px;
-margin-bottom:15px;
-border:1px solid rgba(255,255,255,.08);
-backdrop-filter:blur(12px);
-}
-
-input,select{
-width:100%;
-padding:14px;
-margin-top:10px;
-border:none;
-border-radius:12px;
-background:#111;
-color:white;
-box-sizing:border-box;
-}
-
-button{
-width:100%;
-padding:14px;
-margin-top:12px;
-border:none;
-border-radius:12px;
-font-weight:700;
-cursor:pointer;
-}
-
-.btn-main{
-background:var(--accent);
-color:#000;
-}
-
-.btn-google{
-background:white;
-color:#222;
+    background:var(--card);
+    border-radius:18px;
+    padding:18px;
+    margin-bottom:15px;
+    border:1px solid rgba(255,255,255,.08);
+    backdrop-filter:blur(10px);
 }
 
 .hidden{display:none!important;}
 
+button{
+    width:100%;
+    padding:14px;
+    margin-top:12px;
+    border:none;
+    border-radius:12px;
+    font-weight:700;
+    cursor:pointer;
+}
+
+.btn-main{
+    background:var(--accent);
+    color:black;
+}
+
+.btn-google{
+    background:white;
+    color:#222;
+}
+
+.btn-danger{
+    background:var(--danger);
+    color:white;
+}
+
+input,select{
+    width:100%;
+    padding:14px;
+    margin-top:10px;
+    border:none;
+    border-radius:12px;
+    background:#111;
+    color:white;
+}
+
 .tabs{
-display:flex;
-gap:8px;
-margin-bottom:15px;
+    display:flex;
+    gap:8px;
+    margin-bottom:15px;
 }
 
 .tab{
-flex:1;
-padding:12px;
-text-align:center;
-border-radius:12px;
-background:#111;
-cursor:pointer;
-font-size:12px;
-font-weight:bold;
+    flex:1;
+    padding:12px;
+    text-align:center;
+    border-radius:12px;
+    background:#111;
+    cursor:pointer;
+    font-size:12px;
+    font-weight:bold;
 }
 
 .tab.active{
-background:var(--accent);
-color:black;
+    background:var(--accent);
+    color:black;
 }
 
 .clock{
-font-size:28px;
-font-weight:800;
-text-align:center;
-color:var(--accent);
+    font-size:30px;
+    font-weight:800;
+    text-align:center;
+    color:var(--accent);
+}
+
+.dateText{
+    text-align:center;
+    font-size:12px;
+    opacity:.7;
 }
 
 table{
-width:100%;
-font-size:12px;
-border-collapse:collapse;
+    width:100%;
+    border-collapse:collapse;
+    font-size:12px;
 }
 
-td,th{
-padding:8px;
-border-bottom:1px solid rgba(255,255,255,.08);
+th,td{
+    padding:8px;
+    border-bottom:1px solid rgba(255,255,255,.08);
 }
 
 .chart-box{
-height:250px;
+    height:260px;
 }
 </style>
 </head>
@@ -124,85 +137,84 @@ height:250px;
 
 <!-- LOGIN -->
 <div id="loginScreen">
-<div class="card">
-<h2 style="color:var(--accent)">NEXUS AUDITOR</h2>
-
-<input id="email" type="email" placeholder="Correo">
-<input id="password" type="password" placeholder="Contraseña">
-
-<button class="btn-main" onclick="register()">Registrarse</button>
-<button class="btn-main" onclick="loginEmail()">Iniciar sesión</button>
-<button onclick="resetPassword()">Recuperar contraseña</button>
-
-<button class="btn-google" onclick="loginGoogle()">Entrar con Google</button>
-</div>
+    <div class="card" style="margin-top:80px;text-align:center;">
+        <h2 style="color:var(--accent)">NEXUS AUDITOR</h2>
+        <p style="opacity:.7;font-size:12px;">Acceso seguro con Google</p>
+        <button class="btn-google" onclick="loginGoogle()">
+            Iniciar sesión con Google
+        </button>
+    </div>
 </div>
 
 <!-- APP -->
 <div id="mainScreen" class="hidden">
 
-<div class="card">
-<div id="userName"></div>
-<button onclick="logout()">Cerrar sesión</button>
-</div>
+    <div class="card">
+        <div id="userName"></div>
+        <button class="btn-danger" onclick="logout()">Cerrar sesión</button>
+    </div>
 
-<div class="card">
-<div class="clock" id="clock">00:00:00</div>
-</div>
+    <div class="card">
+        <div class="clock" id="clock">00:00:00</div>
+        <div class="dateText" id="dateText"></div>
+    </div>
 
-<div class="card">
-<input type="date" id="dateFilter" onchange="updateUI()">
-</div>
+    <div class="card">
+        <label>Filtrar fecha</label>
+        <input type="date" id="dateFilter" onchange="updateUI()">
+    </div>
 
-<div class="tabs">
-<div id="tabTELCEL" class="tab active" onclick="switchComp('TELCEL')">TELCEL</div>
-<div id="tabATT" class="tab" onclick="switchComp('ATT')">AT&T</div>
-<div id="tabBAIT" class="tab" onclick="switchComp('BAIT')">BAIT</div>
-</div>
+    <div class="tabs">
+        <div id="tabTELCEL" class="tab active" onclick="switchComp('TELCEL')">TELCEL</div>
+        <div id="tabATT" class="tab" onclick="switchComp('ATT')">AT&T</div>
+        <div id="tabBAIT" class="tab" onclick="switchComp('BAIT')">BAIT</div>
+    </div>
 
-<div class="card">
-<div id="telcelMenu">
-<select id="telcelProc" onchange="renderFields()">
-<option value="CHIP">CHIP</option>
-<option value="PORTA">PORTA</option>
-<option value="RENUEVATE">RENUEVATE</option>
-<option value="AK">AK</option>
-</select>
-</div>
+    <div class="card">
+        <div id="telcelMenu">
+            <select id="telcelProc" onchange="renderFields()">
+                <option value="CHIP">CHIP</option>
+                <option value="PORTA">PORTABILIDAD</option>
+                <option value="RENUEVATE">RENUEVATE</option>
+                <option value="AK">AK / EQUIPO</option>
+            </select>
+        </div>
 
-<div id="fields"></div>
-</div>
+        <div id="fields"></div>
+    </div>
 
-<button class="btn-main" onclick="saveData()">Guardar</button>
+    <button class="btn-main" onclick="saveData()">Guardar registro</button>
 
-<div class="card">
-<table>
-<thead>
-<tr>
-<th>Número</th>
-<th>Proceso</th>
-<th>Compañía</th>
-</tr>
-</thead>
-<tbody id="dataTable"></tbody>
-</table>
-</div>
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Número</th>
+                    <th>Proceso</th>
+                    <th>Compañía</th>
+                </tr>
+            </thead>
+            <tbody id="dataTable"></tbody>
+        </table>
+    </div>
 
-<div class="card">
-<div class="chart-box">
-<canvas id="myChart"></canvas>
-</div>
-</div>
+    <div class="card">
+        <div class="chart-box">
+            <canvas id="myChart"></canvas>
+        </div>
+    </div>
 
-<button class="btn-main" onclick="exportExcel()">Exportar Excel</button>
+    <button class="btn-main" onclick="exportExcel()">Exportar Excel</button>
+
 </div>
 </div>
 
 <script>
+// FIREBASE CONFIG
 const firebaseConfig = {
-apiKey:"TU_API_KEY",
-authDomain:"TU_AUTH_DOMAIN",
-databaseURL:"TU_DATABASE_URL"
+    apiKey: "TU_API_KEY",
+    authDomain: "TU_AUTH_DOMAIN",
+    databaseURL: "TU_DATABASE_URL"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -210,188 +222,191 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
 
-let currentComp="TELCEL";
-let allData={};
-let chartInstance=null;
+let currentComp = "TELCEL";
+let allData = {};
+let chartInstance = null;
 
+// INIT
 function init(){
-startClock();
-document.getElementById("dateFilter").value =
-new Date().toISOString().split("T")[0];
+    startClock();
 
-auth.onAuthStateChanged(user=>{
-if(user){
-document.getElementById("loginScreen").classList.add("hidden");
-document.getElementById("mainScreen").classList.remove("hidden");
-document.getElementById("userName").innerText =
-"👤 "+(user.displayName || user.email);
-syncFromCloud();
-renderFields();
-}
-});
+    document.getElementById("dateFilter").value =
+        new Date().toISOString().split("T")[0];
+
+    auth.onAuthStateChanged(user=>{
+        if(user){
+            document.getElementById("loginScreen").classList.add("hidden");
+            document.getElementById("mainScreen").classList.remove("hidden");
+            document.getElementById("userName").innerText =
+                "👤 " + user.displayName;
+
+            syncFromCloud();
+            renderFields();
+        }
+    });
 }
 
+// CLOCK
 function startClock(){
-setInterval(()=>{
-document.getElementById("clock").innerText=
-new Date().toLocaleTimeString();
-},1000);
+    setInterval(()=>{
+        const now = new Date();
+
+        document.getElementById("clock").innerText =
+            now.toLocaleTimeString();
+
+        document.getElementById("dateText").innerText =
+            now.toLocaleDateString("es-MX",{
+                weekday:"long",
+                day:"numeric",
+                month:"long"
+            });
+    },1000);
 }
 
-function register(){
-const email=document.getElementById("email").value;
-const password=document.getElementById("password").value;
-
-auth.createUserWithEmailAndPassword(email,password)
-.then(()=>alert("Usuario registrado"))
-.catch(e=>alert(e.message));
-}
-
-function loginEmail(){
-const email=document.getElementById("email").value;
-const password=document.getElementById("password").value;
-
-auth.signInWithEmailAndPassword(email,password)
-.catch(e=>alert(e.message));
-}
-
+// AUTH
 function loginGoogle(){
-auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
-}
-
-function resetPassword(){
-const email=document.getElementById("email").value;
-
-if(!email) return alert("Pon tu correo");
-
-auth.sendPasswordResetEmail(email)
-.then(()=>alert("Correo enviado"))
-.catch(e=>alert(e.message));
+    auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
 }
 
 function logout(){
-auth.signOut();
-location.reload();
+    auth.signOut().then(()=>location.reload());
 }
 
-function switchComp(c){
-currentComp=c;
+// UI
+function switchComp(comp){
+    currentComp = comp;
 
-document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-document.getElementById("tab"+c).classList.add("active");
+    document.querySelectorAll(".tab")
+        .forEach(t=>t.classList.remove("active"));
 
-document.getElementById("telcelMenu").style.display=
-c==="TELCEL"?"block":"none";
+    document.getElementById("tab"+comp)
+        .classList.add("active");
 
-renderFields();
+    document.getElementById("telcelMenu").style.display =
+        comp === "TELCEL" ? "block":"none";
+
+    renderFields();
 }
 
 function renderFields(){
-let html="";
+    let html = "";
 
-if(currentComp==="TELCEL"){
-const p=document.getElementById("telcelProc").value;
+    if(currentComp === "TELCEL"){
+        const proc = document.getElementById("telcelProc").value;
 
-html+=`<input id="f_num" placeholder="Número">`;
-html+=`<input id="f_icc" placeholder="ICCID">`;
+        html += `<input id="f_num" placeholder="Número">`;
+        html += `<input id="f_icc" placeholder="ICCID">`;
 
-if(p==="AK"||p==="RENUEVATE"){
-html+=`<input id="f_marca" placeholder="Marca">`;
-html+=`<input id="f_mod" placeholder="Modelo">`;
-html+=`<input id="f_imei" placeholder="IMEI">`;
+        if(proc === "AK" || proc === "RENUEVATE"){
+            html += `<input id="f_marca" placeholder="Marca">`;
+            html += `<input id="f_mod" placeholder="Modelo">`;
+            html += `<input id="f_imei" placeholder="IMEI">`;
+        }
+    } else {
+        html = `
+            <input id="f_marca" placeholder="Marca">
+            <input id="f_mod" placeholder="Modelo">
+            <input id="f_icc" placeholder="ICCID">
+            <input id="f_num" placeholder="Número">
+        `;
+    }
+
+    document.getElementById("fields").innerHTML = html;
 }
-}else{
-html=`
-<input id="f_marca" placeholder="Marca">
-<input id="f_mod" placeholder="Modelo">
-<input id="f_icc" placeholder="ICCID">
-<input id="f_num" placeholder="Número">
-`;
-}
 
-document.getElementById("fields").innerHTML=html;
-}
-
+// SAVE
 function saveData(){
-const d={
-comp:currentComp,
-proc:currentComp==="TELCEL"
-?document.getElementById("telcelProc").value
-:"VENTA EXTERNA",
-fecha:document.getElementById("dateFilter").value,
-num:document.getElementById("f_num")?.value||"",
-icc:document.getElementById("f_icc")?.value||"",
-marca:document.getElementById("f_marca")?.value||"",
-modelo:document.getElementById("f_mod")?.value||"",
-imei:document.getElementById("f_imei")?.value||"",
-timestamp:Date.now()
-};
+    const data = {
+        comp: currentComp,
+        proc: currentComp === "TELCEL"
+            ? document.getElementById("telcelProc").value
+            : "VENTA EXTERNA",
+        fecha: document.getElementById("dateFilter").value,
+        num: document.getElementById("f_num")?.value || "",
+        icc: document.getElementById("f_icc")?.value || "",
+        marca: document.getElementById("f_marca")?.value || "",
+        modelo: document.getElementById("f_mod")?.value || "",
+        imei: document.getElementById("f_imei")?.value || "",
+        timestamp: Date.now()
+    };
 
-db.ref("ventas").push(d).then(()=>{
-document.querySelectorAll("#fields input")
-.forEach(i=>i.value="");
-updateUI();
-});
+    db.ref("ventas").push(data).then(()=>{
+        document.querySelectorAll("#fields input")
+            .forEach(i=>i.value="");
+
+        updateUI();
+        alert("Registro guardado");
+    });
 }
 
+// CLOUD
 function syncFromCloud(){
-db.ref("ventas").on("value",snap=>{
-allData=snap.val()||{};
-updateUI();
-});
+    db.ref("ventas").on("value",snap=>{
+        allData = snap.val() || {};
+        updateUI();
+    });
 }
 
+// UPDATE
 function updateUI(){
-const filter=document.getElementById("dateFilter").value;
-const tbody=document.getElementById("dataTable");
+    const filter = document.getElementById("dateFilter").value;
+    const tbody = document.getElementById("dataTable");
 
-tbody.innerHTML="";
+    tbody.innerHTML = "";
 
-let stats={TELCEL:0,ATT:0,BAIT:0};
+    let stats = {TELCEL:0,ATT:0,BAIT:0};
 
-Object.values(allData).reverse().forEach(r=>{
-if(r.fecha===filter){
-tbody.innerHTML+=`
-<tr>
-<td>${r.num}</td>
-<td>${r.proc}</td>
-<td>${r.comp}</td>
-</tr>`;
+    Object.values(allData).reverse().forEach(r=>{
+        if(r.fecha === filter){
+            tbody.innerHTML += `
+                <tr>
+                    <td>${r.num}</td>
+                    <td>${r.proc}</td>
+                    <td>${r.comp}</td>
+                </tr>
+            `;
 
-if(stats[r.comp]!==undefined){
-stats[r.comp]++;
+            if(stats[r.comp] !== undefined){
+                stats[r.comp]++;
+            }
+        }
+    });
+
+    drawChart(stats);
 }
-}
-});
 
-drawChart(stats);
-}
-
+// CHART
 function drawChart(stats){
-const ctx=document.getElementById("myChart").getContext("2d");
+    const ctx = document.getElementById("myChart").getContext("2d");
 
-if(chartInstance) chartInstance.destroy();
+    if(chartInstance) chartInstance.destroy();
 
-chartInstance=new Chart(ctx,{
-type:"bar",
-data:{
-labels:["TELCEL","AT&T","BAIT"],
-datasets:[{
-data:[stats.TELCEL,stats.ATT,stats.BAIT]
-}]
-},
-options:{
-responsive:true,
-maintainAspectRatio:false
+    chartInstance = new Chart(ctx,{
+        type:"bar",
+        data:{
+            labels:["TELCEL","AT&T","BAIT"],
+            datasets:[{
+                data:[
+                    stats.TELCEL,
+                    stats.ATT,
+                    stats.BAIT
+                ]
+            }]
+        },
+        options:{
+            responsive:true,
+            maintainAspectRatio:false
+        }
+    });
 }
-});
-}
 
+// EXCEL
 function exportExcel(){
-const ws=XLSX.utils.json_to_sheet(Object.values(allData));
-const wb=XLSX.utils.book_new();
-XLSX.utils.book_append_sheet(wb,ws,"Reporte");
-XLSX.writeFile(wb,"Reporte.xlsx");
+    const ws = XLSX.utils.json_to_sheet(Object.values(allData));
+    const wb = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(wb,ws,"Reporte");
+    XLSX.writeFile(wb,"Reporte.xlsx");
 }
 </script>
 </body>
