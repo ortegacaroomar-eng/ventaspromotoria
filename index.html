@@ -4,182 +4,276 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Auditor PRO | Omar</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+
     <style>
-        body { margin:0; font-family:'Segoe UI', sans-serif; background: linear-gradient(135deg,#0b0d17,#111827,#1e293b); color:white; min-height: 100vh; }
+        :root {
+            --bg-grad: linear-gradient(135deg, #0b0d17, #1e293b);
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --accent: #ffc300;
+        }
+
+        /* Modo Oscuro Automático (Noche) */
+        .night-mode {
+            --bg-grad: linear-gradient(135deg, #020617, #0f172a);
+            --card-bg: rgba(0, 0, 0, 0.4);
+            --accent: #ffd60a;
+        }
+
+        body { margin:0; font-family:'Segoe UI', sans-serif; background: var(--bg-grad); color:white; transition: 0.5s; }
         .app { max-width:480px; margin:auto; padding:20px; }
-        .card { background: rgba(255,255,255,0.08); backdrop-filter: blur(14px); border-radius: 18px; padding: 16px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 8px 24px rgba(0,0,0,0.25); }
-        .nav-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; }
-        .btn-salir { background: linear-gradient(45deg,#e63946,#ff6b6b); color:white; border:none; padding:8px 15px; border-radius:10px; font-weight:bold; cursor:pointer; font-size:11px; }
-        .tabs { display:flex; gap:8px; margin-bottom:15px; }
-        .tab { flex:1; padding:11px; border-radius:12px; background: rgba(255,255,255,0.08); text-align:center; cursor:pointer; font-size:12px; font-weight:700; transition:.25s; }
-        .tab:hover { transform:translateY(-2px); }
-        .tab.active { background: linear-gradient(45deg,#ffc300,#ffd60a); color:#003566; }
-        input, select { width:100%; padding:12px; border-radius:12px; border:none; background:rgba(255,255,255,0.14); color:white; margin-top:8px; box-sizing:border-box; outline:none; }
-        input::placeholder { color:rgba(255,255,255,0.5); }
-        button { background: linear-gradient(45deg,#ffc300,#ffd60a); color:#003566; padding:14px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; margin-top:10px; font-size:14px; box-shadow: 0 4px 14px rgba(255,195,0,0.3); }
-        .btn-del { background:#ff4d4d; color:white; border:none; padding:5px 8px; border-radius:6px; font-size:10px; cursor:pointer; }
-        .hidden { display:none !important; }
-        table { width:100%; font-size:11px; border-collapse:collapse; margin-top:10px; color:#eee; }
-        th, td { border-bottom:1px solid rgba(255,255,255,0.1); padding:10px 5px; text-align:left; }
-        th { color:#ffc300; font-size:9px; }
-        .fade { animation:fade .3s ease; }
-        @keyframes fade { from { opacity:0; transform:translateY(5px);} to {opacity:1; transform:translateY(0);} }
-        .status-box { display:flex; justify-content:space-between; gap:8px; margin-bottom:15px; }
-        .badge { flex:1; text-align:center; background:rgba(255,255,255,0.08); padding:10px; border-radius:12px; font-size:11px; }
-        .clock { font-size:12px; color:#ffd60a; text-align:center; margin-top:8px; }
+        .card { background: var(--card-bg); backdrop-filter: blur(12px); border-radius: 16px; padding: 15px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); }
+        
+        .nav-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .btn-salir { background: #e63946; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 11px; }
+        
+        .tabs { display: flex; gap: 8px; margin-bottom: 15px; }
+        .tab { flex: 1; padding: 10px; border-radius: 10px; background: rgba(255,255,255,0.1); text-align: center; cursor: pointer; font-size: 12px; font-weight: 600; }
+        .tab.active { background: var(--accent); color: #003566; }
+
+        .input-group { position: relative; margin-top: 8px; }
+        input, select { width: 100%; padding: 12px; border-radius: 10px; border: none; background: rgba(255,255,255,0.15); color: white; box-sizing: border-box; outline: none; }
+        
+        /* Botón de Scan dentro del input */
+        .btn-scan { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: var(--accent); border: none; border-radius: 6px; padding: 5px 8px; cursor: pointer; font-size: 14px; }
+
+        button.main-btn { background: var(--accent); color: #003566; padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; font-size: 14px; box-shadow: 0 4px 15px rgba(255,195,0,0.2); }
+        
+        /* Scanner Overlay */
+        #reader { width: 100%; border-radius: 12px; overflow: hidden; display: none; margin-bottom: 10px; }
+
+        /* Notification Toast */
+        #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1b4332; color: #74c69d; padding: 12px 25px; border-radius: 50px; font-size: 13px; font-weight: bold; display: none; z-index: 100; border: 1px solid #74c69d; }
+
+        .hidden { display: none !important; }
+        table { width: 100%; font-size: 11px; border-collapse: collapse; margin-top: 10px; }
+        th, td { border-bottom: 1px solid rgba(255,255,255,0.1); padding: 10px 5px; }
+        th { color: var(--accent); font-size: 9px; text-transform: uppercase; }
+        .fade { animation: fade 0.3s ease; }
+        @keyframes fade { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; } }
     </style>
 </head>
-<body>
+<body onload="inicio()">
+
+<div id="toast">✅ REGISTRO SINCRONIZADO</div>
 
 <div class="app">
-    <div id="login-screen" class="fade">
-        <div class="card" style="text-align: center; margin-top: 50px;">
-            <h2 style="color:#ffc300">AUDITOR PRO</h2>
-            <p style="font-size: 12px; opacity: 0.7;">Ingresa tus credenciales</p>
-            <input type="text" id="user-input" placeholder="Usuario">
-            <input type="password" id="pass-input" placeholder="Contraseña">
-            <button onclick="login()">INGRESAR</button>
+    <div id="loginBox" class="fade">
+        <div class="card" style="text-align: center; margin-top: 40px;">
+            <h2 style="color:var(--accent)">AUDITOR PRO</h2>
+            <input type="email" id="correo" placeholder="Email">
+            <input type="password" id="pass" placeholder="Contraseña">
+            <button class="main-btn" onclick="loginEmail()">INGRESAR</button>
+            <button onclick="loginGoogle()" style="background:transparent; color:white; border:1px solid rgba(255,255,255,0.3); margin-top:10px; padding:10px; border-radius:10px; width:100%;">G Google Login</button>
         </div>
     </div>
 
-    <div id="main-content" class="hidden fade">
+    <div id="appBox" class="hidden fade">
         <div class="nav-header">
-            <h2 style="margin:0; color:#ffc300; font-size: 18px;">AUDITOR PRO</h2>
-            <button class="btn-salir" onclick="logout()">SALIR</button>
+            <span id="txtUser" style="color:var(--accent); font-weight:bold;"></span>
+            <button class="btn-salir" onclick="salir()">Salir</button>
         </div>
 
-        <div class="status-box">
-            <div class="badge">📱 Multimarca</div>
-            <div class="badge">☁️ Sync</div>
-            <div class="badge">📊 Reportes</div>
+        <div class="card">
+            <input type="date" id="fechaFiltro" onchange="cargarTodo()">
         </div>
 
         <div class="tabs">
-            <div class="tab active" onclick="switchTab('registro')">REGISTRO</div>
-            <div class="tab" onclick="switchTab('ventas')">VENTAS</div>
+            <div id="tabTELCEL" class="tab active" onclick="setComp('TELCEL')">TELCEL</div>
+            <div id="tabATT" class="tab" onclick="setComp('ATT')">AT&T</div>
+            <div id="tabBAIT" class="tab" onclick="setComp('BAIT')">BAIT</div>
         </div>
 
-        <div id="tab-registro" class="card">
-            <input type="text" id="prod-nombre" placeholder="Nombre del Producto">
-            <input type="number" id="prod-precio" placeholder="Precio ($)">
-            <select id="prod-categoria">
-                <option value="Smartphones">Smartphones</option>
-                <option value="Accesorios">Accesorios</option>
-                <option value="Servicios">Servicios</option>
+        <div id="reader"></div>
+
+        <div class="card">
+            <select id="tipoProceso" onchange="renderForm()">
+                <option value="VENTA">TIPO DE PROCESO</option>
+                <option value="PORTA">PORTABILIDAD</option>
+                <option value="RENUEVATE">RENUÉVATE</option>
+                <option value="AK">EQUIPO / AK</option>
             </select>
-            <button onclick="guardarVenta()">GUARDAR VENTA</button>
-            <div class="clock" id="clock"></div>
+            <div id="formContainer"></div>
         </div>
 
-        <div id="tab-ventas" class="card hidden">
-            <h3 style="margin:0; font-size: 14px;">Historial Local</h3>
-            <table id="tabla-ventas">
+        <button class="main-btn" onclick="obtenerUbicacionYGuardar()">💾 GUARDAR Y SINCRONIZAR</button>
+
+        <div class="card">
+            <h3 style="font-size:12px; color:var(--accent)">HISTORIAL DEL DÍA</h3>
+            <table id="tabla">
                 <thead>
-                    <tr>
-                        <th>FECHA</th>
-                        <th>PRODUCTO</th>
-                        <th>TOTAL</th>
-                        <th>ACCION</th>
-                    </tr>
+                    <tr><th>Número</th><th>Proceso</th><th>Compañía</th><th></th></tr>
                 </thead>
-                <tbody></tbody>
+                <tbody id="cuerpoSincro"></tbody>
             </table>
         </div>
+
+        <div class="card"><canvas id="grafica"></canvas></div>
+        <button onclick="descargarExcel()" style="background:#064e3b; color:#34d399; border:none; padding:12px; border-radius:10px; width:100%; font-weight:bold;">📊 EXPORTAR EXCEL</button>
     </div>
 </div>
 
 <script>
-    // --- Logic & State ---
-    let ventas = JSON.parse(localStorage.getItem('ventas_data')) || [];
+    const firebaseConfig = {
+        apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
+        authDomain: "ventastelcel4029.firebaseapp.com",
+        databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
 
-    function login() {
-        const u = document.getElementById('user-input').value;
-        const p = document.getElementById('pass-input').value;
-        if(u === "Omar" && p === "1234") { // Credenciales simples de ejemplo
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('main-content').classList.remove('hidden');
-            renderVentas();
-        } else {
-            alert("Acceso denegado");
-        }
-    }
+    let compActiva = "TELCEL";
+    let todasVentas = {};
+    let html5QrCode;
 
-    function logout() {
-        location.reload();
-    }
-
-    function switchTab(tab) {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.getElementById('tab-registro').classList.add('hidden');
-        document.getElementById('tab-ventas').classList.add('hidden');
-
-        if(tab === 'registro') {
-            document.querySelectorAll('.tab')[0].classList.add('active');
-            document.getElementById('tab-registro').classList.remove('hidden');
-        } else {
-            document.querySelectorAll('.tab')[1].classList.add('active');
-            document.getElementById('tab-ventas').classList.remove('hidden');
-        }
-    }
-
-    function guardarVenta() {
-        const nombre = document.getElementById('prod-nombre').value;
-        const precio = document.getElementById('prod-precio').value;
-        
-        if(!nombre || !precio) return alert("Completa los campos");
-
-        const ahora = new Date();
-        // Formato DD/MM/YYYY requerido para Excel
-        const fechaFormat = ahora.getDate().toString().padStart(2, '0') + '/' + 
-                          (ahora.getMonth() + 1).toString().padStart(2, '0') + '/' + 
-                          ahora.getFullYear();
-
-        const nuevaVenta = {
-            id: Date.now(),
-            fecha: fechaFormat,
-            producto: nombre,
-            total: precio
-        };
-
-        ventas.push(nuevaVenta);
-        localStorage.setItem('ventas_data', JSON.stringify(ventas));
-        
-        // Limpiar campos
-        document.getElementById('prod-nombre').value = '';
-        document.getElementById('prod-precio').value = '';
-        
-        alert("Venta guardada localmente");
-        renderVentas();
-    }
-
-    function eliminarVenta(id) {
-        ventas = ventas.filter(v => v.id !== id);
-        localStorage.setItem('ventas_data', JSON.stringify(ventas));
-        renderVentas();
-    }
-
-    function renderVentas() {
-        const tbody = document.querySelector('#tabla-ventas tbody');
-        tbody.innerHTML = '';
-        ventas.forEach(v => {
-            const row = `<tr>
-                <td>${v.fecha}</td>
-                <td>${v.producto}</td>
-                <td>$${v.total}</td>
-                <td><button class="btn-del" onclick="eliminarVenta(${v.id})">X</button></td>
-            </tr>`;
-            tbody.innerHTML += row;
+    function inicio() {
+        checkTimeMode();
+        document.getElementById("fechaFiltro").value = new Date().toISOString().split("T")[0];
+        auth.onAuthStateChanged(user => {
+            if(user) {
+                document.getElementById("loginBox").classList.add("hidden");
+                document.getElementById("appBox").classList.remove("hidden");
+                document.getElementById("txtUser").innerText = "👤 " + (user.displayName || "Promotor");
+                escucharDatos();
+                renderForm();
+            }
         });
     }
 
-    function actualizarReloj(){
-        const ahora = new Date();
-        document.getElementById('clock').innerText = ahora.toLocaleString('es-MX');
+    // MODO OSCURO AUTOMÁTICO
+    function checkTimeMode() {
+        const hora = new Date().getHours();
+        if (hora >= 19 || hora <= 7) {
+            document.body.classList.add('night-mode');
+        }
     }
-    
-    setInterval(actualizarReloj, 1000);
-    actualizarReloj();
-</script>
 
+    // NOTIFICACIÓN IN-APP
+    function showNotify(msg) {
+        const t = document.getElementById("toast");
+        t.innerText = msg;
+        t.style.display = "block";
+        setTimeout(() => { t.style.display = "none"; }, 3000);
+    }
+
+    // SCANNER LOGIC
+    function startScan(targetId) {
+        const reader = document.getElementById("reader");
+        reader.style.display = "block";
+        html5QrCode = new Html5Qrcode("reader");
+        
+        html5QrCode.start(
+            { facingMode: "environment" }, 
+            { fps: 10, qrbox: { width: 250, height: 150 } },
+            (decodedText) => {
+                document.getElementById(targetId).value = decodedText;
+                stopScan();
+                showNotify("📷 CÓDIGO LEÍDO");
+            }
+        ).catch(err => alert("Error de cámara"));
+    }
+
+    function stopScan() {
+        if(html5QrCode) {
+            html5QrCode.stop().then(() => {
+                document.getElementById("reader").style.display = "none";
+            });
+        }
+    }
+
+    function renderForm() {
+        let html = "";
+        const tp = document.getElementById("tipoProceso").value;
+        const needsScan = ["f_icc", "f_imei"];
+
+        const fields = {
+            PORTA: ["f_num", "f_icc", "f_nip"],
+            RENUEVATE: ["f_num", "f_marca", "f_mod", "f_icc", "f_imei"],
+            AK: ["f_num", "f_marca", "f_mod", "f_imei", "f_icc"]
+        };
+
+        const currentFields = fields[tp] || ["f_num", "f_icc"];
+        
+        currentFields.forEach(f => {
+            const placeholder = f.replace("f_", "").toUpperCase();
+            html += `<div class="input-group">
+                <input id="${f}" placeholder="${placeholder}">
+                ${needsScan.includes(f) ? `<button class="btn-scan" onclick="startScan('${f}')">📷</button>` : ''}
+            </div>`;
+        });
+        document.getElementById("formContainer").innerHTML = html;
+    }
+
+    // FIREBASE & UTILS (Se mantienen de tu versión pero con el Toast)
+    async function obtenerUbicacionYGuardar() {
+        showNotify("📡 UBICANDO GPS...");
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                guardar("Ubicación GPS");
+            }, () => guardar("Sin GPS"));
+        } else { guardar("No disponible"); }
+    }
+
+    function guardar(loc) {
+        const inputFecha = document.getElementById("fechaFiltro").value;
+        const partes = inputFecha.split('-');
+        const data = {
+            comp: compActiva,
+            proceso: document.getElementById("tipoProceso").value,
+            fecha: inputFecha,
+            fechaExcel: `${partes[2]}/${partes[1]}/${partes[0]}`,
+            num: document.getElementById("f_num")?.value || "",
+            icc: document.getElementById("f_icc")?.value || "",
+            imei: document.getElementById("f_imei")?.value || "",
+            ubicacion: loc
+        };
+
+        db.ref('ventas').push(data).then(() => {
+            showNotify("✅ SINCRONIZADO");
+            renderForm();
+        });
+    }
+
+    function escucharDatos() {
+        db.ref('ventas').on('value', snap => {
+            todasVentas = snap.val() || {};
+            cargarTodo();
+        });
+    }
+
+    function cargarTodo() {
+        const filtro = document.getElementById("fechaFiltro").value;
+        const cuerpo = document.getElementById("cuerpoSincro");
+        cuerpo.innerHTML = "";
+        Object.keys(todasVentas).reverse().forEach(id => {
+            const v = todasVentas[id];
+            if(v.fecha === filtro) {
+                cuerpo.innerHTML += `<tr><td>${v.num}</td><td>${v.proceso}</td><td>${v.comp}</td><td><button class="btn-del" onclick="eliminar('${id}')">🗑️</button></td></tr>`;
+            }
+        });
+    }
+
+    function eliminar(id) {
+        if(confirm("¿Borrar?")) db.ref('ventas/' + id).remove().then(() => showNotify("🗑️ ELIMINADO"));
+    }
+
+    function loginEmail() {
+        auth.signInWithEmailAndPassword(correo.value, pass.value).catch(e => alert(e.message));
+    }
+    function loginGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+    function salir() { auth.signOut().then(() => window.location.reload()); }
+    function setComp(c) {
+        compActiva = c;
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        document.getElementById("tab"+c).classList.add("active");
+        renderForm();
+    }
+</script>
 </body>
 </html>
