@@ -21,7 +21,10 @@
 </head>
 <body>
 <div class="app">
-<div class="header">SISTEMA MULTIOPERADOR</div><div class="card">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+<div class="header" style="margin-bottom:0;">SISTEMA MULTIOPERADOR</div>
+<button onclick="cerrarSesion()" style="width:auto;background:#ff4d4d;color:white;padding:10px 14px;border:none;border-radius:10px;">Salir</button>
+</div><div class="card">
 <label>COMPAÑÍA</label>
 <select id="compania" onchange="cambiarCompania()">
 <option value="TELCEL">TELCEL</option>
@@ -38,9 +41,19 @@ function cambiarCompania(){
 
    if(comp==='TELCEL'){
       html=`
-      <input placeholder="Número" id="numero">
+      <select id="tipo">
+        <option value="KIT">KIT</option>
+        <option value="CHIP">CHIP</option>
+        <option value="PORTA">PORTA</option>
+        <option value="RENUEVATE">RENUEVATE</option>
+      </select>
+      <input placeholder="Fecha activación" id="fecha">
+      <input placeholder="Número celular" id="numero">
       <input placeholder="ICCID" id="iccid">
-      <input placeholder="Tipo (CHIP/PORTA/RENUEVATE/KIT)" id="tipo">
+      <input placeholder="IMEI" id="imei">
+      <input placeholder="Marca" id="marca">
+      <input placeholder="Modelo" id="modelo">
+      <input placeholder="Promotor" id="promotor">
       `;
    } else {
       html=`
@@ -55,11 +68,15 @@ function cambiarCompania(){
 }
 
 let chart;
+let ventasGuardadas = JSON.parse(localStorage.getItem('ventasMulti') || '[]');
 let stats={TELCEL:0,ATT:0,BAIT:0};
 
 function guardarVenta(){
    const comp=document.getElementById('compania').value;
-   stats[comp]++;
+   ventasGuardadas.push({comp:comp, fecha:Date.now()});
+   localStorage.setItem('ventasMulti', JSON.stringify(ventasGuardadas));
+   const comp=document.getElementById('compania').value;
+   stats[comp]++; localStorage.setItem('statsMulti', JSON.stringify(stats));
    actualizarGrafica();
    alert('Venta guardada correctamente');
 }
@@ -89,6 +106,15 @@ function actualizarGrafica(){
          }
       }
    });
+}
+
+const savedStats = JSON.parse(localStorage.getItem('statsMulti') || '{}');
+if(savedStats.TELCEL !== undefined){
+   stats = savedStats;
+}
+actualizarGrafica();
+function cerrarSesion(){
+   alert('Aquí conecta tu lógica real de logout Firebase');
 }
 
 cambiarCompania();
