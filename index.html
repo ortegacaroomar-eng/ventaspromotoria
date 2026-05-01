@@ -8,6 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
 
     <style>
@@ -15,102 +16,109 @@
             --iris-gold: #ffc300;
             --iris-blue: #00f5ff;
             --bg: #05070a;
-            --glass: rgba(255, 255, 255, 0.05);
+            --glass: rgba(255, 255, 255, 0.08);
         }
 
-        body { margin:0; font-family:'Segoe UI', sans-serif; background: var(--bg); color:white; overflow-x: hidden; }
+        body { margin:0; font-family:'Segoe UI', sans-serif; background: var(--bg); color:white; }
+        .app { max-width:480px; margin:auto; padding:20px; }
         
-        /* Estética Cyber Angel */
-        .ai-assistant {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 15px;
-            background: linear-gradient(90deg, rgba(0, 245, 255, 0.1), transparent);
-            border-left: 3px solid var(--iris-blue);
-            margin-bottom: 20px;
-            border-radius: 0 15px 15px 0;
-        }
-        .ai-avatar {
-            width: 50px;
-            height: 50px;
-            background: url('https://cdn-icons-png.flaticon.com/512/8644/8644558.png') center/cover;
-            filter: drop-shadow(0 0 5px var(--iris-blue));
-            animation: float 3s ease-in-out infinite;
-        }
+        /* IA Estética Cyber Angel */
+        .ai-assistant { display: flex; align-items: center; gap: 12px; padding: 15px; background: linear-gradient(90deg, rgba(0, 245, 255, 0.1), transparent); border-left: 3px solid var(--iris-blue); margin-bottom: 15px; border-radius: 0 15px 15px 0; }
+        .ai-avatar { width: 45px; height: 45px; background: url('https://cdn-icons-png.flaticon.com/512/8644/8644558.png') center/cover; filter: drop-shadow(0 0 5px var(--iris-blue)); animation: float 3s ease-in-out infinite; }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 
-        .app { max-width:480px; margin:auto; padding:20px; }
-        .card { background: var(--glass); backdrop-filter: blur(20px); border-radius: 20px; padding: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); }
+        .card { background: var(--glass); backdrop-filter: blur(15px); border-radius: 16px; padding: 15px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); }
+        .nav-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .btn-salir { background: #e63946; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 11px; text-transform: uppercase; }
         
-        .tab.active { background: var(--iris-gold); color: #000; box-shadow: 0 0 15px rgba(255, 195, 0, 0.4); }
-        .tab { flex: 1; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); text-align: center; cursor: pointer; transition: 0.3s; font-size: 12px; font-weight: bold; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 15px; }
+        .tab { flex: 1; padding: 10px; border-radius: 10px; background: rgba(255,255,255,0.1); text-align: center; cursor: pointer; font-size: 12px; font-weight: 600; transition: 0.3s; }
+        .tab.active { background: var(--iris-gold); color: #003566; box-shadow: 0 0 10px rgba(255, 195, 0, 0.3); }
 
-        input, select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: white; margin-top: 10px; box-sizing: border-box; }
+        .input-group { position: relative; margin-top: 8px; }
+        input, select { width: 100%; padding: 12px; border-radius: 10px; border: none; background: rgba(255,255,255,0.15); color: white; box-sizing: border-box; outline: none; }
+        .btn-scan { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: var(--iris-gold); border: none; border-radius: 6px; padding: 5px 8px; cursor: pointer; font-size: 12px; }
+
+        .main-btn { background: var(--iris-gold); color: #003566; padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; font-size: 14px; box-shadow: 0 4px 14px rgba(255,195,0,0.2); }
+        .btn-del { background: #ff4d4d; color: white; border: none; padding: 5px 8px; border-radius: 6px; font-size: 10px; cursor: pointer; }
         
-        .main-btn { background: linear-gradient(45deg, var(--iris-gold), #ffd60a); color: #000; padding: 16px; border: none; border-radius: 14px; font-weight: 800; cursor: pointer; width: 100%; margin-top: 15px; text-transform: uppercase; letter-spacing: 1px; }
+        table { width: 100%; font-size: 11px; border-collapse: collapse; margin-top: 10px; color: #eee; }
+        th, td { border-bottom: 1px solid rgba(255,255,255,0.1); padding: 10px 5px; text-align: left; }
+        th { color: var(--iris-gold); font-size: 9px; text-transform: uppercase; }
 
-        .google-btn { background: white; color: #444; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; }
-
-        /* Estilo de Gráfica */
-        #chartContainer { position: relative; height: 250px; }
-        
+        #reader { width: 100%; border-radius: 12px; overflow: hidden; display: none; margin-bottom: 10px; }
         .hidden { display: none !important; }
-        .fade { animation: fadeIn 0.5s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .fade { animation: fade 0.3s ease; }
+        @keyframes fade { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; } }
     </style>
 </head>
 <body onload="inicio()">
 
 <div class="app">
     <div id="loginBox" class="fade">
-        <div class="card" style="text-align: center;">
-            <div class="ai-avatar" style="margin: 0 auto 15px;"></div>
-            <h2 style="color:var(--iris-blue); letter-spacing: 2px;">IRIS NEXUS</h2>
-            <p style="font-size: 13px; opacity: 0.7;">Identifícate para sincronizar tu conciencia digital.</p>
-            <button class="main-btn google-btn" onclick="loginGoogle()">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="18">
-                ACCEDER CON GOOGLE
+        <div class="card" style="text-align: center; margin-top: 40px;">
+            <div class="ai-avatar" style="margin: 0 auto 10px;"></div>
+            <h2 style="color:var(--iris-gold)">AUDITOR SINCRO</h2>
+            <p style="font-size: 11px; opacity: 0.7; margin-bottom: 20px;">Gestión de Ventas Multimarca</p>
+            <button class="main-btn" style="background: white; color: #444; display: flex; align-items: center; justify-content: center; gap: 10px;" onclick="loginGoogle()">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="18"> Continuar con Google
             </button>
         </div>
     </div>
 
     <div id="appBox" class="hidden fade">
+        <div class="nav-header">
+            <span id="txtUser" style="font-size: 12px; font-weight: bold; color: var(--iris-gold);"></span>
+            <button class="btn-salir" onclick="salir()">Salir</button>
+        </div>
+
         <div class="ai-assistant">
             <div class="ai-avatar"></div>
             <div>
                 <b style="color: var(--iris-blue); font-size: 12px;">IRIS AI</b><br>
-                <span id="ai-message" style="font-size: 11px; font-style: italic;">Analizando flujo de ventas...</span>
+                <span id="ai-message" style="font-size: 11px; font-style: italic;">Sincronización activa...</span>
             </div>
         </div>
 
         <div class="card">
-            <label style="font-size: 10px; color: var(--iris-gold);">TERMINAL DE FECHA</label>
+            <label style="font-size: 10px; color: var(--iris-gold); font-weight: bold;">FECHA DE CONSULTA:</label>
             <input type="date" id="fechaFiltro" onchange="cargarTodo()">
         </div>
 
-        <div class="tabs" style="display:flex; gap:10px; margin-bottom:15px;">
+        <div id="reader"></div>
+
+        <div class="tabs">
             <div id="tabTELCEL" class="tab active" onclick="setComp('TELCEL')">TELCEL</div>
             <div id="tabATT" class="tab" onclick="setComp('ATT')">AT&T</div>
+            <div id="tabBAIT" class="tab" onclick="setComp('BAIT')">BAIT</div>
         </div>
 
         <div class="card">
             <select id="tipoProceso" onchange="renderForm()">
-                <option value="PORTA">🔄 PORTABILIDAD</option>
-                <option value="AK">📱 EQUIPO / AK</option>
-                <option value="RENUEVATE">♻️ RENUÉVATE</option>
+                <option value="VENTA">SELECCIONAR TIPO DE VENTA</option>
+                <option value="PORTA">PORTABILIDAD</option>
+                <option value="RENUEVATE">RENUÉVATE</option>
+                <option value="AK">EQUIPO / AK</option>
             </select>
             <div id="formContainer"></div>
         </div>
 
-        <button class="main-btn" onclick="guardar()">💾 SINCRONIZAR REGISTRO</button>
+        <button class="main-btn" onclick="obtenerUbicacionYGuardar()">💾 GUARDAR Y SINCRONIZAR</button>
 
-        <div class="card">
-            <h4 style="margin:0 0 15px; font-size: 12px; color: var(--iris-gold);">RENDIMIENTO DE RED</h4>
-            <div id="chartContainer">
-                <canvas id="grafica"></canvas>
+        <div class="card" style="border-top: 2px solid var(--iris-gold);">
+            <h3 style="color:var(--iris-gold); margin:0 0 10px 0; font-size: 13px;">LISTADO DE SINCRONIZACIÓN</h3>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr><th>Número</th><th>Proceso</th><th>Compañía</th><th></th></tr>
+                    </thead>
+                    <tbody id="cuerpoSincro"></tbody>
+                </table>
             </div>
         </div>
+
+        <div class="card"><canvas id="grafica"></canvas></div>
+        <button style="background:#1b4332; color:#74c69d; border: 1px solid #74c69d;" class="main-btn" onclick="descargarExcel()">📊 DESCARGAR EXCEL ORDENADO</button>
     </div>
 </div>
 
@@ -121,12 +129,13 @@
         databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com"
     };
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
     const auth = firebase.auth();
+    const db = firebase.database();
 
     let compActiva = "TELCEL";
     let chart;
     let todasVentas = {};
+    let html5QrCode;
 
     function inicio() {
         document.getElementById("fechaFiltro").value = new Date().toISOString().split("T")[0];
@@ -134,54 +143,85 @@
             if(user) {
                 document.getElementById("loginBox").classList.add("hidden");
                 document.getElementById("appBox").classList.remove("hidden");
+                document.getElementById("txtUser").innerText = "👤 " + (user.displayName || user.email.split('@')[0]);
                 aprenderPatrones();
                 escucharDatos();
                 renderForm();
             }
         });
+        checkTimeMode();
     }
 
-    function loginGoogle() {
-        auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+    function checkTimeMode() {
+        const hora = new Date().getHours();
+        if (hora >= 19 || hora <= 7) document.body.style.filter = "brightness(0.9) contrast(1.1)";
     }
 
-    // IA QUE APRENDE
+    function loginGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+    function salir() { if(confirm("¿Cerrar sesión?")) auth.signOut().then(() => window.location.reload()); }
+
     function aprenderPatrones() {
-        let visitas = localStorage.getItem('iris_learning') || 0;
-        visitas++;
-        localStorage.setItem('iris_learning', visitas);
+        let n = (localStorage.getItem('v_count') || 0);
+        const msgs = ["Listo para capturar datos.", "Análisis de red óptimo.", "Sincronización establecida.", "Modo Auditor Pro: Activo."];
+        document.getElementById("ai-message").innerText = msgs[Math.floor(Math.random() * msgs.length)];
+    }
 
-        const msgs = [
-            "Hola Omar, hoy el mercado está receptivo.",
-            "He optimizado los procesos de carga para ti.",
-            "Recuerda que las portabilidades suben tu score.",
-            "Día " + visitas + " de sincronización. Mi algoritmo es más preciso hoy."
-        ];
-        document.getElementById("ai-message").innerText = msgs[Math.min(visitas-1, msgs.length-1)];
+    function startScan(id) {
+        document.getElementById("reader").style.display = "block";
+        html5QrCode = new Html5Qrcode("reader");
+        html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (text) => {
+            document.getElementById(id).value = text;
+            stopScan();
+        });
+    }
+
+    function stopScan() {
+        if(html5QrCode) html5QrCode.stop().then(() => document.getElementById("reader").style.display = "none");
     }
 
     function renderForm() {
+        let html = "";
         const tp = document.getElementById("tipoProceso").value;
-        let html = `<input id="f_num" placeholder="NÚMERO (10 DÍGITOS)">`;
-        if(tp === "AK" || tp === "RENUEVATE") {
-            html += `<input id="f_imei" placeholder="IMEI DE EQUIPO">`;
+        const scanBtn = (id) => `<button class="btn-scan" onclick="startScan('${id}')">📷</button>`;
+        
+        html = `<div class="input-group"><input id="f_num" placeholder="Número"></div>`;
+        if(tp === "PORTA") {
+            html += `<div class="input-group"><input id="f_icc" placeholder="ICCID">${scanBtn('f_icc')}</div><input id="f_nip" placeholder="NIP">`;
+        } else if(tp === "RENUEVATE" || tp === "AK") {
+            html += `<input id="f_marca" placeholder="Marca"><input id="f_mod" placeholder="Modelo"><div class="input-group"><input id="f_icc" placeholder="ICCID">${scanBtn('f_icc')}</div><div class="input-group"><input id="f_imei" placeholder="IMEI">${scanBtn('f_imei')}</div>`;
+        } else {
+            html += `<div class="input-group"><input id="f_icc" placeholder="ICCID">${scanBtn('f_icc')}</div>`;
         }
-        html += `<input id="f_icc" placeholder="ICCID / SERIE">`;
         document.getElementById("formContainer").innerHTML = html;
     }
 
-    function guardar() {
+    async function obtenerUbicacionYGuardar() {
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+            try {
+                const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`);
+                const data = await res.json();
+                guardar(data.display_name || "Ubicación detectada");
+            } catch { guardar("Ubicación GPS"); }
+        }, () => guardar("Sin GPS"));
+    }
+
+    function guardar(calle) {
+        const f = document.getElementById("fechaFiltro").value.split('-');
         const data = {
             comp: compActiva,
-            proceso: document.getElementById("tipoProceso").value,
+            proceso: (compActiva === "TELCEL") ? document.getElementById("tipoProceso").value : "EXTERNA",
             fecha: document.getElementById("fechaFiltro").value,
-            num: document.getElementById("f_num").value,
-            icc: document.getElementById("f_icc").value,
-            timestamp: Date.now()
+            fechaExcel: `${f[2]}/${f[1]}/${f[0]}`,
+            ubicacion: calle,
+            num: document.getElementById("f_num")?.value || "",
+            icc: document.getElementById("f_icc")?.value || "",
+            marca: document.getElementById("f_marca")?.value || "",
+            modelo: document.getElementById("f_mod")?.value || "",
+            imei: document.getElementById("f_imei")?.value || "",
+            nip: document.getElementById("f_nip")?.value || ""
         };
-
         db.ref('ventas').push(data).then(() => {
-            document.getElementById("ai-message").innerText = "¡Registro asimilado! Gran trabajo.";
+            document.getElementById("ai-message").innerText = "¡Datos asimilados correctamente!";
             renderForm();
         });
     }
@@ -189,53 +229,61 @@
     function escucharDatos() {
         db.ref('ventas').on('value', snap => {
             todasVentas = snap.val() || {};
-            actualizarGrafica();
+            cargarTodo();
         });
     }
 
-    function actualizarGrafica() {
+    function cargarTodo() {
         const filtro = document.getElementById("fechaFiltro").value;
-        let stats = { TELCEL: 0, ATT: 0 };
-        
-        Object.values(todasVentas).forEach(v => {
-            if(v.fecha === filtro) stats[v.comp]++;
-        });
+        const cuerpo = document.getElementById("cuerpoSincro");
+        cuerpo.innerHTML = "";
+        let s = { TELCEL:0, ATT:0, BAIT:0 };
 
+        Object.keys(todasVentas).reverse().forEach(id => {
+            const v = todasVentas[id];
+            if(v.fecha === filtro) {
+                cuerpo.innerHTML += `<tr><td>${v.num}</td><td>${v.proceso}</td><td>${v.comp}</td><td><button class="btn-del" onclick="eliminar('${id}')">🗑️</button></td></tr>`;
+                if(s[v.comp] !== undefined) s[s.comp]++;
+            }
+        });
+        actualizarGrafica(s);
+    }
+
+    function actualizarGrafica(s) {
         const ctx = document.getElementById('grafica').getContext('2d');
         if(chart) chart.destroy();
-
         chart = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['TELCEL', 'AT&T'],
+                labels: ['TELCEL', 'AT&T', 'BAIT'],
                 datasets: [{
-                    data: [stats.TELCEL, stats.ATT],
-                    backgroundColor: ['#ffc300', '#00f5ff'],
-                    hoverOffset: 20,
+                    data: [s.TELCEL, s.ATT, s.BAIT],
+                    backgroundColor: ['#ffc300', '#00f5ff', '#ef233c'],
                     borderWidth: 0,
-                    borderRadius: 10
+                    borderRadius: 5
                 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: true, position: 'bottom', labels: { color: 'white', usePointStyle: true } }
-                },
-                animation: { animateScale: true, duration: 1000 }
-            }
+            options: { plugins: { legend: { position: 'bottom', labels: { color: 'white' } } } }
         });
+    }
 
-        // Iris reacciona a los datos
-        if(stats.TELCEL > stats.ATT) {
-            document.getElementById("ai-message").innerText = "Dominio de Telcel detectado. Sigue así.";
-        }
+    function eliminar(id) { if(confirm("¿Eliminar?")) db.ref('ventas/' + id).remove(); }
+
+    function descargarExcel() {
+        const excelData = Object.values(todasVentas).map(v => ({
+            "FECHA": v.fechaExcel, "COMPAÑÍA": v.comp, "NÚMERO": v.num, "PROCESO": v.proceso, "ICCID": v.icc, "IMEI": v.imei, "UBICACIÓN": v.ubicacion
+        }));
+        const ws = XLSX.utils.json_to_sheet(excelData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Ventas");
+        XLSX.writeFile(wb, "Reporte_Omar_Auditor.xlsx");
     }
 
     function setComp(c) {
         compActiva = c;
         document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-        document.getElementById("tab"+c).classList.add("active");
+        document.getElementById("tab" + c).classList.add("active");
+        renderForm();
     }
 </script>
 </body>
