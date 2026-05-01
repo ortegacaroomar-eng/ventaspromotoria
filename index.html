@@ -3,118 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auditor PRO | Omar</title>
+    <title>Nexus Auditor | Iris AI</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
 
     <style>
         :root {
-            --bg-grad: linear-gradient(135deg, #0b0d17, #1e293b);
-            --card-bg: rgba(255, 255, 255, 0.08);
-            --accent: #ffc300;
+            --iris-gold: #ffc300;
+            --iris-blue: #00f5ff;
+            --bg: #05070a;
+            --glass: rgba(255, 255, 255, 0.05);
         }
 
-        /* Modo Oscuro Automático (Noche) */
-        .night-mode {
-            --bg-grad: linear-gradient(135deg, #020617, #0f172a);
-            --card-bg: rgba(0, 0, 0, 0.4);
-            --accent: #ffd60a;
+        body { margin:0; font-family:'Segoe UI', sans-serif; background: var(--bg); color:white; overflow-x: hidden; }
+        
+        /* Estética Cyber Angel */
+        .ai-assistant {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: linear-gradient(90deg, rgba(0, 245, 255, 0.1), transparent);
+            border-left: 3px solid var(--iris-blue);
+            margin-bottom: 20px;
+            border-radius: 0 15px 15px 0;
         }
+        .ai-avatar {
+            width: 50px;
+            height: 50px;
+            background: url('https://cdn-icons-png.flaticon.com/512/8644/8644558.png') center/cover;
+            filter: drop-shadow(0 0 5px var(--iris-blue));
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 
-        body { margin:0; font-family:'Segoe UI', sans-serif; background: var(--bg-grad); color:white; transition: 0.5s; }
         .app { max-width:480px; margin:auto; padding:20px; }
-        .card { background: var(--card-bg); backdrop-filter: blur(12px); border-radius: 16px; padding: 15px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); }
+        .card { background: var(--glass); backdrop-filter: blur(20px); border-radius: 20px; padding: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); }
         
-        .nav-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .btn-salir { background: #e63946; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 11px; }
+        .tab.active { background: var(--iris-gold); color: #000; box-shadow: 0 0 15px rgba(255, 195, 0, 0.4); }
+        .tab { flex: 1; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); text-align: center; cursor: pointer; transition: 0.3s; font-size: 12px; font-weight: bold; }
+
+        input, select { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: white; margin-top: 10px; box-sizing: border-box; }
         
-        .tabs { display: flex; gap: 8px; margin-bottom: 15px; }
-        .tab { flex: 1; padding: 10px; border-radius: 10px; background: rgba(255,255,255,0.1); text-align: center; cursor: pointer; font-size: 12px; font-weight: 600; }
-        .tab.active { background: var(--accent); color: #003566; }
+        .main-btn { background: linear-gradient(45deg, var(--iris-gold), #ffd60a); color: #000; padding: 16px; border: none; border-radius: 14px; font-weight: 800; cursor: pointer; width: 100%; margin-top: 15px; text-transform: uppercase; letter-spacing: 1px; }
 
-        .input-group { position: relative; margin-top: 8px; }
-        input, select { width: 100%; padding: 12px; border-radius: 10px; border: none; background: rgba(255,255,255,0.15); color: white; box-sizing: border-box; outline: none; }
+        .google-btn { background: white; color: #444; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; }
+
+        /* Estilo de Gráfica */
+        #chartContainer { position: relative; height: 250px; }
         
-        /* Botón de Scan dentro del input */
-        .btn-scan { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: var(--accent); border: none; border-radius: 6px; padding: 5px 8px; cursor: pointer; font-size: 14px; }
-
-        button.main-btn { background: var(--accent); color: #003566; padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; font-size: 14px; box-shadow: 0 4px 15px rgba(255,195,0,0.2); }
-        
-        /* Scanner Overlay */
-        #reader { width: 100%; border-radius: 12px; overflow: hidden; display: none; margin-bottom: 10px; }
-
-        /* Notification Toast */
-        #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1b4332; color: #74c69d; padding: 12px 25px; border-radius: 50px; font-size: 13px; font-weight: bold; display: none; z-index: 100; border: 1px solid #74c69d; }
-
         .hidden { display: none !important; }
-        table { width: 100%; font-size: 11px; border-collapse: collapse; margin-top: 10px; }
-        th, td { border-bottom: 1px solid rgba(255,255,255,0.1); padding: 10px 5px; }
-        th { color: var(--accent); font-size: 9px; text-transform: uppercase; }
-        .fade { animation: fade 0.3s ease; }
-        @keyframes fade { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; } }
+        .fade { animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 <body onload="inicio()">
 
-<div id="toast">✅ REGISTRO SINCRONIZADO</div>
-
 <div class="app">
     <div id="loginBox" class="fade">
-        <div class="card" style="text-align: center; margin-top: 40px;">
-            <h2 style="color:var(--accent)">AUDITOR PRO</h2>
-            <input type="email" id="correo" placeholder="Email">
-            <input type="password" id="pass" placeholder="Contraseña">
-            <button class="main-btn" onclick="loginEmail()">INGRESAR</button>
-            <button onclick="loginGoogle()" style="background:transparent; color:white; border:1px solid rgba(255,255,255,0.3); margin-top:10px; padding:10px; border-radius:10px; width:100%;">G Google Login</button>
+        <div class="card" style="text-align: center;">
+            <div class="ai-avatar" style="margin: 0 auto 15px;"></div>
+            <h2 style="color:var(--iris-blue); letter-spacing: 2px;">IRIS NEXUS</h2>
+            <p style="font-size: 13px; opacity: 0.7;">Identifícate para sincronizar tu conciencia digital.</p>
+            <button class="main-btn google-btn" onclick="loginGoogle()">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="18">
+                ACCEDER CON GOOGLE
+            </button>
         </div>
     </div>
 
     <div id="appBox" class="hidden fade">
-        <div class="nav-header">
-            <span id="txtUser" style="color:var(--accent); font-weight:bold;"></span>
-            <button class="btn-salir" onclick="salir()">Salir</button>
+        <div class="ai-assistant">
+            <div class="ai-avatar"></div>
+            <div>
+                <b style="color: var(--iris-blue); font-size: 12px;">IRIS AI</b><br>
+                <span id="ai-message" style="font-size: 11px; font-style: italic;">Analizando flujo de ventas...</span>
+            </div>
         </div>
 
         <div class="card">
+            <label style="font-size: 10px; color: var(--iris-gold);">TERMINAL DE FECHA</label>
             <input type="date" id="fechaFiltro" onchange="cargarTodo()">
         </div>
 
-        <div class="tabs">
+        <div class="tabs" style="display:flex; gap:10px; margin-bottom:15px;">
             <div id="tabTELCEL" class="tab active" onclick="setComp('TELCEL')">TELCEL</div>
             <div id="tabATT" class="tab" onclick="setComp('ATT')">AT&T</div>
-            <div id="tabBAIT" class="tab" onclick="setComp('BAIT')">BAIT</div>
         </div>
-
-        <div id="reader"></div>
 
         <div class="card">
             <select id="tipoProceso" onchange="renderForm()">
-                <option value="VENTA">TIPO DE PROCESO</option>
-                <option value="PORTA">PORTABILIDAD</option>
-                <option value="RENUEVATE">RENUÉVATE</option>
-                <option value="AK">EQUIPO / AK</option>
+                <option value="PORTA">🔄 PORTABILIDAD</option>
+                <option value="AK">📱 EQUIPO / AK</option>
+                <option value="RENUEVATE">♻️ RENUÉVATE</option>
             </select>
             <div id="formContainer"></div>
         </div>
 
-        <button class="main-btn" onclick="obtenerUbicacionYGuardar()">💾 GUARDAR Y SINCRONIZAR</button>
+        <button class="main-btn" onclick="guardar()">💾 SINCRONIZAR REGISTRO</button>
 
         <div class="card">
-            <h3 style="font-size:12px; color:var(--accent)">HISTORIAL DEL DÍA</h3>
-            <table id="tabla">
-                <thead>
-                    <tr><th>Número</th><th>Proceso</th><th>Compañía</th><th></th></tr>
-                </thead>
-                <tbody id="cuerpoSincro"></tbody>
-            </table>
+            <h4 style="margin:0 0 15px; font-size: 12px; color: var(--iris-gold);">RENDIMIENTO DE RED</h4>
+            <div id="chartContainer">
+                <canvas id="grafica"></canvas>
+            </div>
         </div>
-
-        <div class="card"><canvas id="grafica"></canvas></div>
-        <button onclick="descargarExcel()" style="background:#064e3b; color:#34d399; border:none; padding:12px; border-radius:10px; width:100%; font-weight:bold;">📊 EXPORTAR EXCEL</button>
     </div>
 </div>
 
@@ -125,117 +121,67 @@
         databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com"
     };
     firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
     const db = firebase.database();
+    const auth = firebase.auth();
 
     let compActiva = "TELCEL";
+    let chart;
     let todasVentas = {};
-    let html5QrCode;
 
     function inicio() {
-        checkTimeMode();
         document.getElementById("fechaFiltro").value = new Date().toISOString().split("T")[0];
         auth.onAuthStateChanged(user => {
             if(user) {
                 document.getElementById("loginBox").classList.add("hidden");
                 document.getElementById("appBox").classList.remove("hidden");
-                document.getElementById("txtUser").innerText = "👤 " + (user.displayName || "Promotor");
+                aprenderPatrones();
                 escucharDatos();
                 renderForm();
             }
         });
     }
 
-    // MODO OSCURO AUTOMÁTICO
-    function checkTimeMode() {
-        const hora = new Date().getHours();
-        if (hora >= 19 || hora <= 7) {
-            document.body.classList.add('night-mode');
-        }
+    function loginGoogle() {
+        auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
     }
 
-    // NOTIFICACIÓN IN-APP
-    function showNotify(msg) {
-        const t = document.getElementById("toast");
-        t.innerText = msg;
-        t.style.display = "block";
-        setTimeout(() => { t.style.display = "none"; }, 3000);
-    }
+    // IA QUE APRENDE
+    function aprenderPatrones() {
+        let visitas = localStorage.getItem('iris_learning') || 0;
+        visitas++;
+        localStorage.setItem('iris_learning', visitas);
 
-    // SCANNER LOGIC
-    function startScan(targetId) {
-        const reader = document.getElementById("reader");
-        reader.style.display = "block";
-        html5QrCode = new Html5Qrcode("reader");
-        
-        html5QrCode.start(
-            { facingMode: "environment" }, 
-            { fps: 10, qrbox: { width: 250, height: 150 } },
-            (decodedText) => {
-                document.getElementById(targetId).value = decodedText;
-                stopScan();
-                showNotify("📷 CÓDIGO LEÍDO");
-            }
-        ).catch(err => alert("Error de cámara"));
-    }
-
-    function stopScan() {
-        if(html5QrCode) {
-            html5QrCode.stop().then(() => {
-                document.getElementById("reader").style.display = "none";
-            });
-        }
+        const msgs = [
+            "Hola Omar, hoy el mercado está receptivo.",
+            "He optimizado los procesos de carga para ti.",
+            "Recuerda que las portabilidades suben tu score.",
+            "Día " + visitas + " de sincronización. Mi algoritmo es más preciso hoy."
+        ];
+        document.getElementById("ai-message").innerText = msgs[Math.min(visitas-1, msgs.length-1)];
     }
 
     function renderForm() {
-        let html = "";
         const tp = document.getElementById("tipoProceso").value;
-        const needsScan = ["f_icc", "f_imei"];
-
-        const fields = {
-            PORTA: ["f_num", "f_icc", "f_nip"],
-            RENUEVATE: ["f_num", "f_marca", "f_mod", "f_icc", "f_imei"],
-            AK: ["f_num", "f_marca", "f_mod", "f_imei", "f_icc"]
-        };
-
-        const currentFields = fields[tp] || ["f_num", "f_icc"];
-        
-        currentFields.forEach(f => {
-            const placeholder = f.replace("f_", "").toUpperCase();
-            html += `<div class="input-group">
-                <input id="${f}" placeholder="${placeholder}">
-                ${needsScan.includes(f) ? `<button class="btn-scan" onclick="startScan('${f}')">📷</button>` : ''}
-            </div>`;
-        });
+        let html = `<input id="f_num" placeholder="NÚMERO (10 DÍGITOS)">`;
+        if(tp === "AK" || tp === "RENUEVATE") {
+            html += `<input id="f_imei" placeholder="IMEI DE EQUIPO">`;
+        }
+        html += `<input id="f_icc" placeholder="ICCID / SERIE">`;
         document.getElementById("formContainer").innerHTML = html;
     }
 
-    // FIREBASE & UTILS (Se mantienen de tu versión pero con el Toast)
-    async function obtenerUbicacionYGuardar() {
-        showNotify("📡 UBICANDO GPS...");
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(async (pos) => {
-                guardar("Ubicación GPS");
-            }, () => guardar("Sin GPS"));
-        } else { guardar("No disponible"); }
-    }
-
-    function guardar(loc) {
-        const inputFecha = document.getElementById("fechaFiltro").value;
-        const partes = inputFecha.split('-');
+    function guardar() {
         const data = {
             comp: compActiva,
             proceso: document.getElementById("tipoProceso").value,
-            fecha: inputFecha,
-            fechaExcel: `${partes[2]}/${partes[1]}/${partes[0]}`,
-            num: document.getElementById("f_num")?.value || "",
-            icc: document.getElementById("f_icc")?.value || "",
-            imei: document.getElementById("f_imei")?.value || "",
-            ubicacion: loc
+            fecha: document.getElementById("fechaFiltro").value,
+            num: document.getElementById("f_num").value,
+            icc: document.getElementById("f_icc").value,
+            timestamp: Date.now()
         };
 
         db.ref('ventas').push(data).then(() => {
-            showNotify("✅ SINCRONIZADO");
+            document.getElementById("ai-message").innerText = "¡Registro asimilado! Gran trabajo.";
             renderForm();
         });
     }
@@ -243,36 +189,53 @@
     function escucharDatos() {
         db.ref('ventas').on('value', snap => {
             todasVentas = snap.val() || {};
-            cargarTodo();
+            actualizarGrafica();
         });
     }
 
-    function cargarTodo() {
+    function actualizarGrafica() {
         const filtro = document.getElementById("fechaFiltro").value;
-        const cuerpo = document.getElementById("cuerpoSincro");
-        cuerpo.innerHTML = "";
-        Object.keys(todasVentas).reverse().forEach(id => {
-            const v = todasVentas[id];
-            if(v.fecha === filtro) {
-                cuerpo.innerHTML += `<tr><td>${v.num}</td><td>${v.proceso}</td><td>${v.comp}</td><td><button class="btn-del" onclick="eliminar('${id}')">🗑️</button></td></tr>`;
+        let stats = { TELCEL: 0, ATT: 0 };
+        
+        Object.values(todasVentas).forEach(v => {
+            if(v.fecha === filtro) stats[v.comp]++;
+        });
+
+        const ctx = document.getElementById('grafica').getContext('2d');
+        if(chart) chart.destroy();
+
+        chart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['TELCEL', 'AT&T'],
+                datasets: [{
+                    data: [stats.TELCEL, stats.ATT],
+                    backgroundColor: ['#ffc300', '#00f5ff'],
+                    hoverOffset: 20,
+                    borderWidth: 0,
+                    borderRadius: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true, position: 'bottom', labels: { color: 'white', usePointStyle: true } }
+                },
+                animation: { animateScale: true, duration: 1000 }
             }
         });
+
+        // Iris reacciona a los datos
+        if(stats.TELCEL > stats.ATT) {
+            document.getElementById("ai-message").innerText = "Dominio de Telcel detectado. Sigue así.";
+        }
     }
 
-    function eliminar(id) {
-        if(confirm("¿Borrar?")) db.ref('ventas/' + id).remove().then(() => showNotify("🗑️ ELIMINADO"));
-    }
-
-    function loginEmail() {
-        auth.signInWithEmailAndPassword(correo.value, pass.value).catch(e => alert(e.message));
-    }
-    function loginGoogle() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
-    function salir() { auth.signOut().then(() => window.location.reload()); }
     function setComp(c) {
         compActiva = c;
         document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
         document.getElementById("tab"+c).classList.add("active");
-        renderForm();
     }
 </script>
 </body>
