@@ -1,131 +1,185 @@
-<!DOCTYPE html><html lang="es">
+<!DOCTYPE html>
+<html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Auditor PRO | Omar</title><script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script><style>
-body {
-    margin:0;
-    font-family:'Segoe UI', sans-serif;
-    background: linear-gradient(135deg,#0b0d17,#111827,#1e293b);
-    color:white;
-}
-.app { max-width:480px; margin:auto; padding:20px; }
-.card {
-    background: rgba(255,255,255,0.08);
-    backdrop-filter: blur(14px);
-    border-radius: 18px;
-    padding: 16px;
-    margin-bottom: 15px;
-    border: 1px solid rgba(255,255,255,0.12);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
-}
-.nav-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; }
-.btn-salir {
-    background: linear-gradient(45deg,#e63946,#ff6b6b);
-    color:white;
-    border:none;
-    padding:8px 15px;
-    border-radius:10px;
-    font-weight:bold;
-    cursor:pointer;
-    font-size:11px;
-}
-.tabs { display:flex; gap:8px; margin-bottom:15px; }
-.tab {
-    flex:1;
-    padding:11px;
-    border-radius:12px;
-    background: rgba(255,255,255,0.08);
-    text-align:center;
-    cursor:pointer;
-    font-size:12px;
-    font-weight:700;
-    transition:.25s;
-}
-.tab:hover { transform:translateY(-2px); }
-.tab.active {
-    background: linear-gradient(45deg,#ffc300,#ffd60a);
-    color:#003566;
-}
-input, select {
-    width:100%;
-    padding:12px;
-    border-radius:12px;
-    border:none;
-    background:rgba(255,255,255,0.14);
-    color:white;
-    margin-top:8px;
-    box-sizing:border-box;
-    outline:none;
-}
-input::placeholder { color:rgba(255,255,255,0.5); }
-button {
-    background: linear-gradient(45deg,#ffc300,#ffd60a);
-    color:#003566;
-    padding:14px;
-    border:none;
-    border-radius:12px;
-    font-weight:bold;
-    cursor:pointer;
-    width:100%;
-    margin-top:10px;
-    font-size:14px;
-    box-shadow: 0 4px 14px rgba(255,195,0,0.3);
-}
-.btn-del {
-    background:#ff4d4d;
-    color:white;
-    border:none;
-    padding:5px 8px;
-    border-radius:6px;
-    font-size:10px;
-    cursor:pointer;
-}
-.hidden { display:none !important; }
-table { width:100%; font-size:11px; border-collapse:collapse; margin-top:10px; color:#eee; }
-th, td { border-bottom:1px solid rgba(255,255,255,0.1); padding:10px 5px; text-align:left; }
-th { color:#ffc300; font-size:9px; }
-.fade { animation:fade .3s ease; }
-@keyframes fade { from { opacity:0; transform:translateY(5px);} to {opacity:1; transform:translateY(0);} }
-.status-box {
-    display:flex;
-    justify-content:space-between;
-    gap:8px;
-    margin-bottom:15px;
-}
-.badge {
-    flex:1;
-    text-align:center;
-    background:rgba(255,255,255,0.08);
-    padding:10px;
-    border-radius:12px;
-    font-size:11px;
-}
-.clock {
-    font-size:12px;
-    color:#ffd60a;
-    text-align:center;
-    margin-top:8px;
-}
-</style></head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auditor PRO | Omar</title>
+    <style>
+        body { margin:0; font-family:'Segoe UI', sans-serif; background: linear-gradient(135deg,#0b0d17,#111827,#1e293b); color:white; min-height: 100vh; }
+        .app { max-width:480px; margin:auto; padding:20px; }
+        .card { background: rgba(255,255,255,0.08); backdrop-filter: blur(14px); border-radius: 18px; padding: 16px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 8px 24px rgba(0,0,0,0.25); }
+        .nav-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; }
+        .btn-salir { background: linear-gradient(45deg,#e63946,#ff6b6b); color:white; border:none; padding:8px 15px; border-radius:10px; font-weight:bold; cursor:pointer; font-size:11px; }
+        .tabs { display:flex; gap:8px; margin-bottom:15px; }
+        .tab { flex:1; padding:11px; border-radius:12px; background: rgba(255,255,255,0.08); text-align:center; cursor:pointer; font-size:12px; font-weight:700; transition:.25s; }
+        .tab:hover { transform:translateY(-2px); }
+        .tab.active { background: linear-gradient(45deg,#ffc300,#ffd60a); color:#003566; }
+        input, select { width:100%; padding:12px; border-radius:12px; border:none; background:rgba(255,255,255,0.14); color:white; margin-top:8px; box-sizing:border-box; outline:none; }
+        input::placeholder { color:rgba(255,255,255,0.5); }
+        button { background: linear-gradient(45deg,#ffc300,#ffd60a); color:#003566; padding:14px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; margin-top:10px; font-size:14px; box-shadow: 0 4px 14px rgba(255,195,0,0.3); }
+        .btn-del { background:#ff4d4d; color:white; border:none; padding:5px 8px; border-radius:6px; font-size:10px; cursor:pointer; }
+        .hidden { display:none !important; }
+        table { width:100%; font-size:11px; border-collapse:collapse; margin-top:10px; color:#eee; }
+        th, td { border-bottom:1px solid rgba(255,255,255,0.1); padding:10px 5px; text-align:left; }
+        th { color:#ffc300; font-size:9px; }
+        .fade { animation:fade .3s ease; }
+        @keyframes fade { from { opacity:0; transform:translateY(5px);} to {opacity:1; transform:translateY(0);} }
+        .status-box { display:flex; justify-content:space-between; gap:8px; margin-bottom:15px; }
+        .badge { flex:1; text-align:center; background:rgba(255,255,255,0.08); padding:10px; border-radius:12px; font-size:11px; }
+        .clock { font-size:12px; color:#ffd60a; text-align:center; margin-top:8px; }
+    </style>
+</head>
 <body>
-<!-- Conservé tu lógica JS/Firebase. Solo mejoré diseño, badges y reloj visual -->
+
 <div class="app">
-    <div class="card">
-        <h2 style="margin:0;color:#ffc300;">AUDITOR PRO</h2>
-        <div id="clock" class="clock"></div>
-    </div><div class="status-box">
-    <div class="badge">📱 Multimarca</div>
-    <div class="badge">☁️ Sync</div>
-    <div class="badge">📊 Reportes</div>
+    <div id="login-screen" class="fade">
+        <div class="card" style="text-align: center; margin-top: 50px;">
+            <h2 style="color:#ffc300">AUDITOR PRO</h2>
+            <p style="font-size: 12px; opacity: 0.7;">Ingresa tus credenciales</p>
+            <input type="text" id="user-input" placeholder="Usuario">
+            <input type="password" id="pass-input" placeholder="Contraseña">
+            <button onclick="login()">INGRESAR</button>
+        </div>
+    </div>
+
+    <div id="main-content" class="hidden fade">
+        <div class="nav-header">
+            <h2 style="margin:0; color:#ffc300; font-size: 18px;">AUDITOR PRO</h2>
+            <button class="btn-salir" onclick="logout()">SALIR</button>
+        </div>
+
+        <div class="status-box">
+            <div class="badge">📱 Multimarca</div>
+            <div class="badge">☁️ Sync</div>
+            <div class="badge">📊 Reportes</div>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('registro')">REGISTRO</div>
+            <div class="tab" onclick="switchTab('ventas')">VENTAS</div>
+        </div>
+
+        <div id="tab-registro" class="card">
+            <input type="text" id="prod-nombre" placeholder="Nombre del Producto">
+            <input type="number" id="prod-precio" placeholder="Precio ($)">
+            <select id="prod-categoria">
+                <option value="Smartphones">Smartphones</option>
+                <option value="Accesorios">Accesorios</option>
+                <option value="Servicios">Servicios</option>
+            </select>
+            <button onclick="guardarVenta()">GUARDAR VENTA</button>
+            <div class="clock" id="clock"></div>
+        </div>
+
+        <div id="tab-ventas" class="card hidden">
+            <h3 style="margin:0; font-size: 14px;">Historial Local</h3>
+            <table id="tabla-ventas">
+                <thead>
+                    <tr>
+                        <th>FECHA</th>
+                        <th>PRODUCTO</th>
+                        <th>TOTAL</th>
+                        <th>ACCION</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
-</div><script>
-function actualizarReloj(){
-   const ahora = new Date();
-   document.getElementById('clock').innerText = ahora.toLocaleString('es-MX');
-}
-setInterval(actualizarReloj,1000);
-actualizarReloj();
-</script></body>
+<script>
+    // --- Logic & State ---
+    let ventas = JSON.parse(localStorage.getItem('ventas_data')) || [];
+
+    function login() {
+        const u = document.getElementById('user-input').value;
+        const p = document.getElementById('pass-input').value;
+        if(u === "Omar" && p === "1234") { // Credenciales simples de ejemplo
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-content').classList.remove('hidden');
+            renderVentas();
+        } else {
+            alert("Acceso denegado");
+        }
+    }
+
+    function logout() {
+        location.reload();
+    }
+
+    function switchTab(tab) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('tab-registro').classList.add('hidden');
+        document.getElementById('tab-ventas').classList.add('hidden');
+
+        if(tab === 'registro') {
+            document.querySelectorAll('.tab')[0].classList.add('active');
+            document.getElementById('tab-registro').classList.remove('hidden');
+        } else {
+            document.querySelectorAll('.tab')[1].classList.add('active');
+            document.getElementById('tab-ventas').classList.remove('hidden');
+        }
+    }
+
+    function guardarVenta() {
+        const nombre = document.getElementById('prod-nombre').value;
+        const precio = document.getElementById('prod-precio').value;
+        
+        if(!nombre || !precio) return alert("Completa los campos");
+
+        const ahora = new Date();
+        // Formato DD/MM/YYYY requerido para Excel
+        const fechaFormat = ahora.getDate().toString().padStart(2, '0') + '/' + 
+                          (ahora.getMonth() + 1).toString().padStart(2, '0') + '/' + 
+                          ahora.getFullYear();
+
+        const nuevaVenta = {
+            id: Date.now(),
+            fecha: fechaFormat,
+            producto: nombre,
+            total: precio
+        };
+
+        ventas.push(nuevaVenta);
+        localStorage.setItem('ventas_data', JSON.stringify(ventas));
+        
+        // Limpiar campos
+        document.getElementById('prod-nombre').value = '';
+        document.getElementById('prod-precio').value = '';
+        
+        alert("Venta guardada localmente");
+        renderVentas();
+    }
+
+    function eliminarVenta(id) {
+        ventas = ventas.filter(v => v.id !== id);
+        localStorage.setItem('ventas_data', JSON.stringify(ventas));
+        renderVentas();
+    }
+
+    function renderVentas() {
+        const tbody = document.querySelector('#tabla-ventas tbody');
+        tbody.innerHTML = '';
+        ventas.forEach(v => {
+            const row = `<tr>
+                <td>${v.fecha}</td>
+                <td>${v.producto}</td>
+                <td>$${v.total}</td>
+                <td><button class="btn-del" onclick="eliminarVenta(${v.id})">X</button></td>
+            </tr>`;
+            tbody.innerHTML += row;
+        });
+    }
+
+    function actualizarReloj(){
+        const ahora = new Date();
+        document.getElementById('clock').innerText = ahora.toLocaleString('es-MX');
+    }
+    
+    setInterval(actualizarReloj, 1000);
+    actualizarReloj();
+</script>
+
+</body>
 </html>
