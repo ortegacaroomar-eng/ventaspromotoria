@@ -1,122 +1,209 @@
-<!DOCTYPE html><html lang="es">
+<!DOCTYPE html>
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Ventas Multioperador Pro</title>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1a1a1a">
+    <title>CRM Cambaceo Piloto</title>
     <style>
-        body { margin:0; font-family:'Segoe UI',system-ui; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; }
-        .app { max-width:480px; margin:auto; padding:20px; position:relative; }
-        .card { background:rgba(255,255,255,.08); backdrop-filter:blur(12px); border-radius:18px; padding:18px; margin-bottom:16px; }
-        .header { text-align:center; font-size:20px; font-weight:bold; color:#ffc300; margin-bottom:20px; }
-        input, select { width:100%; padding:12px; margin-top:4px; margin-bottom:12px; border-radius:10px; border:none; background:rgba(255,255,255,.12); color:white; }
-        button { width:100%; padding:14px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; margin-bottom:10px; }
-        .btn-main { background:#ffc300; color:#003566; }
-        .hidden { display:none !important; }
+        :root {
+            --telcel-blue: #003366;
+            --ios-gray: #efeff4;
+            --divider: #d1d1d6;
+        }
+
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            background-color: var(--ios-gray);
+            color: #000;
+            overflow-x: hidden;
+        }
+
+        /* Splash Screen / Login Estilo Nativo */
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 1000; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; padding: 20px;
+        }
+
+        .login-input {
+            width: 100%; max-width: 300px; padding: 15px; margin: 10px 0;
+            border: 1px solid var(--divider); border-radius: 10px; font-size: 16px;
+        }
+
+        .btn-primary {
+            width: 100%; max-width: 300px; background: var(--telcel-blue);
+            color: white; border: none; padding: 15px; border-radius: 10px;
+            font-weight: bold; font-size: 16px; cursor: pointer;
+        }
+
+        /* App Layout */
+        #main-app { display: none; }
+
+        header {
+            background: #2d2d2d; color: white; padding: 12px 15px;
+            display: flex; align-items: center; position: sticky; top: 0; z-index: 100;
+        }
+
+        .header-icon {
+            background: var(--telcel-blue); width: 32px; height: 32px;
+            border-radius: 6px; display: flex; align-items: center;
+            justify-content: center; margin-right: 12px; font-size: 14px;
+        }
+
+        /* Lista de Opciones (Simulando ListView de Android) */
+        .menu-list { background: white; margin-top: 0; }
+
+        .menu-item {
+            display: flex; align-items: center; padding: 16px;
+            border-bottom: 0.5px solid var(--divider);
+            background: white; transition: background 0.1s;
+        }
+
+        .menu-item:active { background: #e5e5ea; }
+
+        .icon-circle {
+            width: 55px; height: 55px; border-radius: 50%;
+            margin-right: 15px; display: flex; align-items: center;
+            justify-content: center; font-size: 24px;
+        }
+
+        /* Footer Técnico Nativo */
+        footer {
+            position: fixed; bottom: 0; width: 100%; background: white;
+            border-top: 1.5px solid var(--telcel-blue);
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            padding: 8px 4px; font-size: 10px; text-align: center;
+            color: #0056b3; font-weight: 600;
+        }
+
+        /* Colores de Iconos basados en tu imagen */
+        .c-orange { background: #fce4d6; color: #e46c0a; }
+        .c-blue { background: #daeef3; color: #31859b; }
+        .c-yellow { background: #fff2cc; color: #d4a017; }
+        .c-grey { background: #eeeeee; color: #7f7f7f; }
+
     </style>
 </head>
 <body>
-<div class="app">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-<div class="header" style="margin-bottom:0;">SISTEMA MULTIOPERADOR</div>
-<button onclick="cerrarSesion()" style="width:auto;background:#ff4d4d;color:white;padding:10px 14px;border:none;border-radius:10px;">Salir</button>
-</div><div class="card">
-<label>COMPAÑÍA</label>
-<select id="compania" onchange="cambiarCompania()">
-<option value="TELCEL">TELCEL</option>
-<option value="ATT">AT&T</option>
-<option value="BAIT">BAIT</option>
-</select><div id="campos"></div>
-<button class="btn-main" onclick="guardarVenta()">GUARDAR</button>
-<canvas id="grafica" style="margin-top:20px;max-height:250px;"></canvas>
+
+<div id="login-screen">
+    <div style="font-size: 40px; margin-bottom: 20px;">📱</div>
+    <h3 style="margin-bottom: 30px; color: var(--telcel-blue)">Cambaceo Piloto 5.0</h3>
+    <input type="text" id="userInput" class="login-input" placeholder="Usuario">
+    <input type="password" id="passInput" class="login-input" placeholder="Password">
+    <button class="btn-primary" onclick="app.login()">ENTRAR</button>
 </div>
-</div><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script>
-function cambiarCompania(){
-   const comp = document.getElementById('compania').value;
-   let html='';
 
-   if(comp==='TELCEL'){
-      html=`
-      <select id="tipo">
-        <option value="KIT">KIT</option>
-        <option value="CHIP">CHIP</option>
-        <option value="PORTA">PORTA</option>
-        <option value="RENUEVATE">RENUEVATE</option>
-      </select>
-      <input placeholder="Fecha activación" id="fecha">
-      <input placeholder="Número celular" id="numero">
-      <input placeholder="ICCID" id="iccid">
-      <input placeholder="IMEI" id="imei">
-      <input placeholder="Marca" id="marca">
-      <input placeholder="Modelo" id="modelo">
-      <input placeholder="Promotor" id="promotor">
-      `;
-   } else {
-      html=`
-      <input placeholder="Marca" id="marca">
-      <input placeholder="Modelo" id="modelo">
-      <input placeholder="ICCID" id="iccid">
-      <input placeholder="Número" id="numero">
-      `;
-   }
+<div id="main-app">
+    <header>
+        <div class="header-icon">📞</div>
+        <div style="font-size: 13px; letter-spacing: 0.5px;">Portabilidad 5 23OECO9711...</div>
+    </header>
 
-   document.getElementById('campos').innerHTML = html;
-}
+    <div class="menu-list">
+        <div class="menu-item" onclick="app.vibrate()">
+            <div class="icon-circle c-orange">🕒</div>
+            <div class="label">Check</div>
+        </div>
 
-let chart;
-let ventasGuardadas = JSON.parse(localStorage.getItem('ventasMulti') || '[]');
-let stats={TELCEL:0,ATT:0,BAIT:0};
+        <div class="menu-item" onclick="app.vibrate()">
+            <div class="icon-circle c-orange">📄</div>
+            <div class="label">Iniciar Portabilidad</div>
+        </div>
 
-function guardarVenta(){
-   const comp=document.getElementById('compania').value;
-   ventasGuardadas.push({comp:comp, fecha:Date.now()});
-   localStorage.setItem('ventasMulti', JSON.stringify(ventasGuardadas));
-   const comp=document.getElementById('compania').value;
-   stats[comp]++; localStorage.setItem('statsMulti', JSON.stringify(stats));
-   actualizarGrafica();
-   alert('Venta guardada correctamente');
-}
+        <div class="menu-item" onclick="app.vibrate()">
+            <div class="icon-circle c-grey">📟</div>
+            <div class="label">Activaciones Prepago BES</div>
+        </div>
 
-function actualizarGrafica(){
-   const ctx=document.getElementById('grafica').getContext('2d');
+        <div class="menu-item" onclick="app.vibrate()">
+            <div class="icon-circle c-blue">🎁</div>
+            <div class="label">Promotoría</div>
+        </div>
 
-   if(chart) chart.destroy();
+        <div class="menu-item" onclick="app.registrarVenta()">
+            <div class="icon-circle c-yellow">💾</div>
+            <div class="label"><b>Registrar Venta Local</b></div>
+        </div>
 
-   chart = new Chart(ctx,{ 
-      type:'bar',
-      data:{
-         labels:['TELCEL','AT&T','BAIT'],
-         datasets:[{
-            label:'Ventas',
-            data:[stats.TELCEL,stats.ATT,stats.BAIT]
-         }]
-      },
-      options:{
-         responsive:true,
-         plugins:{
-            legend:{labels:{color:'white'}}
-         },
-         scales:{
-            y:{beginAtZero:true,ticks:{color:'white'}},
-            x:{ticks:{color:'white'}}
-         }
-      }
-   });
-}
+        <div class="menu-item" onclick="app.vibrate()">
+            <div class="icon-circle c-blue">🛡️</div>
+            <div class="label">Protección Movil</div>
+        </div>
 
-const savedStats = JSON.parse(localStorage.getItem('statsMulti') || '{}');
-if(savedStats.TELCEL !== undefined){
-   stats = savedStats;
-}
-actualizarGrafica();
-function cerrarSesion(){
-   alert('Aquí conecta tu lógica real de logout Firebase');
-}
+        <div class="menu-item" onclick="app.logout()">
+            <div class="icon-circle c-orange">🔒</div>
+            <div class="label">Cerrar Sesión</div>
+        </div>
+    </div>
 
-cambiarCompania();
-</script></body>
+    <div style="height: 60px;"></div> <footer>
+        <div>Región 9</div>
+        <div>8889</div>
+        <div>CBA4029</div>
+        <div>v5.0.0</div>
+    </footer>
+</div>
+
+<script>
+    const app = {
+        // Manejo de Sesión Nativa
+        login: function() {
+            const user = document.getElementById('userInput').value;
+            if(user) {
+                localStorage.setItem('session_active', 'true');
+                localStorage.setItem('user_id', user);
+                this.init();
+            }
+        },
+
+        logout: function() {
+            if(confirm("¿Cerrar sesión de Cambaceo Piloto?")) {
+                localStorage.clear();
+                location.reload();
+            }
+        },
+
+        // Registro de datos para Excel DD/MM/YYYY
+        registrarVenta: function() {
+            this.vibrate();
+            const now = new Date();
+            const fechaExcel = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`;
+            
+            const datosVenta = {
+                fecha: fechaExcel,
+                package: "com.telcel.crm.cambaceo.piloto",
+                uid: "10286",
+                vendedor: "8889"
+            };
+
+            let storage = JSON.parse(localStorage.getItem('ventas_locales')) || [];
+            storage.push(datosVenta);
+            localStorage.setItem('ventas_locales', JSON.stringify(storage));
+
+            alert("Venta guardada localmente.\nFecha: " + fechaExcel);
+        },
+
+        // Simulación de feedback háptico (Permiso android.permission.VIBRATE)
+        vibrate: function() {
+            if (navigator.vibrate) navigator.vibrate(15);
+        },
+
+        init: function() {
+            if(localStorage.getItem('session_active')) {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-app').style.display = 'block';
+            }
+        }
+    };
+
+    // Al cargar, verificar si hay sesión (como en una app real)
+    window.onload = () => app.init();
+</script>
+
+</body>
 </html>
