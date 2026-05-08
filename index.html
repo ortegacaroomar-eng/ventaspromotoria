@@ -10,7 +10,6 @@
       font-family: Arial, sans-serif;
       background: linear-gradient(135deg,#001d3d,#003566,#000814);
       color: white;
-      min-height: 100vh;
     }
     .container {
       max-width: 1100px;
@@ -24,40 +23,24 @@
       padding: 20px;
       margin-bottom: 20px;
       box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-      border: 1px solid rgba(255,255,255,0.1);
     }
     h1 {
       text-align: center;
       color: #ffc300;
-      text-transform: uppercase;
-      letter-spacing: 2px;
     }
     input, select, button {
       width: 100%;
       padding: 12px;
       border-radius: 10px;
-      border: 1px solid #ccc;
+      border: none;
       margin-bottom: 12px;
       box-sizing: border-box;
-      font-size: 16px;
-    }
-    input:focus {
-      outline: 2px solid #ffc300;
-      border: none;
     }
     button {
       background: #ffc300;
       color: #001d3d;
       font-weight: bold;
       cursor: pointer;
-      transition: background 0.3s;
-      border: none;
-    }
-    button:hover {
-      background: #e5b000;
-    }
-    .table-container {
-      overflow-x: auto;
     }
     table {
       width: 100%;
@@ -68,97 +51,85 @@
       overflow: hidden;
     }
     th {
-      background: #000814;
-      color: #ffc300;
+      background: black;
+      color: white;
       padding: 12px;
-      text-align: left;
     }
     td {
       padding: 10px;
       border-bottom: 1px solid #ddd;
-    }
-    tr:hover {
-      background-color: #f1f1f1;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Sistema Ventas Telcel Pro</h1>
-
+    
     <div class="card">
       <h3>Registro rápido de ventas</h3>
-      <input type="number" id="numero" placeholder="Número celular (10 dígitos)" />
-      <input type="text" id="iccid" placeholder="ICCID (Fila de atrás del chip)" />
-      <input type="text" id="imei" placeholder="IMEI del equipo" />
-      <select id="tipo">
-        <option value="KIT">KIT</option>
-        <option value="CHIP">CHIP</option>
-        <option value="PORTA">PORTA</option>
-        <option value="RENUEVATE">RENUEVATE</option>
+      <input id="num" placeholder="Número celular" />
+      <input id="icc" placeholder="ICCID" />
+      <input id="ime" placeholder="IMEI" />
+      <select id="tip">
+        <option>KIT</option>
+        <option>CHIP</option>
+        <option>PORTA</option>
+        <option>RENUEVATE</option>
       </select>
-      <button onclick="guardarVenta()">Guardar venta</button>
+      <button onclick="registrar()">Guardar venta</button>
     </div>
 
     <div class="card">
-      <h3>Reporte de Ventas del Día</h3>
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Número</th>
-              <th>ICCID</th>
-              <th>IMEI</th>
-              <th>Tipo</th>
-              <th>Fecha</th>
-            </tr>
-          </thead>
-          <tbody id="tablaVentas">
-            </tbody>
-        </table>
-      </div>
+      <h3>Reporte</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>ICCID</th>
+            <th>IMEI</th>
+            <th>Tipo</th>
+          </tr>
+        </thead>
+        <tbody id="tablaVentas">
+          <tr>
+            <td>5512345678</td>
+            <td>8952...</td>
+            <td>3567...</td>
+            <td>KIT</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
   <script>
-    function guardarVenta() {
-      // Obtenemos los valores
-      const numero = document.getElementById('numero').value;
-      const iccid = document.getElementById('iccid').value;
-      const imei = document.getElementById('imei').value;
-      const tipo = document.getElementById('tipo').value;
-      
-      // Formato de fecha solicitado DD/MM/YYYY
-      const hoy = new Date();
-      const fechaFormateada = hoy.toLocaleDateString('es-MX');
+    function registrar() {
+      // Captura de datos
+      const numero = document.getElementById('num').value;
+      const iccid = document.getElementById('icc').value;
+      const imei = document.getElementById('ime').value;
+      const tipo = document.getElementById('tip').value;
 
-      // Validamos que los campos no estén vacíos
-      if (numero === "" || iccid === "" || imei === "") {
-        alert("Por favor, completa todos los campos.");
+      if(numero === "" || iccid === "" || imei === "") {
+        alert("Llena todos los campos");
         return;
       }
 
-      // Referencia a la tabla
+      // Insertar en la tabla
       const tabla = document.getElementById('tablaVentas');
+      const fila = tabla.insertRow();
 
-      // Creamos una nueva fila
-      const nuevaFila = tabla.insertRow();
-
-      // Insertamos las celdas
-      nuevaFila.innerHTML = `
+      fila.innerHTML = `
         <td>${numero}</td>
         <td>${iccid}</td>
         <td>${imei}</td>
-        <td><strong>${tipo}</strong></td>
-        <td>${fechaFormateada}</td>
+        <td>${tipo}</td>
       `;
 
-      // Limpiamos los campos para la siguiente venta
-      document.getElementById('numero').value = "";
-      document.getElementById('iccid').value = "";
-      document.getElementById('imei').value = "";
-      
-      console.log("Venta guardada con éxito.");
+      // Limpiar inputs
+      document.getElementById('num').value = "";
+      document.getElementById('icc').value = "";
+      document.getElementById('ime').value = "";
     }
   </script>
 </body>
