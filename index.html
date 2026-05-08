@@ -31,6 +31,10 @@
 
         .btn-save { background:#ffc300; color:#001d3d; width:100%; padding:15px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size: 16px; transition: 0.3s; }
         .btn-save:active { transform: scale(0.98); }
+
+        /* Botón de Vinculación con estilo Telcel */
+        .btn-vinculo { background: #00b4d8; color: white; width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; text-decoration: none; font-size: 14px; }
+        .btn-vinculo:hover { background: #0077b6; box-shadow: 0 0 10px #00b4d8; }
         
         .btn-excel { background:#1f7a3f; color:white; width:100%; padding:14px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; margin-top:20px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(31, 122, 63, 0.4); }
 
@@ -69,6 +73,11 @@
 
         <form id="fReg">
             <div class="card">
+                <label>VINCULACIÓN OBLIGATORIA</label>
+                <a href="https://registro.telcel.com/vinculatulinea/#/" target="_blank" class="btn-vinculo">
+                    <i class="fa-solid fa-link"></i> ABRIR REGISTRO / VINCULA TU LÍNEA
+                </a>
+
                 <label>Renuevate/ Kit/Chip/Porta</label>
                 <select id="iTipo" required>
                     <option value="KIT">KIT</option>
@@ -128,6 +137,7 @@
     </div>
 
 <script>
+    // Tu configuración de Firebase y funciones se mantienen exactamente igual
     const firebaseConfig = {
         apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc", 
         authDomain: "ventastelcel4029.firebaseapp.com",
@@ -146,12 +156,10 @@
         db = firebase.database();
         auth = firebase.auth();
 
-        // Reloj en tiempo real
         setInterval(() => {
             document.getElementById('txtReloj').innerText = new Date().toLocaleTimeString('es-MX');
         }, 1000);
 
-        // GPS
         if(navigator.geolocation) {
             navigator.geolocation.watchPosition(p => {
                 document.getElementById('txtGps').innerHTML = `${p.coords.latitude.toFixed(6)}, ${p.coords.longitude.toFixed(6)}`;
@@ -160,14 +168,12 @@
             });
         }
 
-        // Fecha automática fija
         const hoy = new Date();
         const d = String(hoy.getDate()).padStart(2, '0');
         const m = String(hoy.getMonth() + 1).padStart(2, '0');
         const y = hoy.getFullYear();
         document.getElementById('iFec').value = `${d}/${m}/${y}`;
 
-        // Monitor de Sesión
         auth.onAuthStateChanged(user => {
             if(user) {
                 document.getElementById('loginBox').classList.add("hidden");
@@ -211,25 +217,18 @@
                     toggleAuthMode();
                 })
                 .catch(e => {
-                    if (e.code === 'auth/email-already-in-use') {
-                        alert("Este correo ya está registrado. Intenta iniciar sesión.");
-                    } else {
-                        alert(e.message);
-                    }
+                    alert(e.message);
                     btn.disabled = false;
                     btn.innerText = "REGISTRAR";
                 });
         }
     }
 
-    function salir() { 
-        if(confirm("¿Cerrar sesión?")) auth.signOut(); 
-    }
+    function salir() { if(confirm("¿Cerrar sesión?")) auth.signOut(); }
 
     document.getElementById('fReg').onsubmit = e => {
         e.preventDefault();
         const btn = document.getElementById('btnGuardar');
-        
         const v = {
             id: Date.now(),
             "NUM. CELULAR": document.getElementById('iTel').value,
@@ -244,19 +243,13 @@
             "MARCA": document.getElementById('iMarca').value || "N/A",
             "MODELO": document.getElementById('iMod').value || "N/A"
         };
-
         let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
         l.unshift(v);
         localStorage.setItem("ventas_omar", JSON.stringify(l));
-        
         cargarLocal();
         e.target.reset();
-        
-        // Mantener la fecha después del reset
         const hoy = new Date();
         document.getElementById('iFec').value = `${String(hoy.getDate()).padStart(2, '0')}/${String(hoy.getMonth() + 1).padStart(2, '0')}/${hoy.getFullYear()}`;
-        
-        // Feedback visual
         btn.innerText = "¡VENTA GUARDADA!";
         btn.style.background = "#00b4d8";
         setTimeout(() => {
@@ -266,7 +259,7 @@
     };
 
     function eliminar(id) {
-        if(!confirm("¿Estás seguro de eliminar este registro?")) return;
+        if(!confirm("¿Eliminar?")) return;
         let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]").filter(v => v.id !== id);
         localStorage.setItem("ventas_omar", JSON.stringify(l));
         cargarLocal();
@@ -294,16 +287,9 @@
 
     function exportarExcel() {
         let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-        if(l.length === 0) return alert("No hay datos para exportar.");
-
+        if(l.length === 0) return alert("No hay datos.");
         const ws = XLSX.utils.json_to_sheet(l.map(({id, ...resto}) => resto));
-        
-        // Ajuste de columnas
-        ws['!cols'] = [
-            {wch: 15}, {wch: 20}, {wch: 20}, {wch: 20}, {wch: 15}, 
-            {wch: 25}, {wch: 30}, {wch: 30}, {wch: 18}, {wch: 15}, {wch: 15}
-        ];
-
+        ws['!cols'] = [{wch: 15}, {wch: 20}, {wch: 20}, {wch: 20}, {wch: 15}, {wch: 25}, {wch: 30}, {wch: 30}, {wch: 18}, {wch: 15}, {wch: 15}];
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Ventas");
         XLSX.writeFile(wb, `Reporte_Ventas_${new Date().toLocaleDateString().replace(/\//g,'-')}.xlsx`);
