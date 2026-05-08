@@ -27,8 +27,8 @@
         .login-box input { width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #ccc; background:#f9f9f9; color:#000; box-sizing: border-box; font-size: 14px; }
 
         .btn-save { background:#ffc300; color:#001d3d; width:100%; padding:15px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size: 16px; margin-bottom: 10px; }
-        .btn-new { background:#00b4d8; color:white; width:100%; padding:12px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; margin-bottom: 10px; }
-        .btn-excel { background:#1f7a3f; color:white; width:100%; padding:14px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; margin-top:20px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(31, 122, 63, 0.4); }
+        .btn-new { background:#00b4d8; color:white; width:100%; padding:12px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; margin-bottom: 15px; display: block; text-align: center; text-decoration: none; }
+        .btn-excel { background:#1f7a3f; color:white; width:100%; padding:14px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; margin-top:20px; display: flex; align-items: center; justify-content: center; gap: 10px; }
 
         .table-container { overflow-x: auto; background: white; border-radius: 10px; margin-top: 20px; }
         table { width: 100%; border-collapse: collapse; color: #333; font-size: 11px; min-width: 1000px; }
@@ -37,7 +37,7 @@
         tr:nth-child(even) { background: #f9f9f9; }
 
         .hidden { display: none !important; }
-        .login-box { max-width: 350px; margin: 100px auto; background: white; padding: 30px; border-radius: 20px; text-align: center; color: #000; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .login-box { max-width: 350px; margin: 80px auto; background: white; padding: 30px; border-radius: 20px; text-align: center; color: #000; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
         .btn-link-auth { background: none; border: none; color: #003566; font-size: 13px; text-decoration: underline; cursor: pointer; margin-top: 15px; font-weight: bold; }
     </style>
 </head>
@@ -62,11 +62,11 @@
             <div class="btn-exit" onclick="salir()"><i class="fa-solid fa-power-off"></i></div>
         </div>
 
-        <form id="fReg">
-            <button type="button" class="btn-new" onclick="nuevoRegistro()">
-                <i class="fa-solid fa-user-plus"></i> NUEVO USUARIO / LIMPIAR
-            </button>
+        <button type="button" class="btn-new" onclick="nuevoRegistro()">
+            <i class="fa-solid fa-user-plus"></i> NUEVO REGISTRO / LIMPIAR
+        </button>
 
+        <form id="fReg">
             <div class="card">
                 <label>Renuevate/ Kit/Chip/Porta</label>
                 <select id="iTipo" required>
@@ -75,8 +75,8 @@
                     <option value="PORTA">PORTA</option>
                     <option value="RENUEVATE">RENUEVATE</option>
                 </select>
-                <label>FECHA DE ACTIVACION (DD/MM/YYYY)</label>
-                <input id="iFec" placeholder="07/05/2026" required>
+                <label>FECHA DE ACTIVACION</label>
+                <input id="iFec" required>
                 <label>NUM. CELULAR</label>
                 <input id="iTel" type="tel" required maxlength="10">
                 <label>ICCID</label>
@@ -110,14 +110,14 @@
                         <th>NUM. CELULAR</th>
                         <th>IMEI</th>
                         <th>ICCID</th>
-                        <th>Renuevate/ Kit/Chip/Porta</th>
-                        <th>#TIENDA / Determinante</th>
-                        <th>SOLO NOMBRE DE LA CADENA</th>
-                        <th>SOLO NOMBRE DE TIENDA SIN CADENA</th>
-                        <th>NOMBRE COMPLETO PROMOTOR</th>
-                        <th>FECHA DE ACTIVACION</th>
-                        <th>MARCA</th>
-                        <th>MODELO</th>
+                        <th>Tipo</th>
+                        <th>#Tienda</th>
+                        <th>Cadena</th>
+                        <th>Tienda</th>
+                        <th>Promotor</th>
+                        <th>Fecha</th>
+                        <th>Marca</th>
+                        <th>Modelo</th>
                         <th style="background:red !important">X</th>
                     </tr>
                 </thead>
@@ -137,22 +137,13 @@
         appId: "1:480758010888:web:e948c54f0217536aa9adbd"
     };
 
-    let db, auth;
+    let auth;
     let isLoginMode = true;
-
-    // Formato de fecha solicitado DD/MM/YYYY
-    function obtenerFechaHoy() {
-        const hoy = new Date();
-        const d = String(hoy.getDate()).padStart(2, '0');
-        const m = String(hoy.getMonth() + 1).padStart(2, '0');
-        const y = hoy.getFullYear();
-        return `${d}/${m}/${y}`;
-    }
 
     function inicio() {
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        db = firebase.database();
         auth = firebase.auth();
+        
         setInterval(() => document.getElementById('txtReloj').innerText = new Date().toLocaleTimeString('es-MX'), 1000);
         
         if(navigator.geolocation) {
@@ -161,24 +152,17 @@
             });
         }
 
-        document.getElementById('iFec').value = obtenerFechaHoy();
-
         auth.onAuthStateChanged(user => {
             if(user) {
                 document.getElementById('loginBox').classList.add("hidden");
                 document.getElementById('appBox').classList.remove("hidden");
+                document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX');
                 cargarLocal();
             } else {
                 document.getElementById('loginBox').classList.remove("hidden");
                 document.getElementById('appBox').classList.add("hidden");
             }
         });
-    }
-
-    function nuevoRegistro() {
-        document.getElementById('fReg').reset();
-        document.getElementById('iFec').value = obtenerFechaHoy();
-        alert("Formulario listo para nuevo usuario.");
     }
 
     function toggleAuthMode() {
@@ -189,41 +173,56 @@
     }
 
     function manejarAuth() {
-        const u = document.getElementById('u').value;
-        const p = document.getElementById('p').value;
-        if(!u || !p) return alert("Llena los campos");
-        if(isLoginMode) { auth.signInWithEmailAndPassword(u, p).catch(e => alert(e.message)); }
-        else { auth.createUserWithEmailAndPassword(u, p).then(() => { alert("Registrado"); toggleAuthMode(); }).catch(e => alert(e.message)); }
+        const u = document.getElementById('u').value.trim();
+        const p = document.getElementById('p').value.trim();
+        if(!u || !p) return alert("Por favor escribe correo y contraseña");
+        
+        if(isLoginMode) {
+            auth.signInWithEmailAndPassword(u, p).catch(e => {
+                console.error(e);
+                alert("Error: Correo o contraseña incorrectos.");
+            });
+        } else {
+            auth.createUserWithEmailAndPassword(u, p).then(() => {
+                alert("Cuenta creada con éxito");
+                toggleAuthMode();
+            }).catch(e => alert("Error al registrar: " + e.message));
+        }
     }
 
     function salir() { auth.signOut(); }
+
+    function nuevoRegistro() {
+        document.getElementById('fReg').reset();
+        document.getElementById('iFec').value = new Date().toLocaleDateString('es-MX');
+    }
 
     document.getElementById('fReg').onsubmit = e => {
         e.preventDefault();
         const v = {
             id: Date.now(),
-            "NUM. CELULAR": document.getElementById('iTel').value,
-            "IMEI": document.getElementById('iIme').value || "N/A",
-            "ICCID": document.getElementById('iIcc').value,
-            "Renuevate/ Kit/Chip/Porta": document.getElementById('iTipo').value,
-            "#TIENDA / Determinante": document.getElementById('iTiendaNum').value,
-            "SOLO NOMBRE DE LA CADENA": document.getElementById('iCadena').value,
-            "SOLO NOMBRE DE TIENDA SIN CADENA": document.getElementById('iTiendaNombre').value,
-            "NOMBRE COMPLETO PROMOTOR": document.getElementById('iProm').value,
-            "FECHA DE ACTIVACION": document.getElementById('iFec').value,
-            "MARCA": document.getElementById('iMarca').value || "N/A",
-            "MODELO": document.getElementById('iMod').value || "N/A"
+            tel: document.getElementById('iTel').value,
+            imei: document.getElementById('iIme').value || "N/A",
+            iccid: document.getElementById('iIcc').value,
+            tipo: document.getElementById('iTipo').value,
+            tNum: document.getElementById('iTiendaNum').value,
+            cadena: document.getElementById('iCadena').value,
+            tNom: document.getElementById('iTiendaNombre').value,
+            prom: document.getElementById('iProm').value,
+            fecha: document.getElementById('iFec').value,
+            marca: document.getElementById('iMarca').value || "N/A",
+            modelo: document.getElementById('iMod').value || "N/A"
         };
-        
         let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
         l.unshift(v);
         localStorage.setItem("ventas_omar", JSON.stringify(l));
         cargarLocal();
-        nuevoRegistro(); // Limpia y resetea fecha tras guardar
+        nuevoRegistro();
+        alert("Venta guardada correctamente");
     };
 
     function eliminar(id) {
-        if(!confirm("¿Borrar?")) return;
+        if(!confirm("¿Borrar esta venta?")) return;
         let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]").filter(v => v.id !== id);
         localStorage.setItem("ventas_omar", JSON.stringify(l));
         cargarLocal();
@@ -233,17 +232,10 @@
         let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
         document.getElementById('bodyVentas').innerHTML = l.map(v => `
             <tr>
-                <td>${v["NUM. CELULAR"]}</td>
-                <td>${v.IMEI}</td>
-                <td>${v.ICCID}</td>
-                <td>${v["Renuevate/ Kit/Chip/Porta"]}</td>
-                <td>${v["#TIENDA / Determinante"]}</td>
-                <td>${v["SOLO NOMBRE DE LA CADENA"]}</td>
-                <td>${v["SOLO NOMBRE DE TIENDA SIN CADENA"]}</td>
-                <td>${v["NOMBRE COMPLETO PROMOTOR"]}</td>
-                <td>${v["FECHA DE ACTIVACION"]}</td>
-                <td>${v.MARCA}</td>
-                <td>${v.MODELO}</td>
+                <td>${v.tel}</td><td>${v.imei}</td><td>${v.iccid}</td>
+                <td>${v.tipo}</td><td>${v.tNum}</td><td>${v.cadena}</td>
+                <td>${v.tNom}</td><td>${v.prom}</td><td>${v.fecha}</td>
+                <td>${v.marca}</td><td>${v.modelo}</td>
                 <td><i class="fa fa-trash" style="color:red;cursor:pointer" onclick="eliminar(${v.id})"></i></td>
             </tr>
         `).join("");
@@ -251,23 +243,16 @@
 
     function exportarExcel() {
         let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-        if(l.length === 0) return alert("No hay datos");
-
-        const ws = XLSX.utils.json_to_sheet(l, { header: [
-            "NUM. CELULAR", "IMEI", "ICCID", "Renuevate/ Kit/Chip/Porta", 
-            "#TIENDA / Determinante", "SOLO NOMBRE DE LA CADENA", 
-            "SOLO NOMBRE DE TIENDA SIN CADENA", "NOMBRE COMPLETO PROMOTOR", 
-            "FECHA DE ACTIVACION", "MARCA", "MODELO"
-        ]});
-
-        ws['!cols'] = [
-            {wch: 18}, {wch: 22}, {wch: 22}, {wch: 25}, {wch: 22}, 
-            {wch: 28}, {wch: 38}, {wch: 32}, {wch: 20}, {wch: 15}, {wch: 15}
-        ];
-
+        if(l.length === 0) return alert("No hay ventas para exportar");
+        const ws = XLSX.utils.json_to_sheet(l.map(v => ({
+            "NUM. CELULAR": v.tel, "IMEI": v.imei, "ICCID": v.iccid,
+            "TIPO": v.tipo, "# TIENDA": v.tNum, "CADENA": v.cadena,
+            "TIENDA": v.tNom, "PROMOTOR": v.prom, "FECHA": v.fecha,
+            "MARCA": v.marca, "MODELO": v.modelo
+        })));
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Ventas");
-        XLSX.writeFile(wb, `Reporte_Ventas_${obtenerFechaHoy().replace(/\//g,'-')}.xlsx`);
+        XLSX.writeFile(wb, "Ventas_Omar_Ortega.xlsx");
     }
 </script>
 </body>
