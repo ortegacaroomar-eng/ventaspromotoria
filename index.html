@@ -3,169 +3,136 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Video Player Local</title>
+<title>MiTube Pro</title>
 
 <style>
 body{
     margin:0;
-    background:#0f0f0f;
-    font-family:Arial,sans-serif;
+    background:#0d0d0d;
     color:white;
+    font-family:Arial;
 }
-
 .container{
-    max-width:1000px;
+    max-width:1100px;
     margin:auto;
     padding:20px;
 }
-
-.player{
+video,audio{
+    width:100%;
     background:black;
     border-radius:12px;
-    overflow:hidden;
-    box-shadow:0 0 20px rgba(0,0,0,.5);
 }
-
-video{
-    width:100%;
-    max-height:550px;
-    background:black;
-}
-
 .controls{
+    padding:10px;
     display:flex;
-    align-items:center;
     gap:10px;
-    padding:12px;
-    background:#181818;
+    align-items:center;
 }
-
 button{
-    background:#ff0000;
+    background:red;
     border:none;
+    padding:10px 15px;
     color:white;
-    padding:10px 14px;
     border-radius:8px;
-    cursor:pointer;
-    font-weight:bold;
 }
-
-button:hover{
-    background:#cc0000;
-}
-
-input[type="range"]{
-    flex:1;
-}
-
 .playlist{
     margin-top:20px;
     background:#181818;
     padding:15px;
     border-radius:12px;
 }
-
-.video-item{
-    padding:10px;
+.item{
+    padding:12px;
     border-bottom:1px solid #333;
     cursor:pointer;
 }
-
-.video-item:hover{
-    background:#252525;
+.item:hover{
+    background:#222;
+}
+.info{
+    margin-top:10px;
+    color:#aaa;
 }
 </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>MiTube Player</h1>
+    <h1>MiTube Pro Media Player</h1>
 
-    <input type="file" id="fileInput" accept="video/*" multiple>
+    <input type="file" id="picker" multiple
+    accept=".mp4,.mkv,.webm,.mov,.avi,.mp3,.wav,.flac,.aac,.ogg,.m4a,.opus,.alac">
 
-    <div class="player">
-        <video id="video" controls></video>
+    <video id="videoPlayer" controls></video>
+    <audio id="audioPlayer" controls style="display:none;"></audio>
 
-        <div class="controls">
-            <button onclick="togglePlay()">▶ / ⏸</button>
-            <input type="range" id="progress" value="0" min="0" max="100">
-            <input type="range" id="volume" min="0" max="1" step="0.1" value="1">
-            <button onclick="fullscreen()">⛶</button>
-        </div>
-    </div>
+    <div class="info" id="fileInfo">Sin archivo</div>
 
     <div class="playlist" id="playlist">
-        <h3>Videos cargados</h3>
+        <h3>Biblioteca local</h3>
     </div>
 </div>
 
 <script>
-const video = document.getElementById("video");
-const fileInput = document.getElementById("fileInput");
+const picker = document.getElementById("picker");
 const playlist = document.getElementById("playlist");
-const progress = document.getElementById("progress");
-const volume = document.getElementById("volume");
+const videoPlayer = document.getElementById("videoPlayer");
+const audioPlayer = document.getElementById("audioPlayer");
+const fileInfo = document.getElementById("fileInfo");
 
-let videos = [];
+let filesList = [];
 
-fileInput.addEventListener("change", function(e){
+picker.addEventListener("change", (e)=>{
     const files = Array.from(e.target.files);
 
     files.forEach(file=>{
-        const url = URL.createObjectURL(file);
-
-        videos.push({
+        filesList.push({
             name:file.name,
-            url:url
+            type:file.type,
+            size:(file.size/1024/1024).toFixed(2)+" MB",
+            url:URL.createObjectURL(file)
         });
-
-        renderPlaylist();
     });
 
-    if(!video.src && videos.length > 0){
-        loadVideo(0);
+    renderList();
+
+    if(filesList.length > 0){
+        openFile(0);
     }
 });
 
-function renderPlaylist(){
-    playlist.innerHTML = "<h3>Videos cargados</h3>";
+function renderList(){
+    playlist.innerHTML = "<h3>Biblioteca local</h3>";
 
-    videos.forEach((item,index)=>{
+    filesList.forEach((file,index)=>{
         const div = document.createElement("div");
-        div.className = "video-item";
-        div.innerText = item.name;
-        div.onclick = ()=>loadVideo(index);
+        div.className = "item";
+        div.innerHTML = file.name;
+        div.onclick = ()=>openFile(index);
         playlist.appendChild(div);
     });
 }
 
-function loadVideo(index){
-    video.src = videos[index].url;
-    video.play();
-}
+function openFile(index){
+    const file = filesList[index];
 
-function togglePlay(){
-    if(video.paused){
-        video.play();
-    }else{
-        video.pause();
+    fileInfo.innerHTML = `
+        Archivo: ${file.name}<br>
+        Tipo: ${file.type || "desconocido"}<br>
+        Tamaño: ${file.size}
+    `;
+
+    if(file.type.startsWith("audio")){
+        videoPlayer.style.display="none";
+        audioPlayer.style.display="block";
+        audioPlayer.src = file.url;
+        audioPlayer.play();
+    } else {
+        audioPlayer.style.display="none";
+        videoPlayer.style.display="block";
+        videoPlayer.src = file.url;
+        videoPlayer.play();
     }
-}
-
-video.addEventListener("timeupdate", ()=>{
-    progress.value = (video.currentTime / video.duration) * 100 || 0;
-});
-
-progress.addEventListener("input", ()=>{
-    video.currentTime = (progress.value / 100) * video.duration;
-});
-
-volume.addEventListener("input", ()=>{
-    video.volume = volume.value;
-});
-
-function fullscreen(){
-    video.requestFullscreen();
 }
 </script>
 
