@@ -44,7 +44,9 @@
           
         .app input, .app select { width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; outline: none; }  
         .app input:focus { background: rgba(255,255,255,0.2); border: 1px solid #ffc300; }  
-          
+        
+        .app input[type="date"]::-calendar-picker-indicator { filter: invert(1); cursor: pointer; }  
+
         .login-box input { width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #ccc; background:#f9f9f9; color:#000; box-sizing: border-box; font-size: 14px; }  
 
         .btn-save { background:#ffc300; color:#001d3d; width:100%; padding:15px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size: 16px; transition: 0.3s; }  
@@ -52,6 +54,10 @@
 
         .btn-vinculo { background: #00b4d8; color: white; width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; text-decoration: none; font-size: 14px; }  
         .btn-vinculo:hover { background: #0077b6; box-shadow: 0 0 10px #00b4d8; }  
+
+        /* Estilo personalizado para el botón de PayJoy */  
+        .btn-payjoy { background: #4a00e0; color: white; width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; text-decoration: none; font-size: 14px; box-shadow: 0 4px 10px rgba(74, 0, 224, 0.3); }  
+        .btn-payjoy:hover { background: #3f00c5; box-shadow: 0 0 12px #4a00e0; }  
           
         .btn-excel { background:#1f7a3f; color:white; width:100%; padding:14px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; margin-top:20px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(31, 122, 63, 0.4); }  
 
@@ -64,7 +70,7 @@
         .hidden { display: none !important; }  
         .login-box { max-width: 350px; margin: 100px auto; background: white; padding: 30px; border-radius: 20px; text-align: center; color: #000; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }  
         .btn-link-auth { background: none; border: none; color: #003566; font-size: 13px; text-decoration: underline; cursor: pointer; margin-top: 15px; font-weight: bold; }  
-    </style>
+    </style>  
 </head>  
 <body onload="inicio()">  
 
@@ -87,7 +93,7 @@
         <div class="btn-exit" onclick="salir()" title="Cerrar Sesión"><i class="fa-solid fa-power-off"></i></div>  
     </div>  
 
-    <!-- Gráfica Interactiva de Avance / Ventas Totales -->  
+    <!-- Gráfica Interactiva de Avance de Ventas -->  
     <div class="panel-avance">  
         <h4><i class="fa-solid fa-chart-line"></i> Gráfica de Avance de Ventas</h4>  
         <div class="contenedor-graficas">  
@@ -106,7 +112,7 @@
         </div>  
     </div>  
 
-    <!-- Menú Dinámico de Operadores -->  
+    <!-- Menú de Operadores -->  
     <div class="menu-operadores">  
         <button class="tab-btn tab-telcel active" onclick="cambiarOperador('TELCEL')"><i class="fa-solid fa-phone"></i> TELCEL</button>  
         <button class="tab-btn tab-att" onclick="cambiarOperador('AT&T')"><i class="fa-solid fa-signal"></i> AT&T</button>  
@@ -117,11 +123,19 @@
         <input type="hidden" id="iOperador" value="TELCEL">  
         
         <div class="card">  
-            <!-- Vinculación exclusiva Telcel -->  
+            <!-- Vinculación obligatoria Telcel -->  
             <div id="wrapperVinculo">  
                 <label>VINCULACIÓN OBLIGATORIA</label>  
                 <a href="https://registro.telcel.com/vinculatulinea/#/" target="_blank" class="btn-vinculo">  
                     <i class="fa-solid fa-link"></i> ABRIR REGISTRO / VINCULA TU LÍNEA  
+                </a>  
+            </div>  
+
+            <!-- Nuevo enlace directo a PayJoy -->  
+            <div id="wrapperPayJoy">  
+                <label>FINANCIAMIENTO DE EQUIPOS</label>  
+                <a href="https://app.payjoy.com/accounts/login?afterLogin=https://app.payjoy.com/merchant3?merchantId=199557" target="_blank" class="btn-payjoy">  
+                    <i class="fa-solid fa-hand-holding-dollar"></i> PLATAFORMA PAYJOY  
                 </a>  
             </div>  
 
@@ -135,8 +149,8 @@
                 </select>  
             </div>  
             
-            <label>FECHA DE ACTIVACION</label>  
-            <input id="iFec" readonly style="background: rgba(255,255,255,0.05); color: #ffc300;">  
+            <label>FECHA DE ACTIVACION (MODIFICABLE)</label>  
+            <input id="iFec" type="date" required style="color: #ffc300;">  
             
             <label>NUM. CELULAR (10 DÍGITOS)</label>  
             <input id="iTel" type="tel" required maxlength="10" placeholder="Ej. 5512345678">  
@@ -187,7 +201,7 @@
             <tbody id="bodyVentas"></tbody>  
         </table>  
     </div>  
-</div>
+</div>  
 
 <script>  
     const firebaseConfig = {  
@@ -239,33 +253,36 @@
         const d = String(hoy.getDate()).padStart(2, '0');  
         const m = String(hoy.getMonth() + 1).padStart(2, '0');  
         const y = hoy.getFullYear();  
-        document.getElementById('iFec').value = `${d}/${m}/${y}`;  
+        document.getElementById('iFec').value = `${y}-${m}-${d}`;  
     }  
 
-    // Control dinámico de las pestañas de Operadores  
     function cambiarOperador(op) {  
         document.getElementById('iOperador').value = op;  
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));  
         
         const wrapVinculo = document.getElementById('wrapperVinculo');  
+        const wrapPayJoy = document.getElementById('wrapperPayJoy');  
         const wrapTipo = document.getElementById('wrapperTipo');  
         const wrapImei = document.getElementById('wrapperImei');  
 
         if(op === 'TELCEL') {  
             document.querySelector('.tab-telcel').classList.add('active');  
             wrapVinculo.classList.remove('hidden');  
+            wrapPayJoy.classList.remove('hidden');  
             wrapTipo.classList.remove('hidden');  
             wrapImei.classList.remove('hidden');  
         } else if(op === 'AT&T') {  
             document.querySelector('.tab-att').classList.add('active');  
             wrapVinculo.classList.add('hidden');  
+            wrapPayJoy.classList.remove('hidden'); // Se muestra PayJoy también en AT&T  
             wrapTipo.classList.add('hidden');  
-            wrapImei.classList.remove('hidden'); // AT&T cuenta con Modelo, Marca, IMEI, ICCID y Número  
+            wrapImei.classList.remove('hidden');  
         } else if(op === 'BAIT') {  
             document.querySelector('.tab-bait').classList.add('active');  
             wrapVinculo.classList.add('hidden');  
+            wrapPayJoy.classList.add('hidden'); // Se oculta PayJoy para Bait  
             wrapTipo.classList.add('hidden');  
-            wrapImei.classList.add('hidden'); // Bait cuenta con Marca, Modelo, ICCID y Número (Sin IMEI obligatorio)  
+            wrapImei.classList.add('hidden');  
         }  
     }  
   
@@ -314,6 +331,13 @@
         const btn = document.getElementById('btnGuardar');  
         const opActual = document.getElementById('iOperador').value;  
 
+        const fUsuario = document.getElementById('iFec').value;  
+        let fechaFormateada = "";  
+        if(fUsuario) {  
+            const partes = fUsuario.split("-");  
+            fechaFormateada = `${partes[2]}/${partes[1]}/${partes[0]}`;  
+        }  
+
         const v = {  
             id: Date.now(),  
             "OPERADOR": opActual,  
@@ -325,7 +349,7 @@
             "SOLO NOMBRE DE LA CADENA": document.getElementById('iCadena').value,  
             "SOLO NOMBRE DE TIENDA SIN CADENA": document.getElementById('iTiendaNombre').value,  
             "NOMBRE COMPLETO PROMOTOR": document.getElementById('iProm').value,  
-            "FECHA DE ACTIVACION": document.getElementById('iFec').value,  
+            "FECHA DE ACTIVACION": fechaFormateada,  
             "MARCA": document.getElementById('iMarca').value,  
             "MODELO": document.getElementById('iMod').value  
         };  
@@ -337,7 +361,7 @@
         cargarLocal();  
         e.target.reset();  
         actualizarFechaInput();  
-        cambiarOperador(opActual); // Mantiene el operador seleccionado  
+        cambiarOperador(opActual);  
 
         btn.innerText = "¡VENTA GUARDADA!";  
         btn.style.background = "#00b4d8";  
@@ -356,8 +380,6 @@
   
     function cargarLocal() {  
         let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");  
-        
-        // Contadores para las barras de progreso  
         let tTelcel = 0, tAtt = 0, tBait = 0;  
 
         document.getElementById('bodyVentas').innerHTML = l.map(v => {  
@@ -384,12 +406,10 @@
             `;  
         }).join("");  
 
-        // Actualizar valores de la gráfica  
         document.getElementById('lblTelcel').innerText = tTelcel;  
         document.getElementById('lblAtt').innerText = tAtt;  
         document.getElementById('lblBait').innerText = tBait;  
 
-        // Calcular porcentajes dinámicos de avance visual  
         let totalMax = Math.max(tTelcel, tAtt, tBait, 1);  
         document.getElementById('barTelcel').style.width = `${(tTelcel / totalMax) * 100}%`;  
         document.getElementById('barAtt').style.width = `${(tAtt / totalMax) * 100}%`;  
