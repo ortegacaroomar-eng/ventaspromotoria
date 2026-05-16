@@ -1,299 +1,410 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Ventas Telcel - Omar Ortega</title>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <style>
-        body { margin:0; font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; }
-        .app { max-width:1000px; margin:auto; padding:20px; }
-        
-        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .gps-card { background: #000; border: 1px solid #00b4d8; padding: 10px 15px; border-radius: 12px; color: #00b4d8; font-size: 12px; display: flex; align-items: center; }
-        .gps-card i { margin-right: 10px; font-size: 18px; color: #ffc300; }
-        .reloj-digital { font-family: monospace; font-size: 24px; color: #ffc300; font-weight: bold; }
+<!DOCTYPE html>  
+<html lang="es">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>Sistema Multi-Ventas - Omar Ortega</title>  
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>  
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>  
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>  
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>  
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">  
+    <style>  
+        body { margin:0; font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; }  
+        .app { max-width:1000px; margin:auto; padding:20px; }  
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px; }  
+        .gps-card { background: #000; border: 1px solid #00b4d8; padding: 10px 15px; border-radius: 12px; color: #00b4d8; font-size: 12px; display: flex; align-items: center; }  
+        .gps-card i { margin-right: 10px; font-size: 18px; color: #ffc300; }  
+        .reloj-digital { font-family: monospace; font-size: 24px; color: #ffc300; font-weight: bold; }  
 
-        .btn-exit { background: rgba(255, 77, 77, 0.2); color: #ff4d4d; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #ff4d4d; cursor: pointer; transition: 0.3s; }
-        .btn-exit:hover { background: #ff4d4d; color: white; }
+        .btn-exit { background: rgba(255, 77, 77, 0.2); color: #ff4d4d; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #ff4d4d; cursor: pointer; transition: 0.3s; }  
+        .btn-exit:hover { background: #ff4d4d; color: white; }  
 
-        .card { background:rgba(255,255,255,.08); backdrop-filter:blur(10px); border-radius:15px; padding:20px; margin-bottom:15px; border:1px solid rgba(255,255,255,0.1); }
-        label { font-size:10px; font-weight:bold; color:#ffc300; text-transform: uppercase; display: block; margin-bottom: 5px; }
-        
-        .app input, .app select { width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; outline: none; }
-        .app input:focus { background: rgba(255,255,255,0.2); border: 1px solid #ffc300; }
-        
-        .login-box input { width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #ccc; background:#f9f9f9; color:#000; box-sizing: border-box; font-size: 14px; }
+        /* Menú Navegación Didáctico de Operadores */  
+        .menu-operadores { display: flex; gap: 10px; margin-bottom: 20px; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }  
+        .tab-btn { flex: 1; padding: 12px; text-align: center; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; transition: 0.3s; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; }  
+        .tab-telcel { background: rgba(0, 180, 216, 0.2); border: 1px solid #00b4d8; }  
+        .tab-telcel.active { background: #00b4d8; color: #000; box-shadow: 0 0 15px #00b4d8; }  
+        .tab-att { background: rgba(255, 114, 0, 0.2); border: 1px solid #ff7200; }  
+        .tab-att.active { background: #ff7200; color: white; box-shadow: 0 0 15px #ff7200; }  
+        .tab-bait { background: rgba(114, 9, 183, 0.2); border: 1px solid #7209b7; }  
+        .tab-bait.active { background: #7209b7; color: white; box-shadow: 0 0 15px #7209b7; }  
 
-        .btn-save { background:#ffc300; color:#001d3d; width:100%; padding:15px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size: 16px; transition: 0.3s; }
-        .btn-save:active { transform: scale(0.98); }
+        /* Dashboard de Avance */  
+        .panel-avance { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 15px; margin-bottom: 15px; }  
+        .panel-avance h4 { margin: 0 0 10px 0; font-size: 14px; color: #ffc300; text-transform: uppercase; }  
+        .contenedor-graficas { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }  
+        .barra-progreso-item { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; border-left: 4px solid #fff; }  
+        .info-progreso { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; font-weight: bold; }  
+        .w-barra { background: rgba(255,255,255,0.1); height: 10px; border-radius: 5px; overflow: hidden; }  
+        .w-relleno { height: 100%; width: 0%; transition: width 0.5s ease-in-out; }  
 
-        /* Botón de Vinculación con estilo Telcel */
-        .btn-vinculo { background: #00b4d8; color: white; width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; text-decoration: none; font-size: 14px; }
-        .btn-vinculo:hover { background: #0077b6; box-shadow: 0 0 10px #00b4d8; }
-        
-        .btn-excel { background:#1f7a3f; color:white; width:100%; padding:14px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; margin-top:20px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(31, 122, 63, 0.4); }
+        .card { background:rgba(255,255,255,.08); backdrop-filter:blur(10px); border-radius:15px; padding:20px; margin-bottom:15px; border:1px solid rgba(255,255,255,0.1); }  
+        label { font-size:10px; font-weight:bold; color:#ffc300; text-transform: uppercase; display: block; margin-bottom: 5px; }  
+          
+        .app input, .app select { width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; outline: none; }  
+        .app input:focus { background: rgba(255,255,255,0.2); border: 1px solid #ffc300; }  
+          
+        .login-box input { width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #ccc; background:#f9f9f9; color:#000; box-sizing: border-box; font-size: 14px; }  
 
-        .table-container { overflow-x: auto; background: white; border-radius: 10px; margin-top: 20px; }
-        table { width: 100%; border-collapse: collapse; color: #333; font-size: 11px; min-width: 1000px; }
-        th { background: #000 !important; color: #fff !important; padding: 12px; text-align: left; text-transform: uppercase; font-weight: bold; border: 1px solid #444; }
-        td { padding: 10px; border: 1px solid #ddd; }
-        tr:nth-child(even) { background: #f9f9f9; }
+        .btn-save { background:#ffc300; color:#001d3d; width:100%; padding:15px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size: 16px; transition: 0.3s; }  
+        .btn-save:active { transform: scale(0.98); }  
 
-        .hidden { display: none !important; }
-        .login-box { max-width: 350px; margin: 100px auto; background: white; padding: 30px; border-radius: 20px; text-align: center; color: #000; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        .btn-link-auth { background: none; border: none; color: #003566; font-size: 13px; text-decoration: underline; cursor: pointer; margin-top: 15px; font-weight: bold; }
+        .btn-vinculo { background: #00b4d8; color: white; width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; text-decoration: none; font-size: 14px; }  
+        .btn-vinculo:hover { background: #0077b6; box-shadow: 0 0 10px #00b4d8; }  
+          
+        .btn-excel { background:#1f7a3f; color:white; width:100%; padding:14px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; margin-top:20px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(31, 122, 63, 0.4); }  
+
+        .table-container { overflow-x: auto; background: white; border-radius: 10px; margin-top: 20px; }  
+        table { width: 100%; border-collapse: collapse; color: #333; font-size: 11px; min-width: 1100px; }  
+        th { background: #000 !important; color: #fff !important; padding: 12px; text-align: left; text-transform: uppercase; font-weight: bold; border: 1px solid #444; }  
+        td { padding: 10px; border: 1px solid #ddd; }  
+        tr:nth-child(even) { background: #f9f9f9; }  
+
+        .hidden { display: none !important; }  
+        .login-box { max-width: 350px; margin: 100px auto; background: white; padding: 30px; border-radius: 20px; text-align: center; color: #000; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }  
+        .btn-link-auth { background: none; border: none; color: #003566; font-size: 13px; text-decoration: underline; cursor: pointer; margin-top: 15px; font-weight: bold; }  
     </style>
-</head>
+</head>  
+<body onload="inicio()">  
 
-<body onload="inicio()">
+<div id="loginBox" class="login-box">  
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Logo_Telcel.svg/1200px-Logo_Telcel.svg.png" width="120">  
+    <h3 id="authTitle" style="color:#003566; margin-top:10px;">Acceso Promotores</h3>  
+    <input id="u" type="email" placeholder="Correo electrónico">  
+    <input id="p" type="password" placeholder="Contraseña">  
+    <button class="btn-save" id="btnAuthAction" onclick="manejarAuth()">ENTRAR</button>  
+    <button class="btn-link-auth" id="btnToggleAuth" onclick="toggleAuthMode()">¿No tienes cuenta? Regístrate aquí</button>  
+</div>  
 
-    <div id="loginBox" class="login-box">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Logo_Telcel.svg/1200px-Logo_Telcel.svg.png" width="120">
-        <h3 id="authTitle" style="color:#003566; margin-top:10px;">Acceso Promotores</h3>
-        <input id="u" type="email" placeholder="Correo electrónico">
-        <input id="p" type="password" placeholder="Contraseña">
-        <button class="btn-save" id="btnAuthAction" onclick="manejarAuth()">ENTRAR</button>
-        <button class="btn-link-auth" id="btnToggleAuth" onclick="toggleAuthMode()">¿No tienes cuenta? Regístrate aquí</button>
-    </div>
+<div id="appBox" class="app hidden">  
+    <div class="top-bar">  
+        <div class="gps-card">  
+            <i class="fa-solid fa-location-dot"></i>  
+            <div><b style="color:white">UBICACIÓN GPS</b><br><span id="txtGps">Localizando...</span></div>  
+        </div>  
+        <div class="reloj-digital" id="txtReloj">00:00:00</div>  
+        <div class="btn-exit" onclick="salir()" title="Cerrar Sesión"><i class="fa-solid fa-power-off"></i></div>  
+    </div>  
 
-    <div id="appBox" class="app hidden">
-        <div class="top-bar">
-            <div class="gps-card">
-                <i class="fa-solid fa-location-dot"></i>
-                <div><b style="color:white">UBICACIÓN GPS</b><br><span id="txtGps">Localizando...</span></div>
-            </div>
-            <div class="reloj-digital" id="txtReloj">00:00:00</div>
-            <div class="btn-exit" onclick="salir()" title="Cerrar Sesión"><i class="fa-solid fa-power-off"></i></div>
-        </div>
+    <!-- Gráfica Interactiva de Avance / Ventas Totales -->  
+    <div class="panel-avance">  
+        <h4><i class="fa-solid fa-chart-line"></i> Gráfica de Avance de Ventas</h4>  
+        <div class="contenedor-graficas">  
+            <div class="barra-progreso-item" style="border-left-color: #00b4d8;">  
+                <div class="info-progreso"><span>TELCEL</span><span id="lblTelcel">0</span></div>  
+                <div class="w-barra"><div id="barTelcel" class="w-relleno" style="background:#00b4d8;"></div></div>  
+            </div>  
+            <div class="barra-progreso-item" style="border-left-color: #ff7200;">  
+                <div class="info-progreso"><span>AT&T</span><span id="lblAtt">0</span></div>  
+                <div class="w-barra"><div id="barAtt" class="w-relleno" style="background:#ff7200;"></div></div>  
+            </div>  
+            <div class="barra-progreso-item" style="border-left-color: #7209b7;">  
+                <div class="info-progreso"><span>BAIT</span><span id="lblBait">0</span></div>  
+                <div class="w-barra"><div id="barBait" class="w-relleno" style="background:#7209b7;"></div></div>  
+            </div>  
+        </div>  
+    </div>  
 
-        <form id="fReg">
-            <div class="card">
-                <label>VINCULACIÓN OBLIGATORIA</label>
-                <a href="https://registro.telcel.com/vinculatulinea/#/" target="_blank" class="btn-vinculo">
-                    <i class="fa-solid fa-link"></i> ABRIR REGISTRO / VINCULA TU LÍNEA
-                </a>
+    <!-- Menú Dinámico de Operadores -->  
+    <div class="menu-operadores">  
+        <button class="tab-btn tab-telcel active" onclick="cambiarOperador('TELCEL')"><i class="fa-solid fa-phone"></i> TELCEL</button>  
+        <button class="tab-btn tab-att" onclick="cambiarOperador('AT&T')"><i class="fa-solid fa-signal"></i> AT&T</button>  
+        <button class="tab-btn tab-bait" onclick="cambiarOperador('BAIT')"><i class="fa-solid fa-bolt"></i> BAIT</button>  
+    </div>  
 
-                <label>Renuevate/ Kit/Chip/Porta</label>
-                <select id="iTipo" required>
-                    <option value="KIT">KIT</option>
-                    <option value="CHIP">CHIP</option>
-                    <option value="PORTA">PORTA</option>
-                    <option value="RENUEVATE">RENUEVATE</option>
-                </select>
-                <label>FECHA DE ACTIVACION</label>
-                <input id="iFec" readonly style="background: rgba(255,255,255,0.05); color: #ffc300;">
-                <label>NUM. CELULAR (10 DÍGITOS)</label>
-                <input id="iTel" type="tel" required maxlength="10" placeholder="Ej. 5512345678">
-                <label>ICCID (ÚLTIMOS DÍGITOS)</label>
-                <input id="iIcc" required placeholder="Ingresa el ICCID">
-            </div>
-
-            <div class="card">
-                <label>IMEI</label><input id="iIme" placeholder="IMEI del equipo">
-                <label>MARCA</label><input id="iMarca" placeholder="Ej. Samsung">
-                <label>MODELO</label><input id="iMod" placeholder="Ej. Galaxy A54">
-            </div>
-
-            <div class="card">
-                <label>#TIENDA / Determinante</label><input id="iTiendaNum" required placeholder="Número de tienda">
-                <label>SOLO NOMBRE DE LA CADENA</label><input id="iCadena" required placeholder="Ej. Coppel / Elektra">
-                <label>SOLO NOMBRE DE TIENDA SIN CADENA</label><input id="iTiendaNombre" required placeholder="Ej. Plaza Aragón">
-                <label>NOMBRE COMPLETO PROMOTOR</label><input id="iProm" required placeholder="Tu nombre">
-            </div>
-            
-            <button type="submit" id="btnGuardar" class="btn-save">GUARDAR VENTA</button>
-        </form>
-
-        <button class="btn-excel" onclick="exportarExcel()">
-            <i class="fa-solid fa-file-excel"></i> DESCARGAR REPORTE PROFESIONAL
-        </button>
-
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>NUM. CELULAR</th>
-                        <th>IMEI</th>
-                        <th>ICCID</th>
-                        <th>TIPO</th>
-                        <th>#TIENDA</th>
-                        <th>CADENA</th>
-                        <th>TIENDA</th>
-                        <th>PROMOTOR</th>
-                        <th>FECHA</th>
-                        <th>MARCA</th>
-                        <th>MODELO</th>
-                        <th style="background:red !important; text-align: center;">X</th>
-                    </tr>
-                </thead>
-                <tbody id="bodyVentas"></tbody>
-            </table>
-        </div>
-    </div>
-
-<script>
-    // Tu configuración de Firebase y funciones se mantienen exactamente igual
-    const firebaseConfig = {
-        apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc", 
-        authDomain: "ventastelcel4029.firebaseapp.com",
-        databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com",
-        projectId: "ventastelcel4029",
-        storageBucket: "ventastelcel4029.firebasestorage.app",
-        messagingSenderId: "480758010888",
-        appId: "1:480758010888:web:e948c54f0217536aa9adbd"
-    };
-
-    let db, auth;
-    let isLoginMode = true;
-
-    function inicio() {
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        db = firebase.database();
-        auth = firebase.auth();
-
-        setInterval(() => {
-            document.getElementById('txtReloj').innerText = new Date().toLocaleTimeString('es-MX');
-        }, 1000);
-
-        if(navigator.geolocation) {
-            navigator.geolocation.watchPosition(p => {
-                document.getElementById('txtGps').innerHTML = `${p.coords.latitude.toFixed(6)}, ${p.coords.longitude.toFixed(6)}`;
-            }, () => {
-                document.getElementById('txtGps').innerHTML = "GPS Desactivado";
-            });
-        }
-
-        const hoy = new Date();
-        const d = String(hoy.getDate()).padStart(2, '0');
-        const m = String(hoy.getMonth() + 1).padStart(2, '0');
-        const y = hoy.getFullYear();
-        document.getElementById('iFec').value = `${d}/${m}/${y}`;
-
-        auth.onAuthStateChanged(user => {
-            if(user) {
-                document.getElementById('loginBox').classList.add("hidden");
-                document.getElementById('appBox').classList.remove("hidden");
-                cargarLocal();
-            } else {
-                document.getElementById('loginBox').classList.remove("hidden");
-                document.getElementById('appBox').classList.add("hidden");
-            }
-        });
-    }
-
-    function toggleAuthMode() {
-        isLoginMode = !isLoginMode;
-        document.getElementById('authTitle').innerText = isLoginMode ? "Acceso Promotores" : "Registrar Nuevo Usuario";
-        document.getElementById('btnAuthAction').innerText = isLoginMode ? "ENTRAR" : "REGISTRAR";
-        document.getElementById('btnToggleAuth').innerText = isLoginMode ? "¿No tienes cuenta? Regístrate aquí" : "¿Ya tienes cuenta? Inicia sesión";
-    }
-
-    function manejarAuth() {
-        const u = document.getElementById('u').value.trim();
-        const p = document.getElementById('p').value;
-        const btn = document.getElementById('btnAuthAction');
-
-        if(!u || !p) return alert("Por favor, llena todos los campos.");
+    <form id="fReg">  
+        <input type="hidden" id="iOperador" value="TELCEL">  
         
-        btn.disabled = true;
-        btn.innerText = "PROCESANDO...";
+        <div class="card">  
+            <!-- Vinculación exclusiva Telcel -->  
+            <div id="wrapperVinculo">  
+                <label>VINCULACIÓN OBLIGATORIA</label>  
+                <a href="https://registro.telcel.com/vinculatulinea/#/" target="_blank" class="btn-vinculo">  
+                    <i class="fa-solid fa-link"></i> ABRIR REGISTRO / VINCULA TU LÍNEA  
+                </a>  
+            </div>  
 
-        if(isLoginMode) {
-            auth.signInWithEmailAndPassword(u, p)
-                .catch(e => {
-                    alert("Error: Usuario o contraseña incorrectos.");
-                    btn.disabled = false;
-                    btn.innerText = "ENTRAR";
-                });
-        } else {
-            auth.createUserWithEmailAndPassword(u, p)
-                .then(() => {
-                    alert("Cuenta creada con éxito.");
-                    toggleAuthMode();
-                })
-                .catch(e => {
-                    alert(e.message);
-                    btn.disabled = false;
-                    btn.innerText = "REGISTRAR";
-                });
-        }
-    }
+            <div id="wrapperTipo">  
+                <label>Renuevate/ Kit/Chip/Porta</label>  
+                <select id="iTipo">  
+                    <option value="KIT">KIT</option>  
+                    <option value="CHIP">CHIP</option>  
+                    <option value="PORTA">PORTA</option>  
+                    <option value="RENUEVATE">RENUEVATE</option>  
+                </select>  
+            </div>  
+            
+            <label>FECHA DE ACTIVACION</label>  
+            <input id="iFec" readonly style="background: rgba(255,255,255,0.05); color: #ffc300;">  
+            
+            <label>NUM. CELULAR (10 DÍGITOS)</label>  
+            <input id="iTel" type="tel" required maxlength="10" placeholder="Ej. 5512345678">  
+            
+            <label>ICCID (ÚLTIMOS DÍGITOS)</label>  
+            <input id="iIcc" required placeholder="Ingresa el ICCID">  
+        </div>  
 
-    function salir() { if(confirm("¿Cerrar sesión?")) auth.signOut(); }
+        <div class="card">  
+            <div id="wrapperImei"><label>IMEI</label><input id="iIme" placeholder="IMEI del equipo"></div>  
+            <label>MARCA</label><input id="iMarca" required placeholder="Ej. Samsung">  
+            <label>MODELO</label><input id="iMod" required placeholder="Ej. Galaxy A54">  
+        </div>  
 
-    document.getElementById('fReg').onsubmit = e => {
-        e.preventDefault();
-        const btn = document.getElementById('btnGuardar');
-        const v = {
-            id: Date.now(),
-            "NUM. CELULAR": document.getElementById('iTel').value,
-            "IMEI": document.getElementById('iIme').value || "N/A",
-            "ICCID": document.getElementById('iIcc').value,
-            "Renuevate/ Kit/Chip/Porta": document.getElementById('iTipo').value,
-            "#TIENDA / Determinante": document.getElementById('iTiendaNum').value,
-            "SOLO NOMBRE DE LA CADENA": document.getElementById('iCadena').value,
-            "SOLO NOMBRE DE TIENDA SIN CADENA": document.getElementById('iTiendaNombre').value,
-            "NOMBRE COMPLETO PROMOTOR": document.getElementById('iProm').value,
-            "FECHA DE ACTIVACION": document.getElementById('iFec').value,
-            "MARCA": document.getElementById('iMarca').value || "N/A",
-            "MODELO": document.getElementById('iMod').value || "N/A"
-        };
-        let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-        l.unshift(v);
-        localStorage.setItem("ventas_omar", JSON.stringify(l));
-        cargarLocal();
-        e.target.reset();
-        const hoy = new Date();
-        document.getElementById('iFec').value = `${String(hoy.getDate()).padStart(2, '0')}/${String(hoy.getMonth() + 1).padStart(2, '0')}/${hoy.getFullYear()}`;
-        btn.innerText = "¡VENTA GUARDADA!";
-        btn.style.background = "#00b4d8";
-        setTimeout(() => {
-            btn.innerText = "GUARDAR VENTA";
-            btn.style.background = "#ffc300";
-        }, 2000);
-    };
+        <div class="card">  
+            <label>#TIENDA / Determinante</label><input id="iTiendaNum" required placeholder="Número de tienda">  
+            <label>SOLO NOMBRE DE LA CADENA</label><input id="iCadena" required placeholder="Ej. Coppel / Elektra">  
+            <label>SOLO NOMBRE DE TIENDA SIN CADENA</label><input id="iTiendaNombre" required placeholder="Ej. Plaza Aragón">  
+            <label>NOMBRE COMPLETO PROMOTOR</label><input id="iProm" required placeholder="Tu nombre">  
+        </div>  
+          
+        <button type="submit" id="btnGuardar" class="btn-save">GUARDAR VENTA</button>  
+    </form>  
 
-    function eliminar(id) {
-        if(!confirm("¿Eliminar?")) return;
-        let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]").filter(v => v.id !== id);
-        localStorage.setItem("ventas_omar", JSON.stringify(l));
-        cargarLocal();
-    }
+    <button class="btn-excel" onclick="exportarExcel()">  
+        <i class="fa-solid fa-file-excel"></i> DESCARGAR REPORTE PROFESIONAL  
+    </button>  
 
-    function cargarLocal() {
-        let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-        document.getElementById('bodyVentas').innerHTML = l.map(v => `
-            <tr>
-                <td>${v["NUM. CELULAR"]}</td>
-                <td>${v.IMEI}</td>
-                <td>${v.ICCID}</td>
-                <td><b>${v["Renuevate/ Kit/Chip/Porta"]}</b></td>
-                <td>${v["#TIENDA / Determinante"]}</td>
-                <td>${v["SOLO NOMBRE DE LA CADENA"]}</td>
-                <td>${v["SOLO NOMBRE DE TIENDA SIN CADENA"]}</td>
-                <td>${v["NOMBRE COMPLETO PROMOTOR"]}</td>
-                <td>${v["FECHA DE ACTIVACION"]}</td>
-                <td>${v.MARCA}</td>
-                <td>${v.MODELO}</td>
-                <td style="text-align:center"><i class="fa fa-trash" style="color:red;cursor:pointer" onclick="eliminar(${v.id})"></i></td>
-            </tr>
-        `).join("");
-    }
+    <div class="table-container">  
+        <table>  
+            <thead>  
+                <tr>  
+                    <th>OPERADOR</th>  
+                    <th>NUM. CELULAR</th>  
+                    <th>IMEI</th>  
+                    <th>ICCID</th>  
+                    <th>TIPO</th>  
+                    <th>#TIENDA</th>  
+                    <th>CADENA</th>  
+                    <th>TIENDA</th>  
+                    <th>PROMOTOR</th>  
+                    <th>FECHA</th>  
+                    <th>MARCA</th>  
+                    <th>MODELO</th>  
+                    <th style="background:red !important; text-align: center;">X</th>  
+                </tr>  
+            </thead>  
+            <tbody id="bodyVentas"></tbody>  
+        </table>  
+    </div>  
+</div>
 
-    function exportarExcel() {
-        let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");
-        if(l.length === 0) return alert("No hay datos.");
-        const ws = XLSX.utils.json_to_sheet(l.map(({id, ...resto}) => resto));
-        ws['!cols'] = [{wch: 15}, {wch: 20}, {wch: 20}, {wch: 20}, {wch: 15}, {wch: 25}, {wch: 30}, {wch: 30}, {wch: 18}, {wch: 15}, {wch: 15}];
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Ventas");
-        XLSX.writeFile(wb, `Reporte_Ventas_${new Date().toLocaleDateString().replace(/\//g,'-')}.xlsx`);
-    }
-</script>
-</body>
+<script>  
+    const firebaseConfig = {  
+        apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",   
+        authDomain: "ventastelcel4029.firebaseapp.com",  
+        databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com",  
+        projectId: "ventastelcel4029",  
+        storageBucket: "ventastelcel4029.firebasestorage.app",  
+        messagingSenderId: "480758010888",  
+        appId: "1:480758010888:web:e948c54f0217536aa9adbd"  
+    };  
+  
+    let db, auth;  
+    let isLoginMode = true;  
+  
+    function inicio() {  
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);  
+        db = firebase.database();  
+        auth = firebase.auth();  
+  
+        setInterval(() => {  
+            document.getElementById('txtReloj').innerText = new Date().toLocaleTimeString('es-MX');  
+        }, 1000);  
+  
+        if(navigator.geolocation) {  
+            navigator.geolocation.watchPosition(p => {  
+                document.getElementById('txtGps').innerHTML = `${p.coords.latitude.toFixed(6)}, ${p.coords.longitude.toFixed(6)}`;  
+            }, () => {  
+                document.getElementById('txtGps').innerHTML = "GPS Desactivado";  
+            });  
+        }  
+  
+        actualizarFechaInput();  
+  
+        auth.onAuthStateChanged(user => {  
+            if(user) {  
+                document.getElementById('loginBox').classList.add("hidden");  
+                document.getElementById('appBox').classList.remove("hidden");  
+                cargarLocal();  
+            } else {  
+                document.getElementById('loginBox').classList.remove("hidden");  
+                document.getElementById('appBox').classList.add("hidden");  
+            }  
+        });  
+    }  
+
+    function actualizarFechaInput() {  
+        const hoy = new Date();  
+        const d = String(hoy.getDate()).padStart(2, '0');  
+        const m = String(hoy.getMonth() + 1).padStart(2, '0');  
+        const y = hoy.getFullYear();  
+        document.getElementById('iFec').value = `${d}/${m}/${y}`;  
+    }  
+
+    // Control dinámico de las pestañas de Operadores  
+    function cambiarOperador(op) {  
+        document.getElementById('iOperador').value = op;  
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));  
+        
+        const wrapVinculo = document.getElementById('wrapperVinculo');  
+        const wrapTipo = document.getElementById('wrapperTipo');  
+        const wrapImei = document.getElementById('wrapperImei');  
+
+        if(op === 'TELCEL') {  
+            document.querySelector('.tab-telcel').classList.add('active');  
+            wrapVinculo.classList.remove('hidden');  
+            wrapTipo.classList.remove('hidden');  
+            wrapImei.classList.remove('hidden');  
+        } else if(op === 'AT&T') {  
+            document.querySelector('.tab-att').classList.add('active');  
+            wrapVinculo.classList.add('hidden');  
+            wrapTipo.classList.add('hidden');  
+            wrapImei.classList.remove('hidden'); // AT&T cuenta con Modelo, Marca, IMEI, ICCID y Número  
+        } else if(op === 'BAIT') {  
+            document.querySelector('.tab-bait').classList.add('active');  
+            wrapVinculo.classList.add('hidden');  
+            wrapTipo.classList.add('hidden');  
+            wrapImei.classList.add('hidden'); // Bait cuenta con Marca, Modelo, ICCID y Número (Sin IMEI obligatorio)  
+        }  
+    }  
+  
+    function toggleAuthMode() {  
+        isLoginMode = !isLoginMode;  
+        document.getElementById('authTitle').innerText = isLoginMode ? "Acceso Promotores" : "Registrar Nuevo Usuario";  
+        document.getElementById('btnAuthAction').innerText = isLoginMode ? "ENTRAR" : "REGISTRAR";  
+        document.getElementById('btnToggleAuth').innerText = isLoginMode ? "¿No tienes cuenta? Regístrate aquí" : "¿Ya tienes cuenta? Inicia sesión";  
+    }  
+  
+    function manejarAuth() {  
+        const u = document.getElementById('u').value.trim();  
+        const p = document.getElementById('p').value;  
+        const btn = document.getElementById('btnAuthAction');  
+  
+        if(!u || !p) return alert("Por favor, llena todos los campos.");  
+          
+        btn.disabled = true;  
+        btn.innerText = "PROCESANDO...";  
+  
+        if(isLoginMode) {  
+            auth.signInWithEmailAndPassword(u, p)  
+                .catch(e => {  
+                    alert("Error: Usuario o contraseña incorrectos.");  
+                    btn.disabled = false;  
+                    btn.innerText = "ENTRAR";  
+                });  
+        } else {  
+            auth.createUserWithEmailAndPassword(u, p)  
+                .then(() => {  
+                    alert("Cuenta creada con éxito.");  
+                    toggleAuthMode();  
+                })  
+                .catch(e => {  
+                    alert(e.message);  
+                    btn.disabled = false;  
+                    btn.innerText = "REGISTRAR";  
+                });  
+        }  
+    }  
+  
+    function salir() { if(confirm("¿Cerrar sesión?")) auth.signOut(); }  
+  
+    document.getElementById('fReg').onsubmit = e => {  
+        e.preventDefault();  
+        const btn = document.getElementById('btnGuardar');  
+        const opActual = document.getElementById('iOperador').value;  
+
+        const v = {  
+            id: Date.now(),  
+            "OPERADOR": opActual,  
+            "NUM. CELULAR": document.getElementById('iTel').value,  
+            "IMEI": opActual !== 'BAIT' ? (document.getElementById('iIme').value || "N/A") : "N/A",  
+            "ICCID": document.getElementById('iIcc').value,  
+            "Renuevate/ Kit/Chip/Porta": opActual === 'TELCEL' ? document.getElementById('iTipo').value : "N/A",  
+            "#TIENDA / Determinante": document.getElementById('iTiendaNum').value,  
+            "SOLO NOMBRE DE LA CADENA": document.getElementById('iCadena').value,  
+            "SOLO NOMBRE DE TIENDA SIN CADENA": document.getElementById('iTiendaNombre').value,  
+            "NOMBRE COMPLETO PROMOTOR": document.getElementById('iProm').value,  
+            "FECHA DE ACTIVACION": document.getElementById('iFec').value,  
+            "MARCA": document.getElementById('iMarca').value,  
+            "MODELO": document.getElementById('iMod').value  
+        };  
+        
+        let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");  
+        l.unshift(v);  
+        localStorage.setItem("ventas_omar", JSON.stringify(l));  
+        
+        cargarLocal();  
+        e.target.reset();  
+        actualizarFechaInput();  
+        cambiarOperador(opActual); // Mantiene el operador seleccionado  
+
+        btn.innerText = "¡VENTA GUARDADA!";  
+        btn.style.background = "#00b4d8";  
+        setTimeout(() => {  
+            btn.innerText = "GUARDAR VENTA";  
+            btn.style.background = "#ffc300";  
+        }, 2000);  
+    };  
+  
+    function eliminar(id) {  
+        if(!confirm("¿Eliminar?")) return;  
+        let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]").filter(v => v.id !== id);  
+        localStorage.setItem("ventas_omar", JSON.stringify(l));  
+        cargarLocal();  
+    }  
+  
+    function cargarLocal() {  
+        let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");  
+        
+        // Contadores para las barras de progreso  
+        let tTelcel = 0, tAtt = 0, tBait = 0;  
+
+        document.getElementById('bodyVentas').innerHTML = l.map(v => {  
+            if(v.OPERADOR === 'TELCEL') tTelcel++;  
+            if(v.OPERADOR === 'AT&T') tAtt++;  
+            if(v.OPERADOR === 'BAIT') tBait++;  
+
+            return `  
+                <tr>  
+                    <td><b>${v.OPERADOR || 'TELCEL'}</b></td>  
+                    <td>${v["NUM. CELULAR"]}</td>  
+                    <td>${v.IMEI}</td>  
+                    <td>${v.ICCID}</td>  
+                    <td><b>${v["Renuevate/ Kit/Chip/Porta"]}</b></td>  
+                    <td>${v["#TIENDA / Determinante"]}</td>  
+                    <td>${v["SOLO NOMBRE DE LA CADENA"]}</td>  
+                    <td>${v["SOLO NOMBRE DE TIENDA SIN CADENA"]}</td>  
+                    <td>${v["NOMBRE COMPLETO PROMOTOR"]}</td>  
+                    <td>${v["FECHA DE ACTIVACION"]}</td>  
+                    <td>${v.MARCA}</td>  
+                    <td>${v.MODELO}</td>  
+                    <td style="text-align:center"><i class="fa fa-trash" style="color:red;cursor:pointer" onclick="eliminar(${v.id})"></i></td>  
+                </tr>  
+            `;  
+        }).join("");  
+
+        // Actualizar valores de la gráfica  
+        document.getElementById('lblTelcel').innerText = tTelcel;  
+        document.getElementById('lblAtt').innerText = tAtt;  
+        document.getElementById('lblBait').innerText = tBait;  
+
+        // Calcular porcentajes dinámicos de avance visual  
+        let totalMax = Math.max(tTelcel, tAtt, tBait, 1);  
+        document.getElementById('barTelcel').style.width = `${(tTelcel / totalMax) * 100}%`;  
+        document.getElementById('barAtt').style.width = `${(tAtt / totalMax) * 100}%`;  
+        document.getElementById('barBait').style.width = `${(tBait / totalMax) * 100}%`;  
+    }  
+  
+    function exportarExcel() {  
+        let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");  
+        if(l.length === 0) return alert("No hay datos para exportar.");  
+        const ws = XLSX.utils.json_to_sheet(l.map(({id, ...resto}) => resto));  
+        ws['!cols'] = [{wch: 12}, {wch: 15}, {wch: 20}, {wch: 20}, {wch: 20}, {wch: 15}, {wch: 25}, {wch: 30}, {wch: 30}, {wch: 18}, {wch: 15}, {wch: 15}];  
+        const wb = XLSX.utils.book_new();  
+        XLSX.utils.book_append_sheet(wb, ws, "Ventas");  
+        XLSX.writeFile(wb, `Reporte_Ventas_${new Date().toLocaleDateString().replace(/\//g,'-')}.xlsx`);  
+    }  
+</script>  
+</body>  
 </html>
