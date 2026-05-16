@@ -13,14 +13,13 @@
         body { margin:0; font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; }  
         .app { max-width:1000px; margin:auto; padding:20px; }  
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px; }  
-        .gps-card { background: #000; border: 1px solid #00b4d8; padding: 10px 15px; border-radius: 12px; color: #00b4d8; font-size: 12px; display: flex; align-items: center; }  
-        .gps-card i { margin-right: 10px; font-size: 18px; color: #ffc300; }  
+        .gps-card { background: #000; border: 1px solid #00b4d8; padding: 10px 15px; border-radius: 12px; color: #00b4d8; font-size: 12px; display: flex; align-items: center; max-width: 45%; }  
+        .gps-card i { margin-right: 10px; font-size: 18px; color: #ffc300; min-width: 20px; }  
         .reloj-digital { font-family: monospace; font-size: 24px; color: #ffc300; font-weight: bold; }  
 
         .btn-exit { background: rgba(255, 77, 77, 0.2); color: #ff4d4d; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #ff4d4d; cursor: pointer; transition: 0.3s; }  
         .btn-exit:hover { background: #ff4d4d; color: white; }  
 
-        /* Menú Navegación Didáctico de Operadores */  
         .menu-operadores { display: flex; gap: 10px; margin-bottom: 20px; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }  
         .tab-btn { flex: 1; padding: 12px; text-align: center; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; transition: 0.3s; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; }  
         .tab-telcel { background: rgba(0, 180, 216, 0.2); border: 1px solid #00b4d8; }  
@@ -30,7 +29,6 @@
         .tab-bait { background: rgba(114, 9, 183, 0.2); border: 1px solid #7209b7; }  
         .tab-bait.active { background: #7209b7; color: white; box-shadow: 0 0 15px #7209b7; }  
 
-        /* Dashboard de Avance */  
         .panel-avance { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 15px; margin-bottom: 15px; }  
         .panel-avance h4 { margin: 0 0 10px 0; font-size: 14px; color: #ffc300; text-transform: uppercase; }  
         .contenedor-graficas { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }  
@@ -40,11 +38,11 @@
         .w-relleno { height: 100%; width: 0%; transition: width 0.5s ease-in-out; }  
 
         .card { background:rgba(255,255,255,.08); backdrop-filter:blur(10px); border-radius:15px; padding:20px; margin-bottom:15px; border:1px solid rgba(255,255,255,0.1); }  
+        .card h3 { margin-top: 0; margin-bottom: 15px; font-size: 16px; color: #ffc300; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; display: flex; align-items: center; gap: 8px; }  
         label { font-size:10px; font-weight:bold; color:#ffc300; text-transform: uppercase; display: block; margin-bottom: 5px; }  
           
         .app input, .app select { width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; outline: none; }  
         .app input:focus { background: rgba(255,255,255,0.2); border: 1px solid #ffc300; }  
-        
         .app input[type="date"]::-calendar-picker-indicator { filter: invert(1); cursor: pointer; }  
 
         .login-box input { width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #ccc; background:#f9f9f9; color:#000; box-sizing: border-box; font-size: 14px; }  
@@ -52,16 +50,15 @@
         .btn-save { background:#ffc300; color:#001d3d; width:100%; padding:15px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size: 16px; transition: 0.3s; }  
         .btn-save:active { transform: scale(0.98); }  
 
-        .btn-vinculo { background: #00b4d8; color: white; width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; text-decoration: none; font-size: 14px; }  
-        .btn-vinculo:hover { background: #0077b6; box-shadow: 0 0 10px #00b4d8; }  
+        .btn-secundario { background: #00b4d8; color: #000; font-weight: bold; padding: 12px; border: none; border-radius: 8px; cursor: pointer; width: 100%; font-size: 14px; transition: 0.3s; }  
+        .btn-secundario:hover { background: #0077b6; color: white; }  
 
-        /* Estilo personalizado para el botón de PayJoy */  
+        .btn-vinculo { background: #00b4d8; color: white; width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; text-decoration: none; font-size: 14px; }  
         .btn-payjoy { background: #4a00e0; color: white; width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; text-decoration: none; font-size: 14px; box-shadow: 0 4px 10px rgba(74, 0, 224, 0.3); }  
-        .btn-payjoy:hover { background: #3f00c5; box-shadow: 0 0 12px #4a00e0; }  
           
         .btn-excel { background:#1f7a3f; color:white; width:100%; padding:14px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; margin-top:20px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(31, 122, 63, 0.4); }  
 
-        .table-container { overflow-x: auto; background: white; border-radius: 10px; margin-top: 20px; }  
+        .table-container { overflow-x: auto; background: white; border-radius: 10px; margin-top: 20px; margin-bottom: 30px; }  
         table { width: 100%; border-collapse: collapse; color: #333; font-size: 11px; min-width: 1100px; }  
         th { background: #000 !important; color: #fff !important; padding: 12px; text-align: left; text-transform: uppercase; font-weight: bold; border: 1px solid #444; }  
         td { padding: 10px; border: 1px solid #ddd; }  
@@ -87,15 +84,15 @@
     <div class="top-bar">  
         <div class="gps-card">  
             <i class="fa-solid fa-location-dot"></i>  
-            <div><b style="color:white">UBICACIÓN GPS</b><br><span id="txtGps">Localizando...</span></div>  
+            <div><b style="color:white">UBICACIÓN ACTUAL</b><br><span id="txtGps">Localizando...</span></div>  
         </div>  
         <div class="reloj-digital" id="txtReloj">00:00:00</div>  
         <div class="btn-exit" onclick="salir()" title="Cerrar Sesión"><i class="fa-solid fa-power-off"></i></div>  
     </div>  
 
-    <!-- Gráfica Interactiva de Avance de Ventas -->  
+    <!-- Dashboard -->  
     <div class="panel-avance">  
-        <h4><i class="fa-solid fa-chart-line"></i> Gráfica de Avance de Ventas</h4>  
+        <h4><i class="fa-solid fa-chart-line"></i> Gráfica de Avance de Ventas (Nube)</h4>  
         <div class="contenedor-graficas">  
             <div class="barra-progreso-item" style="border-left-color: #00b4d8;">  
                 <div class="info-progreso"><span>TELCEL</span><span id="lblTelcel">0</span></div>  
@@ -119,11 +116,11 @@
         <button class="tab-btn tab-bait" onclick="cambiarOperador('BAIT')"><i class="fa-solid fa-bolt"></i> BAIT</button>  
     </div>  
 
+    <!-- FORMULARIO PRINCIPAL DE VENTAS -->  
     <form id="fReg">  
         <input type="hidden" id="iOperador" value="TELCEL">  
         
         <div class="card">  
-            <!-- Vinculación obligatoria Telcel -->  
             <div id="wrapperVinculo">  
                 <label>VINCULACIÓN OBLIGATORIA</label>  
                 <a href="https://registro.telcel.com/vinculatulinea/#/" target="_blank" class="btn-vinculo">  
@@ -131,7 +128,6 @@
                 </a>  
             </div>  
 
-            <!-- Nuevo enlace directo a PayJoy -->  
             <div id="wrapperPayJoy">  
                 <label>FINANCIAMIENTO DE EQUIPOS</label>  
                 <a href="https://app.payjoy.com/accounts/login?afterLogin=https://app.payjoy.com/merchant3?merchantId=199557" target="_blank" class="btn-payjoy">  
@@ -172,7 +168,7 @@
             <label>NOMBRE COMPLETO PROMOTOR</label><input id="iProm" required placeholder="Tu nombre">  
         </div>  
           
-        <button type="submit" id="btnGuardar" class="btn-save">GUARDAR VENTA</button>  
+        <button type="submit" id="btnGuardar" class="btn-save">GUARDAR VENTA EN LA NUBE</button>  
     </form>  
 
     <button class="btn-excel" onclick="exportarExcel()">  
@@ -201,6 +197,55 @@
             <tbody id="bodyVentas"></tbody>  
         </table>  
     </div>  
+
+    <!-- APARTADO: IMEIS Y ACTIVACIONES PENDIENTES -->  
+    <div class="card" style="margin-top: 40px; border: 1px solid #ff4d4d; background: rgba(255, 77, 77, 0.05);">  
+        <h3><i class="fa-solid fa-clock-rotate-left" style="color: #ff4d4d;"></i> IMEIS / ACTIVACIONES PENDIENTES (SINCRONIZADO)</h3>  
+        <form id="fPendientes" onsubmit="guardarPendiente(event)">  
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">  
+                <div>  
+                    <label>MARCA</label>  
+                    <input id="pMarca" required placeholder="Ej. Motorola">  
+                </div>  
+                <div>  
+                    <label>MODELO</label>  
+                    <input id="pMod" required placeholder="Ej. Moto G54">  
+                </div>  
+                <div>  
+                    <label>IMEI</label>  
+                    <input id="pImei" required placeholder="IMEI del equipo">  
+                </div>  
+                <div>  
+                    <label>ICCID</label>  
+                    <input id="pIccid" required placeholder="ICCID del chip">  
+                </div>  
+                <div>  
+                    <label>NÚMERO</label>  
+                    <input id="pNum" type="tel" required maxlength="10" placeholder="10 dígitos">  
+                </div>  
+            </div>  
+            <button type="submit" class="btn-secundario" style="background: #ff4d4d; color: white; margin-top: 10px;">  
+                <i class="fa-solid fa-plus"></i> AGREGAR A PENDIENTES  
+            </button>  
+        </form>  
+    </div>  
+
+    <div class="table-container" style="border: 1px solid #ff4d4d;">  
+        <table>  
+            <thead>  
+                <tr>  
+                    <th style="background: #ff4d4d !important; color: white !important;">MARCA</th>  
+                    <th style="background: #ff4d4d !important; color: white !important;">MODELO</th>  
+                    <th style="background: #ff4d4d !important; color: white !important;">IMEI</th>  
+                    <th style="background: #ff4d4d !important; color: white !important;">ICCID</th>  
+                    <th style="background: #ff4d4d !important; color: white !important;">NÚMERO</th>  
+                    <th style="background: #000 !important; text-align: center; width: 50px;">LISTO</th>  
+                </tr>  
+            </thead>  
+            <tbody id="bodyPendientes"></tbody>  
+        </table>  
+    </div>  
+
 </div>  
 
 <script>  
@@ -216,6 +261,9 @@
   
     let db, auth;  
     let isLoginMode = true;  
+    let ultimaLat = 0, ultimaLon = 0;  
+    let usuarioActualId = null;  
+    let listaVentasGlobal = []; // Para poder exportar a Excel fácilmente  
   
     function inicio() {  
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);  
@@ -228,7 +276,13 @@
   
         if(navigator.geolocation) {  
             navigator.geolocation.watchPosition(p => {  
-                document.getElementById('txtGps').innerHTML = `${p.coords.latitude.toFixed(6)}, ${p.coords.longitude.toFixed(6)}`;  
+                const lat = p.coords.latitude;  
+                const lon = p.coords.longitude;  
+                if(Math.abs(lat - ultimaLat) > 0.0001 || Math.abs(lon - ultimaLon) > 0.0001) {  
+                    ultimaLat = lat;  
+                    ultimaLon = lon;  
+                    obtenerNombreCalle(lat, lon);  
+                }  
             }, () => {  
                 document.getElementById('txtGps').innerHTML = "GPS Desactivado";  
             });  
@@ -236,16 +290,43 @@
   
         actualizarFechaInput();  
   
+        // Observador de estado de autenticación  
         auth.onAuthStateChanged(user => {  
             if(user) {  
+                usuarioActualId = user.uid;  
                 document.getElementById('loginBox').classList.add("hidden");  
                 document.getElementById('appBox').classList.remove("hidden");  
-                cargarLocal();  
+                
+                // Escuchar cambios en la base de datos en tiempo real  
+                activarSincronizacionFirebase();  
             } else {  
+                usuarioActualId = null;  
                 document.getElementById('loginBox').classList.remove("hidden");  
                 document.getElementById('appBox').classList.add("hidden");  
             }  
         });  
+    }  
+
+    function obtenerNombreCalle(lat, lon) {  
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`)  
+            .then(res => res.json())  
+            .then(data => {  
+                if (data && data.address) {  
+                    const calle = data.address.road || "";  
+                    const num = data.address.house_number || "";  
+                    const col = data.address.suburb || data.address.neighbourhood || "";  
+                    let direccionCompleta = "";  
+                    if(calle) direccionCompleta += calle;  
+                    if(num) direccionCompleta += " #" + num;  
+                    if(col) direccionCompleta += ", Col. " + col;  
+                    if(!direccionCompleta) direccionCompleta = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;  
+                    document.getElementById('txtGps').innerHTML = direccionCompleta;  
+                } else {  
+                    document.getElementById('txtGps').innerHTML = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;  
+                }  
+            }).catch(() => {  
+                document.getElementById('txtGps').innerHTML = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;  
+            });  
     }  
 
     function actualizarFechaInput() {  
@@ -274,13 +355,13 @@
         } else if(op === 'AT&T') {  
             document.querySelector('.tab-att').classList.add('active');  
             wrapVinculo.classList.add('hidden');  
-            wrapPayJoy.classList.remove('hidden'); // Se muestra PayJoy también en AT&T  
+            wrapPayJoy.classList.remove('hidden');  
             wrapTipo.classList.add('hidden');  
             wrapImei.classList.remove('hidden');  
         } else if(op === 'BAIT') {  
             document.querySelector('.tab-bait').classList.add('active');  
             wrapVinculo.classList.add('hidden');  
-            wrapPayJoy.classList.add('hidden'); // Se oculta PayJoy para Bait  
+            wrapPayJoy.classList.add('hidden');  
             wrapTipo.classList.add('hidden');  
             wrapImei.classList.add('hidden');  
         }  
@@ -325,12 +406,36 @@
     }  
   
     function salir() { if(confirm("¿Cerrar sesión?")) auth.signOut(); }  
+
+    /* ---- NUEVA LOGICA: SINCRONIZACIÓN CON FIREBASE NUBE ---- */  
+    function activarSincronizacionFirebase() {  
+        if(!usuarioActualId) return;  
+
+        // Escuchar Ventas  
+        db.ref(`usuarios/${usuarioActualId}/ventas`).on('value', snapshot => {  
+            let datos = snapshot.val() || {};  
+            listaVentasGlobal = Object.keys(datos).map(key => ({ FirebaseKey: key, ...datos[key] }));  
+            
+            // Ordenar por fecha de creación descendente (más recientes primero)  
+            listaVentasGlobal.sort((a,b) => b.id - a.id);  
+            renderizarVentas(listaVentasGlobal);  
+        });  
+
+        // Escuchar Pendientes  
+        db.ref(`usuarios/${usuarioActualId}/pendientes`).on('value', snapshot => {  
+            let datos = snapshot.val() || {};  
+            let listaPendientes = Object.keys(datos).map(key => ({ FirebaseKey: key, ...datos[key] }));  
+            listaPendientes.sort((a,b) => b.id - a.id);  
+            renderizarPendientes(listaPendientes);  
+        });  
+    }  
   
     document.getElementById('fReg').onsubmit = e => {  
         e.preventDefault();  
+        if(!usuarioActualId) return;  
+
         const btn = document.getElementById('btnGuardar');  
         const opActual = document.getElementById('iOperador').value;  
-
         const fUsuario = document.getElementById('iFec').value;  
         let fechaFormateada = "";  
         if(fUsuario) {  
@@ -354,35 +459,31 @@
             "MODELO": document.getElementById('iMod').value  
         };  
         
-        let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");  
-        l.unshift(v);  
-        localStorage.setItem("ventas_omar", JSON.stringify(l));  
-        
-        cargarLocal();  
-        e.target.reset();  
-        actualizarFechaInput();  
-        cambiarOperador(opActual);  
+        // Guardar directamente en Firebase (Se reflejará en todos tus dispositivos)  
+        db.ref(`usuarios/${usuarioActualId}/ventas`).push(v)  
+            .then(() => {  
+                e.target.reset();  
+                actualizarFechaInput();  
+                cambiarOperador(opActual);  
 
-        btn.innerText = "¡VENTA GUARDADA!";  
-        btn.style.background = "#00b4d8";  
-        setTimeout(() => {  
-            btn.innerText = "GUARDAR VENTA";  
-            btn.style.background = "#ffc300";  
-        }, 2000);  
+                btn.innerText = "¡SINCRO EN NUBE EXITOSA!";  
+                btn.style.background = "#00b4d8";  
+                setTimeout(() => {  
+                    btn.innerText = "GUARDAR VENTA EN LA NUBE";  
+                    btn.style.background = "#ffc300";  
+                }, 2000);  
+            });  
     };  
   
-    function eliminar(id) {  
-        if(!confirm("¿Eliminar?")) return;  
-        let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]").filter(v => v.id !== id);  
-        localStorage.setItem("ventas_omar", JSON.stringify(l));  
-        cargarLocal();  
+    function eliminar(fbKey) {  
+        if(!confirm("¿Eliminar esta venta de la base de datos central?")) return;  
+        db.ref(`usuarios/${usuarioActualId}/ventas/${fbKey}`).remove();  
     }  
   
-    function cargarLocal() {  
-        let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");  
+    function renderizarVentas(lista) {  
         let tTelcel = 0, tAtt = 0, tBait = 0;  
 
-        document.getElementById('bodyVentas').innerHTML = l.map(v => {  
+        document.getElementById('bodyVentas').innerHTML = lista.map(v => {  
             if(v.OPERADOR === 'TELCEL') tTelcel++;  
             if(v.OPERADOR === 'AT&T') tAtt++;  
             if(v.OPERADOR === 'BAIT') tBait++;  
@@ -401,7 +502,7 @@
                     <td>${v["FECHA DE ACTIVACION"]}</td>  
                     <td>${v.MARCA}</td>  
                     <td>${v.MODELO}</td>  
-                    <td style="text-align:center"><i class="fa fa-trash" style="color:red;cursor:pointer" onclick="eliminar(${v.id})"></i></td>  
+                    <td style="text-align:center"><i class="fa fa-trash" style="color:red;cursor:pointer" onclick="eliminar('${v.FirebaseKey}')"></i></td>  
                 </tr>  
             `;  
         }).join("");  
@@ -415,11 +516,52 @@
         document.getElementById('barAtt').style.width = `${(tAtt / totalMax) * 100}%`;  
         document.getElementById('barBait').style.width = `${(tBait / totalMax) * 100}%`;  
     }  
+
+    /* ---- LÓGICA DE APARTADO DE PENDIENTES CON FIREBASE ---- */  
+    function guardarPendiente(e) {  
+        e.preventDefault();  
+        if(!usuarioActualId) return;  
+
+        const p = {  
+            id: Date.now(),  
+            marca: document.getElementById('pMarca').value,  
+            modelo: document.getElementById('pMod').value,  
+            imei: document.getElementById('pImei').value,  
+            iccid: document.getElementById('pIccid').value,  
+            numero: document.getElementById('pNum').value  
+        };  
+
+        db.ref(`usuarios/${usuarioActualId}/pendientes`).push(p)  
+            .then(() => {  
+                document.getElementById('fPendientes').reset();  
+            });  
+    }  
+
+    function eliminarPendiente(fbKey) {  
+        if(!confirm("¿Marcar como listo y remover de pendientes?")) return;  
+        db.ref(`usuarios/${usuarioActualId}/pendientes/${fbKey}`).remove();  
+    }  
+
+    function renderizarPendientes(lista) {  
+        document.getElementById('bodyPendientes').innerHTML = lista.map(p => `  
+            <tr>  
+                <td>${p.marca}</td>  
+                <td>${p.modelo}</td>  
+                <td>${p.imei}</td>  
+                <td>${p.iccid}</td>  
+                <td><b>${p.numero}</b></td>  
+                <td style="text-align:center">  
+                    <i class="fa fa-check-circle" style="color:#1f7a3f;font-size:16px;cursor:pointer" title="Marcar como Completado" onclick="eliminarPendiente('${p.FirebaseKey}')"></i>  
+                </td>  
+            </tr>  
+        `).join("");  
+    }  
   
     function exportarExcel() {  
-        let l = JSON.parse(localStorage.getItem("ventas_omar") || "[]");  
-        if(l.length === 0) return alert("No hay datos para exportar.");  
-        const ws = XLSX.utils.json_to_sheet(l.map(({id, ...resto}) => resto));  
+        if(listaVentasGlobal.length === 0) return alert("No hay datos para exportar.");  
+        // Quitamos las llaves internas de Firebase para un Excel limpio  
+        const limpio = listaVentasGlobal.map(({id, FirebaseKey, ...resto}) => resto);  
+        const ws = XLSX.utils.json_to_sheet(limpio);  
         ws['!cols'] = [{wch: 12}, {wch: 15}, {wch: 20}, {wch: 20}, {wch: 20}, {wch: 15}, {wch: 25}, {wch: 30}, {wch: 30}, {wch: 18}, {wch: 15}, {wch: 15}];  
         const wb = XLSX.utils.book_new();  
         XLSX.utils.book_append_sheet(wb, ws, "Ventas");  
