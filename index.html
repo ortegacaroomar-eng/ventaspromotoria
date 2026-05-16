@@ -198,9 +198,9 @@
         </table>  
     </div>  
 
-    <!-- APARTADO: IMEIS Y ACTIVACIONES PENDIENTES -->  
+    <!-- APARTADO: IMEIS Y ACTIVACIONES PENDIENTES (HÍBRIDO: NUBE + LOCAL) -->  
     <div class="card" style="margin-top: 40px; border: 1px solid #ff4d4d; background: rgba(255, 77, 77, 0.05);">  
-        <h3><i class="fa-solid fa-clock-rotate-left" style="color: #ff4d4d;"></i> IMEIS / ACTIVACIONES PENDIENTES (SINCRONIZADO)</h3>  
+        <h3><i class="fa-solid fa-clock-rotate-left" style="color: #ff4d4d;"></i> IMEIS / ACTIVACIONES PENDIENTES (RESPALDO NUBE Y LOCAL)</h3>  
         <form id="fPendientes" onsubmit="guardarPendiente(event)">  
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">  
                 <div>  
@@ -269,6 +269,7 @@
     let ultimaLat = 0, ultimaLon = 0;  
     let usuarioActualId = null;  
     let listaVentasGlobal = [];  
+    let listaPendientesGlobal = []; // Manejo local unificado
   
     function inicio() {  
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);  
@@ -294,6 +295,7 @@
         }  
   
         actualizarFechasInputs();  
+        cargarPendientesLocalesEstrategicos(); // Mostrar datos guardados en navegador al instante
   
         auth.onAuthStateChanged(user => {  
             if(user) {  
@@ -415,7 +417,7 @@
     function activarSincronizacionFirebase() {  
         if(!usuarioActualId) return;  
 
-        // Escuchar Ventas  
+        // Escuchar Ventas desde Nube  
         db.ref(`usuarios/${usuarioActualId}/ventas`).on('value', snapshot => {  
             let datos = snapshot.val() || {};  
             listaVentasGlobal = Object.keys(datos).map(key => ({ FirebaseKey: key, ...datos[key] }));  
@@ -423,12 +425,15 @@
             renderizarVentas(listaVentasGlobal);  
         });  
 
-        // Escuchar Pendientes  
+        // Escuchar Pendientes desde Nube (Sincronización multi-dispositivo)  
         db.ref(`usuarios/${usuarioActualId}/pendientes`).on('value', snapshot => {  
             let datos = snapshot.val() || {};  
-            let listaPendientes = Object.keys(datos).map(key => ({ FirebaseKey: key, ...datos[key] }));  
-            listaPendientes.sort((a,b) => b.id - a.id);  
-            renderizarPendientes(listaPendientes);  
+            listaPendientesGlobal = Object.keys(datos).map(key => ({ FirebaseKey: key, ...datos[key] }));  
+            listaPendientesGlobal.sort((a,b) => b.id - a.id);  
+            
+            // Guardar copia local de lo de la nube para acceso rápido sin internet
+            localStorage.setItem('local_pendientes', JSON.stringify(listaPendientesGlobal));  
+            renderizarPendientes(listaPendientesGlobal);  
         });  
     }  
   
@@ -518,22 +523,28 @@
         document.getElementById('barBait').style.width = `${(tBait / totalMax) * 100}%`;  
     }  
 
-    /* ---- APARTADO DE PENDIENTES CORREGIDO PARA ENVIAR A FIREBASE ---- */  
+    /* ---- APARTADO DE PENDIENTES CON RESPALDO LOCAL E INTERNET ---- */  
+    function cargarPendientesLocalesEstrategicos() {  
+        const local = localStorage.getItem('local_pendientes');  
+        if(local) {  
+            listaPendientesGlobal = JSON.parse(local);  
+            renderizarPendientes(listaPendientesGlobal);  
+        }  
+    }  
+
     function guardarPendiente(e) {  
         e.preventDefault();  
-        if(!usuarioActualId) return;  
 
         const fPendiente = document.getElementById('pFec').value;  
         let fechaPendienteFormateada = "";  
         if(fPendiente) {  
             const partes = fPendiente.split("-");  
-            fechaPendienteFormateada = `${partes[2]}/${partes[1]}/${partes[0]}`;  
+            fechaFormateadaInterna = `${partes[2]}/${partes[1]}/${partes[0]}`;  
         }  
 
-        // Corregido: Propiedades estructuradas formalmente en mayúsculas como en las ventas
         const p = {  
             id: Date.now(),  
-            "FECHA": fechaPendienteFormateada,  
+            "FECHA": fechaFormateadaInterna,  
             "MARCA": document.getElementById('pMarca').value,  
             "MODELO": document.getElementById('pMod').value,  
             "IMEI": document.getElementById('pImei').value,  
@@ -541,18 +552,38 @@
             "NUMERO": document.getElementById('pNum').value  
         };  
 
-        db.ref(`usuarios/${usuarioActualId}/pendientes`).push(p)  
-            .then(() => {  
-                document.getElementById('fPendientes').reset();  
-                actualizarFechasInputs();  
-            }).catch(error => {
-                alert("Error al subir a la nube: " + error.message);
-            });  
+        // 1. Guardar de inmediato LOCALMENTE  
+        listaPendientesGlobal.unshift(p);  
+        localStorage.setItem('local_pendientes', JSON.stringify(listaPendientesGlobal));  
+        renderizarPendientes(listaPendientesGlobal);  
+
+        // 2. Subir en paralelo a la NUBE (Firebase) si está la sesión activa  
+        if(usuarioActualId) {  
+            db.ref(`usuarios/${usuarioActualId}/pendientes`).push(p)  
+                .then(() => {  
+                    document.getElementById('fPendientes').reset();  
+                    actualizarFechasInputs();  
+                }).catch(error => {  
+                    console.log("Guardado en local. Pendiente subir a nube al recuperar señal estable.");  
+                });  
+        } else {  
+            document.getElementById('fPendientes').reset();  
+            actualizarFechasInputs();  
+        }  
     }  
 
-    function eliminarPendiente(fbKey) {  
+    function eliminarPendiente(fbKey, idLocal) {  
         if(!confirm("¿Marcar como listo y remover de pendientes?")) return;  
-        db.ref(`usuarios/${usuarioActualId}/pendientes/${fbKey}`).remove();  
+
+        // 1. Quitar localmente  
+        listaPendientesGlobal = listaPendientesGlobal.filter(item => item.id !== idLocal && item.FirebaseKey !== fbKey);  
+        localStorage.setItem('local_pendientes', JSON.stringify(listaPendientesGlobal));  
+        renderizarPendientes(listaPendientesGlobal);  
+
+        // 2. Quitar en la nube  
+        if(usuarioActualId && fbKey && fbKey !== 'undefined') {  
+            db.ref(`usuarios/${usuarioActualId}/pendientes/${fbKey}`).remove();  
+        }  
     }  
 
     function renderizarPendientes(lista) {  
@@ -565,7 +596,7 @@
                 <td>${p["ICCID"] || ''}</td>  
                 <td><b>${p["NUMERO"] || ''}</b></td>  
                 <td style="text-align:center">  
-                    <i class="fa fa-check-circle" style="color:#1f7a3f;font-size:16px;cursor:pointer" title="Marcar como Completado" onclick="eliminarPendiente('${p.FirebaseKey}')"></i>  
+                    <i class="fa fa-check-circle" style="color:#1f7a3f;font-size:16px;cursor:pointer" title="Marcar como Completado" onclick="eliminarPendiente('${p.FirebaseKey}', ${p.id})"></i>  
                 </td>  
             </tr>  
         `).join("");  
