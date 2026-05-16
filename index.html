@@ -202,7 +202,11 @@
     <div class="card" style="margin-top: 40px; border: 1px solid #ff4d4d; background: rgba(255, 77, 77, 0.05);">  
         <h3><i class="fa-solid fa-clock-rotate-left" style="color: #ff4d4d;"></i> IMEIS / ACTIVACIONES PENDIENTES (SINCRONIZADO)</h3>  
         <form id="fPendientes" onsubmit="guardarPendiente(event)">  
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">  
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">  
+                <div>  
+                    <label>FECHA PENDIENTE (MODIFICABLE)</label>  
+                    <input id="pFec" type="date" required style="color: #ff4d4d;">  
+                </div>  
                 <div>  
                     <label>MARCA</label>  
                     <input id="pMarca" required placeholder="Ej. Motorola">  
@@ -234,6 +238,7 @@
         <table>  
             <thead>  
                 <tr>  
+                    <th style="background: #ff4d4d !important; color: white !important;">FECHA PENDIENTE</th>  
                     <th style="background: #ff4d4d !important; color: white !important;">MARCA</th>  
                     <th style="background: #ff4d4d !important; color: white !important;">MODELO</th>  
                     <th style="background: #ff4d4d !important; color: white !important;">IMEI</th>  
@@ -263,7 +268,7 @@
     let isLoginMode = true;  
     let ultimaLat = 0, ultimaLon = 0;  
     let usuarioActualId = null;  
-    let listaVentasGlobal = []; // Para poder exportar a Excel fácilmente  
+    let listaVentasGlobal = [];  
   
     function inicio() {  
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);  
@@ -288,16 +293,13 @@
             });  
         }  
   
-        actualizarFechaInput();  
+        actualizarFechasInputs();  
   
-        // Observador de estado de autenticación  
         auth.onAuthStateChanged(user => {  
             if(user) {  
                 usuarioActualId = user.uid;  
                 document.getElementById('loginBox').classList.add("hidden");  
                 document.getElementById('appBox').classList.remove("hidden");  
-                
-                // Escuchar cambios en la base de datos en tiempo real  
                 activarSincronizacionFirebase();  
             } else {  
                 usuarioActualId = null;  
@@ -329,12 +331,15 @@
             });  
     }  
 
-    function actualizarFechaInput() {  
+    function actualizarFechasInputs() {  
         const hoy = new Date();  
         const d = String(hoy.getDate()).padStart(2, '0');  
         const m = String(hoy.getMonth() + 1).padStart(2, '0');  
         const y = hoy.getFullYear();  
-        document.getElementById('iFec').value = `${y}-${m}-${d}`;  
+        const fechaYMD = `${y}-${m}-${d}`;  
+        
+        document.getElementById('iFec').value = fechaYMD;  
+        document.getElementById('pFec').value = fechaYMD;  
     }  
 
     function cambiarOperador(op) {  
@@ -407,7 +412,6 @@
   
     function salir() { if(confirm("¿Cerrar sesión?")) auth.signOut(); }  
 
-    /* ---- NUEVA LOGICA: SINCRONIZACIÓN CON FIREBASE NUBE ---- */  
     function activarSincronizacionFirebase() {  
         if(!usuarioActualId) return;  
 
@@ -415,8 +419,6 @@
         db.ref(`usuarios/${usuarioActualId}/ventas`).on('value', snapshot => {  
             let datos = snapshot.val() || {};  
             listaVentasGlobal = Object.keys(datos).map(key => ({ FirebaseKey: key, ...datos[key] }));  
-            
-            // Ordenar por fecha de creación descendente (más recientes primero)  
             listaVentasGlobal.sort((a,b) => b.id - a.id);  
             renderizarVentas(listaVentasGlobal);  
         });  
@@ -459,11 +461,10 @@
             "MODELO": document.getElementById('iMod').value  
         };  
         
-        // Guardar directamente en Firebase (Se reflejará en todos tus dispositivos)  
         db.ref(`usuarios/${usuarioActualId}/ventas`).push(v)  
             .then(() => {  
                 e.target.reset();  
-                actualizarFechaInput();  
+                actualizarFechasInputs();  
                 cambiarOperador(opActual);  
 
                 btn.innerText = "¡SINCRO EN NUBE EXITOSA!";  
@@ -517,13 +518,21 @@
         document.getElementById('barBait').style.width = `${(tBait / totalMax) * 100}%`;  
     }  
 
-    /* ---- LÓGICA DE APARTADO DE PENDIENTES CON FIREBASE ---- */  
+    /* ---- APARTADO DE PENDIENTES CON FECHA MODIFICABLE ---- */  
     function guardarPendiente(e) {  
         e.preventDefault();  
         if(!usuarioActualId) return;  
 
+        const fPendiente = document.getElementById('pFec').value;  
+        let fechaPendienteFormateada = "";  
+        if(fPendiente) {  
+            const partes = fPendiente.split("-");  
+            fechaPendienteFormateada = `${partes[2]}/${partes[1]}/${partes[0]}`;  
+        }  
+
         const p = {  
             id: Date.now(),  
+            fecha: fechaPendienteFormateada,  
             marca: document.getElementById('pMarca').value,  
             modelo: document.getElementById('pMod').value,  
             imei: document.getElementById('pImei').value,  
@@ -534,6 +543,7 @@
         db.ref(`usuarios/${usuarioActualId}/pendientes`).push(p)  
             .then(() => {  
                 document.getElementById('fPendientes').reset();  
+                actualizarFechasInputs();  
             });  
     }  
 
@@ -545,6 +555,7 @@
     function renderizarPendientes(lista) {  
         document.getElementById('bodyPendientes').innerHTML = lista.map(p => `  
             <tr>  
+                <td><b>${p.fecha || 'Sin Fecha'}</b></td>  
                 <td>${p.marca}</td>  
                 <td>${p.modelo}</td>  
                 <td>${p.imei}</td>  
@@ -559,7 +570,6 @@
   
     function exportarExcel() {  
         if(listaVentasGlobal.length === 0) return alert("No hay datos para exportar.");  
-        // Quitamos las llaves internas de Firebase para un Excel limpio  
         const limpio = listaVentasGlobal.map(({id, FirebaseKey, ...resto}) => resto);  
         const ws = XLSX.utils.json_to_sheet(limpio);  
         ws['!cols'] = [{wch: 12}, {wch: 15}, {wch: 20}, {wch: 20}, {wch: 20}, {wch: 15}, {wch: 25}, {wch: 30}, {wch: 30}, {wch: 18}, {wch: 15}, {wch: 15}];  
