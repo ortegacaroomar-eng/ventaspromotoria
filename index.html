@@ -518,7 +518,7 @@
         document.getElementById('barBait').style.width = `${(tBait / totalMax) * 100}%`;  
     }  
 
-    /* ---- APARTADO DE PENDIENTES CON FECHA MODIFICABLE ---- */  
+    /* ---- APARTADO DE PENDIENTES CORREGIDO PARA ENVIAR A FIREBASE ---- */  
     function guardarPendiente(e) {  
         e.preventDefault();  
         if(!usuarioActualId) return;  
@@ -530,20 +530,23 @@
             fechaPendienteFormateada = `${partes[2]}/${partes[1]}/${partes[0]}`;  
         }  
 
+        // Corregido: Propiedades estructuradas formalmente en mayúsculas como en las ventas
         const p = {  
             id: Date.now(),  
-            fecha: fechaPendienteFormateada,  
-            marca: document.getElementById('pMarca').value,  
-            modelo: document.getElementById('pMod').value,  
-            imei: document.getElementById('pImei').value,  
-            iccid: document.getElementById('pIccid').value,  
-            numero: document.getElementById('pNum').value  
+            "FECHA": fechaPendienteFormateada,  
+            "MARCA": document.getElementById('pMarca').value,  
+            "MODELO": document.getElementById('pMod').value,  
+            "IMEI": document.getElementById('pImei').value,  
+            "ICCID": document.getElementById('pIccid').value,  
+            "NUMERO": document.getElementById('pNum').value  
         };  
 
         db.ref(`usuarios/${usuarioActualId}/pendientes`).push(p)  
             .then(() => {  
                 document.getElementById('fPendientes').reset();  
                 actualizarFechasInputs();  
+            }).catch(error => {
+                alert("Error al subir a la nube: " + error.message);
             });  
     }  
 
@@ -555,12 +558,12 @@
     function renderizarPendientes(lista) {  
         document.getElementById('bodyPendientes').innerHTML = lista.map(p => `  
             <tr>  
-                <td><b>${p.fecha || 'Sin Fecha'}</b></td>  
-                <td>${p.marca}</td>  
-                <td>${p.modelo}</td>  
-                <td>${p.imei}</td>  
-                <td>${p.iccid}</td>  
-                <td><b>${p.numero}</b></td>  
+                <td><b>${p["FECHA"] || 'Sin Fecha'}</b></td>  
+                <td>${p["MARCA"] || ''}</td>  
+                <td>${p["MODELO"] || ''}</td>  
+                <td>${p["IMEI"] || ''}</td>  
+                <td>${p["ICCID"] || ''}</td>  
+                <td><b>${p["NUMERO"] || ''}</b></td>  
                 <td style="text-align:center">  
                     <i class="fa fa-check-circle" style="color:#1f7a3f;font-size:16px;cursor:pointer" title="Marcar como Completado" onclick="eliminarPendiente('${p.FirebaseKey}')"></i>  
                 </td>  
