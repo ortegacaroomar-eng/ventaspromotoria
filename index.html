@@ -198,9 +198,9 @@
         </table>  
     </div>  
 
-    <!-- APARTADO: IMEIS Y ACTIVACIONES PENDIENTES (HÍBRIDO: NUBE + LOCAL) -->  
+    <!-- APARTADO: IMEIS Y ACTIVACIONES PENDIENTES (100% LOCAL AL INSTANTE) -->  
     <div class="card" style="margin-top: 40px; border: 1px solid #ff4d4d; background: rgba(255, 77, 77, 0.05);">  
-        <h3><i class="fa-solid fa-clock-rotate-left" style="color: #ff4d4d;"></i> IMEIS / ACTIVACIONES PENDIENTES (RESPALDO NUBE Y LOCAL)</h3>  
+        <h3><i class="fa-solid fa-clock-rotate-left" style="color: #ff4d4d;"></i> IMEIS / ACTIVACIONES PENDIENTES (ALMACENAMIENTO LOCAL SEGURO)</h3>  
         <form id="fPendientes" onsubmit="guardarPendiente(event)">  
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">  
                 <div>  
@@ -269,7 +269,7 @@
     let ultimaLat = 0, ultimaLon = 0;  
     let usuarioActualId = null;  
     let listaVentasGlobal = [];  
-    let listaPendientesGlobal = []; // Manejo local unificado
+    let listaPendientesGlobal = []; // Manejo 100% Local autónomo
   
     function inicio() {  
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);  
@@ -295,14 +295,14 @@
         }  
   
         actualizarFechasInputs();  
-        cargarPendientesLocalesEstrategicos(); // Mostrar datos guardados en navegador al instante
+        cargarPendientesExclusivosLocal(); // Cargar los pendientes directo del teléfono
   
         auth.onAuthStateChanged(user => {  
             if(user) {  
                 usuarioActualId = user.uid;  
                 document.getElementById('loginBox').classList.add("hidden");  
                 document.getElementById('appBox').classList.remove("hidden");  
-                activarSincronizacionFirebase();  
+                activarSincronizacionVentasFirebase();  
             } else {  
                 usuarioActualId = null;  
                 document.getElementById('loginBox').classList.remove("hidden");  
@@ -414,26 +414,15 @@
   
     function salir() { if(confirm("¿Cerrar sesión?")) auth.signOut(); }  
 
-    function activarSincronizacionFirebase() {  
+    function activarSincronizacionVentasFirebase() {  
         if(!usuarioActualId) return;  
 
-        // Escuchar Ventas desde Nube  
+        // Escuchar exclusivamente Ventas desde Nube  
         db.ref(`usuarios/${usuarioActualId}/ventas`).on('value', snapshot => {  
             let datos = snapshot.val() || {};  
             listaVentasGlobal = Object.keys(datos).map(key => ({ FirebaseKey: key, ...datos[key] }));  
             listaVentasGlobal.sort((a,b) => b.id - a.id);  
             renderizarVentas(listaVentasGlobal);  
-        });  
-
-        // Escuchar Pendientes desde Nube (Sincronización multi-dispositivo)  
-        db.ref(`usuarios/${usuarioActualId}/pendientes`).on('value', snapshot => {  
-            let datos = snapshot.val() || {};  
-            listaPendientesGlobal = Object.keys(datos).map(key => ({ FirebaseKey: key, ...datos[key] }));  
-            listaPendientesGlobal.sort((a,b) => b.id - a.id);  
-            
-            // Guardar copia local de lo de la nube para acceso rápido sin internet
-            localStorage.setItem('local_pendientes', JSON.stringify(listaPendientesGlobal));  
-            renderizarPendientes(listaPendientesGlobal);  
         });  
     }  
   
@@ -523,13 +512,15 @@
         document.getElementById('barBait').style.width = `${(tBait / totalMax) * 100}%`;  
     }  
 
-    /* ---- APARTADO DE PENDIENTES CON RESPALDO LOCAL E INTERNET ---- */  
-    function cargarPendientesLocalesEstrategicos() {  
-        const local = localStorage.getItem('local_pendientes');  
+    /* ---- CONTROL INTERNO EXCLUSIVO DE PENDIENTES EN EL TELÉFONO (LOCAL STORAGE) ---- */  
+    function cargarPendientesExclusivosLocal() {  
+        const local = localStorage.getItem('omar_pendientes_locales');  
         if(local) {  
             listaPendientesGlobal = JSON.parse(local);  
-            renderizarPendientes(listaPendientesGlobal);  
+        } else {  
+            listaPendientesGlobal = [];  
         }  
+        renderizarPendientes(listaPendientesGlobal);  
     }  
 
     function guardarPendiente(e) {  
@@ -539,12 +530,12 @@
         let fechaPendienteFormateada = "";  
         if(fPendiente) {  
             const partes = fPendiente.split("-");  
-            fechaFormateadaInterna = `${partes[2]}/${partes[1]}/${partes[0]}`;  
+            fechaPendienteFormateada = `${partes[2]}/${partes[1]}/${partes[0]}`;  
         }  
 
         const p = {  
             id: Date.now(),  
-            "FECHA": fechaFormateadaInterna,  
+            "FECHA": fechaPendienteFormateada,  
             "MARCA": document.getElementById('pMarca').value,  
             "MODELO": document.getElementById('pMod').value,  
             "IMEI": document.getElementById('pImei').value,  
@@ -552,38 +543,23 @@
             "NUMERO": document.getElementById('pNum').value  
         };  
 
-        // 1. Guardar de inmediato LOCALMENTE  
+        // Guardado local instantáneo sin llamadas a Firebase  
         listaPendientesGlobal.unshift(p);  
-        localStorage.setItem('local_pendientes', JSON.stringify(listaPendientesGlobal));  
+        localStorage.setItem('omar_pendientes_locales', JSON.stringify(listaPendientesGlobal));  
         renderizarPendientes(listaPendientesGlobal);  
 
-        // 2. Subir en paralelo a la NUBE (Firebase) si está la sesión activa  
-        if(usuarioActualId) {  
-            db.ref(`usuarios/${usuarioActualId}/pendientes`).push(p)  
-                .then(() => {  
-                    document.getElementById('fPendientes').reset();  
-                    actualizarFechasInputs();  
-                }).catch(error => {  
-                    console.log("Guardado en local. Pendiente subir a nube al recuperar señal estable.");  
-                });  
-        } else {  
-            document.getElementById('fPendientes').reset();  
-            actualizarFechasInputs();  
-        }  
+        // Reset rápido del formulario  
+        document.getElementById('fPendientes').reset();  
+        actualizarFechasInputs();  
     }  
 
-    function eliminarPendiente(fbKey, idLocal) {  
-        if(!confirm("¿Marcar como listo y remover de pendientes?")) return;  
+    function eliminarPendiente(idLocal) {  
+        if(!confirm("¿Marcar como listo y remover de tus pendientes locales?")) return;  
 
-        // 1. Quitar localmente  
-        listaPendientesGlobal = listaPendientesGlobal.filter(item => item.id !== idLocal && item.FirebaseKey !== fbKey);  
-        localStorage.setItem('local_pendientes', JSON.stringify(listaPendientesGlobal));  
+        // Remover solo de la lista interna del celular  
+        listaPendientesGlobal = listaPendientesGlobal.filter(item => item.id !== idLocal);  
+        localStorage.setItem('omar_pendientes_locales', JSON.stringify(listaPendientesGlobal));  
         renderizarPendientes(listaPendientesGlobal);  
-
-        // 2. Quitar en la nube  
-        if(usuarioActualId && fbKey && fbKey !== 'undefined') {  
-            db.ref(`usuarios/${usuarioActualId}/pendientes/${fbKey}`).remove();  
-        }  
     }  
 
     function renderizarPendientes(lista) {  
@@ -596,7 +572,7 @@
                 <td>${p["ICCID"] || ''}</td>  
                 <td><b>${p["NUMERO"] || ''}</b></td>  
                 <td style="text-align:center">  
-                    <i class="fa fa-check-circle" style="color:#1f7a3f;font-size:16px;cursor:pointer" title="Marcar como Completado" onclick="eliminarPendiente('${p.FirebaseKey}', ${p.id})"></i>  
+                    <i class="fa fa-check-circle" style="color:#1f7a3f;font-size:16px;cursor:pointer" title="Listo / Eliminar" onclick="eliminarPendiente(${p.id})"></i>  
                 </td>  
             </tr>  
         `).join("");  
