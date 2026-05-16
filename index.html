@@ -3,22 +3,16 @@
 <head>  
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-    <title>Sistema Multi-Ventas - Omar Ortega</title>  
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>  
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>  
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>  
+    <title>Sistema Multi-Ventas Local - Omar Ortega</title>  
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>  
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">  
     <style>  
         body { margin:0; font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; }  
         .app { max-width:1000px; margin:auto; padding:20px; }  
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px; }  
-        .gps-card { background: #000; border: 1px solid #00b4d8; padding: 10px 15px; border-radius: 12px; color: #00b4d8; font-size: 12px; display: flex; align-items: center; max-width: 45%; }  
+        .gps-card { background: #000; border: 1px solid #00b4d8; padding: 10px 15px; border-radius: 12px; color: #00b4d8; font-size: 12px; display: flex; align-items: center; max-width: 55%; }  
         .gps-card i { margin-right: 10px; font-size: 18px; color: #ffc300; min-width: 20px; }  
         .reloj-digital { font-family: monospace; font-size: 24px; color: #ffc300; font-weight: bold; }  
-
-        .btn-exit { background: rgba(255, 77, 77, 0.2); color: #ff4d4d; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #ff4d4d; cursor: pointer; transition: 0.3s; }  
-        .btn-exit:hover { background: #ff4d4d; color: white; }  
 
         .menu-operadores { display: flex; gap: 10px; margin-bottom: 10px; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }  
         .tab-btn { flex: 1; padding: 12px; text-align: center; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; transition: 0.3s; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; }  
@@ -29,7 +23,6 @@
         .tab-bait { background: rgba(114, 9, 183, 0.2); border: 1px solid #7209b7; }  
         .tab-bait.active { background: #7209b7; color: white; box-shadow: 0 0 15px #7209b7; }  
 
-        /* Submenú de modalidad Solo Teléfono */  
         .sub-menu-modalidad { display: flex; gap: 10px; margin-bottom: 20px; background: rgba(0,0,0,0.4); padding: 6px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); }  
         .sub-tab-btn { flex: 1; padding: 8px; text-align: center; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; border: none; transition: 0.2s; color: #ccc; background: transparent; }  
         .sub-tab-btn.active { background: #ffc300; color: #001d3d; box-shadow: 0 0 8px #ffc300; }  
@@ -50,8 +43,6 @@
         .app input:focus { background: rgba(255,255,255,0.2); border: 1px solid #ffc300; }  
         .app input[type="date"]::-calendar-picker-indicator { filter: invert(1); cursor: pointer; }  
 
-        .login-box input { width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #ccc; background:#f9f9f9; color:#000; box-sizing: border-box; font-size: 14px; }  
-
         .btn-save { background:#ffc300; color:#001d3d; width:100%; padding:15px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size: 16px; transition: 0.3s; }  
         .btn-save:active { transform: scale(0.98); }  
 
@@ -70,34 +61,22 @@
         tr:nth-child(even) { background: #f9f9f9; }  
 
         .hidden { display: none !important; }  
-        .login-box { max-width: 350px; margin: 100px auto; background: white; padding: 30px; border-radius: 20px; text-align: center; color: #000; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }  
-        .btn-link-auth { background: none; border: none; color: #003566; font-size: 13px; text-decoration: underline; cursor: pointer; margin-top: 15px; font-weight: bold; }  
     </style>  
 </head>  
 <body onload="inicio()">  
 
-<div id="loginBox" class="login-box">  
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Logo_Telcel.svg/1200px-Logo_Telcel.svg.png" width="120">  
-    <h3 id="authTitle" style="color:#003566; margin-top:10px;">Acceso Promotores</h3>  
-    <input id="u" type="email" placeholder="Correo electrónico">  
-    <input id="p" type="password" placeholder="Contraseña">  
-    <button class="btn-save" id="btnAuthAction" onclick="manejarAuth()">ENTRAR</button>  
-    <button class="btn-link-auth" id="btnToggleAuth" onclick="toggleAuthMode()">¿No tienes cuenta? Regístrate aquí</button>  
-</div>  
-
-<div id="appBox" class="app hidden">  
+<div class="app">  
     <div class="top-bar">  
         <div class="gps-card">  
             <i class="fa-solid fa-location-dot"></i>  
             <div><b style="color:white">UBICACIÓN ACTUAL</b><br><span id="txtGps">Localizando...</span></div>  
         </div>  
         <div class="reloj-digital" id="txtReloj">00:00:00</div>  
-        <div class="btn-exit" onclick="salir()" title="Cerrar Sesión"><i class="fa-solid fa-power-off"></i></div>  
     </div>  
 
-    <!-- Dashboard -->  
+    <!-- Dashboard Local -->  
     <div class="panel-avance">  
-        <h4><i class="fa-solid fa-chart-line"></i> Gráfica de Avance de Ventas (Nube)</h4>  
+        <h4><i class="fa-solid fa-chart-line"></i> Gráfica de Avance de Ventas (100% Local)</h4>  
         <div class="contenedor-graficas">  
             <div class="barra-progreso-item" style="border-left-color: #00b4d8;">  
                 <div class="info-progreso"><span>TELCEL</span><span id="lblTelcel">0</span></div>  
@@ -128,7 +107,7 @@
     </div>  
 
     <!-- FORMULARIO PRINCIPAL DE VENTAS -->  
-    <form id="fReg">  
+    <form id="fReg" onsubmit="guardarVentaLocal(event)">  
         <input type="hidden" id="iOperador" value="TELCEL">  
         <input type="hidden" id="iModalidadVenta" value="LINEA">  
         
@@ -184,7 +163,7 @@
             <label>NOMBRE COMPLETO PROMOTOR</label><input id="iProm" required placeholder="Tu nombre">  
         </div>  
           
-        <button type="submit" id="btnGuardar" class="btn-save">GUARDAR VENTA EN LA NUBE</button>  
+        <button type="submit" id="btnGuardar" class="btn-save">GUARDAR VENTA EN EL TELÉFONO</button>  
     </form>  
 
     <button class="btn-excel" onclick="exportarExcel()">  
@@ -207,14 +186,14 @@
                     <th>FECHA</th>  
                     <th>MARCA</th>  
                     <th>MODELO</th>  
-                    <th style="background:red !important; text-align: center;">X</th>  
+                    <th style="background:red !important; text-align: center; width: 50px;">X</th>  
                 </tr>  
             </thead>  
             <tbody id="bodyVentas"></tbody>  
         </table>  
     </div>  
 
-    <!-- APARTADO: IMEIS Y ACTIVACIONES PENDIENTES (100% LOCAL AL INSTANTE) -->  
+    <!-- APARTADO: IMEIS Y ACTIVACIONES PENDIENTES -->  
     <div class="card" style="margin-top: 40px; border: 1px solid #ff4d4d; background: rgba(255, 77, 77, 0.05);">  
         <h3><i class="fa-solid fa-clock-rotate-left" style="color: #ff4d4d;"></i> IMEIS / ACTIVACIONES PENDIENTES (ALMACENAMIENTO LOCAL SEGURO)</h3>  
         <form id="fPendientes" onsubmit="guardarPendiente(event)">  
@@ -270,28 +249,11 @@
 </div>  
 
 <script>  
-    const firebaseConfig = {  
-        apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",   
-        authDomain: "ventastelcel4029.firebaseapp.com",  
-        databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com",  
-        projectId: "ventastelcel4029",  
-        storageBucket: "ventastelcel4029.firebasestorage.app",  
-        messagingSenderId: "480758010888",  
-        appId: "1:480758010888:web:e948c54f0217536aa9adbd"  
-    };  
-  
-    let db, auth;  
-    let isLoginMode = true;  
-    let ultimaLat = 0, ultimaLon = 0;  
-    let usuarioActualId = null;  
     let listaVentasGlobal = [];  
     let listaPendientesGlobal = [];  
+    let ultimaLat = 0, ultimaLon = 0;  
   
     function inicio() {  
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);  
-        db = firebase.database();  
-        auth = firebase.auth();  
-  
         setInterval(() => {  
             document.getElementById('txtReloj').innerText = new Date().toLocaleTimeString('es-MX');  
         }, 1000);  
@@ -306,25 +268,13 @@
                     obtenerNombreCalle(lat, lon);  
                 }  
             }, () => {  
-                document.getElementById('txtGps').innerHTML = "GPS Desactivado";  
+                document.getElementById('txtGps').innerHTML = "GPS Desactivado o Sin Señal";  
             });  
         }  
   
         actualizarFechasInputs();  
+        cargarVentasLocales();  
         cargarPendientesExclusivosLocal();  
-  
-        auth.onAuthStateChanged(user => {  
-            if(user) {  
-                usuarioActualId = user.uid;  
-                document.getElementById('loginBox').classList.add("hidden");  
-                document.getElementById('appBox').classList.remove("hidden");  
-                activarSincronizacionVentasFirebase();  
-            } else {  
-                usuarioActualId = null;  
-                document.getElementById('loginBox').classList.remove("hidden");  
-                document.getElementById('appBox').classList.add("hidden");  
-            }  
-        });  
     }  
 
     function obtenerNombreCalle(lat, lon) {  
@@ -365,8 +315,6 @@
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));  
         
         const subMenu = document.getElementById('wrapperSubModalidad');  
-
-        // Resetear a modalidad LINEA por defecto al cambiar de operador  
         cambiarModalidad('LINEA');  
 
         if(op === 'TELCEL') {  
@@ -410,22 +358,19 @@
         const inputTel = document.getElementById('iTel');  
         const inputIcc = document.getElementById('iIcc');  
 
-        // Configuración si es SOLO TELÉFONO (Para ATT o BAIT)  
         if(mod === 'SOLO_TELO') {  
             wrapVinculo.classList.add('hidden');  
-            wrapPayJoy.classList.remove('hidden'); // Permitir Payjoy por si es financiado solo  
+            wrapPayJoy.classList.remove('hidden');  
             wrapTipo.classList.add('hidden');  
-            wrapImei.classList.remove('hidden'); // Forzar IMEI visible porque se vende el fierro  
+            wrapImei.classList.remove('hidden');  
             wrapTel.classList.add('hidden');  
             wrapIcc.classList.add('hidden');  
 
-            // Quitar requeridos temporales para que deje guardar  
             inputTel.removeAttribute('required');  
             inputIcc.removeAttribute('required');  
             return;  
         }  
 
-        // Configuración estándar por operador (Con Línea / Chip / Porta)  
         inputTel.setAttribute('required', 'true');  
         inputIcc.setAttribute('required', 'true');  
 
@@ -452,61 +397,16 @@
             wrapIcc.classList.remove('hidden');  
         }  
     }  
-  
-    function toggleAuthMode() {  
-        isLoginMode = !isLoginMode;  
-        document.getElementById('authTitle').innerText = isLoginMode ? "Acceso Promotores" : "Registrar Nuevo Usuario";  
-        document.getElementById('btnAuthAction').innerText = isLoginMode ? "ENTRAR" : "REGISTRAR";  
-        document.getElementById('btnToggleAuth').innerText = isLoginMode ? "¿No tienes cuenta? Regístrate aquí" : "¿Ya tienes cuenta? Inicia sesión";  
-    }  
-  
-    function manejarAuth() {  
-        const u = document.getElementById('u').value.trim();  
-        const p = document.getElementById('p').value;  
-        const btn = document.getElementById('btnAuthAction');  
-  
-        if(!u || !p) return alert("Por favor, llena todos los campos.");  
-          
-        btn.disabled = true;  
-        btn.innerText = "PROCESANDO...";  
-  
-        if(isLoginMode) {  
-            auth.signInWithEmailAndPassword(u, p)  
-                .catch(e => {  
-                    alert("Error: Usuario o contraseña incorrectos.");  
-                    btn.disabled = false;  
-                    btn.innerText = "ENTRAR";  
-                });  
-        } else {  
-            auth.createUserWithEmailAndPassword(u, p)  
-                .then(() => {  
-                    alert("Cuenta creada con éxito.");  
-                    toggleAuthMode();  
-                })  
-                .catch(e => {  
-                    alert(e.message);  
-                    btn.disabled = false;  
-                    btn.innerText = "REGISTRAR";  
-                });  
-        }  
-    }  
-  
-    function salir() { if(confirm("¿Cerrar sesión?")) auth.signOut(); }  
 
-    function activarSincronizacionVentasFirebase() {  
-        if(!usuarioActualId) return;  
-
-        db.ref(`usuarios/${usuarioActualId}/ventas`).on('value', snapshot => {  
-            let datos = snapshot.val() || {};  
-            listaVentasGlobal = Object.keys(datos).map(key => ({ FirebaseKey: key, ...datos[key] }));  
-            listaVentasGlobal.sort((a,b) => b.id - a.id);  
-            renderizarVentas(listaVentasGlobal);  
-        });  
+    /* ---- APARTADO PRINCIPAL 100% LOCAL STORAGE V ENTIAS ---- */  
+    function cargarVentasLocales() {  
+        const local = localStorage.getItem('omar_ventas_locales');  
+        listaVentasGlobal = local ? JSON.parse(local) : [];  
+        renderizarVentas(listaVentasGlobal);  
     }  
   
-    document.getElementById('fReg').onsubmit = e => {  
+    function guardarVentaLocal(e) {  
         e.preventDefault();  
-        if(!usuarioActualId) return;  
 
         const btn = document.getElementById('btnGuardar');  
         const opActual = document.getElementById('iOperador').value;  
@@ -519,14 +419,9 @@
             fechaFormateada = `${partes[2]}/${partes[1]}/${partes[0]}`;  
         }  
 
-        // Extracción condicionada por modalidad  
         let numCelular = document.getElementById('iTel').value;  
         let iccidChip = document.getElementById('iIcc').value;  
-        let tipoVenta = "N/A";  
-
-        if(opActual === 'TELCEL') {  
-            tipoVenta = document.getElementById('iTipo').value;  
-        }  
+        let tipoVenta = opActual === 'TELCEL' ? document.getElementById('iTipo').value : "N/A";  
 
         if(modActual === 'SOLO_TELO') {  
             numCelular = "N/A";  
@@ -557,24 +452,27 @@
             "MODELO": document.getElementById('iMod').value  
         };  
         
-        db.ref(`usuarios/${usuarioActualId}/ventas`).push(v)  
-            .then(() => {  
-                e.target.reset();  
-                actualizarFechasInputs();  
-                cambiarOperador(opActual);  
+        listaVentasGlobal.unshift(v);  
+        localStorage.setItem('omar_ventas_locales', JSON.stringify(listaVentasGlobal));  
+        renderizarVentas(listaVentasGlobal);  
 
-                btn.innerText = "¡SINCRO EN NUBE EXITOSA!";  
-                btn.style.background = "#00b4d8";  
-                setTimeout(() => {  
-                    btn.innerText = "GUARDAR VENTA EN LA NUBE";  
-                    btn.style.background = "#ffc300";  
-                }, 2000);  
-            });  
-    };  
+        e.target.reset();  
+        actualizarFechasInputs();  
+        cambiarOperador(opActual);  
+
+        btn.innerText = "¡VENTA GUARDADA AL INSTANTE!";  
+        btn.style.background = "#00b4d8";  
+        setTimeout(() => {  
+            btn.innerText = "GUARDAR VENTA EN EL TELÉFONO";  
+            btn.style.background = "#ffc300";  
+        }, 1500);  
+    }  
   
-    function eliminar(fbKey) {  
-        if(!confirm("¿Eliminar esta venta de la base de datos central?")) return;  
-        db.ref(`usuarios/${usuarioActualId}/ventas/${fbKey}`).remove();  
+    function eliminarVentaLocal(idVenta) {  
+        if(!confirm("¿Eliminar este registro de la memoria local?")) return;  
+        listaVentasGlobal = listaVentasGlobal.filter(v => v.id !== idVenta);  
+        localStorage.setItem('omar_ventas_locales', JSON.stringify(listaVentasGlobal));  
+        renderizarVentas(listaVentasGlobal);  
     }  
   
     function renderizarVentas(lista) {  
@@ -599,7 +497,7 @@
                     <td>${v["FECHA DE ACTIVACION"]}</td>  
                     <td>${v.MARCA}</td>  
                     <td>${v.MODELO}</td>  
-                    <td style="text-align:center"><i class="fa fa-trash" style="color:red;cursor:pointer" onclick="eliminar('${v.FirebaseKey}')"></i></td>  
+                    <td style="text-align:center"><i class="fa fa-trash" style="color:red;cursor:pointer" onclick="eliminarVentaLocal(${v.id})"></i></td>  
                 </tr>  
             `;  
         }).join("");  
@@ -614,13 +512,10 @@
         document.getElementById('barBait').style.width = `${(tBait / totalMax) * 100}%`;  
     }  
 
+    /* ---- DETALLE: APARTADO DE PENDIENTES ---- */  
     function cargarPendientesExclusivosLocal() {  
         const local = localStorage.getItem('omar_pendientes_locales');  
-        if(local) {  
-            listaPendientesGlobal = JSON.parse(local);  
-        } else {  
-            listaPendientesGlobal = [];  
-        }  
+        listaPendientesGlobal = local ? JSON.parse(local) : [];  
         renderizarPendientes(listaPendientesGlobal);  
     }  
 
@@ -654,7 +549,6 @@
 
     function eliminarPendiente(idLocal) {  
         if(!confirm("¿Marcar como listo y remover de tus pendientes locales?")) return;  
-
         listaPendientesGlobal = listaPendientesGlobal.filter(item => item.id !== idLocal);  
         localStorage.setItem('omar_pendientes_locales', JSON.stringify(listaPendientesGlobal));  
         renderizarPendientes(listaPendientesGlobal);  
@@ -677,13 +571,13 @@
     }  
   
     function exportarExcel() {  
-        if(listaVentasGlobal.length === 0) return alert("No hay datos para exportar.");  
-        const limpio = listaVentasGlobal.map(({id, FirebaseKey, ...resto}) => resto);  
+        if(listaVentasGlobal.length === 0) return alert("No hay datos locales para exportar.");  
+        const limpio = listaVentasGlobal.map(({id, ...resto}) => resto);  
         const ws = XLSX.utils.json_to_sheet(limpio);  
         ws['!cols'] = [{wch: 12}, {wch: 15}, {wch: 20}, {wch: 20}, {wch: 20}, {wch: 15}, {wch: 25}, {wch: 30}, {wch: 30}, {wch: 18}, {wch: 15}, {wch: 15}];  
         const wb = XLSX.utils.book_new();  
         XLSX.utils.book_append_sheet(wb, ws, "Ventas");  
-        XLSX.writeFile(wb, `Reporte_Ventas_${new Date().toLocaleDateString().replace(/\//g,'-')}.xlsx`);  
+        XLSX.writeFile(wb, `Reporte_Ventas_Local_${new Date().toLocaleDateString().replace(/\//g,'-')}.xlsx`);  
     }  
 </script>  
 </body>  
