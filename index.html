@@ -20,7 +20,7 @@
         .btn-exit { background: rgba(255, 77, 77, 0.2); color: #ff4d4d; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #ff4d4d; cursor: pointer; transition: 0.3s; }  
         .btn-exit:hover { background: #ff4d4d; color: white; }  
 
-        .menu-operadores { display: flex; gap: 10px; margin-bottom: 20px; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }  
+        .menu-operadores { display: flex; gap: 10px; margin-bottom: 10px; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }  
         .tab-btn { flex: 1; padding: 12px; text-align: center; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; transition: 0.3s; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; }  
         .tab-telcel { background: rgba(0, 180, 216, 0.2); border: 1px solid #00b4d8; }  
         .tab-telcel.active { background: #00b4d8; color: #000; box-shadow: 0 0 15px #00b4d8; }  
@@ -28,6 +28,11 @@
         .tab-att.active { background: #ff7200; color: white; box-shadow: 0 0 15px #ff7200; }  
         .tab-bait { background: rgba(114, 9, 183, 0.2); border: 1px solid #7209b7; }  
         .tab-bait.active { background: #7209b7; color: white; box-shadow: 0 0 15px #7209b7; }  
+
+        /* Submenú de modalidad Solo Teléfono */  
+        .sub-menu-modalidad { display: flex; gap: 10px; margin-bottom: 20px; background: rgba(0,0,0,0.4); padding: 6px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); }  
+        .sub-tab-btn { flex: 1; padding: 8px; text-align: center; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; border: none; transition: 0.2s; color: #ccc; background: transparent; }  
+        .sub-tab-btn.active { background: #ffc300; color: #001d3d; box-shadow: 0 0 8px #ffc300; }  
 
         .panel-avance { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 15px; margin-bottom: 15px; }  
         .panel-avance h4 { margin: 0 0 10px 0; font-size: 14px; color: #ffc300; text-transform: uppercase; }  
@@ -116,9 +121,16 @@
         <button class="tab-btn tab-bait" onclick="cambiarOperador('BAIT')"><i class="fa-solid fa-bolt"></i> BAIT</button>  
     </div>  
 
+    <!-- SUB-MENÚ DE MODALIDAD (Exclusivo AT&T y BAIT) -->  
+    <div id="wrapperSubModalidad" class="sub-menu-modalidad hidden">  
+        <button id="subTabLinea" class="sub-tab-btn active" onclick="cambiarModalidad('LINEA')"><i class="fa-solid fa-sim-card"></i> LÍNEA CON EQUIPO</button>  
+        <button id="subTabSoloTelo" class="sub-tab-btn" onclick="cambiarModalidad('SOLO_TELO')"><i class="fa-solid fa-mobile-screen"></i> SOLO SE VENDIÓ TELÉFONO</button>  
+    </div>  
+
     <!-- FORMULARIO PRINCIPAL DE VENTAS -->  
     <form id="fReg">  
         <input type="hidden" id="iOperador" value="TELCEL">  
+        <input type="hidden" id="iModalidadVenta" value="LINEA">  
         
         <div class="card">  
             <div id="wrapperVinculo">  
@@ -145,14 +157,18 @@
                 </select>  
             </div>  
             
-            <label>FECHA DE ACTIVACION (MODIFICABLE)</label>  
+            <label>FECHA DE ACTIVACION / VENTA (MODIFICABLE)</label>  
             <input id="iFec" type="date" required style="color: #ffc300;">  
             
-            <label>NUM. CELULAR (10 DÍGITOS)</label>  
-            <input id="iTel" type="tel" required maxlength="10" placeholder="Ej. 5512345678">  
+            <div id="wrapperTel">  
+                <label>NUM. CELULAR (10 DÍGITOS)</label>  
+                <input id="iTel" type="tel" required maxlength="10" placeholder="Ej. 5512345678">  
+            </div>  
             
-            <label>ICCID (ÚLTIMOS DÍGITOS)</label>  
-            <input id="iIcc" required placeholder="Ingresa el ICCID">  
+            <div id="wrapperIcc">  
+                <label>ICCID (ÚLTIMOS DÍGITOS)</label>  
+                <input id="iIcc" required placeholder="Ingresa el ICCID">  
+            </div>  
         </div>  
 
         <div class="card">  
@@ -269,7 +285,7 @@
     let ultimaLat = 0, ultimaLon = 0;  
     let usuarioActualId = null;  
     let listaVentasGlobal = [];  
-    let listaPendientesGlobal = []; // Manejo 100% Local autónomo
+    let listaPendientesGlobal = [];  
   
     function inicio() {  
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);  
@@ -295,7 +311,7 @@
         }  
   
         actualizarFechasInputs();  
-        cargarPendientesExclusivosLocal(); // Cargar los pendientes directo del teléfono
+        cargarPendientesExclusivosLocal();  
   
         auth.onAuthStateChanged(user => {  
             if(user) {  
@@ -348,29 +364,92 @@
         document.getElementById('iOperador').value = op;  
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));  
         
+        const subMenu = document.getElementById('wrapperSubModalidad');  
+
+        // Resetear a modalidad LINEA por defecto al cambiar de operador  
+        cambiarModalidad('LINEA');  
+
+        if(op === 'TELCEL') {  
+            document.querySelector('.tab-telcel').classList.add('active');  
+            subMenu.classList.add('hidden');  
+            manejarVisibilidadCampos('TELCEL', 'LINEA');  
+        } else if(op === 'AT&T') {  
+            document.querySelector('.tab-att').classList.add('active');  
+            subMenu.classList.remove('hidden');  
+            manejarVisibilidadCampos('AT&T', 'LINEA');  
+        } else if(op === 'BAIT') {  
+            document.querySelector('.tab-bait').classList.add('active');  
+            subMenu.classList.remove('hidden');  
+            manejarVisibilidadCampos('BAIT', 'LINEA');  
+        }  
+    }  
+
+    function cambiarModalidad(mod) {  
+        document.getElementById('iModalidadVenta').value = mod;  
+        document.getElementById('subTabLinea').classList.remove('active');  
+        document.getElementById('subTabSoloTelo').classList.remove('active');  
+
+        if(mod === 'LINEA') {  
+            document.getElementById('subTabLinea').classList.add('active');  
+        } else {  
+            document.getElementById('subTabSoloTelo').classList.add('active');  
+        }  
+
+        const opActual = document.getElementById('iOperador').value;  
+        manejarVisibilidadCampos(opActual, mod);  
+    }  
+
+    function manejarVisibilidadCampos(op, mod) {  
         const wrapVinculo = document.getElementById('wrapperVinculo');  
         const wrapPayJoy = document.getElementById('wrapperPayJoy');  
         const wrapTipo = document.getElementById('wrapperTipo');  
         const wrapImei = document.getElementById('wrapperImei');  
+        const wrapTel = document.getElementById('wrapperTel');  
+        const wrapIcc = document.getElementById('wrapperIcc');  
+
+        const inputTel = document.getElementById('iTel');  
+        const inputIcc = document.getElementById('iIcc');  
+
+        // Configuración si es SOLO TELÉFONO (Para ATT o BAIT)  
+        if(mod === 'SOLO_TELO') {  
+            wrapVinculo.classList.add('hidden');  
+            wrapPayJoy.classList.remove('hidden'); // Permitir Payjoy por si es financiado solo  
+            wrapTipo.classList.add('hidden');  
+            wrapImei.classList.remove('hidden'); // Forzar IMEI visible porque se vende el fierro  
+            wrapTel.classList.add('hidden');  
+            wrapIcc.classList.add('hidden');  
+
+            // Quitar requeridos temporales para que deje guardar  
+            inputTel.removeAttribute('required');  
+            inputIcc.removeAttribute('required');  
+            return;  
+        }  
+
+        // Configuración estándar por operador (Con Línea / Chip / Porta)  
+        inputTel.setAttribute('required', 'true');  
+        inputIcc.setAttribute('required', 'true');  
 
         if(op === 'TELCEL') {  
-            document.querySelector('.tab-telcel').classList.add('active');  
             wrapVinculo.classList.remove('hidden');  
             wrapPayJoy.classList.remove('hidden');  
             wrapTipo.classList.remove('hidden');  
             wrapImei.classList.remove('hidden');  
+            wrapTel.classList.remove('hidden');  
+            wrapIcc.classList.remove('hidden');  
         } else if(op === 'AT&T') {  
-            document.querySelector('.tab-att').classList.add('active');  
             wrapVinculo.classList.add('hidden');  
             wrapPayJoy.classList.remove('hidden');  
             wrapTipo.classList.add('hidden');  
             wrapImei.classList.remove('hidden');  
+            wrapTel.classList.remove('hidden');  
+            wrapIcc.classList.remove('hidden');  
         } else if(op === 'BAIT') {  
-            document.querySelector('.tab-bait').classList.add('active');  
             wrapVinculo.classList.add('hidden');  
             wrapPayJoy.classList.add('hidden');  
             wrapTipo.classList.add('hidden');  
             wrapImei.classList.add('hidden');  
+            wrapTel.classList.remove('hidden');  
+            wrapIcc.classList.remove('hidden');  
         }  
     }  
   
@@ -417,7 +496,6 @@
     function activarSincronizacionVentasFirebase() {  
         if(!usuarioActualId) return;  
 
-        // Escuchar exclusivamente Ventas desde Nube  
         db.ref(`usuarios/${usuarioActualId}/ventas`).on('value', snapshot => {  
             let datos = snapshot.val() || {};  
             listaVentasGlobal = Object.keys(datos).map(key => ({ FirebaseKey: key, ...datos[key] }));  
@@ -432,20 +510,44 @@
 
         const btn = document.getElementById('btnGuardar');  
         const opActual = document.getElementById('iOperador').value;  
+        const modActual = document.getElementById('iModalidadVenta').value;  
         const fUsuario = document.getElementById('iFec').value;  
+        
         let fechaFormateada = "";  
         if(fUsuario) {  
             const partes = fUsuario.split("-");  
             fechaFormateada = `${partes[2]}/${partes[1]}/${partes[0]}`;  
         }  
 
+        // Extracción condicionada por modalidad  
+        let numCelular = document.getElementById('iTel').value;  
+        let iccidChip = document.getElementById('iIcc').value;  
+        let tipoVenta = "N/A";  
+
+        if(opActual === 'TELCEL') {  
+            tipoVenta = document.getElementById('iTipo').value;  
+        }  
+
+        if(modActual === 'SOLO_TELO') {  
+            numCelular = "N/A";  
+            iccidChip = "N/A";  
+            tipoVenta = "SOLO EQUIPO";  
+        }  
+
+        let imeiFinal = "N/A";  
+        if(modActual === 'SOLO_TELO') {  
+            imeiFinal = document.getElementById('iIme').value || "N/A";  
+        } else {  
+            imeiFinal = opActual !== 'BAIT' ? (document.getElementById('iIme').value || "N/A") : "N/A";  
+        }  
+
         const v = {  
             id: Date.now(),  
             "OPERADOR": opActual,  
-            "NUM. CELULAR": document.getElementById('iTel').value,  
-            "IMEI": opActual !== 'BAIT' ? (document.getElementById('iIme').value || "N/A") : "N/A",  
-            "ICCID": document.getElementById('iIcc').value,  
-            "Renuevate/ Kit/Chip/Porta": opActual === 'TELCEL' ? document.getElementById('iTipo').value : "N/A",  
+            "NUM. CELULAR": numCelular,  
+            "IMEI": imeiFinal,  
+            "ICCID": iccidChip,  
+            "Renuevate/ Kit/Chip/Porta": tipoVenta,  
             "#TIENDA / Determinante": document.getElementById('iTiendaNum').value,  
             "SOLO NOMBRE DE LA CADENA": document.getElementById('iCadena').value,  
             "SOLO NOMBRE DE TIENDA SIN CADENA": document.getElementById('iTiendaNombre').value,  
@@ -512,7 +614,6 @@
         document.getElementById('barBait').style.width = `${(tBait / totalMax) * 100}%`;  
     }  
 
-    /* ---- CONTROL INTERNO EXCLUSIVO DE PENDIENTES EN EL TELÉFONO (LOCAL STORAGE) ---- */  
     function cargarPendientesExclusivosLocal() {  
         const local = localStorage.getItem('omar_pendientes_locales');  
         if(local) {  
@@ -543,12 +644,10 @@
             "NUMERO": document.getElementById('pNum').value  
         };  
 
-        // Guardado local instantáneo sin llamadas a Firebase  
         listaPendientesGlobal.unshift(p);  
         localStorage.setItem('omar_pendientes_locales', JSON.stringify(listaPendientesGlobal));  
         renderizarPendientes(listaPendientesGlobal);  
 
-        // Reset rápido del formulario  
         document.getElementById('fPendientes').reset();  
         actualizarFechasInputs();  
     }  
@@ -556,7 +655,6 @@
     function eliminarPendiente(idLocal) {  
         if(!confirm("¿Marcar como listo y remover de tus pendientes locales?")) return;  
 
-        // Remover solo de la lista interna del celular  
         listaPendientesGlobal = listaPendientesGlobal.filter(item => item.id !== idLocal);  
         localStorage.setItem('omar_pendientes_locales', JSON.stringify(listaPendientesGlobal));  
         renderizarPendientes(listaPendientesGlobal);  
