@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">  
     <title>SISTEMA VENTAS - Omar Ortega</title>  
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">  
     <style>  
         body { margin:0; font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; }  
@@ -53,7 +54,10 @@
         .btn-vinculo { background: #00b4d8; color: white; width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; text-decoration: none; font-size: 14px; }  
         .btn-payjoy { background: #4a00e0; color: white; width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; text-decoration: none; font-size: 14px; box-shadow: 0 4px 10px rgba(74, 0, 224, 0.3); }  
           
-        .btn-excel { background:#1f7a3f; color:white; width:100%; padding:14px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; margin-top:20px; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(31, 122, 63, 0.4); }  
+        /* Contenedor de descargas */
+        .descargas-container { display: flex; gap: 15px; margin-top: 20px; }
+        .btn-excel { flex: 1; background:#1f7a3f; color:white; padding:14px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(31, 122, 63, 0.4); font-size: 14px; }  
+        .btn-pdf { flex: 1; background:#b7094c; color:white; padding:14px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(183, 9, 76, 0.4); font-size: 14px; }
   
         .table-container { overflow-x: auto; background: white; border-radius: 10px; margin-top: 20px; margin-bottom: 30px; }  
         table { width: 100%; border-collapse: collapse; color: #333; font-size: 11px; min-width: 1100px; }  
@@ -62,6 +66,11 @@
         tr:nth-child(even) { background: #f9f9f9; }  
   
         .hidden { display: none !important; }  
+
+        /* Estilos específicos para la generación limpia del PDF */
+        .pdf-exportable th:last-child, .pdf-exportable td:last-child { display: none !important; }
+        .pdf-exportable table { min-width: 100% !important; table-layout: fixed; word-wrap: break-word; }
+        .pdf-exportable th, .pdf-exportable td { padding: 6px 4px !important; font-size: 8px !important; }
     </style>  
 </head>  
 <body>  
@@ -75,7 +84,6 @@
         <div class="reloj-digital" id="txtReloj">00:00:00</div>  
     </div>  
   
-    <!-- Dashboard de Avance -->  
     <div class="panel-avance">  
         <h4><i class="fa-solid fa-chart-line"></i> Gráfica de Avance de Ventas Diarias</h4>  
         <div class="contenedor-graficas">  
@@ -94,20 +102,17 @@
         </div>  
     </div>  
   
-    <!-- Menú de Operadores -->  
     <div class="menu-operadores">  
         <button class="tab-btn tab-telcel active" onclick="cambiarOperador('TELCEL')"><i class="fa-solid fa-phone"></i> TELCEL</button>  
         <button class="tab-btn tab-att" onclick="cambiarOperador('AT&T')"><i class="fa-solid fa-signal"></i> AT&T</button>  
         <button class="tab-btn tab-bait" onclick="cambiarOperador('BAIT')"><i class="fa-solid fa-bolt"></i> BAIT</button>  
     </div>  
   
-    <!-- SUB-MENÚ DE MODALIDAD (Exclusivo AT&T y BAIT) -->  
     <div id="wrapperSubModalidad" class="sub-menu-modalidad hidden">  
         <button id="subTabLinea" class="sub-tab-btn active" onclick="cambiarModalidad('LINEA')"><i class="fa-solid fa-sim-card"></i> LÍNEA CON EQUIPO</button>  
         <button id="subTabSoloTelo" class="sub-tab-btn" onclick="cambiarModalidad('SOLO_TELO')"><i class="fa-solid fa-mobile-screen"></i> SOLO SE VENDIÓ TELÉFONO</button>  
     </div>  
   
-    <!-- FORMULARIO PRINCIPAL DE VENTAS -->  
     <form id="fReg" onsubmit="guardarVentaLocal(event)">  
         <input type="hidden" id="iOperador" value="TELCEL">  
         <input type="hidden" id="iModalidadVenta" value="LINEA">  
@@ -167,11 +172,16 @@
         <button type="submit" id="btnGuardar" class="btn-save">GUARDAR VENTA LOCALMENTE</button>  
     </form>  
   
-    <button class="btn-excel" onclick="exportarExcel()">  
-        <i class="fa-solid fa-file-excel"></i> DESCARGAR REPORTE PROFESIONAL  
-    </button>  
+    <div class="descargas-container">
+        <button class="btn-excel" onclick="exportarExcel()">  
+            <i class="fa-solid fa-file-excel"></i> REPORTE EXCEL  
+        </button>  
+        <button class="btn-pdf" onclick="exportarPDF()">  
+            <i class="fa-solid fa-file-pdf"></i> REPORTE PDF  
+        </button>
+    </div>  
   
-    <div class="table-container">  
+    <div class="table-container" id="tablaVentasContenedor">  
         <table>  
             <thead>  
                 <tr>  
@@ -194,7 +204,6 @@
         </table>  
     </div>  
   
-    <!-- APARTADO: IMEIS Y ACTIVACIONES PENDIENTES -->  
     <div class="card" style="margin-top: 40px; border: 1px solid #ff4d4d; background: rgba(255, 77, 77, 0.05);">  
         <h3><i class="fa-solid fa-clock-rotate-left" style="color: #ff4d4d;"></i> IMEIS / ACTIVACIONES PENDIENTES</h3>  
         <form id="fPendientes" onsubmit="guardarPendienteLocal(event)">  
@@ -579,7 +588,6 @@
   
         const rango = XLSX.utils.decode_range(ws['!ref']);  
   
-        // Bordes negros finos  
         const bordeNegro = {  
             top: { style: "thin", color: { rgb: "000000" } },  
             bottom: { style: "thin", color: { rgb: "000000" } },  
@@ -587,7 +595,6 @@
             right: { style: "thin", color: { rgb: "000000" } }  
         };  
   
-        // Diseño de Encabezados (Fondo Negro, Letras Blancas)  
         const estiloCabecera = {  
             fill: { fgColor: { rgb: "000000" } },  
             font: { color: { rgb: "FFFFFF" }, bold: true, name: "Segoe UI", sz: 11 },  
@@ -595,7 +602,6 @@
             border: bordeNegro  
         };  
   
-        // Estilo de las Celdas  
         const estiloCelda = {  
             font: { color: { rgb: "000000" }, name: "Segoe UI", sz: 10 },  
             alignment: { horizontal: "left", vertical: "center" },  
@@ -621,6 +627,29 @@
           
         XLSX.writeFile(wb, `Reporte_Ventas_${new Date().toLocaleDateString().replace(/\//g,'-')}.xlsx`);  
     }  
+
+    /* ---- NUEVA FUNCIÓN PARA EXPORTAR EN PDF ---- */
+    function exportarPDF() {
+        if(listaVentasGlobal.length === 0) return alert("No hay datos guardados para exportar en PDF.");
+
+        const contenedorTabla = document.getElementById('tablaVentasContenedor');
+        
+        // Agregamos clase de optimización para impresión
+        contenedorTabla.classList.add('pdf-exportable');
+
+        const opciones = {
+            margin:       [10, 10, 10, 10],
+            filename:     `Reporte_Ventas_${new Date().toLocaleDateString().replace(/\//g,'-')}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' } // Formato Horizontal para que quepan las columnas
+        };
+
+        html2pdf().set(opciones).from(contenedorTabla).save().then(() => {
+            // Quitamos la clase para que visualmente regrese a la normalidad en la pantalla
+            contenedorTabla.classList.remove('pdf-exportable');
+        });
+    }
 </script>  
 </body>  
 </html>
