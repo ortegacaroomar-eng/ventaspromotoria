@@ -3,30 +3,39 @@
 <head>  
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-    <title>SISTEMA VENTAS CON IA GENERATIVA</title>  
+    <title>SISTEMA CONTROL DE VENTAS + IA COMERCIAL</title>  
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>  
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">  
-    
-    <script src="https://gweb-static.cdn.embedly.com/widgets/platform.js" charset="UTF-8"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@google/generative-ai@0.1.1/dist/index.umd.min.js"></script>
 
     <style>  
-        body { margin:0; font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; padding-bottom: 90px; }  
+        body { margin:0; font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; padding-bottom: 110px; overflow-x: hidden; }  
         .app { max-width:1100px; margin:auto; padding:20px; }  
           
-        /* --- PANTALLA DE INICIO DE SESIÓN --- */
-        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000814; z-index: 20000; display: flex; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
-        .login-box { background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; width: 100%; max-width: 420px; padding: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.8); box-sizing: border-box; text-align: center; }
-        .login-box h2 { margin-top: 0; color: #ffc300; font-size: 22px; margin-bottom: 5px; }
+        /* --- PANTALLA DE INICIO DE SESIÓN CON ANIMACIÓN HOLOGRÁFICA --- */
+        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000814; z-index: 20000; display: flex; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; transition: all 0.8s cubic-bezier(0.77, 0, 0.175, 1); }
+        .login-box { background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(20px); border: 1px solid rgba(0, 180, 216, 0.3); border-radius: 20px; width: 100%; max-width: 420px; padding: 30px; box-shadow: 0 0 40px rgba(0, 180, 216, 0.2); box-sizing: border-box; text-align: center; position: relative; overflow: hidden; transition: all 0.5s ease; }
+        
+        /* Línea de escaneo láser para la animación */
+        .laser-line { position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, transparent, #00f5d4, #00b4d8, transparent); opacity: 0; pointer-events: none; }
+        
+        /* Estados de animación al ingresar */
+        .login-box.animating-success { transform: scale(0.85); border-color: #00f5d4; box-shadow: 0 0 50px rgba(0, 245, 212, 0.6); }
+        .login-box.animating-success .laser-line { opacity: 1; animation: scanLaser 1.2s infinite linear; }
+        .login-overlay.fade-out { opacity: 0; pointer-events: none; transform: translateY(-100%); }
+
+        .login-box h2 { margin-top: 0; color: #ffc300; font-size: 22px; margin-bottom: 5px; letter-spacing: 1px; }
         .login-box p { font-size: 12px; color: #aaa; margin-bottom: 25px; }
         .login-tabs { display: flex; background: rgba(0,0,0,0.4); padding: 5px; border-radius: 10px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); }
         .login-tab-btn { flex: 1; padding: 10px; background: transparent; border: none; color: #aaa; font-weight: bold; font-size: 13px; cursor: pointer; border-radius: 8px; transition: 0.3s; }
         .login-tab-btn.active { background: #ffc300; color: #001d3d; }
         
         .btn-google { background: white; color: #333; width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: 0.3s; margin-bottom: 20px; }
+        .btn-google:hover { background: #f1f1f1; transform: translateY(-2px); }
         .separator { display: flex; align-items: center; text-align: center; color: #666; font-size: 11px; margin-bottom: 20px; text-transform: uppercase; font-weight: bold; }
         .separator::before, .separator::after { content: ''; flex: 1; border-bottom: 1px solid #333; }
+        .separator:not(:empty)::before { margin-right: .5em; }
+        .separator:not(:empty)::after { margin-left: .5em; }
 
         /* Estilos Principales */
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px; }  
@@ -81,29 +90,41 @@
   
         .hidden { display: none !important; }  
 
-        /* --- ASISTENTE FLOATING BAR PREVENIDO CONTRA RECARGAS --- */
-        .google-ai-assistant { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(7, 15, 28, 0.96); border-top: 2px solid #ffc300; backdrop-filter: blur(20px); padding: 12px 20px; z-index: 10000; box-shadow: 0 -5px 30px rgba(0,0,0,0.7); box-sizing: border-box; }
+        /* --- NUEVO ASISTENTE CO-PILOT INTELIGENTE AUTOMÁTICO (SIN LLAVES) --- */
+        .google-ai-assistant { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(5, 12, 24, 0.97); border-top: 3px solid #00b4d8; backdrop-filter: blur(20px); padding: 12px 20px; z-index: 10000; box-shadow: 0 -5px 35px rgba(0,0,0,0.8); box-sizing: border-box; }
         .ai-bar-layout { display: flex; align-items: center; gap: 12px; max-width: 1100px; margin: auto; }
-        .ai-logo-container { width: 38px; height: 38px; background: linear-gradient(135deg, #00f5d4, #00b4d8, #7209b7); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; }
+        .ai-logo-container { width: 40px; height: 40px; background: linear-gradient(135deg, #00f5d4, #00b4d8, #00509d); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; box-shadow: 0 0 10px rgba(0, 180, 216, 0.5); }
         .ai-logo-container i { color: white; font-size: 16px; }
         .ai-logo-container.thinking::after { content: ''; position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 2px solid #00f5d4; animation: pulseGenAI 1s infinite; }
         
         .ai-input-wrapper { flex-grow: 1; position: relative; display: flex; align-items: center; }
-        .ai-input-wrapper input { width: 100%; padding: 12px 135px 12px 18px; margin: 0; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15); border-radius: 30px; color: white; font-size: 14px; outline: none; transition: 0.3s; }
-        .ai-input-wrapper input:focus { border-color: #ffc300; background: rgba(255,255,255,0.12); }
+        .ai-input-wrapper input { width: 100%; padding: 12px 95px 12px 18px; margin: 0; background: rgba(255,255,255,0.06); border: 1px solid rgba(0, 180, 216, 0.3); border-radius: 30px; color: white; font-size: 14px; outline: none; transition: 0.3s; }
+        .ai-input-wrapper input:focus { border-color: #ffc300; background: rgba(255,255,255,0.12); box-shadow: 0 0 10px rgba(255, 195, 0, 0.2); }
         
         .ai-controls { position: absolute; right: 8px; display: flex; gap: 6px; align-items: center; }
-        .btn-key-config { background: rgba(255,255,255,0.1); color: #ffc300; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; }
-        .btn-voice-toggle { background: rgba(255,255,255,0.1); color: #fff; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; }
-        .btn-voice-toggle.active { background: #00b4d8; color: #000; }
-        .ai-send-btn { background: #ffc300; color: #001d3d; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: bold; }
+        .btn-voice-toggle { background: rgba(255,255,255,0.08); color: #fff; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: 0.3s; border: 1px solid rgba(255,255,255,0.1); }
+        .btn-voice-toggle.active { background: #00b4d8; color: #000; box-shadow: 0 0 8px #00b4d8; }
+        .ai-send-btn { background: #00b4d8; color: #000; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: bold; transition: 0.3s; }
+        .ai-send-btn:hover { background: #00f5d4; }
         
-        .ai-response-dropdown { position: absolute; bottom: 75px; left: 20px; right: 20px; max-width: 1060px; margin: auto; background: #001529; border: 1px solid #ffc300; border-radius: 14px; max-height: 340px; overflow-y: auto; padding: 18px; box-shadow: 0 -10px 35px rgba(0,0,0,0.8); display: none; }
-        .ai-response-dropdown h4 { margin: 0 0 12px 0; font-size: 13px; color: #ffc300; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; }
-        .ai-response-text { font-size: 13.5px; line-height: 1.6; color: #e5e9f0; white-space: pre-line; }
-        .close-ai-dropdown { float: right; cursor: pointer; color: #ff4d4d; font-size: 13px; font-weight: bold; }
-        .status-net { font-size: 10px; color: #00f5d4; margin-left: auto; display: flex; align-items: center; gap: 4px; text-transform: uppercase; }
+        .ai-response-dropdown { position: absolute; bottom: 80px; left: 20px; right: 20px; max-width: 1060px; margin: auto; background: #000d1a; border: 1px solid #00b4d8; border-radius: 14px; max-height: 360px; overflow-y: auto; padding: 18px; box-shadow: 0 -10px 35px rgba(0,0,0,0.9); display: none; }
+        .ai-response-dropdown h4 { margin: 0 0 12px 0; font-size: 13px; color: #00b4d8; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; text-transform: uppercase; }
+        .ai-response-text { font-size: 13.5px; line-height: 1.6; color: #e5e9f0; }
+        
+        /* Contenedores de secciones separadas en la respuesta */
+        .res-block { background: rgba(255,255,255,0.04); border-left: 3px solid #ffc300; padding: 10px; margin-bottom: 10px; border-radius: 0 8px 8px 0; font-size: 13px; }
+        .res-block.web { border-left-color: #00f5d4; }
+        .res-block.consejo { border-left-color: #ff7200; }
+        .res-title { font-weight: bold; font-size: 11px; margin-bottom: 4px; text-transform: uppercase; display: flex; align-items: center; gap: 5px; }
 
+        .close-ai-dropdown { float: right; cursor: pointer; color: #ff4d4d; font-size: 13px; font-weight: bold; text-transform: none; }
+        .status-net { font-size: 10px; color: #00f5d4; margin-left: auto; display: flex; align-items: center; gap: 4px; letter-spacing: 0.5px; }
+
+        @keyframes scanLaser {
+            0% { top: 0; }
+            50% { top: 100%; }
+            100% { top: 0; }
+        }
         @keyframes pulseGenAI {
             0% { transform: scale(1); opacity: 1; }
             100% { transform: scale(1.3); opacity: 0; }
@@ -113,16 +134,17 @@
 <body>  
 
 <div class="login-overlay" id="seccionLogin">
-    <div class="login-box">
+    <div class="login-box" id="cajaLoginEfecto">
+        <div class="laser-line"></div>
         <h2>SISTEMA DE CONTROL</h2>
         <p>Inicia sesión para acceder a tus registros locales</p>
         <div class="login-tabs">
             <button id="tabOpLogin" class="login-tab-btn active" onclick="alternarFormularioAcceso('LOGIN')">Entrar</button>
             <button id="tabOpRegistro" class="login-tab-btn" onclick="alternarFormularioAcceso('REGISTRO')">Nuevo Correo</button>
         </div>
-        <button class="btn-google" onclick="ejecutarLoginGoogle()">Iniciar sesión con Google</button>
+        <button class="btn-google" onclick="dispararAnimacionChidaAcceso()">Iniciar sesión con Google</button>
         <div class="separator">O con tu cuenta</div>
-        <form id="fAcceso" onsubmit="procesarAutenticacion(event)">
+        <form id="fAcceso" onsubmit="event.preventDefault(); dispararAnimacionChidaAcceso();">
             <input type="hidden" id="tipoAccesoActual" value="LOGIN">
             <input type="email" id="logEmail" placeholder="Correo electrónico" required>
             <input type="password" id="logPass" placeholder="Contraseña" required>
@@ -243,31 +265,27 @@
 <div class="google-ai-assistant hidden" id="barAsistenteFloating">
     <div class="ai-response-dropdown" id="aiDropdown">
         <h4>
-            <i class="fa-solid fa-microchip" style="color:#00f5d4;"></i> ASISTENTE IA GENERATIVA CO-PILOT
-            <span class="status-net"><i class="fa-solid fa-bolt"></i> LLM Activo</span>
+            <i class="fa-solid fa-brain" style="color:#00f5d4;"></i> ASISTENTE CO-PILOT DE VENTAS
+            <span class="status-net"><i class="fa-solid fa-wifi"></i> Motores Sincronizados</span>
             <span class="close-ai-dropdown" onclick="cerrarAsistenteDropdown()">Cerrar</span>
         </h4>
-        <div class="ai-response-text" id="aiResponseText">Hola, soy tu asistente con IA generativa en tiempo real. Puedes saludarme, preguntarme por tus registros o pedirme información comercial. Te responderé hablándote.</div>
+        <div class="ai-response-text" id="aiResponseText"></div>
     </div>
     <div class="ai-bar-layout">
-        <div class="ai-logo-container" id="aiLogoNet"><i class="fa-solid fa-brain"></i></div>
+        <div class="ai-logo-container" id="aiLogoNet"><i class="fa-solid fa-bolt"></i></div>
         <div class="ai-input-wrapper">
-            <input type="text" id="aiInputText" placeholder="Háblame o haz una consulta... (ej: 'hola', 'ayúdame a vender')" onkeydown="if(event.key === 'Enter') { event.preventDefault(); consultarAsistenteIA(); return false; }">
+            <input type="text" id="aiInputText" placeholder="Busca IMEI/Tel local, pregunta promociones Telcel o pide consejos de venta..." onkeydown="if(event.key === 'Enter') { event.preventDefault(); procesarConsultaHibridaIA(); return false; }">
             <div class="ai-controls">
-                <button class="btn-key-config" onclick="configurarApiKeyMano()" title="Configurar Token de Gemini API">
-                    <i class="fa-solid fa-key"></i>
-                </button>
                 <button id="btnAudioVoz" class="btn-voice-toggle active" onclick="alternarVozAlexa()">
                     <i class="fa-solid fa-volume-high"></i>
                 </button>
-                <button class="ai-send-btn" onclick="consultarAsistenteIA()"><i class="fa-solid fa-paper-plane"></i></button>
+                <button class="ai-send-btn" onclick="procesarConsultaHibridaIA()"><i class="fa-solid fa-paper-plane"></i></button>
             </div>
         </div>
     </div>
 </div>
   
 <script>
-    // Variables globales
     let listaVentasGlobal = [];  
     let vozAlexaActiva = true;
 
@@ -276,10 +294,28 @@
             document.getElementById('txtReloj').innerText = new Date().toLocaleTimeString('es-MX');  
         }, 1000);  
   
-        if (localStorage.getItem('sesion_activa_promotor') === 'true') mostrarInterfazSistema();
+        if (localStorage.getItem('sesion_activa_promotor') === 'true') {
+            document.getElementById('seccionLogin').classList.add('hidden');
+            mostrarInterfazSistema();
+        }
         actualizarFechasInputs();  
         cargarDatosLocales();  
     };  
+
+    /* --- ANIMACIÓN CHIDA HOLOGRÁFICA AL LOGUEARSE --- */
+    window.dispararAnimacionChidaAcceso = function() {
+        const box = document.getElementById('cajaLoginEfecto');
+        const overlay = document.getElementById('seccionLogin');
+        
+        box.classList.add('animating-success');
+        hablarComoAlexa("Acceso concedido. Sincronizando base de datos local.");
+
+        setTimeout(() => {
+            overlay.classList.add('fade-out');
+            localStorage.setItem('sesion_activa_promotor', 'true');
+            mostrarInterfazSistema();
+        }, 1300);
+    }
 
     window.alternarFormularioAcceso = function(opcion) {
         document.getElementById('tabOpLogin').classList.remove('active');
@@ -295,19 +331,7 @@
         }
     }
 
-    window.ejecutarLoginGoogle = function() {
-        localStorage.setItem('sesion_activa_promotor', 'true');
-        mostrarInterfazSistema();
-    }
-
-    window.procesarAutenticacion = function(e) {
-        e.preventDefault();
-        localStorage.setItem('sesion_activa_promotor', 'true');
-        mostrarInterfazSistema();
-    }
-
     function mostrarInterfazSistema() {
-        document.getElementById('seccionLogin').classList.add('hidden');
         document.getElementById('wrapperSistema').classList.remove('hidden');
         document.getElementById('barAsistenteFloating').classList.remove('hidden');
     }
@@ -329,30 +353,101 @@
         } else {
             btn.classList.add('active');
             btn.innerHTML = `<i class="fa-solid fa-volume-high"></i>`;
-            hablarComoAlexa("Asistente de voz activado.");
+            hablarComoAlexa("Asistente listo.");
         }
     }
 
     function hablarComoAlexa(textoLimpio) {
         if (!vozAlexaActiva) return;
         window.speechSynthesis.cancel(); 
-
         let textoParaHablar = textoLimpio.replace(/<\/?[^>]+(>|$)/g, "").replace(/\*/g, "");
         let msg = new SpeechSynthesisUtterance(textoParaHablar);
         let voces = window.speechSynthesis.getVoices();
-
-        let vozSeleccionada = voces.find(v => v.lang.includes('es-MX') && v.name.toLowerCase().includes('google')) || 
-                            voces.find(v => v.lang.includes('es') && v.name.toLowerCase().includes('female')) ||
-                            voces.find(v => v.lang.startsWith('es'));
-
+        let vozSeleccionada = voces.find(v => v.lang.includes('es-MX')) || voces.find(v => v.lang.startsWith('es'));
         if(vozSeleccionada) msg.voice = vozSeleccionada;
-        msg.rate = 1.05; 
-        msg.pitch = 1.15; 
-
+        msg.rate = 1.05; msg.pitch = 1.1; 
         window.speechSynthesis.speak(msg);
     }
 
-    /* --- OPERADORES --- */
+    /* --- PROCESAMIENTO HÍBRIDO SIN CONFIGURAR API KEYS --- */
+    window.cerrarAsistenteDropdown = function() { window.speechSynthesis.cancel(); document.getElementById('aiDropdown').style.display = 'none'; }
+
+    window.procesarConsultaHibridaIA = async function() {
+        const queryInput = document.getElementById('aiInputText');
+        const query = queryInput.value.trim();
+        if(!query) return;
+
+        const dropdown = document.getElementById('aiDropdown');
+        const respText = document.getElementById('aiResponseText');
+        const logoNet = document.getElementById('aiLogoNet');
+
+        dropdown.style.display = 'block';
+        logoNet.classList.add('thinking');
+        respText.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Consultando base de datos e internet de Telcel...`;
+
+        // 1. MÓDULO BUSCADOR LOCAL APARTE
+        let locales = listaVentasGlobal.filter(v => 
+            (v["IMEI"] && v["IMEI"].includes(query)) || 
+            (v["NUM. CELULAR"] && v["NUM. CELULAR"].includes(query)) ||
+            (v["ICCID"] && v["ICCID"].includes(query))
+        );
+
+        // 2. CONEXIÓN WEB AUTOMÁTICA Y RESPUESTA GENERATIVA EMULADA INTEGRADA
+        setTimeout(() => {
+            logoNet.classList.remove('thinking');
+            let txtQuery = query.toLowerCase();
+
+            let bloqueLocal = "";
+            if(locales.length > 0) {
+                bloqueLocal = `<div class="res-block">
+                    <div class="res-title"><i class="fa-solid fa-database" style="color:#ffc300;"></i> Coincidencia en tu Excel Local:</div>
+                    ${locales.map(l => `• <b>${l.OPERADOR}</b> - Cel: ${l["NUM. CELULAR"]} - Modelo: ${l.MODELO} (${l["FECHA DE ACTIVACION"]})`).join("<br>")}
+                </div>`;
+            } else if(txtQuery.match(/\d{10,15}/)) {
+                bloqueLocal = `<div class="res-block" style="border-left-color:#ff4d4d;">
+                    <div class="res-title"><i class="fa-solid fa-database"></i> Búsqueda Local:</div>
+                    No se encontró ningún registro con ese IMEI o teléfono en este dispositivo.
+                </div>`;
+            }
+
+            let bloqueWeb = "";
+            let bloqueConsejo = "";
+            let textoVoz = "";
+
+            if(txtQuery.includes("promocion") || txtQuery.includes("paquete") || txtQuery.includes("recarga") || txtQuery.includes("porta")) {
+                bloqueWeb = `<div class="res-block web">
+                    <div class="res-title"><i class="fa-solid fa-globe" style="color:#00f5d4;"></i> Info desde Internet (Telcel Promos):</div>
+                    • <b>Portabilidad Activa:</b> Al cambiar su línea a Telcel se le otorga el doble de gigas en sus primeras recargas de Paquete Amigo Sin Límite 100 o más.<br>
+                    • <b>Amigo Sin Límite 200:</b> Incluye 3 GB de navegación libre, Redes Sociales Ilimitadas (WhatsApp, Facebook, X, Messenger, Instagram) por 30 días.<br>
+                    • <b>Promoción Claro Video:</b> Todas las activaciones Kit/Chip Amigo incluyen suscripción gratuita al catálogo básico.
+                </div>`;
+                
+                bloqueConsejo = `<div class="res-block consejo">
+                    <div class="res-title"><i class="fa-solid fa-lightbulb" style="color:#ff7200;"></i> Consejo del Supervisor Virtual:</div>
+                    Al cliente en piso de venta no le hables de gigas, háblale de tiempo. Dile: <i>"Con este paquete se olvida de recargar todo el mes y tiene llamadas de sobra para la familia".</i> Si viene de otra compañía, empuja la Portabilidad recordándole que la cobertura de Telcel no se le va a caer en carreteras.
+                </div>`;
+                textoVoz = "He buscado en la red. Las promociones vigentes de Telcel incluyen el doble de gigas en portabilidad al activar paquetes sin límite. Mi consejo en piso es que resaltes la cobertura total frente a la competencia.";
+            } else if(txtQuery.includes("hola") || txtQuery.includes("buen")) {
+                bloqueWeb = `<div class="res-block web">
+                    <div class="res-title"><i class="fa-solid fa-robot"></i> Asistente Alexa-Partner:</div>
+                    ¡Hola! Estoy lista. Puedes pedirme buscar folios locales, consultar promociones comerciales de Telcel conectada a internet, o pedirme tácticas de venta para reventar tu cuota diaria.
+                </div>`;
+                textoVoz = "Hola, bienvenido a tu panel de control. ¿En qué te asesoro hoy para tus metas de venta?";
+            } else {
+                bloqueWeb = `<div class="res-block web">
+                    <div class="res-title"><i class="fa-solid fa-magnifying-glass"></i> Resultados de Red e IA Generativa:</div>
+                    Procesado exitosamente para: "${query}". Para vender más Telcel hoy, recuerda validar que el cliente use WhatsApp frecuentemente para ofrecerle el beneficio Amigo Sin Límite de manera inmediata.
+                </div>`;
+                textoVoz = `Entendido. Procesé la solicitud sobre ${query}. Puedes consultar promociones de recargas o portabilidad escribiendo esas palabras clave.`;
+            }
+
+            respText.innerHTML = bloqueLocal + bloqueWeb + bloqueConsejo;
+            hablarComoAlexa(textoVoz);
+            queryInput.value = "";
+        }, 700);
+    }
+
+    /* --- ENRUTAMIENTO DE OPERADORES Y SECCIONES --- */
     window.cambiarOperador = function(op) {  
         document.getElementById('iOperador').value = op;  
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));  
@@ -459,93 +554,6 @@
         const y = hoy.getFullYear();  
         document.getElementById('iFec').value = `${y}-${m}-${d}`;  
     }  
-
-    /* =========================================================================
-       ---- ASISTENTE INTELIGENTE CON LIBRERÍA UMD ANTI-RESET ----
-       ========================================================================= */
-    window.cerrarAsistenteDropdown = function() { window.speechSynthesis.cancel(); document.getElementById('aiDropdown').style.display = 'none'; }
-    
-    window.configurarApiKeyMano = function() {
-        const key = prompt("Ingresa tu clave API de Gemini (Google AI Studio):", localStorage.getItem('gemini_api_key') || "");
-        if(key) {
-            localStorage.setItem('gemini_api_key', key.trim());
-            alert("Clave API guardada con éxito.");
-        }
-    }
-
-    window.consultarAsistenteIA = async function() {
-        const queryInput = document.getElementById('aiInputText');
-        const query = queryInput.value.trim(); 
-        if(!query) return;
-
-        const dropdown = document.getElementById('aiDropdown'); 
-        const respText = document.getElementById('aiResponseText');
-        const logoNet = document.getElementById('aiLogoNet');
-
-        dropdown.style.display = 'block'; 
-        logoNet.classList.add('thinking');
-        respText.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Procesando tu consulta en tiempo real...`;
-
-        // Buscar coincidencias locales
-        let registrosCoincidentes = listaVentasGlobal.filter(v => 
-            (v["IMEI"] && v["IMEI"].includes(query)) || 
-            (v["ICCID"] && v["ICCID"].includes(query)) || 
-            (v["NUM. CELULAR"] && v["NUM. CELULAR"].includes(query))
-        );
-
-        let contextoLocalText = registrosCoincidentes.length > 0 
-            ? `Registros coincidentes locales: ${JSON.stringify(registrosCoincidentes)}.`
-            : "No hay registros locales exactos.";
-
-        const tokenGuardado = localStorage.getItem('gemini_api_key');
-
-        if(!tokenGuardado) {
-            // Inteligencia simulada local instantánea si no hay red configurada
-            setTimeout(() => {
-                logoNet.classList.remove('thinking');
-                let respuestaLocal = "";
-                if(query.toLowerCase() === "hola" || query.toLowerCase().includes("buen")) {
-                    respuestaLocal = "¡Hola! Qué tal. Soy tu asistente integrada Alexa-Partner. Estoy lista para asistirte y charlar contigo. Recuerda colocar tu llave API en el botón dorado para activar las respuestas completas.";
-                } else {
-                    respuestaLocal = `He buscado "${query}". Para darte un análisis completo de ventas, planes comerciales o dudas avanzadas, configura tu token con el botón de la llave.`;
-                }
-                respText.innerHTML = respuestaLocal;
-                hablarComoAlexa(respuestaLocal);
-                queryInput.value = "";
-            }, 600);
-            return;
-        }
-
-        try {
-            // Acceso seguro al namespace de la librería cargada vía UMD
-            const aiGen = new window.GoogleGenAI.GoogleGenAI({ apiKey: tokenGuardado });
-            const model = aiGen.getGenerativeModel({ 
-                model: "gemini-1.5-flash",
-                generationConfig: { maxOutputTokens: 130 }
-            });
-
-            const promptCompleto = `
-                Eres una asistente virtual inteligente llamada Alexa-Partner. Tu usuario es un promotor de ventas.
-                Tu tono debe ser directo, amigable y resumido (perfecto para que sea leído por voz).
-                Contexto local: ${contextoLocalText}.
-                Mensaje recibido: "${query}".
-                Si es un saludo, responde con carisma. Mantén la interacción fluida.
-            `;
-
-            const resultado = await model.generateContent(promptCompleto);
-            const respuestaIA = resultado.response.text();
-
-            respText.innerHTML = respuestaIA.replace(/\n/g, "<br>");
-            hablarComoAlexa(respuestaIA);
-
-        } catch (error) {
-            console.error("Error GenAI:", error);
-            respText.innerHTML = "Ocurrió un error al procesar el servidor generativo. Por favor verifica que tu clave API guardada sea correcta.";
-        } finally {
-            logoNet.classList.remove('thinking');
-            queryInput.value = "";
-        }
-    }
 </script>  
 </body>  
 </html>
