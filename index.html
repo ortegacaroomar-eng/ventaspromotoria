@@ -52,12 +52,15 @@
         .btn-secundario:hover { background: #0077b6; color: white; }  
   
         .btn-vinculo { background: #00b4d8; color: white; width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; text-decoration: none; font-size: 14px; }  
+        .btn-vinculo:hover { background: #0093b3; }
         .btn-payjoy { background: #4a00e0; color: white; width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.3s; text-decoration: none; font-size: 14px; box-shadow: 0 4px 10px rgba(74, 0, 224, 0.3); }  
+        .btn-payjoy:hover { background: #3b00b8; }
           
         /* Contenedor de descargas */
         .descargas-container { display: flex; gap: 15px; margin-top: 20px; }
         .btn-excel { flex: 1; background:#1f7a3f; color:white; padding:14px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(31, 122, 63, 0.4); font-size: 14px; }  
-        .btn-pdf { flex: 1; background:#b7094c; color:white; padding:14px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(183, 9, 76, 0.4); font-size: 14px; }
+        .btn-excel-telcel { flex: 1; background:#00509d; color:white; padding:14px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(0, 80, 157, 0.4); font-size: 14px; }
+        .btn-pdf { flex: 1; background:#b7094c; color:white; padding:14px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(183, 9, 76, 0.4); font-size: 14px; }  
   
         .table-container { overflow-x: auto; background: white; border-radius: 10px; margin-top: 20px; margin-bottom: 30px; }  
         table { width: 100%; border-collapse: collapse; color: #333; font-size: 11px; min-width: 1100px; }  
@@ -66,11 +69,6 @@
         tr:nth-child(even) { background: #f9f9f9; }  
   
         .hidden { display: none !important; }  
-
-        /* Estilos específicos para la generación limpia del PDF */
-        .pdf-exportable th:last-child, .pdf-exportable td:last-child { display: none !important; }
-        .pdf-exportable table { min-width: 100% !important; table-layout: fixed; word-wrap: break-word; }
-        .pdf-exportable th, .pdf-exportable td { padding: 6px 4px !important; font-size: 8px !important; }
     </style>  
 </head>  
 <body>  
@@ -173,16 +171,19 @@
     </form>  
   
     <div class="descargas-container">
-        <button class="btn-excel" onclick="exportarExcel()">  
-            <i class="fa-solid fa-file-excel"></i> REPORTE EXCEL  
+        <button class="btn-excel" onclick="exportarExcelGeneral()">  
+            <i class="fa-solid fa-file-excel"></i> REPORTE GENERAL (TODOS)
+        </button>  
+        <button class="btn-excel-telcel" onclick="exportarExcelTelcel()">  
+            <i class="fa-solid fa-file-excel"></i> EXCEL SOLO TELCEL  
         </button>  
         <button class="btn-pdf" onclick="exportarPDF()">  
             <i class="fa-solid fa-file-pdf"></i> REPORTE PDF  
-        </button>
+        </button>  
     </div>  
   
     <div class="table-container" id="tablaVentasContenedor">  
-        <table>  
+        <table id="tablaVentasReal">  
             <thead>  
                 <tr>  
                     <th>OPERADOR</th>  
@@ -197,7 +198,7 @@
                     <th>FECHA</th>  
                     <th>MARCA</th>  
                     <th>MODELO</th>  
-                    <th style="background:red !important; text-align: center; width: 50px;">X</th>  
+                    <th class="col-eliminar" style="background:red !important; text-align: center; width: 50px;">X</th>  
                 </tr>  
             </thead>  
             <tbody id="bodyVentas"></tbody>  
@@ -498,7 +499,7 @@
                     <td>${v["FECHA DE ACTIVACION"]}</td>  
                     <td>${v.MARCA}</td>  
                     <td>${v.MODELO}</td>  
-                    <td style="text-align:center"><i class="fa fa-trash" style="color:red;cursor:pointer" onclick="eliminarVentaLocal(${v.id})"></i></td>  
+                    <td class="col-eliminar" style="text-align:center"><i class="fa fa-trash" style="color:red;cursor:pointer" onclick="eliminarVentaLocal(${v.id})"></i></td>  
                 </tr>  
             `;  
         }).join("");  
@@ -577,79 +578,161 @@
         }  
     }  
   
-    function exportarExcel() {  
+    /* ---- EXCEL 1: EXCEL DE VENTA EN GENERAL (TODOS LOS OPERADORES) ---- */  
+    function exportarExcelGeneral() {  
         if(listaVentasGlobal.length === 0) return alert("No hay datos guardados para exportar.");  
           
         const limpio = listaVentasGlobal.map(({id, ...resto}) => resto);  
           
         const ws = XLSX.utils.json_to_sheet(limpio);  
         const wb = XLSX.utils.book_new();  
-        XLSX.utils.book_append_sheet(wb, ws, "Ventas");  
+        XLSX.utils.book_append_sheet(wb, ws, "General_Ventas");  
   
+        aplicarEstiloExcel(ws);
+  
+        ws['!cols'] = [  
+            {wch: 14}, {wch: 16}, {wch: 22}, {wch: 22}, {wch: 22}, {wch: 15}, {wch: 25}, {wch: 30}, {wch: 30}, {wch: 18}, {wch: 15}, {wch: 15}  
+        ];  
+          
+        XLSX.writeFile(wb, `Reporte_General_Ventas_${new Date().toLocaleDateString().replace(/\//g,'-')}.xlsx`);  
+    }  
+  
+    /* ---- EXCEL 2: EXCEL PARA TELCEL ASÍ COMO ESTÁ TU FORMATO ORIGINAL ---- */  
+    function exportarExcelTelcel() {  
+        const ventasTelcel = listaVentasGlobal.filter(v => v.OPERADOR === 'TELCEL');  
+          
+        if(ventasTelcel.length === 0) return alert("No hay datos de ventas Telcel para exportar.");  
+          
+        // Estructura exacta en base al orden de columnas analizado en tu archivo original
+        const formatoComisionesExacto = ventasTelcel.map(v => ({  
+            "NUM. CELULAR": v["NUM. CELULAR"],  
+            "IMEI": v["IMEI"],  
+            "ICCID": v["ICCID"],  
+            "Renuevate/ Kit/Chip/Porta": v["Renuevate/ Kit/Chip/Porta"],  
+            "#TIENDA / Determinante": v["#TIENDA / Determinante"],  
+            "SOLO NOMBRE DE LA CADENA": v["SOLO NOMBRE DE LA CADENA"],  
+            "SOLO NOMBRE DE TIENDA SIN CADENA": v["SOLO NOMBRE DE TIENDA SIN CADENA"],  
+            "NOMBRE COMPLETO PROMOTOR": v["NOMBRE COMPLETO PROMOTOR"],  
+            "FECHA DE ACTIVACION": v["FECHA DE ACTIVACION"],  
+            "MARCA": v["MARCA"],  
+            "MODELO": v["MODELO"],  
+            "REGISTRO": "" // Columna vacía del formato original
+        }));  
+  
+        const ws = XLSX.utils.json_to_sheet(formatoComisionesExacto);  
+        const wb = XLSX.utils.book_new();  
+        XLSX.utils.book_append_sheet(wb, ws, "Hoja1");  
+  
+        aplicarEstiloExcel(ws);
+  
+        ws['!cols'] = [  
+            {wch: 16}, {wch: 22}, {wch: 22}, {wch: 25}, {wch: 22}, {wch: 25}, {wch: 30}, {wch: 30}, {wch: 20}, {wch: 15}, {wch: 15}, {wch: 12}  
+        ];  
+          
+        XLSX.writeFile(wb, `comíciones marzo omar 2026_Telcel.xlsx`);  
+    }  
+  
+    /* ---- FUNCIÓN DE ESTILOS ESTÁNDAR PARA AMBOS EXCEL ---- */
+    function aplicarEstiloExcel(ws) {
         const rango = XLSX.utils.decode_range(ws['!ref']);  
-  
         const bordeNegro = {  
             top: { style: "thin", color: { rgb: "000000" } },  
             bottom: { style: "thin", color: { rgb: "000000" } },  
             left: { style: "thin", color: { rgb: "000000" } },  
             right: { style: "thin", color: { rgb: "000000" } }  
         };  
-  
         const estiloCabecera = {  
             fill: { fgColor: { rgb: "000000" } },  
             font: { color: { rgb: "FFFFFF" }, bold: true, name: "Segoe UI", sz: 11 },  
             alignment: { horizontal: "center", vertical: "center" },  
             border: bordeNegro  
         };  
-  
         const estiloCelda = {  
             font: { color: { rgb: "000000" }, name: "Segoe UI", sz: 10 },  
             alignment: { horizontal: "left", vertical: "center" },  
             border: bordeNegro  
         };  
-  
         for (let R = rango.s.r; R <= rango.e.r; ++R) {  
             for (let C = rango.s.c; C <= rango.e.c; ++C) {  
                 const refCelda = XLSX.utils.encode_cell({ r: R, c: C });  
                 if (!ws[refCelda]) continue;  
-  
-                if (R === 0) {  
-                    ws[refCelda].s = estiloCabecera;  
-                } else {  
-                    ws[refCelda].s = estiloCelda;  
-                }  
+                ws[refCelda].s = (R === 0) ? estiloCabecera : estiloCelda;  
             }  
         }  
-  
-        ws['!cols'] = [  
-            {wch: 14}, {wch: 16}, {wch: 22}, {wch: 22}, {wch: 22}, {wch: 15}, {wch: 25}, {wch: 30}, {wch: 30}, {wch: 18}, {wch: 15}, {wch: 15}  
-        ];  
-          
-        XLSX.writeFile(wb, `Reporte_Ventas_${new Date().toLocaleDateString().replace(/\//g,'-')}.xlsx`);  
-    }  
-
-    /* ---- NUEVA FUNCIÓN PARA EXPORTAR EN PDF ---- */
-    function exportarPDF() {
-        if(listaVentasGlobal.length === 0) return alert("No hay datos guardados para exportar en PDF.");
-
-        const contenedorTabla = document.getElementById('tablaVentasContenedor');
-        
-        // Agregamos clase de optimización para impresión
-        contenedorTabla.classList.add('pdf-exportable');
-
-        const opciones = {
-            margin:       [10, 10, 10, 10],
-            filename:     `Reporte_Ventas_${new Date().toLocaleDateString().replace(/\//g,'-')}.pdf`,
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' } // Formato Horizontal para que quepan las columnas
-        };
-
-        html2pdf().set(opciones).from(contenedorTabla).save().then(() => {
-            // Quitamos la clase para que visualmente regrese a la normalidad en la pantalla
-            contenedorTabla.classList.remove('pdf-exportable');
-        });
     }
+  
+    /* ---- REPORTE PDF ---- */  
+    function exportarPDF() {  
+        if(listaVentasGlobal.length === 0) return alert("No hay datos guardados para exportar en PDF.");  
+  
+        const tablaOriginal = document.getElementById('tablaVentasReal');  
+        const clonTabla = tablaOriginal.cloneNode(true);  
+  
+        const contenedorTemporal = document.createElement('div');  
+        contenedorTemporal.style.padding = "20px";  
+        contenedorTemporal.style.background = "#ffffff";  
+        contenedorTemporal.style.color = "#000000";  
+  
+        const tituloPDF = document.createElement('h2');  
+        tituloPDF.innerText = "REPORTE DE ACTIVACIONES Y CONTROL DE VENTAS DIARIAS";  
+        tituloPDF.style.fontFamily = "'Segoe UI', sans-serif";  
+        tituloPDF.style.color = "#001d3d";  
+        tituloPDF.style.textAlign = "center";  
+        tituloPDF.style.marginBottom = "20px";  
+        tituloPDF.style.fontSize = "16px";  
+        contenedorTemporal.appendChild(tituloPDF);  
+  
+        const filasHeaders = clonTabla.querySelectorAll('thead tr');  
+        filasHeaders.forEach(row => {  
+            if(row.lastElementChild) row.removeChild(row.lastElementChild);  
+        });  
+  
+        const filasData = clonTabla.querySelectorAll('tbody tr');  
+        filasData.forEach(row => {  
+            if(row.lastElementChild) row.removeChild(row.lastElementChild);  
+        });  
+  
+        clonTabla.style.width = "100%";  
+        clonTabla.style.minWidth = "100%";  
+        clonTabla.style.tableLayout = "auto";  
+        clonTabla.style.fontSize = "9px";  
+        clonTabla.style.color = "#000000";  
+        clonTabla.style.borderCollapse = "collapse";  
+  
+        clonTabla.querySelectorAll('th').forEach(th => {  
+            th.style.background = "#001d3d";  
+            th.style.color = "#ffffff";  
+            th.style.padding = "6px";  
+            th.style.border = "1px solid #333333";  
+            th.style.fontSize = "9px";  
+        });  
+  
+        clonTabla.querySelectorAll('td').forEach(td => {  
+            td.style.padding = "6px";  
+            td.style.border = "1px solid #dddddd";  
+            td.style.color = "#333333";  
+            td.style.wordBreak = "break-word";  
+        });  
+  
+        contenedorTemporal.appendChild(clonTabla);  
+        document.body.appendChild(contenedorTemporal);  
+  
+        const opciones = {  
+            margin:       [10, 10, 10, 10],  
+            filename:     `Reporte_Completo_Ventas_${new Date().toLocaleDateString().replace(/\//g,'-')}.pdf`,  
+            image:        { type: 'jpeg', quality: 0.98 },  
+            html2canvas:  { scale: 2, useCORS: true, logging: false },  
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' },  
+            pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }  
+        };  
+  
+        html2pdf().set(opciones).from(contenedorTemporal).save().then(() => {  
+            document.body.removeChild(contenedorTemporal);  
+        }).catch((err) => {  
+            console.error(err);  
+            document.body.removeChild(contenedorTemporal);  
+        });  
+    }  
 </script>  
 </body>  
 </html>
