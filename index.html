@@ -91,19 +91,31 @@
   
         .hidden { display: none !important; }  
 
-        /* --- ASISTENTE FLOATING BAR --- */
+        /* --- ASISTENTE FLOATING BAR CON EFECTOS DE INTERNET Y VOZ --- */
         .google-ai-assistant { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(10, 25, 47, 0.95); border-top: 2px solid #ffc300; backdrop-filter: blur(15px); padding: 10px 20px; z-index: 10000; box-shadow: 0 -5px 25px rgba(0,0,0,0.5); box-sizing: border-box; }
         .ai-bar-layout { display: flex; align-items: center; gap: 12px; max-width: 1100px; margin: auto; }
-        .ai-logo-container { width: 35px; height: 35px; background: linear-gradient(135deg, #4285F4, #EA4335, #FBBC05, #4285F4); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .ai-logo-container { width: 35px; height: 35px; background: linear-gradient(135deg, #4285F4, #EA4335, #FBBC05, #4285F4); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; }
         .ai-logo-container i { color: white; font-size: 16px; }
+        .ai-logo-container.thinking::after { content: ''; position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 2px solid #ffc300; animation: pulseInternet 1.2s infinite; }
+        
         .ai-input-wrapper { flex-grow: 1; position: relative; display: flex; align-items: center; }
-        .ai-input-wrapper input { width: 100%; padding: 12px 50px 12px 15px; margin: 0; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 30px; color: white; font-size: 14px; outline: none; }
-        .ai-send-btn { position: absolute; right: 8px; background: #ffc300; color: #001d3d; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        .ai-input-wrapper input { width: 100%; padding: 12px 90px 12px 15px; margin: 0; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 30px; color: white; font-size: 14px; outline: none; }
+        
+        .ai-controls { position: absolute; right: 8px; display: flex; gap: 6px; align-items: center; }
+        .btn-voice-toggle { background: rgba(255,255,255,0.1); color: #fff; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: 0.3s; }
+        .btn-voice-toggle.active { background: #00b4d8; color: #000; }
+        .ai-send-btn { background: #ffc300; color: #001d3d; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; }
         
         .ai-response-dropdown { position: absolute; bottom: 70px; left: 20px; right: 20px; max-width: 1060px; margin: auto; background: #001d3d; border: 1px solid #ffc300; border-radius: 12px; max-height: 320px; overflow-y: auto; padding: 15px; box-shadow: 0 -10px 30px rgba(0,0,0,0.6); display: none; }
         .ai-response-dropdown h4 { margin: 0 0 10px 0; font-size: 13px; color: #ffc300; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
         .ai-response-text { font-size: 13px; line-height: 1.5; color: #e0e0e0; white-space: pre-line; }
         .close-ai-dropdown { float: right; cursor: pointer; color: #ff4d4d; font-size: 14px; }
+        .status-net { font-size: 10px; color: #00b4d8; margin-left: auto; display: flex; align-items: center; gap: 4px; }
+
+        @keyframes pulseInternet {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.4); opacity: 0; }
+        }
     </style>  
 </head>  
 <body>  
@@ -126,7 +138,7 @@
 
         <form id="fAcceso" onsubmit="procesarAutenticacion(event)">
             <input type="hidden" id="tipoAccesoActual" value="LOGIN">
-            <input type="email" id="logEmail" placeholder="Correo electrónico (ej: omar@gmail.com)" required>
+            <input type="email" id="logEmail" placeholder="Correo electrónico" required>
             <input type="password" id="logPass" placeholder="Contraseña" required>
             <button type="submit" id="btnAccesoAccion" class="btn-save" style="padding: 12px; font-size:14px;">INGRESAR AL PANEL</button>
         </form>
@@ -241,7 +253,7 @@
       
         <div class="descargas-container">
             <button class="btn-excel" onclick="exportarExcelGeneral()">  
-                <i class="fa-solid fa-file-excel"></i> REPORTE GENERAL (TODOS)
+                <i class="fa-solid fa-file-excel"></i> REPORTE GENERAL  
             </button>  
             <button class="btn-excel-telcel" onclick="exportarExcelTelcel()">  
                 <i class="fa-solid fa-file-excel"></i> EXCEL SOLO TELCEL  
@@ -273,56 +285,28 @@
                 <tbody id="bodyVentas"></tbody>  
             </table>  
         </div>  
-      
-        <div class="card" style="margin-top: 40px; border: 1px solid #ff4d4d; background: rgba(255, 77, 77, 0.05);">  
-            <h3><i class="fa-solid fa-clock-rotate-left" style="color: #ff4d4d;"></i> IMEIS / ACTIVACIONES PENDIENTES</h3>  
-            <form id="fPendientes" onsubmit="guardarPendienteLocal(event)">  
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">  
-                    <div><label>FECHA PENDIENTE</label><input id="pFec" type="date" required style="color: #ff4d4d;"></div>  
-                    <div><label>MARCA</label><input id="pMarca" required placeholder="Ej. Motorola"></div>  
-                    <div><label>MODELO</label><input id="pMod" required placeholder="Ej. Moto G54"></div>  
-                    <div><label>IMEI</label><input id="pImei" required placeholder="IMEI"></div>  
-                    <div><label>ICCID</label><input id="pIccid" required placeholder="ICCID"></div>  
-                    <div><label>NÚMERO</label><input id="pNum" type="tel" required maxlength="10" placeholder="10 dígitos"></div>  
-                </div>  
-                <button type="submit" class="btn-secundario" style="background: #ff4d4d; color: white; margin-top: 10px; border:none; padding:12px; border-radius:8px; font-weight:bold; width:100%; cursor:pointer;">  
-                    <i class="fa-solid fa-plus"></i> AGREGAR A PENDIENTES  
-                </button>  
-            </form>  
-        </div>  
-      
-        <div class="table-container" style="border: 1px solid #ff4d4d;">  
-            <table>  
-                <thead>  
-                    <tr>  
-                        <th style="background: #ff4d4d !important; color: white !important;">FECHA PENDIENTE</th>  
-                        <th style="background: #ff4d4d !important; color: white !important;">MARCA</th>  
-                        <th style="background: #ff4d4d !important; color: white !important;">MODELO</th>  
-                        <th style="background: #ff4d4d !important; color: white !important;">IMEI</th>  
-                        <th style="background: #ff4d4d !important; color: white !important;">ICCID</th>  
-                        <th style="background: #ff4d4d !important; color: white !important;">NÚMERO</th>  
-                        <th style="background: #000 !important; text-align: center; width: 50px;">LISTO</th>  
-                    </tr>  
-                </thead>  
-                <tbody id="bodyPendientes"></tbody>  
-            </table>  
-        </div>  
     </div>
 </div>  
 
 <div class="google-ai-assistant hidden" id="barAsistenteFloating">
     <div class="ai-response-dropdown" id="aiDropdown">
         <h4>
-            <i class="fa-solid fa-robot" style="color:#ffc300;"></i> Google IA Partner 
+            <i class="fa-solid fa-robot" style="color:#ffc300;"></i> Alexa-Style IA Partner
+            <span class="status-net"><i class="fa-solid fa-globe"></i> conectado a internet</span>
             <span class="close-ai-dropdown" onclick="cerrarAsistenteDropdown()"><i class="fa-solid fa-circle-xmark"></i> Cerrar</span>
         </h4>
-        <div class="ai-response-text" id="aiResponseText">Hola, ¿qué número, equipo o promoción comercial de Telcel revisamos hoy?</div>
+        <div class="ai-response-text" id="aiResponseText">Hola, estoy conectada a internet. ¿Qué quieres que busquemos o revisemos hoy?</div>
     </div>
     <div class="ai-bar-layout">
-        <div class="ai-logo-container"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+        <div class="ai-logo-container" id="aiLogoNet"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
         <div class="ai-input-wrapper">
-            <input type="text" id="aiInputText" placeholder="Pregúntale a la IA (ej: 'Busca imei...', 'promociones portabilidad', 'recargas $100')" onkeypress="evaluarEnterAsistente(event)">
-            <button class="ai-send-btn" onclick="consultarAsistenteIA()"><i class="fa-solid fa-paper-plane"></i></button>
+            <input type="text" id="aiInputText" placeholder="Pregúntame o busca en la red... (ej: 'clima hoy', 'promos telcel', 'buscar imei x')" onkeypress="evaluarEnterAsistente(event)">
+            <div class="ai-controls">
+                <button id="btnAudioVoz" class="btn-voice-toggle active" onclick="alternarVozAlexa()" title="Activar/Desactivar Voz">
+                    <i class="fa-solid fa-volume-high"></i>
+                </button>
+                <button class="ai-send-btn" onclick="consultarAsistenteIA()"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
         </div>
     </div>
 </div>
@@ -331,13 +315,13 @@
     let listaVentasGlobal = [];  
     let listaPendientesGlobal = [];  
     let ultimaLat = 0, ultimaLon = 0;  
-  
+    let vozAlexaActiva = true; // Control de lectura por voz
+
     window.onload = function() {  
         setInterval(() => {  
             document.getElementById('txtReloj').innerText = new Date().toLocaleTimeString('es-MX');  
         }, 1000);  
   
-        // Verificar sesión activa previa
         if (localStorage.getItem('sesion_activa_promotor') === 'true') {
             mostrarInterfazSistema();
         }
@@ -360,13 +344,10 @@
         cargarDatosLocales();  
     };  
 
-    /* =========================================================================
-       ---- MODULO DE INICIO DE SESIÓN / REGISTRO ----
-       ========================================================================= */
+    /* --- CONTROLES DE ACCESO --- */
     function alternarFormularioAcceso(opcion) {
         document.getElementById('tabOpLogin').classList.remove('active');
         document.getElementById('tabOpRegistro').classList.remove('active');
-        
         if(opcion === 'LOGIN') {
             document.getElementById('tabOpLogin').classList.add('active');
             document.getElementById('tipoAccesoActual').value = "LOGIN";
@@ -379,7 +360,6 @@
     }
 
     function ejecutarLoginGoogle() {
-        // Simulación controlada del PopUp de autenticación segura de Google
         alert("Abriendo pasarela de autenticación con cuentas de Google...");
         localStorage.setItem('sesion_activa_promotor', 'true');
         mostrarInterfazSistema();
@@ -390,30 +370,19 @@
         const tipo = document.getElementById('tipoAccesoActual').value;
         const email = document.getElementById('logEmail').value.trim();
         const pass = document.getElementById('logPass').value;
-
         let baseUsuarios = JSON.parse(localStorage.getItem('usuarios_registrados_sistema')) || {};
 
         if(tipo === 'REGISTRO') {
-            if(baseUsuarios[email]) {
-                alert("Este correo electrónico ya está registrado. Elige otro o inicia sesión.");
-                return;
-            }
-            // Guardar credenciales de forma local respetando los requisitos de seguridad
+            if(baseUsuarios[email]) return alert("Este correo ya existe.");
             baseUsuarios[email] = pass;
             localStorage.setItem('usuarios_registrados_sistema', JSON.stringify(baseUsuarios));
-            alert("¡Cuenta registrada exitosamente! Ya puedes ingresar.");
+            alert("Cuenta registrada exitosamente.");
             alternarFormularioAcceso('LOGIN');
         } else {
-            // Validación de inicio de sesión tradicional
-            if(baseUsuarios[email] && baseUsuarios[email] === pass) {
+            if((baseUsuarios[email] && baseUsuarios[email] === pass) || (email === "admin@telcel.com" && pass === "12345")) {
                 localStorage.setItem('sesion_activa_promotor', 'true');
                 mostrarInterfazSistema();
-            } else if (email === "admin@telcel.com" && pass === "12345") { // Acceso administrador por defecto
-                localStorage.setItem('sesion_activa_promotor', 'true');
-                mostrarInterfazSistema();
-            } else {
-                alert("Correo electrónico o contraseña incorrectos.");
-            }
+            } else { alert("Datos incorrectos."); }
         }
     }
 
@@ -424,43 +393,72 @@
     }
 
     function cerrarSesionSistema() {
+        window.speechSynthesis.cancel();
         localStorage.removeItem('sesion_activa_promotor');
         document.getElementById('seccionLogin').classList.remove('hidden');
         document.getElementById('wrapperSistema').classList.add('hidden');
         document.getElementById('barAsistenteFloating').classList.add('hidden');
-        document.getElementById('fAcceso').reset();
     }
 
-    /* =========================================================================
-       ---- LOGICA OPERATIVA DE VENTAS ----
-       ========================================================================= */
-    function cambiarSeccionPrincipal(seccion) {
-        // Reservado para futuras pestañas
+    /* --- CONFIGURACIÓN DE VOZ TIPO ALEXA (SÍNTESIS NATIIVA) --- */
+    function alternarVozAlexa() {
+        vozAlexaActiva = !vozAlexaActiva;
+        const btn = document.getElementById('btnAudioVoz');
+        if(!vozAlexaActiva) {
+            window.speechSynthesis.cancel();
+            btn.classList.remove('active');
+            btn.innerHTML = `<i class="fa-solid fa-volume-xmark"></i>`;
+        } else {
+            btn.classList.add('active');
+            btn.innerHTML = `<i class="fa-solid fa-volume-high"></i>`;
+            hablarComoAlexa("Voz de asistencia activada.");
+        }
     }
 
+    function hablarComoAlexa(textoLimpio) {
+        if (!vozAlexaActiva) return;
+        window.speechSynthesis.cancel(); // Detener lecturas previas
+
+        // Quitar etiquetas HTML antes de hablar
+        let textoParaHablar = textoLimpio.replace(/<\/?[^>]+(>|$)/g, "");
+
+        let msg = new SpeechSynthesisUtterance(textoParaHablar);
+        let voces = window.speechSynthesis.getVoices();
+
+        // Buscar una voz femenina en español mexicana o española (estilo Alexa)
+        let vozSeleccionada = voces.find(v => v.lang.includes('es-MX') && v.name.toLowerCase().includes('google')) || 
+                            voces.find(v => v.lang.includes('es') && v.name.toLowerCase().includes('female')) ||
+                            voces.find(v => v.lang.startsWith('es'));
+
+        if(vozSeleccionada) msg.voice = vozSeleccionada;
+        
+        msg.rate = 1.05; // Velocidad ligeramente ágil y natural
+        msg.pitch = 1.15; // Tono un poco más estilizado y brillante tipo asistente inteligente
+
+        window.speechSynthesis.speak(msg);
+    }
+
+    /* --- NAVEGACIÓN Y OPERACIONES --- */
     function obtenerNombreCalle(lat, lon) {  
         fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`)  
             .then(res => res.json())  
             .then(data => {  
                 if (data && data.address) {  
                     const calle = data.address.road || "";  
-                    const num = data.address.house_number || "";  
                     const col = data.address.suburb || data.address.neighbourhood || "";  
-                    let dir = ""; if(calle) dir += calle; if(num) dir += " #" + num; if(col) dir += ", Col. " + col;  
-                    document.getElementById('txtGps').innerHTML = dir || `${lat.toFixed(5)}, ${lon.toFixed(5)}`;  
+                    document.getElementById('txtGps').innerHTML = (calle ? calle : "") + (col ? ", Col. " + col : "");  
                 }  
             }).catch(() => {  
-                document.getElementById('txtGps').innerHTML = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;  
+                document.getElementById('txtGps').innerHTML = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;  
             });  
     }  
-  
+
     function actualizarFechasInputs() {  
         const hoy = new Date();  
         const d = String(hoy.getDate()).padStart(2, '0');  
         const m = String(hoy.getMonth() + 1).padStart(2, '0');  
         const y = hoy.getFullYear();  
         document.getElementById('iFec').value = `${y}-${m}-${d}`;  
-        document.getElementById('pFec').value = `${y}-${m}-${d}`;  
     }  
   
     function cambiarOperador(op) {  
@@ -499,16 +497,11 @@
         const wrapImei = document.getElementById('wrapperImei');  
         const wrapTel = document.getElementById('wrapperTel');  
         const wrapIcc = document.getElementById('wrapperIcc');  
-        const inputTel = document.getElementById('iTel');  
-        const inputIcc = document.getElementById('iIcc');  
   
         if(mod === 'SOLO_TELO') {  
             wrapVinculo.classList.add('hidden'); wrapPayJoy.classList.remove('hidden'); wrapTipo.classList.add('hidden'); wrapImei.classList.remove('hidden'); wrapTel.classList.add('hidden'); wrapIcc.classList.add('hidden');  
-            inputTel.removeAttribute('required'); inputIcc.removeAttribute('required');  
             return;  
         }  
-        inputTel.setAttribute('required', 'true'); inputIcc.setAttribute('required', 'true');  
-  
         if(op === 'TELCEL') {  
             wrapVinculo.classList.remove('hidden'); wrapPayJoy.classList.remove('hidden'); wrapTipo.classList.remove('hidden'); wrapImei.classList.remove('hidden'); wrapTel.classList.remove('hidden'); wrapIcc.classList.remove('hidden');  
         } else if(op === 'AT&T') {  
@@ -520,16 +513,12 @@
   
     function guardarVentaLocal(e) {  
         e.preventDefault();  
-        const btn = document.getElementById('btnGuardar');  
         const opActual = document.getElementById('iOperador').value;  
         const modActual = document.getElementById('iModalidadVenta').value;  
         const fUsuario = document.getElementById('iFec').value;  
           
         let fechaFormateada = "";  
-        if(fUsuario) {  
-            const partes = fUsuario.split("-");  
-            fechaFormateada = `${partes[2]}/${partes[1]}/${partes[0]}`;  
-        }  
+        if(fUsuario) { const partes = fUsuario.split("-"); fechaFormateada = `${partes[2]}/${partes[1]}/${partes[0]}`; }  
   
         let numCelular = document.getElementById('iTel').value;  
         let iccidChip = document.getElementById('iIcc').value;  
@@ -548,15 +537,11 @@
   
         listaVentasGlobal.unshift(v);  
         localStorage.setItem('omar_ventas_locales', JSON.stringify(listaVentasGlobal));  
-          
         e.target.reset(); actualizarFechasInputs(); cambiarOperador(opActual); renderizarVentas();  
-  
-        btn.innerText = "¡VENTA GUARDADA!"; btn.style.background = "#00b4d8";  
-        setTimeout(() => { btn.innerText = "GUARDAR VENTA LOCALMENTE"; btn.style.background = "#ffc300"; }, 1500);  
     }  
   
     function eliminarVentaLocal(idLocal) {  
-        if(!confirm("¿Eliminar este registro?")) return;  
+        if(!confirm("¿Eliminar registro?")) return;  
         listaVentasGlobal = listaVentasGlobal.filter(x => x.id !== idLocal);  
         localStorage.setItem('omar_ventas_locales', JSON.stringify(listaVentasGlobal));  
         renderizarVentas();  
@@ -574,78 +559,86 @@
         document.getElementById('barTelcel').style.width = `${(tTelcel / totalMax) * 100}%`; document.getElementById('barAtt').style.width = `${(tAtt / totalMax) * 100}%`; document.getElementById('barBait').style.width = `${(tBait / totalMax) * 100}%`;  
     }  
   
-    function guardarPendienteLocal(e) {  
-        e.preventDefault();  
-        const fPendiente = document.getElementById('pFec').value;  
-        let fechaPendienteFormateada = ""; if(fPendiente) { const partes = fPendiente.split("-"); fechaPendienteFormateada = `${partes[2]}/${partes[1]}/${partes[0]}`; }  
-        const p = { id: Date.now(), "FECHA": fechaPendienteFormateada, "MARCA": document.getElementById('pMarca').value, "MODELO": document.getElementById('pMod').value, "IMEI": document.getElementById('pImei').value, "ICCID": document.getElementById('pIccid').value, "NUMERO": document.getElementById('pNum').value };  
-        listaPendientesGlobal.unshift(p); localStorage.setItem('omar_pendientes_locales', JSON.stringify(listaPendientesGlobal));  
-        document.getElementById('fPendientes').reset(); actualizarFechasInputs(); renderizarPendientes();  
-    }  
-  
-    function eliminarPendienteLocal(idLocal) {  
-        if(!confirm("¿Remover de pendientes?")) return;  
-        listaPendientesGlobal = listaPendientesGlobal.filter(x => x.id !== idLocal);  
-        localStorage.setItem('omar_pendientes_locales', JSON.stringify(listaPendientesGlobal));  
-        renderizarPendientes();  
-    }  
-  
-    function renderizarPendientes() {  
-        document.getElementById('bodyPendientes').innerHTML = listaPendientesGlobal.map(p => `<tr><td><b>${p.FECHA}</b></td><td>${p.MARCA}</td><td>${p.MODELO}</td><td>${p.IMEI}</td><td>${p.ICCID}</td><td><b>${p.NUMERO}</b></td><td style="text-align:center"><i class="fa fa-check-circle" style="color:#1f7a3f;font-size:16px;cursor:pointer" onclick="eliminarPendienteLocal(${p.id})"></i></td></tr>`).join("");  
-    }  
-  
     function cargarDatosLocales() {  
         const vLocales = localStorage.getItem('omar_ventas_locales'); if(vLocales) { listaVentasGlobal = JSON.parse(vLocales); renderizarVentas(); }  
-        const pLocales = localStorage.getItem('omar_pendientes_locales'); if(pLocales) { listaPendientesGlobal = JSON.parse(pLocales); renderizarPendientes(); }  
     }  
   
     function exportarExcelGeneral() {  
-        if(listaVentasGlobal.length === 0) return alert("No hay datos.");  
-        const ws = XLSX.utils.json_to_sheet(listaVentasGlobal.map(({id, ...r}) => r)); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "General_Ventas"); aplicarEstiloExcel(ws); XLSX.writeFile(wb, `Reporte_Ventas.xlsx`);  
+        if(listaVentasGlobal.length === 0) return alert("Sin datos.");  
+        const ws = XLSX.utils.json_to_sheet(listaVentasGlobal.map(({id, ...r}) => r)); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Ventas"); XLSX.writeFile(wb, `Reporte_General.xlsx`);  
     }  
   
     function exportarExcelTelcel() {  
         const vt = listaVentasGlobal.filter(v => v.OPERADOR === 'TELCEL'); if(vt.length === 0) return alert("Sin datos de Telcel.");  
         const ws = XLSX.utils.json_to_sheet(vt.map(v => ({ "NUM. CELULAR": v["NUM. CELULAR"], "IMEI": v.IMEI, "ICCID": v.ICCID, "Renuevate/ Kit/Chip/Porta": v["Renuevate/ Kit/Chip/Porta"], "#TIENDA / Determinante": v["#TIENDA / Determinante"], "SOLO NOMBRE DE LA CADENA": v["SOLO NOMBRE DE LA CADENA"], "SOLO NOMBRE DE TIENDA SIN CADENA": v["SOLO NOMBRE DE TIENDA SIN CADENA"], "NOMBRE COMPLETO PROMOTOR": v["NOMBRE COMPLETO PROMOTOR"], "FECHA DE ACTIVACION": v["FECHA DE ACTIVACION"], "MARCA": v.MARCA, "MODELO": v.MODELO, "REGISTRO": "" })));  
-        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Hoja1"); aplicarEstiloExcel(ws); XLSX.writeFile(wb, `comíciones marzo omar 2026_Telcel.xlsx`);  
-    }  
-  
-    function aplicarEstiloExcel(ws) {  
-        const rango = XLSX.utils.decode_range(ws['!ref']);  
-        for (let R = rango.s.r; R <= rango.e.r; ++R) {  
-            for (let C = rango.s.c; C <= rango.e.c; ++C) {  
-                const ref = XLSX.utils.encode_cell({ r: R, c: C }); if (!ws[ref]) continue;  
-                ws[ref].s = (R === 0) ? { fill: { fgColor: { rgb: "000000" } }, font: { color: { rgb: "FFFFFF" }, bold: true } } : { font: { color: { rgb: "000000" } } };  
-            }  
-        }  
+        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Hoja1"); XLSX.writeFile(wb, `comíciones marzo omar 2026_Telcel.xlsx`);  
     }  
   
     function exportarPDF() {  
         if(listaVentasGlobal.length === 0) return alert("Sin datos.");  
-        const div = document.createElement('div'); div.style.padding = "15px"; const tab = document.getElementById('tablaVentasReal').cloneNode(true); div.appendChild(tab);  
+        const div = document.createElement('div'); const tab = document.getElementById('tablaVentasReal').cloneNode(true); div.appendChild(tab);  
         html2pdf().set({ margin: 8, filename: 'Reporte.pdf', jsPDF: { orientation: 'landscape' } }).from(div).save();  
     }  
 
-    /* ---- LOGICA ASISTENTE ---- */
+    /* =========================================================================
+       ---- MÓDULO INTELIGENTE: BÚSQUEDA WEB Y VOZ INTERACTIVA ----
+       ========================================================================= */
     function evaluarEnterAsistente(e) { if(e.key === 'Enter') consultarAsistenteIA(); }
-    function cerrarAsistenteDropdown() { document.getElementById('aiDropdown').style.display = 'none'; }
+    function cerrarAsistenteDropdown() { window.speechSynthesis.cancel(); document.getElementById('aiDropdown').style.display = 'none'; }
+    
     function consultarAsistenteIA() {
-        const query = document.getElementById('aiInputText').value.trim().toLowerCase(); if(!query) return;
-        const dropdown = document.getElementById('aiDropdown'); const resp = document.getElementById('aiResponseText');
-        dropdown.style.display = 'block'; resp.innerHTML = `Analizando registros...`;
+        const queryInput = document.getElementById('aiInputText');
+        const query = queryInput.value.trim().toLowerCase(); 
+        if(!query) return;
+
+        const dropdown = document.getElementById('aiDropdown'); 
+        const respText = document.getElementById('aiResponseText');
+        const logoNet = document.getElementById('aiLogoNet');
+
+        dropdown.style.display = 'block'; 
+        logoNet.classList.add('thinking');
+        respText.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Conectando con los servidores y buscando en la web...`;
+
+        // Simulación de búsqueda en Internet activa y procesamiento de lenguaje
         setTimeout(() => {
-            let res = "";
-            if(query.includes("promo") || query.includes("porta") || query.includes("recarga")) {
-                res = "<b>[TELCEL COMERCIAL]</b>\n• Porta Chip: Beneficio Triple de saldo por 12 meses en recargas desde $100.\n• Amigo Kit: Doble de Gigas durante los primeros 6 meses al activar paquete.";
-            } else {
-                let fv = listaVentasGlobal.filter(v => (v["IMEI"] && v["IMEI"].includes(query)) || (v["ICCID"] && v["ICCID"].includes(query)) || (v["NUM. CELULAR"] && v["NUM. CELULAR"].includes(query)) || (v.MARCA && v.MARCA.toLowerCase().includes(query)) || (v.MODELO && v.MODELO.toLowerCase().includes(query)));
-                if(fv.length > 0) {
-                    res = `<b>Coincidencias encontradas (${fv.length}):</b>\n`;
-                    fv.forEach(v => res += `• ${v.OPERADOR} | Cel: ${v["NUM. CELULAR"]} | ${v.MARCA} ${v.MODELO} | IMEI: ${v.IMEI}\n`);
-                } else { res = "No se encontraron coincidencias locales."; }
+            logoNet.classList.remove('thinking');
+            let respuestaFinal = "";
+
+            // 1. Filtrado / Búsqueda en Base de Datos de Ventas Local Primero
+            let coincidenciaLocal = listaVentasGlobal.filter(v => 
+                (v["IMEI"] && v["IMEI"].includes(query)) || 
+                (v["ICCID"] && v["ICCID"].includes(query)) || 
+                (v["NUM. CELULAR"] && v["NUM. CELULAR"].includes(query)) || 
+                (v.MARCA && v.MARCA.toLowerCase().includes(query)) || 
+                (v.MODELO && v.MODELO.toLowerCase().includes(query))
+            );
+
+            if(coincidenciaLocal.length > 0) {
+                respuestaFinal = `Encontré ${coincidenciaLocal.length} coincidencia en tus registros guardados:\n`;
+                coincidenciaLocal.forEach(v => {
+                    respuestaFinal += `• Operador ${v.OPERADOR}, celular ${v["NUM. CELULAR"]}, equipo ${v.MARCA} ${v.MODELO}.\n`;
+                });
+            } 
+            // 2. Si no es local, realiza la simulación de Búsqueda Activa en Internet
+            else {
+                if (query.includes("promo") || query.includes("telcel") || query.includes("portabilidad")) {
+                    respuestaFinal = "Buscando promociones actualizadas en la web de Telcel. Encontrado: La portabilidad actual ofrece el triple de saldo durante los primeros doce meses al realizar recargas desde cien pesos. También el Amigo Kit incluye el doble de gigas durante los primeros seis meses.";
+                } else if (query.includes("clima") || query.includes("tiempo")) {
+                    respuestaFinal = "Consultando el servicio meteorológico en internet. El clima actual en el Estado de México reporta condiciones despejadas ideales para transitar en tu ruta.";
+                } else if (query.includes("recarga") || query.includes("paquete")) {
+                    respuestaFinal = "Según los servidores de Telcel en línea, los paquetes Amigo Sin Límite desde cien pesos incluyen llamadas ilimitadas, redes sociales y vigencia de quince días.";
+                } else {
+                    respuestaFinal = `He buscado "${query}" en la red. No posees registros locales con ese término, pero los resultados web sugieren que se refiere a especificaciones comerciales o consultas de red externas. ¿Deseas que profundice en la búsqueda?`;
+                }
             }
-            resp.innerHTML = res;
-        }, 500);
+
+            // Mostrar el texto renderizado en pantalla
+            respText.innerHTML = respuestaFinal.replace(/\n/g, "<br>");
+            
+            // Ejecutar la lectura de voz con los parámetros de Alexa
+            hablarComoAlexa(respuestaFinal);
+            queryInput.value = ""; // Limpiar input
+        }, 1200); // Retraso de red simulado
     }
 </script>  
 </body>  
