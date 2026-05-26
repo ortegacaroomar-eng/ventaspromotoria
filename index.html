@@ -7,13 +7,7 @@
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>  
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">  
-    <script type="importmap">
-      {
-        "imports": {
-          "@google/generative-ai": "https://esm.run/@google/generative-ai"
-        }
-      }
-    </script>
+    
     <style>  
         body { margin:0; font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; padding-bottom: 90px; }  
         .app { max-width:1100px; margin:auto; padding:20px; }  
@@ -28,7 +22,6 @@
         .login-tab-btn.active { background: #ffc300; color: #001d3d; }
         
         .btn-google { background: white; color: #333; width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: 0.3s; margin-bottom: 20px; }
-        .btn-google:hover { background: #f1f1f1; transform: translateY(-1px); }
         .separator { display: flex; align-items: center; text-align: center; color: #666; font-size: 11px; margin-bottom: 20px; text-transform: uppercase; font-weight: bold; }
         .separator::before, .separator::after { content: ''; flex: 1; border-bottom: 1px solid #333; }
         .separator:not(:empty)::before { margin-right: .5em; }
@@ -68,7 +61,6 @@
         .w-relleno { height: 100%; width: 0%; transition: width 0.5s ease-in-out; }  
   
         .card { background:rgba(255,255,255,.08); backdrop-filter:blur(10px); border-radius:15px; padding:20px; margin-bottom:15px; border:1px solid rgba(255,255,255,0.1); }  
-        .card h3 { margin-top: 0; margin-bottom: 15px; font-size: 16px; color: #ffc300; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; display: flex; align-items: center; gap: 8px; }  
         label { font-size:10px; font-weight:bold; color:#ffc300; text-transform: uppercase; display: block; margin-bottom: 5px; }  
           
         input, select, textarea { width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; outline: none; font-family: inherit; }  
@@ -89,7 +81,7 @@
   
         .hidden { display: none !important; }  
 
-        /* --- ASISTENTE FLOATING BAR CON IA GENERATIVA REAL --- */
+        /* --- ASISTENTE FLOATING BAR CON IA GENERATIVA --- */
         .google-ai-assistant { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(7, 15, 28, 0.96); border-top: 2px solid #ffc300; backdrop-filter: blur(20px); padding: 12px 20px; z-index: 10000; box-shadow: 0 -5px 30px rgba(0,0,0,0.7); box-sizing: border-box; }
         .ai-bar-layout { display: flex; align-items: center; gap: 12px; max-width: 1100px; margin: auto; }
         .ai-logo-container { width: 38px; height: 38px; background: linear-gradient(135deg, #00f5d4, #00b4d8, #7209b7); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; }
@@ -97,10 +89,11 @@
         .ai-logo-container.thinking::after { content: ''; position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 2px solid #00f5d4; animation: pulseGenAI 1s infinite; }
         
         .ai-input-wrapper { flex-grow: 1; position: relative; display: flex; align-items: center; }
-        .ai-input-wrapper input { width: 100%; padding: 12px 95px 12px 18px; margin: 0; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15); border-radius: 30px; color: white; font-size: 14px; outline: none; transition: 0.3s; }
+        .ai-input-wrapper input { width: 100%; padding: 12px 135px 12px 18px; margin: 0; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15); border-radius: 30px; color: white; font-size: 14px; outline: none; transition: 0.3s; }
         .ai-input-wrapper input:focus { border-color: #ffc300; background: rgba(255,255,255,0.12); }
         
         .ai-controls { position: absolute; right: 8px; display: flex; gap: 6px; align-items: center; }
+        .btn-key-config { background: rgba(255,255,255,0.1); color: #ffc300; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; }
         .btn-voice-toggle { background: rgba(255,255,255,0.1); color: #fff; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: 0.3s; }
         .btn-voice-toggle.active { background: #00b4d8; color: #000; }
         .ai-send-btn { background: #ffc300; color: #001d3d; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: bold; }
@@ -259,8 +252,11 @@
     <div class="ai-bar-layout">
         <div class="ai-logo-container" id="aiLogoNet"><i class="fa-solid fa-brain"></i></div>
         <div class="ai-input-wrapper">
-            <input type="text" id="aiInputText" placeholder="Háblame o haz una consulta... (ej: 'hola', 'ayúdame a vender', 'busca equipo x')" onkeypress="evaluarEnterAsistente(event)">
+            <input type="text" id="aiInputText" placeholder="Háblame o haz una consulta... (ej: 'hola', 'ayúdame a vender')" onkeypress="evaluarEnterAsistente(event)">
             <div class="ai-controls">
+                <button class="btn-key-config" onclick="configurarApiKeyMano()" title="Configurar Token de Gemini API">
+                    <i class="fa-solid fa-key"></i>
+                </button>
                 <button id="btnAudioVoz" class="btn-voice-toggle active" onclick="alternarVozAlexa()">
                     <i class="fa-solid fa-volume-high"></i>
                 </button>
@@ -270,12 +266,16 @@
     </div>
 </div>
   
-<script type="module">
-    // Importación dinámica segura del cliente oficial de Google Gen AI
-    import { GoogleGenAI } from "@google/generative-ai";
+<script type="importmap">
+  {
+    "imports": {
+      "@google/generative-ai": "https://esm.run/@google/generative-ai"
+    }
+  }
+</script>
 
-    // Reemplaza esta clave con tu API Key oficial de Google AI Studio para producción.
-    const CLAVE_API_GEMINI = "AIzaSyD-Tu_Clave_Real_Aqui_O_Ingresa_Dinamico"; 
+<script type="module">
+    import { GoogleGenAI } from "@google/generative-ai";
 
     let listaVentasGlobal = [];  
     let vozAlexaActiva = true;
@@ -311,12 +311,8 @@
 
     window.procesarAutenticacion = function(e) {
         e.preventDefault();
-        const email = document.getElementById('logEmail').value.trim();
-        const pass = document.getElementById('logPass').value;
-        if(email || pass) {
-            localStorage.setItem('sesion_activa_promotor', 'true');
-            mostrarInterfazSistema();
-        }
+        localStorage.setItem('sesion_activa_promotor', 'true');
+        mostrarInterfazSistema();
     }
 
     function mostrarInterfazSistema() {
@@ -354,7 +350,6 @@
         let msg = new SpeechSynthesisUtterance(textoParaHablar);
         let voces = window.speechSynthesis.getVoices();
 
-        // Configuración para emular la tonalidad de Alexa (femenina, fluida, ágil)
         let vozSeleccionada = voces.find(v => v.lang.includes('es-MX') && v.name.toLowerCase().includes('google')) || 
                             voces.find(v => v.lang.includes('es') && v.name.toLowerCase().includes('female')) ||
                             voces.find(v => v.lang.startsWith('es'));
@@ -475,11 +470,19 @@
     }  
 
     /* =========================================================================
-       ---- INTEGRACIÓN DE IA GENERATIVA DE GOOGLE CON CONTEXTO LOCAL Y WEB ----
+       ---- ASISTENTE INTELIGENTE GEMINI IA GENERATIVA CORREGIDO ----
        ========================================================================= */
     window.evaluarEnterAsistente = function(e) { if(e.key === 'Enter') consultarAsistenteIA(); }
     window.cerrarAsistenteDropdown = function() { window.speechSynthesis.cancel(); document.getElementById('aiDropdown').style.display = 'none'; }
     
+    window.configurarApiKeyMano = function() {
+        const key = prompt("Ingresa tu clave API de Gemini (Google AI Studio):", localStorage.getItem('gemini_api_key') || "");
+        if(key) {
+            localStorage.setItem('gemini_api_key', key.trim());
+            alert("Clave API guardada con éxito.");
+        }
+    }
+
     async function consultarAsistenteIA() {
         const queryInput = document.getElementById('aiInputText');
         const query = queryInput.value.trim(); 
@@ -491,9 +494,9 @@
 
         dropdown.style.display = 'block'; 
         logoNet.classList.add('thinking');
-        respText.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Pensando y procesando respuesta generativa...`;
+        respText.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Procesando con Inteligencia Artificial...`;
 
-        // 1. Verificar si hay coincidencia directa en el Excel local primero para dárselo a la IA
+        // Buscar en Excel local primero por si requiere encontrar un IMEI o Celular
         let registrosCoincidentes = listaVentasGlobal.filter(v => 
             (v["IMEI"] && v["IMEI"].includes(query)) || 
             (v["ICCID"] && v["ICCID"].includes(query)) || 
@@ -501,53 +504,55 @@
         );
 
         let contextoLocalText = registrosCoincidentes.length > 0 
-            ? `Nota importante: Encontraste este registro en las ventas guardadas del promotor: ${JSON.stringify(registrosCoincidentes)}.`
-            : "No hay registros locales coincidentes con esta búsqueda específica en el Excel local.";
+            ? `Nota: Encontrado en el Excel local: ${JSON.stringify(registrosCoincidentes)}.`
+            : "No hay registros locales exactos para este término.";
+
+        const tokenGuardado = localStorage.getItem('gemini_api_key');
+
+        if(!tokenGuardado) {
+            // Respuestas inteligentes locales de respaldo si aún no tiene API Key puesta
+            setTimeout(() => {
+                logoNet.classList.remove('thinking');
+                let respuestaLocal = "";
+                if(query.toLowerCase().includes("hola")) {
+                    respuestaLocal = "¡Hola! Soy tu asistente Alexa-Partner. Estoy lista para conversar y ayudarte en tus ventas de telefonía móvil. Presiona el botón de la llave dorada a mi derecha para configurar tu token de internet.";
+                } else {
+                    respuestaLocal = `Entendido. Busqué "${query}" localmente. Recuerda agregar tu clave API en el botón de la llave para darme poder generativo total en la red.`;
+                }
+                respText.innerHTML = respuestaLocal;
+                hablarComoAlexa(respuestaLocal);
+                queryInput.value = "";
+            }, 800);
+            return;
+        }
 
         try {
-            // Inicializar el cliente oficial de IA Generativa de Google
-            const aiGen = new GoogleGenAI({ apiKey: CLAVE_API_GEMINI });
-            
-            // Usamos gemini-1.5-flash optimizado para velocidad e interacción en tiempo real
+            const aiGen = new GoogleGenAI({ apiKey: tokenGuardado });
             const model = aiGen.getGenerativeModel({ 
                 model: "gemini-1.5-flash",
-                generationConfig: { maxOutputTokens: 150 } // Respuestas concisas ideales para ser habladas
+                generationConfig: { maxOutputTokens: 140 }
             });
 
-            // Prompt del sistema inyectado dinámicamente para actuar como asistente de ventas telefónicas
             const promptCompleto = `
-                Actúas como una asistente virtual inteligente llamada Alexa-Partner para un promotor de ventas de telefonía móvil. 
-                Tu tono debe ser profesional, servicial, amigable, directo y muy fluido.
-                Contexto actual del sistema de ventas: ${contextoLocalText}. 
-                Pregunta o saludo del usuario: "${query}".
-                Responde de manera natural. Si te saludan con un "hola", responde amablemente presentándote y ofreciendo ayuda. Da respuestas breves y directas perfectas para lectura por voz.
+                Eres una asistente virtual de telefonía móvil llamada Alexa-Partner. 
+                Tu tono debe ser directo, amigable, profesional y breve (ideal para hablar).
+                Datos actuales en sistema: ${contextoLocalText}.
+                Consulta del promotor: "${query}".
+                Si te saludan, responde cordialmente. Mantén las respuestas fluidas y directas.
             `;
 
             const resultado = await model.generateContent(promptCompleto);
             const respuestaIA = resultado.response.text();
 
-            // Desplegar la respuesta generada por la IA en la caja de diálogo
             respText.innerHTML = respuestaIA.replace(/\n/g, "<br>");
-            
-            // Decir la respuesta en voz alta simulando a Alexa
             hablarComoAlexa(respuestaIA);
 
         } catch (error) {
-            // Mecanismo de respaldo local en caso de no tener API Key configurada o error de red
-            console.error("Error GenAI API:", error);
-            let fallbackRes = "";
-            if(query.toLowerCase() === "hola" || query.toLowerCase().includes("buenos")) {
-                fallbackRes = "¡Hola! Qué gusto saludarte hoy. Estoy lista para asistirte en tus ventas de telefonía y buscar cualquier registro o información en internet. ¿En qué te puedo ayudar?";
-            } else if(registrosCoincidentes.length > 0) {
-                fallbackRes = `Encontré la información local. Se trata de un equipo operador ${registrosCoincidentes[0].OPERADOR} número ${registrosCoincidentes[0]["NUM. CELULAR"]}.`;
-            } else {
-                fallbackRes = `He recibido tu consulta: "${query}". Como asistente de IA generativa, estoy lista para ayudarte a optimizar tu jornada comercial en la tienda.`;
-            }
-            respText.innerHTML = fallbackRes;
-            hablarComoAlexa(fallbackRes);
+            console.error("Error en conexión:", error);
+            respText.innerHTML = "Hubo un inconveniente al conectar con el servidor generativo. Verifica tu conexión de red o el token de la API.";
         } finally {
             logoNet.classList.remove('thinking');
-            queryInput.value = ""; // Limpiar el campo
+            queryInput.value = "";
         }
     }
 </script>  
