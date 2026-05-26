@@ -8,11 +8,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">  
     
+    <script src="https://gweb-static.cdn.embedly.com/widgets/platform.js" charset="UTF-8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@google/generative-ai@0.1.1/dist/index.umd.min.js"></script>
+
     <style>  
         body { margin:0; font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; padding-bottom: 90px; }  
         .app { max-width:1100px; margin:auto; padding:20px; }  
           
-        /* --- PANTALLA DE INICIO DE SESIÓN / REGISTRO --- */
+        /* --- PANTALLA DE INICIO DE SESIÓN --- */
         .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000814; z-index: 20000; display: flex; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
         .login-box { background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; width: 100%; max-width: 420px; padding: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.8); box-sizing: border-box; text-align: center; }
         .login-box h2 { margin-top: 0; color: #ffc300; font-size: 22px; margin-bottom: 5px; }
@@ -24,8 +27,6 @@
         .btn-google { background: white; color: #333; width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: 0.3s; margin-bottom: 20px; }
         .separator { display: flex; align-items: center; text-align: center; color: #666; font-size: 11px; margin-bottom: 20px; text-transform: uppercase; font-weight: bold; }
         .separator::before, .separator::after { content: ''; flex: 1; border-bottom: 1px solid #333; }
-        .separator:not(:empty)::before { margin-right: .5em; }
-        .separator:not(:empty)::after { margin-left: .5em; }
 
         /* Estilos Principales */
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px; }  
@@ -33,10 +34,9 @@
         .gps-card i { margin-right: 10px; font-size: 18px; color: #ffc300; min-width: 20px; }  
         .reloj-digital { font-family: monospace; font-size: 24px; color: #ffc300; font-weight: bold; display: flex; align-items: center; gap: 15px; }  
         .btn-logout { background: rgba(255, 77, 77, 0.2); border: 1px solid #ff4d4d; color: #ff4d4d; padding: 6px 12px; border-radius: 8px; font-size: 12px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn-logout:hover { background: #ff4d4d; color: white; }
 
         .main-nav { display: flex; gap: 10px; margin-bottom: 20px; background: rgba(0,0,0,0.5); padding: 8px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); flex-wrap: wrap; }
-        .nav-tab-btn { flex: 1; min-width: 140px; padding: 12px; text-align: center; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; background: transparent; color: white; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; text-transform: uppercase; }
+        .nav-tab-btn { flex: 1; min-width: 140px; padding: 12px; text-align: center; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; background: transparent; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; text-transform: uppercase; }
         .nav-tab-btn.active { background: #ffc300; color: #001d3d; box-shadow: 0 0 15px #ffc300; }  
   
         .menu-operadores { display: flex; gap: 10px; margin-bottom: 10px; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }  
@@ -49,7 +49,7 @@
         .tab-bait.active { background: #7209b7; color: white; box-shadow: 0 0 15px #7209b7; }  
   
         .sub-menu-modalidad { display: flex; gap: 10px; margin-bottom: 20px; background: rgba(0,0,0,0.4); padding: 6px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); }  
-        .sub-tab-btn { flex: 1; padding: 8px; text-align: center; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; border: none; transition: 0.2s; color: #ccc; background: transparent; }  
+        .sub-tab-btn { flex: 1; padding: 8px; text-align: center; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; border: none; color: #ccc; background: transparent; }  
         .sub-tab-btn.active { background: #ffc300; color: #001d3d; box-shadow: 0 0 8px #ffc300; }  
   
         .panel-avance { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 15px; margin-bottom: 15px; }  
@@ -65,7 +65,7 @@
           
         input, select, textarea { width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; outline: none; font-family: inherit; }  
   
-        .btn-save { background:#ffc300; color:#001d3d; width:100%; padding:15px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size: 16px; transition: 0.3s; }  
+        .btn-save { background:#ffc300; color:#001d3d; width:100%; padding:15px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size: 16px; }  
         .btn-vinculo { background: #00b4d8; color: white; width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-size: 14px; }  
         .btn-payjoy { background: #4a00e0; color: white; width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-size: 14px; }  
           
@@ -81,7 +81,7 @@
   
         .hidden { display: none !important; }  
 
-        /* --- ASISTENTE FLOATING BAR CON IA GENERATIVA --- */
+        /* --- ASISTENTE FLOATING BAR PREVENIDO CONTRA RECARGAS --- */
         .google-ai-assistant { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(7, 15, 28, 0.96); border-top: 2px solid #ffc300; backdrop-filter: blur(20px); padding: 12px 20px; z-index: 10000; box-shadow: 0 -5px 30px rgba(0,0,0,0.7); box-sizing: border-box; }
         .ai-bar-layout { display: flex; align-items: center; gap: 12px; max-width: 1100px; margin: auto; }
         .ai-logo-container { width: 38px; height: 38px; background: linear-gradient(135deg, #00f5d4, #00b4d8, #7209b7); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; }
@@ -94,7 +94,7 @@
         
         .ai-controls { position: absolute; right: 8px; display: flex; gap: 6px; align-items: center; }
         .btn-key-config { background: rgba(255,255,255,0.1); color: #ffc300; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; }
-        .btn-voice-toggle { background: rgba(255,255,255,0.1); color: #fff; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: 0.3s; }
+        .btn-voice-toggle { background: rgba(255,255,255,0.1); color: #fff; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; }
         .btn-voice-toggle.active { background: #00b4d8; color: #000; }
         .ai-send-btn { background: #ffc300; color: #001d3d; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: bold; }
         
@@ -102,7 +102,7 @@
         .ai-response-dropdown h4 { margin: 0 0 12px 0; font-size: 13px; color: #ffc300; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; }
         .ai-response-text { font-size: 13.5px; line-height: 1.6; color: #e5e9f0; white-space: pre-line; }
         .close-ai-dropdown { float: right; cursor: pointer; color: #ff4d4d; font-size: 13px; font-weight: bold; }
-        .status-net { font-size: 10px; color: #00f5d4; margin-left: auto; display: flex; align-items: center; gap: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .status-net { font-size: 10px; color: #00f5d4; margin-left: auto; display: flex; align-items: center; gap: 4px; text-transform: uppercase; }
 
         @keyframes pulseGenAI {
             0% { transform: scale(1); opacity: 1; }
@@ -244,7 +244,7 @@
     <div class="ai-response-dropdown" id="aiDropdown">
         <h4>
             <i class="fa-solid fa-microchip" style="color:#00f5d4;"></i> ASISTENTE IA GENERATIVA CO-PILOT
-            <span class="status-net"><i class="fa-solid fa-bolt"></i> LLM Online Activo</span>
+            <span class="status-net"><i class="fa-solid fa-bolt"></i> LLM Activo</span>
             <span class="close-ai-dropdown" onclick="cerrarAsistenteDropdown()">Cerrar</span>
         </h4>
         <div class="ai-response-text" id="aiResponseText">Hola, soy tu asistente con IA generativa en tiempo real. Puedes saludarme, preguntarme por tus registros o pedirme información comercial. Te responderé hablándote.</div>
@@ -252,7 +252,7 @@
     <div class="ai-bar-layout">
         <div class="ai-logo-container" id="aiLogoNet"><i class="fa-solid fa-brain"></i></div>
         <div class="ai-input-wrapper">
-            <input type="text" id="aiInputText" placeholder="Háblame o haz una consulta... (ej: 'hola', 'ayúdame a vender')" onkeypress="evaluarEnterAsistente(event)">
+            <input type="text" id="aiInputText" placeholder="Háblame o haz una consulta... (ej: 'hola', 'ayúdame a vender')" onkeydown="if(event.key === 'Enter') { event.preventDefault(); consultarAsistenteIA(); return false; }">
             <div class="ai-controls">
                 <button class="btn-key-config" onclick="configurarApiKeyMano()" title="Configurar Token de Gemini API">
                     <i class="fa-solid fa-key"></i>
@@ -266,17 +266,8 @@
     </div>
 </div>
   
-<script type="importmap">
-  {
-    "imports": {
-      "@google/generative-ai": "https://esm.run/@google/generative-ai"
-    }
-  }
-</script>
-
-<script type="module">
-    import { GoogleGenAI } from "@google/generative-ai";
-
+<script>
+    // Variables globales
     let listaVentasGlobal = [];  
     let vozAlexaActiva = true;
 
@@ -327,7 +318,7 @@
         location.reload();
     }
 
-    /* --- SISTEMA SÍNTESIS DE VOZ TIPO ALEXA --- */
+    /* --- SÍNTESIS DE VOZ TIPO ALEXA --- */
     window.alternarVozAlexa = function() {
         vozAlexaActiva = !vozAlexaActiva;
         const btn = document.getElementById('btnAudioVoz');
@@ -361,7 +352,7 @@
         window.speechSynthesis.speak(msg);
     }
 
-    /* --- ENRUTAMIENTO DE OPERADORES --- */
+    /* --- OPERADORES --- */
     window.cambiarOperador = function(op) {  
         document.getElementById('iOperador').value = op;  
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));  
@@ -470,9 +461,8 @@
     }  
 
     /* =========================================================================
-       ---- ASISTENTE INTELIGENTE GEMINI IA GENERATIVA CORREGIDO ----
+       ---- ASISTENTE INTELIGENTE CON LIBRERÍA UMD ANTI-RESET ----
        ========================================================================= */
-    window.evaluarEnterAsistente = function(e) { if(e.key === 'Enter') consultarAsistenteIA(); }
     window.cerrarAsistenteDropdown = function() { window.speechSynthesis.cancel(); document.getElementById('aiDropdown').style.display = 'none'; }
     
     window.configurarApiKeyMano = function() {
@@ -483,7 +473,7 @@
         }
     }
 
-    async function consultarAsistenteIA() {
+    window.consultarAsistenteIA = async function() {
         const queryInput = document.getElementById('aiInputText');
         const query = queryInput.value.trim(); 
         if(!query) return;
@@ -494,9 +484,9 @@
 
         dropdown.style.display = 'block'; 
         logoNet.classList.add('thinking');
-        respText.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Procesando con Inteligencia Artificial...`;
+        respText.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Procesando tu consulta en tiempo real...`;
 
-        // Buscar en Excel local primero por si requiere encontrar un IMEI o Celular
+        // Buscar coincidencias locales
         let registrosCoincidentes = listaVentasGlobal.filter(v => 
             (v["IMEI"] && v["IMEI"].includes(query)) || 
             (v["ICCID"] && v["ICCID"].includes(query)) || 
@@ -504,41 +494,42 @@
         );
 
         let contextoLocalText = registrosCoincidentes.length > 0 
-            ? `Nota: Encontrado en el Excel local: ${JSON.stringify(registrosCoincidentes)}.`
-            : "No hay registros locales exactos para este término.";
+            ? `Registros coincidentes locales: ${JSON.stringify(registrosCoincidentes)}.`
+            : "No hay registros locales exactos.";
 
         const tokenGuardado = localStorage.getItem('gemini_api_key');
 
         if(!tokenGuardado) {
-            // Respuestas inteligentes locales de respaldo si aún no tiene API Key puesta
+            // Inteligencia simulada local instantánea si no hay red configurada
             setTimeout(() => {
                 logoNet.classList.remove('thinking');
                 let respuestaLocal = "";
-                if(query.toLowerCase().includes("hola")) {
-                    respuestaLocal = "¡Hola! Soy tu asistente Alexa-Partner. Estoy lista para conversar y ayudarte en tus ventas de telefonía móvil. Presiona el botón de la llave dorada a mi derecha para configurar tu token de internet.";
+                if(query.toLowerCase() === "hola" || query.toLowerCase().includes("buen")) {
+                    respuestaLocal = "¡Hola! Qué tal. Soy tu asistente integrada Alexa-Partner. Estoy lista para asistirte y charlar contigo. Recuerda colocar tu llave API en el botón dorado para activar las respuestas completas.";
                 } else {
-                    respuestaLocal = `Entendido. Busqué "${query}" localmente. Recuerda agregar tu clave API en el botón de la llave para darme poder generativo total en la red.`;
+                    respuestaLocal = `He buscado "${query}". Para darte un análisis completo de ventas, planes comerciales o dudas avanzadas, configura tu token con el botón de la llave.`;
                 }
                 respText.innerHTML = respuestaLocal;
                 hablarComoAlexa(respuestaLocal);
                 queryInput.value = "";
-            }, 800);
+            }, 600);
             return;
         }
 
         try {
-            const aiGen = new GoogleGenAI({ apiKey: tokenGuardado });
+            // Acceso seguro al namespace de la librería cargada vía UMD
+            const aiGen = new window.GoogleGenAI.GoogleGenAI({ apiKey: tokenGuardado });
             const model = aiGen.getGenerativeModel({ 
                 model: "gemini-1.5-flash",
-                generationConfig: { maxOutputTokens: 140 }
+                generationConfig: { maxOutputTokens: 130 }
             });
 
             const promptCompleto = `
-                Eres una asistente virtual de telefonía móvil llamada Alexa-Partner. 
-                Tu tono debe ser directo, amigable, profesional y breve (ideal para hablar).
-                Datos actuales en sistema: ${contextoLocalText}.
-                Consulta del promotor: "${query}".
-                Si te saludan, responde cordialmente. Mantén las respuestas fluidas y directas.
+                Eres una asistente virtual inteligente llamada Alexa-Partner. Tu usuario es un promotor de ventas.
+                Tu tono debe ser directo, amigable y resumido (perfecto para que sea leído por voz).
+                Contexto local: ${contextoLocalText}.
+                Mensaje recibido: "${query}".
+                Si es un saludo, responde con carisma. Mantén la interacción fluida.
             `;
 
             const resultado = await model.generateContent(promptCompleto);
@@ -548,8 +539,8 @@
             hablarComoAlexa(respuestaIA);
 
         } catch (error) {
-            console.error("Error en conexión:", error);
-            respText.innerHTML = "Hubo un inconveniente al conectar con el servidor generativo. Verifica tu conexión de red o el token de la API.";
+            console.error("Error GenAI:", error);
+            respText.innerHTML = "Ocurrió un error al procesar el servidor generativo. Por favor verifica que tu clave API guardada sea correcta.";
         } finally {
             logoNet.classList.remove('thinking');
             queryInput.value = "";
