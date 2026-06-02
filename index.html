@@ -126,7 +126,7 @@
 
         <form id="fAcceso" onsubmit="procesarAutenticacion(event)">
             <input type="hidden" id="tipoAccesoActual" value="LOGIN">
-            <input type="email" id="logEmail" placeholder="Correo electrónico (ej: omar@gmail.com)" required>
+            <input type="email" id="logEmail" placeholder="Correo electrónico (ej: promotor@gmail.com)" required>
             <input type="password" id="logPass" placeholder="Contraseña" required>
             <button type="submit" id="btnAccesoAccion" class="btn-save" style="padding: 12px; font-size:14px;">INGRESAR AL PANEL</button>
         </form>
@@ -337,7 +337,6 @@
             document.getElementById('txtReloj').innerText = new Date().toLocaleTimeString('es-MX');  
         }, 1000);  
   
-        // Verificar sesión activa previa
         if (localStorage.getItem('sesion_activa_promotor') === 'true') {
             mostrarInterfazSistema();
         }
@@ -361,7 +360,7 @@
     };  
 
     /* =========================================================================
-       ---- MODULO DE INICIO DE SESIÓN / REGISTRO ----
+       ---- MODULO DE INICIO DE SESIÓN / REGISTRO (CORREGIDO) ----
        ========================================================================= */
     function alternarFormularioAcceso(opcion) {
         document.getElementById('tabOpLogin').classList.remove('active');
@@ -379,36 +378,38 @@
     }
 
     function ejecutarLoginGoogle() {
-        // Simulación controlada del PopUp de autenticación segura de Google
         alert("Abriendo pasarela de autenticación con cuentas de Google...");
         localStorage.setItem('sesion_activa_promotor', 'true');
         mostrarInterfazSistema();
     }
 
-    function procesarAutenticacion(e) {
+    async function encriptarPassword(password) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password);
+        const hash = await crypto.subtle.digest('SHA-256', data);
+        return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function procesarAutenticacion(e) {
         e.preventDefault();
         const tipo = document.getElementById('tipoAccesoActual').value;
         const email = document.getElementById('logEmail').value.trim();
         const pass = document.getElementById('logPass').value;
 
         let baseUsuarios = JSON.parse(localStorage.getItem('usuarios_registrados_sistema')) || {};
+        const passwordHasheada = await encriptarPassword(pass);
 
         if(tipo === 'REGISTRO') {
             if(baseUsuarios[email]) {
                 alert("Este correo electrónico ya está registrado. Elige otro o inicia sesión.");
                 return;
             }
-            // Guardar credenciales de forma local respetando los requisitos de seguridad
-            baseUsuarios[email] = pass;
+            baseUsuarios[email] = passwordHasheada;
             localStorage.setItem('usuarios_registrados_sistema', JSON.stringify(baseUsuarios));
             alert("¡Cuenta registrada exitosamente! Ya puedes ingresar.");
             alternarFormularioAcceso('LOGIN');
         } else {
-            // Validación de inicio de sesión tradicional
-            if(baseUsuarios[email] && baseUsuarios[email] === pass) {
-                localStorage.setItem('sesion_activa_promotor', 'true');
-                mostrarInterfazSistema();
-            } else if (email === "admin@telcel.com" && pass === "12345") { // Acceso administrador por defecto
+            if(baseUsuarios[email] && baseUsuarios[email] === passwordHasheada) {
                 localStorage.setItem('sesion_activa_promotor', 'true');
                 mostrarInterfazSistema();
             } else {
@@ -434,9 +435,7 @@
     /* =========================================================================
        ---- LOGICA OPERATIVA DE VENTAS ----
        ========================================================================= */
-    function cambiarSeccionPrincipal(seccion) {
-        // Reservado para futuras pestañas
-    }
+    function cambiarSeccionPrincipal(seccion) {}
 
     function obtenerNombreCalle(lat, lon) {  
         fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`)  
@@ -528,7 +527,7 @@
         let fechaFormateada = "";  
         if(fUsuario) {  
             const partes = fUsuario.split("-");  
-            fechaFormateada = `${partes[2]}/${partes[1]}/${partes[0]}`;  
+            fechaFormateada = `${partes[2]}/${partes[1]}/${partes[0]}`; // Formato estricto DD/MM/YYYY
         }  
   
         let numCelular = document.getElementById('iTel').value;  
@@ -577,7 +576,11 @@
     function guardarPendienteLocal(e) {  
         e.preventDefault();  
         const fPendiente = document.getElementById('pFec').value;  
-        let fechaPendienteFormateada = ""; if(fPendiente) { const partes = fPendiente.split("-"); fechaPendienteFormateada = `${partes[2]}/${partes[1]}/${partes[0]}`; }  
+        let fechaPendienteFormateada = ""; 
+        if(fPendiente) { 
+            const partes = fPendiente.split("-"); 
+            fechaPendienteFormateada = `${partes[2]}/${partes[1]}/${partes[0]}`; // Formato estricto DD/MM/YYYY
+        }  
         const p = { id: Date.now(), "FECHA": fechaPendienteFormateada, "MARCA": document.getElementById('pMarca').value, "MODELO": document.getElementById('pMod').value, "IMEI": document.getElementById('pImei').value, "ICCID": document.getElementById('pIccid').value, "NUMERO": document.getElementById('pNum').value };  
         listaPendientesGlobal.unshift(p); localStorage.setItem('omar_pendientes_locales', JSON.stringify(listaPendientesGlobal));  
         document.getElementById('fPendientes').reset(); actualizarFechasInputs(); renderizarPendientes();  
