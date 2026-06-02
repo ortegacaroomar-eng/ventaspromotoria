@@ -3,8 +3,9 @@
 <head>  
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-    <title>SISTEMA VENTAS - Control Local Excel</title>  
+    <title>SISTEMA VENTAS - Control Local Total</title>  
     
+    <!-- Librerías para Excel y PDF -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>  
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">  
@@ -35,9 +36,8 @@
         input[type="date"]::-calendar-picker-indicator { filter: invert(1); cursor: pointer; }  
   
         .botones-guardado { display: flex; gap: 15px; margin-bottom: 20px; }
-        .btn-save { flex: 1; background:#ffc300; color:#001d3d; padding:15px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size: 15px; transition: 0.3s; text-transform: uppercase; }  
         .btn-local { flex: 1; background:#00b4d8; color:#000814; padding:15px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size: 15px; transition: 0.3s; text-transform: uppercase; }
-        .btn-save:active, .btn-local:active { transform: scale(0.98); }  
+        .btn-local:active { transform: scale(0.98); }  
   
         .descargas-container { display: flex; gap: 15px; margin-top: 20px; flex-wrap: wrap; }
         .btn-excel { flex: 1; min-width: 180px; background:#1f7a3f; color:white; padding:14px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 14px; }  
@@ -54,6 +54,7 @@
 </head>  
 <body>  
 
+<!-- LOGIN LOCAL -->
 <div class="login-overlay" id="seccionLogin">
     <div class="login-box">
         <h2>SISTEMA DE CONTROL</h2>
@@ -61,11 +62,12 @@
         <form id="fAcceso" onsubmit="procesarLoginLocal(event)">
             <input type="email" id="logEmail" placeholder="Correo electrónico" required>
             <input type="password" id="logPass" placeholder="Contraseña" required>
-            <button type="submit" class="btn-save" style="padding: 12px; font-size:14px;">INGRESAR AL PANEL</button>
+            <button type="submit" class="btn-local" style="padding: 12px; font-size:14px; background:#ffc300; color:#001d3d;">INGRESAR AL PANEL</button>
         </form>
     </div>
 </div>
   
+<!-- CUERPO PRINCIPAL DEL SISTEMA -->
 <div class="app hidden" id="wrapperSistema">  
     <div class="top-bar">  
         <div class="gps-card">  
@@ -91,12 +93,16 @@
             <label>ICCID</label>  
             <input id="iIcc" required placeholder="Número de ICCID">  
 
-            <label>Renuevate/ Kit/Chip/Porta</label>  
+            <label>Renuevate/ Kit/Chip/Porta / Compañía</label>  
             <select id="iTipo">  
-                <option value="KIT">KIT</option>  
-                <option value="CHIP">CHIP</option>  
-                <option value="PORTA">PORTA</option>  
-                <option value="RENUEVATE">RENUEVATE</option>  
+                <!-- Opciones originales de Telcel -->
+                <option value="KIT">KIT (TELCEL)</option>  
+                <option value="CHIP">CHIP (TELCEL)</option>  
+                <option value="PORTA">PORTA (TELCEL)</option>  
+                <option value="RENUEVATE">RENUEVATE (TELCEL)</option>
+                <!-- Opciones recuperadas de ATT y Bait -->
+                <option value="ATT">ATT</option>  
+                <option value="BAIT">BAIT</option>  
             </select>  
               
             <label>FECHA DE ACTIVACION (MODIFICABLE)</label>  
@@ -144,6 +150,7 @@
         </button>  
     </div>  
   
+    <!-- TABLA COMPATIBLE CON TU PLANTILLA -->
     <div class="table-container" id="tablaVentasContenedor">  
         <table id="tablaVentasReal">  
             <thead>  
@@ -172,17 +179,14 @@
     let listaVentasLocal = [];  
   
     window.onload = function() {  
-        // Reloj digital activo
         setInterval(() => {  
             document.getElementById('txtReloj').innerText = new Date().toLocaleTimeString('es-MX');  
         }, 1000);  
   
-        // Verificar sesión activa básica
         if(localStorage.getItem("sesionActiva") === "true") {
             mostrarSistema();
         }
 
-        // Cargar Geolocalización básica
         if(navigator.geolocation) {  
             navigator.geolocation.getCurrentPosition(p => {  
                 document.getElementById('txtGps').innerHTML = `${p.coords.latitude.toFixed(4)}, ${p.coords.longitude.toFixed(4)}`;  
@@ -220,9 +224,6 @@
         document.getElementById('iFec').value = `${y}-${m}-${d}`;  
     }  
   
-    /* =========================================================================
-       ---- LOGICA DE ALMACENAMIENTO LOCAL RESPECTANDO TU EXCEL ----
-       ========================================================================= */
     function guardarVentaLocal() {  
         const f = document.getElementById('fReg');
         if (!f.checkValidity()) {
@@ -234,10 +235,9 @@
         let fechaFormateada = "";  
         if(fUsuario) {  
             const partes = fUsuario.split("-");  
-            fechaFormateada = `${partes[2]}/${partes[1]}/${partes[0]}`; // Formato Estricto DD/MM/YYYY  
+            fechaFormateada = `${partes[2]}/${partes[1]}/${partes[0]}`; // DD/MM/YYYY estricto  
         }  
   
-        // Objeto construido exactamente con las llaves y orden de tu Excel
         const nuevaVenta = {  
             "NUM. CELULAR": document.getElementById('iTel').value, 
             "IMEI": document.getElementById('iIme').value, 
@@ -257,9 +257,8 @@
         localStorage.setItem("ventasExcelLocal", JSON.stringify(listaVentasLocal));
         
         renderizarTabla();
-        alert("¡Venta guardada localmente de manera correcta!");
+        alert("¡Venta guardada localmente!");
         
-        // Limpieza parcial conservando datos de tienda y promotor
         document.getElementById('iTel').value = "";
         document.getElementById('iIme').value = "";
         document.getElementById('iIcc').value = "";
@@ -301,18 +300,13 @@
         }).join("");  
     }  
   
-    /* =========================================================================
-       ---- MODULO DE EXPORTACIÓN DIRECTA ----
-       ========================================================================= */
     function exportarExcelComisiones() {  
         if(listaVentasLocal.length === 0) return alert("No hay datos guardados para exportar.");  
         
-        // Crear hoja de cálculo a partir de nuestro arreglo estructurado
         const ws = XLSX.utils.json_to_sheet(listaVentasLocal); 
         const wb = XLSX.utils.book_new(); 
         XLSX.utils.book_append_sheet(wb, ws, "Hoja1"); 
         
-        // Descarga el archivo respetando el nombre de tus comisiones
         XLSX.writeFile(wb, `comíciones Omar junio.xlsx`);  
     }  
   
@@ -324,7 +318,6 @@
         const tab = document.getElementById('tablaVentasReal').cloneNode(true); 
         div.appendChild(tab);  
         
-        // Quitar la columna de eliminar para el reporte formal
         const filas = tab.querySelectorAll('tr');
         filas.forEach(f => { if(f.lastChild) f.removeChild(f.lastChild); });
         
