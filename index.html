@@ -337,7 +337,6 @@
             document.getElementById('txtReloj').innerText = new Date().toLocaleTimeString('es-MX');  
         }, 1000);  
   
-        // Verificar sesión activa previa
         if (localStorage.getItem('sesion_activa_promotor') === 'true') {
             mostrarInterfazSistema();
         }
@@ -360,9 +359,6 @@
         cargarDatosLocales();  
     };  
 
-    /* =========================================================================
-       ---- MODULO DE INICIO DE SESIÓN / REGISTRO ----
-       ========================================================================= */
     function alternarFormularioAcceso(opcion) {
         document.getElementById('tabOpLogin').classList.remove('active');
         document.getElementById('tabOpRegistro').classList.remove('active');
@@ -379,7 +375,6 @@
     }
 
     function ejecutarLoginGoogle() {
-        // Simulación controlada del PopUp de autenticación segura de Google
         alert("Abriendo pasarela de autenticación con cuentas de Google...");
         localStorage.setItem('sesion_activa_promotor', 'true');
         mostrarInterfazSistema();
@@ -398,17 +393,15 @@
                 alert("Este correo electrónico ya está registrado. Elige otro o inicia sesión.");
                 return;
             }
-            // Guardar credenciales de forma local respetando los requisitos de seguridad
             baseUsuarios[email] = pass;
             localStorage.setItem('usuarios_registrados_sistema', JSON.stringify(baseUsuarios));
             alert("¡Cuenta registrada exitosamente! Ya puedes ingresar.");
             alternarFormularioAcceso('LOGIN');
         } else {
-            // Validación de inicio de sesión tradicional
             if(baseUsuarios[email] && baseUsuarios[email] === pass) {
                 localStorage.setItem('sesion_activa_promotor', 'true');
                 mostrarInterfazSistema();
-            } else if (email === "admin@telcel.com" && pass === "12345") { // Acceso administrador por defecto
+            } else if (email === "admin@telcel.com" && pass === "12345") {
                 localStorage.setItem('sesion_activa_promotor', 'true');
                 mostrarInterfazSistema();
             } else {
@@ -431,38 +424,6 @@
         document.getElementById('fAcceso').reset();
     }
 
-    /* =========================================================================
-       ---- LOGICA OPERATIVA DE VENTAS ----
-       ========================================================================= */
-    function cambiarSeccionPrincipal(seccion) {
-        // Reservado para futuras pestañas
-    }
-
-    function obtenerNombreCalle(lat, lon) {  
-        fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=\( {lat}&lon= \){lon}`)  
-            .then(res => res.json())  
-            .then(data => {  
-                if (data && data.address) {  
-                    const calle = data.address.road || "";  
-                    const num = data.address.house_number || "";  
-                    const col = data.address.suburb || data.address.neighbourhood || "";  
-                    let dir = ""; if(calle) dir += calle; if(num) dir += " #" + num; if(col) dir += ", Col. " + col;  
-                    document.getElementById('txtGps').innerHTML = dir || `${lat.toFixed(5)}, ${lon.toFixed(5)}`;  
-                }  
-            }).catch(() => {  
-                document.getElementById('txtGps').innerHTML = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;  
-            });  
-    }  
-  
-    function actualizarFechasInputs() {  
-        const hoy = new Date();  
-        const d = String(hoy.getDate()).padStart(2, '0');  
-        const m = String(hoy.getMonth() + 1).padStart(2, '0');  
-        const y = hoy.getFullYear();  
-        document.getElementById('iFec').value = `\( {y}- \){m}-${d}`;  
-        document.getElementById('pFec').value = `\( {y}- \){m}-${d}`;  
-    }  
-  
     function cambiarOperador(op) {  
         document.getElementById('iOperador').value = op;  
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));  
@@ -604,11 +565,11 @@
         const ws = XLSX.utils.json_to_sheet(listaVentasGlobal.map(({id, ...r}) => r)); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "General_Ventas"); aplicarEstiloExcel(ws); XLSX.writeFile(wb, `Reporte_Ventas.xlsx`);  
     }  
   
-    function exportarExcelTelcel() {  
+    function exportarExcelTelcel() {
         const vt = listaVentasGlobal.filter(v => v.OPERADOR === 'TELCEL');
-        if(vt.length === 0) return alert("Sin datos de Telcel.");
+        if (vt.length === 0) return alert("Sin datos de Telcel.");
 
-        const ws = XLSX.utils.json_to_sheet(vt.map(v => ({
+        const data = vt.map(v => ({
             "NUM. CELULAR": v["NUM. CELULAR"],
             "IMEI": v.IMEI,
             "ICCID": v.ICCID,
@@ -619,14 +580,34 @@
             "NOMBRE COMPLETO PROMOTOR": v["NOMBRE COMPLETO PROMOTOR"],
             "FECHA DE ACTIVACION": v["FECHA DE ACTIVACION"],
             "MARCA": v.MARCA,
-            "MODELO": v.MODELO
-        })));
+            "MODELO": v.MODELO,
+            "REGISTRO": ""
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(data);
+
+        ws['!cols'] = [
+            { wch: 14 }, { wch: 18 }, { wch: 22 }, { wch: 18 },
+            { wch: 18 }, { wch: 14 }, { wch: 30 }, { wch: 26 },
+            { wch: 16 }, { wch: 14 }, { wch: 16 }, { wch: 12 }
+        ];
+
+        // Encabezados verticales (como en tu foto)
+        const headerStyle = {
+            fill: { fgColor: { rgb: "000000" } },
+            font: { color: { rgb: "FFFFFF" }, bold: true },
+            alignment: { textRotation: 90, vertical: "center", horizontal: "center" }
+        };
+
+        for (let C = 0; C < 12; C++) {
+            const cellRef = XLSX.utils.encode_cell({ r: 0, c: C });
+            if (ws[cellRef]) ws[cellRef].s = headerStyle;
+        }
 
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Hoja1");
-        aplicarEstiloExcel(ws);
 
-        const fechaHoy = new Date().toISOString().slice(0,10);
+        const fechaHoy = new Date().toISOString().slice(0, 10);
         XLSX.writeFile(wb, `comisiones_diarias_Omar_Telcel_${fechaHoy}.xlsx`);
     }  
   
@@ -646,7 +627,6 @@
         html2pdf().set({ margin: 8, filename: 'Reporte.pdf', jsPDF: { orientation: 'landscape' } }).from(div).save();  
     }  
 
-    /* ---- LOGICA ASISTENTE ---- */
     function evaluarEnterAsistente(e) { if(e.key === 'Enter') consultarAsistenteIA(); }
     function cerrarAsistenteDropdown() { document.getElementById('aiDropdown').style.display = 'none'; }
     function consultarAsistenteIA() {
