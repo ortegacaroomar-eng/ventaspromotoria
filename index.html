@@ -608,12 +608,50 @@
         const ws = XLSX.utils.json_to_sheet(listaVentasGlobal.map(({id, ...r}) => r)); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "General_Ventas"); aplicarEstiloExcel(ws); XLSX.writeFile(wb, `Reporte_Ventas.xlsx`);  
     }  
   function exportarExcelTelcel() {
-    const link = document.createElement("a");
-    link.href = "comíciones_diarias_Omar_COPIA.xlsx";
-    link.download = "comíciones_diarias_Omar_COPIA.xlsx";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const vt = listaVentasGlobal.filter(v => v.OPERADOR === 'TELCEL');
+
+    if(vt.length === 0) {
+        return alert("Sin datos de Telcel.");
+    }
+
+    const ws = XLSX.utils.json_to_sheet(vt.map(v => ({
+        "NUM. CELULAR": v["NUM. CELULAR"],
+        "IMEI": v.IMEI,
+        "ICCID": v.ICCID,
+        "Renuevate/ Kit/Chip/Porta": v["Renuevate/ Kit/Chip/Porta"],
+        "#TIENDA / Determinante": v["#TIENDA / Determinante"],
+        "SOLO NOMBRE DE LA CADENA": v["SOLO NOMBRE DE LA CADENA"],
+        "SOLO NOMBRE DE TIENDA SIN CADENA": v["SOLO NOMBRE DE TIENDA SIN CADENA"],
+        "NOMBRE COMPLETO PROMOTOR": v["NOMBRE COMPLETO PROMOTOR"],
+        "FECHA DE ACTIVACION": v["FECHA DE ACTIVACION"],
+        "MARCA": v.MARCA,
+        "MODELO": v.MODELO,
+        "REGISTRO": ""
+    })));
+
+    ws['!cols'] = [
+        { wch: 18 }, // NUM. CELULAR
+        { wch: 22 }, // IMEI
+        { wch: 24 }, // ICCID
+        { wch: 22 }, // TIPO
+        { wch: 20 }, // TIENDA
+        { wch: 30 }, // CADENA
+        { wch: 30 }, // TIENDA
+        { wch: 35 }, // PROMOTOR
+        { wch: 18 }, // FECHA
+        { wch: 20 }, // MARCA
+        { wch: 25 }, // MODELO
+        { wch: 15 }  // REGISTRO
+    ];
+
+    const wb = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(wb, ws, "Hoja1");
+
+    aplicarEstiloExcel(ws);
+
+    XLSX.writeFile(wb, "comíciones marzo omar 2026_Telcel.xlsx");
+}
     
     }  
   
