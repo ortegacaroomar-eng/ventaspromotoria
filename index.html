@@ -3,25 +3,14 @@
 <head>  
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-    <title>Comisiones Omar</title>  
-
-    <!-- PWA -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#001d3d">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Comisiones Omar">
-    <link rel="apple-touch-icon" href="icon-192.png">
-
+    <title>SISTEMA VENTAS CON IA</title>  
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>  
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">  
     <style>  
-        /* === TODO TU CSS ANTERIOR (sin cambios) === */
         body { margin:0; font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; padding-bottom: 90px; }  
         .app { max-width:1100px; margin:auto; padding:20px; }  
-        /* ... (todo tu CSS anterior se mantiene igual) ... */
-        
+          
         .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000814; z-index: 20000; display: flex; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
         .login-box { background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; width: 100%; max-width: 420px; padding: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.8); box-sizing: border-box; text-align: center; }
         .login-box h2 { margin-top: 0; color: #ffc300; font-size: 22px; margin-bottom: 5px; }
@@ -115,45 +104,544 @@
 </head>  
 <body>  
 
-<!-- TU CÓDIGO HTML COMPLETO (login + interfaz + tablas + asistente) -->
-<!-- (Se mantiene exactamente igual que antes) -->
-
 <div class="login-overlay" id="seccionLogin">
-    <!-- ... todo tu HTML anterior ... -->
-</div>
+    <div class="login-box">
+        <h2>SISTEMA DE CONTROL</h2>
+        <p>Inicia sesión para acceder a tus registros locales</p>
+        
+        <div class="login-tabs">
+            <button id="tabOpLogin" class="login-tab-btn active" onclick="alternarFormularioAcceso('LOGIN')">Entrar</button>
+            <button id="tabOpRegistro" class="login-tab-btn" onclick="alternarFormularioAcceso('REGISTRO')">Nuevo Correo</button>
+        </div>
 
+        <button class="btn-google" onclick="ejecutarLoginGoogle()">
+            <i class="fa-brands fa-google" style="color: #4285F4;"></i> Iniciar sesión con Google
+        </button>
+
+        <div class="separator">O con tu cuenta</div>
+
+        <form id="fAcceso" onsubmit="procesarAutenticacion(event)">
+            <input type="hidden" id="tipoAccesoActual" value="LOGIN">
+            <input type="email" id="logEmail" placeholder="Correo electrónico (ej: omar@gmail.com)" required>
+            <input type="password" id="logPass" placeholder="Contraseña" required>
+            <button type="submit" id="btnAccesoAccion" class="btn-save" style="padding: 12px; font-size:14px;">INGRESAR AL PANEL</button>
+        </form>
+    </div>
+</div>
+  
 <div class="app hidden" id="wrapperSistema">  
-    <!-- ... todo tu HTML anterior ... -->
+    <div class="top-bar">  
+        <div class="gps-card">  
+            <i class="fa-solid fa-location-dot"></i>  
+            <div><b style="color:white">UBICACIÓN ACTUAL</b><br><span id="txtGps">Localizando...</span></div>  
+        </div>  
+        <div class="reloj-digital">
+            <span id="txtReloj">00:00:00</span>
+            <button class="btn-logout" onclick="cerrarSesionSistema()"><i class="fa-solid fa-power-off"></i> Salir</button>
+        </div>  
+    </div>  
+
+    <div class="main-nav">
+        <button id="navVentas" class="nav-tab-btn active" onclick="cambiarSeccionPrincipal('VENTAS')"><i class="fa-solid fa-cash-register"></i> Panel Ventas</button>
+    </div>
+
+    <div id="seccionVentas">
+        <div class="panel-avance">  
+            <h4><i class="fa-solid fa-chart-line"></i> Gráfica de Avance de Ventas Diarias</h4>  
+            <div class="contenedor-graficas">  
+                <div class="barra-progreso-item" style="border-left-color: #00b4d8;">  
+                    <div class="info-progreso"><span>TELCEL</span><span id="lblTelcel">0</span></div>  
+                    <div class="w-barra"><div id="barTelcel" class="w-relleno" style="background:#00b4d8;"></div></div>  
+                </div>  
+                <div class="barra-progreso-item" style="border-left-color: #ff7200;">  
+                    <div class="info-progreso"><span>AT&T</span><span id="lblAtt">0</span></div>  
+                    <div class="w-barra"><div id="barAtt" class="w-relleno" style="background:#ff7200;"></div></div>  
+                </div>  
+                <div class="barra-progreso-item" style="border-left-color: #7209b7;">  
+                    <div class="info-progreso"><span>BAIT</span><span id="lblBait">0</span></div>  
+                    <div class="w-barra"><div id="barBait" class="w-relleno" style="background:#7209b7;"></div></div>  
+                </div>  
+            </div>  
+        </div>  
+      
+        <div class="menu-operadores">  
+            <button class="tab-btn tab-telcel active" onclick="cambiarOperador('TELCEL')"><i class="fa-solid fa-phone"></i> TELCEL</button>  
+            <button class="tab-btn tab-att" onclick="cambiarOperador('AT&T')"><i class="fa-solid fa-signal"></i> AT&T</button>  
+            <button class="tab-btn tab-bait" onclick="cambiarOperador('BAIT')"><i class="fa-solid fa-bolt"></i> BAIT</button>  
+        </div>  
+      
+        <div id="wrapperSubModalidad" class="sub-menu-modalidad hidden">  
+            <button id="subTabLinea" class="sub-tab-btn active" onclick="cambiarModalidad('LINEA')"><i class="fa-solid fa-sim-card"></i> LÍNEA CON EQUIPO</button>  
+            <button id="subTabSoloTelo" class="sub-tab-btn" onclick="cambiarModalidad('SOLO_TELO')"><i class="fa-solid fa-mobile-screen"></i> SOLO SE VENDIÓ TELÉFONO</button>  
+        </div>  
+      
+        <form id="fReg" onsubmit="guardarVentaLocal(event)">  
+            <input type="hidden" id="iOperador" value="TELCEL">  
+            <input type="hidden" id="iModalidadVenta" value="LINEA">  
+              
+            <div class="card">  
+                <div id="wrapperVinculo">  
+                    <label>VINCULACIÓN OBLIGATORIA</label>  
+                    <a href="https://registro.telcel.com/vinculatulinea/#/" target="_blank" class="btn-vinculo">  
+                        <i class="fa-solid fa-link"></i> ABRIR REGISTRO / VINCULA TU LÍNEA  
+                    </a>  
+                </div>  
+      
+                <div id="wrapperPayJoy">  
+                    <label>FINANCIAMIENTO DE EQUIPOS</label>  
+                    <a href="https://app.payjoy.com/accounts/login?afterLogin=https://app.payjoy.com/merchant3?merchantId=199557" target="_blank" class="btn-payjoy">  
+                        <i class="fa-solid fa-hand-holding-dollar"></i> PLATAFORMA PAYJOY  
+                    </a>  
+                </div>  
+      
+                <div id="wrapperTipo">  
+                    <label>Renuevate/ Kit/Chip/Porta</label>  
+                    <select id="iTipo">  
+                        <option value="KIT">KIT</option>  
+                        <option value="CHIP">CHIP</option>  
+                        <option value="PORTA">PORTA</option>  
+                        <option value="RENUEVATE">RENUEVATE</option>  
+                    </select>  
+                </div>  
+                  
+                <label>FECHA DE ACTIVACION / VENTA (MODIFICABLE)</label>  
+                <input id="iFec" type="date" required style="color: #ffc300;">  
+                  
+                <div id="wrapperTel">  
+                    <label>NUM. CELULAR (10 DÍGITOS)</label>  
+                    <input id="iTel" type="tel" required maxlength="10" placeholder="Ej. 5512345678">  
+                </div>  
+                  
+                <div id="wrapperIcc">  
+                    <label>ICCID (ÚLTIMOS DÍGITOS)</label>  
+                    <input id="iIcc" required placeholder="Ingresa el ICCID">  
+                </div>  
+            </div>  
+      
+            <div class="card">  
+                <div id="wrapperImei"><label>IMEI</label><input id="iIme" placeholder="IMEI del equipo"></div>  
+                <label>MARCA</label><input id="iMarca" required placeholder="Ej. Samsung">  
+                <label>MODELO</label><input id="iMod" required placeholder="Ej. Galaxy A54">  
+                <label>UPC / CÓDIGO BARRAS (OPCIONAL)</label><input id="iUpc" placeholder="Código de barras del equipo">  
+            </div>  
+      
+            <div class="card">  
+                <label>#TIENDA / Determinante</label><input id="iTiendaNum" required placeholder="Número de tienda">  
+                <label>SOLO NOMBRE DE LA CADENA</label><input id="iCadena" required placeholder="Ej. Coppel / Elektra">  
+                <label>SOLO NOMBRE DE TIENDA SIN CADENA</label><input id="iTiendaNombre" required placeholder="Ej. Plaza Aragón">  
+                <label>NOMBRE COMPLETO PROMOTOR</label><input id="iProm" required placeholder="Tu nombre">  
+            </div>  
+                
+            <button type="submit" id="btnGuardar" class="btn-save">GUARDAR VENTA LOCALMENTE</button>  
+        </form>  
+      
+        <div class="descargas-container">
+            <button class="btn-excel" onclick="exportarExcelGeneral()">  
+                <i class="fa-solid fa-file-excel"></i> REPORTE GENERAL (TODOS)
+            </button>  
+            <button class="btn-excel-telcel" onclick="exportarExcelTelcel()">  
+                <i class="fa-solid fa-file-excel"></i> EXCEL SOLO TELCEL  
+            </button>  
+            <button class="btn-pdf" onclick="exportarPDF()">  
+                <i class="fa-solid fa-file-pdf"></i> REPORTE PDF  
+            </button>  
+        </div>  
+      
+        <div class="table-container" id="tablaVentasContenedor">  
+            <table id="tablaVentasReal">  
+                <thead>  
+                    <tr>  
+                        <th>OPERADOR</th>  
+                        <th>NUM. CELULAR</th>  
+                        <th>IMEI</th>  
+                        <th>ICCID</th>  
+                        <th>TIPO</th>  
+                        <th>#TIENDA</th>  
+                        <th>CADENA</th>  
+                        <th>TIENDA</th>  
+                        <th>PROMOTOR</th>  
+                        <th>FECHA</th>  
+                        <th>MARCA</th>  
+                        <th>MODELO</th>  
+                        <th style="background:red !important; text-align: center; width: 50px;">X</th>  
+                    </tr>  
+                </thead>  
+                <tbody id="bodyVentas"></tbody>  
+            </table>  
+        </div>  
+      
+        <div class="card" style="margin-top: 40px; border: 1px solid #ff4d4d; background: rgba(255, 77, 77, 0.05);">  
+            <h3><i class="fa-solid fa-clock-rotate-left" style="color: #ff4d4d;"></i> IMEIS / ACTIVACIONES PENDIENTES</h3>  
+            <form id="fPendientes" onsubmit="guardarPendienteLocal(event)">  
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">  
+                    <div><label>FECHA PENDIENTE</label><input id="pFec" type="date" required style="color: #ff4d4d;"></div>  
+                    <div><label>MARCA</label><input id="pMarca" required placeholder="Ej. Motorola"></div>  
+                    <div><label>MODELO</label><input id="pMod" required placeholder="Ej. Moto G54"></div>  
+                    <div><label>IMEI</label><input id="pImei" required placeholder="IMEI"></div>  
+                    <div><label>ICCID</label><input id="pIccid" required placeholder="ICCID"></div>  
+                    <div><label>NÚMERO</label><input id="pNum" type="tel" required maxlength="10" placeholder="10 dígitos"></div>  
+                </div>  
+                <button type="submit" class="btn-secundario" style="background: #ff4d4d; color: white; margin-top: 10px; border:none; padding:12px; border-radius:8px; font-weight:bold; width:100%; cursor:pointer;">  
+                    <i class="fa-solid fa-plus"></i> AGREGAR A PENDIENTES  
+                </button>  
+            </form>  
+        </div>  
+      
+        <div class="table-container" style="border: 1px solid #ff4d4d;">  
+            <table>  
+                <thead>  
+                    <tr>  
+                        <th style="background: #ff4d4d !important; color: white !important;">FECHA PENDIENTE</th>  
+                        <th style="background: #ff4d4d !important; color: white !important;">MARCA</th>  
+                        <th style="background: #ff4d4d !important; color: white !important;">MODELO</th>  
+                        <th style="background: #ff4d4d !important; color: white !important;">IMEI</th>  
+                        <th style="background: #ff4d4d !important; color: white !important;">ICCID</th>  
+                        <th style="background: #ff4d4d !important; color: white !important;">NÚMERO</th>  
+                        <th style="background: #000 !important; text-align: center; width: 50px;">LISTO</th>  
+                    </tr>  
+                </thead>  
+                <tbody id="bodyPendientes"></tbody>  
+            </table>  
+        </div>  
+    </div>
 </div>  
 
 <div class="google-ai-assistant hidden" id="barAsistenteFloating">
-    <!-- ... todo tu HTML anterior ... -->
+    <div class="ai-response-dropdown" id="aiDropdown">
+        <h4>
+            <i class="fa-solid fa-robot" style="color:#ffc300;"></i> Google IA Partner 
+            <span class="close-ai-dropdown" onclick="cerrarAsistenteDropdown()"><i class="fa-solid fa-circle-xmark"></i> Cerrar</span>
+        </h4>
+        <div class="ai-response-text" id="aiResponseText">Hola, ¿qué número, equipo o promoción comercial de Telcel revisamos hoy?</div>
+    </div>
+    <div class="ai-bar-layout">
+        <div class="ai-logo-container"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+        <div class="ai-input-wrapper">
+            <input type="text" id="aiInputText" placeholder="Pregúntale a la IA (ej: 'Busca imei...', 'promociones portabilidad', 'recargas $100')" onkeypress="evaluarEnterAsistente(event)">
+            <button class="ai-send-btn" onclick="consultarAsistenteIA()"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
 </div>
   
 <script>  
-    // === TU CÓDIGO JAVASCRIPT COMPLETO (sin cambios) ===
     let listaVentasGlobal = [];  
     let listaPendientesGlobal = [];  
     let ultimaLat = 0, ultimaLon = 0;  
-
+  
     window.onload = function() {  
-        // ... todo tu código anterior ...
-    };
+        setInterval(() => {  
+            document.getElementById('txtReloj').innerText = new Date().toLocaleTimeString('es-MX');  
+        }, 1000);  
+  
+        if (localStorage.getItem('sesion_activa_promotor') === 'true') {
+            mostrarInterfazSistema();
+        }
 
-    // === REGISTRO DEL SERVICE WORKER (PWA) ===
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./service-worker.js')
-                .then(registration => {
-                    console.log('✅ PWA Service Worker registrado correctamente');
-                })
-                .catch(error => {
-                    console.log('Error al registrar Service Worker:', error);
-                });
-        });
+        if(navigator.geolocation) {  
+            navigator.geolocation.watchPosition(p => {  
+                const lat = p.coords.latitude;  
+                const lon = p.coords.longitude;  
+                if(Math.abs(lat - ultimaLat) > 0.0001 || Math.abs(lon - ultimaLon) > 0.0001) {  
+                    ultimaLat = lat;  
+                    ultimaLon = lon;  
+                    obtenerNombreCalle(lat, lon);  
+                }  
+            }, () => {  
+                document.getElementById('txtGps').innerHTML = "GPS Desactivado o Sin Señal";  
+            });  
+        }  
+  
+        actualizarFechasInputs();  
+        cargarDatosLocales();  
+    };  
+
+    function alternarFormularioAcceso(opcion) {
+        document.getElementById('tabOpLogin').classList.remove('active');
+        document.getElementById('tabOpRegistro').classList.remove('active');
+        
+        if(opcion === 'LOGIN') {
+            document.getElementById('tabOpLogin').classList.add('active');
+            document.getElementById('tipoAccesoActual').value = "LOGIN";
+            document.getElementById('btnAccesoAccion').innerText = "INGRESAR AL PANEL";
+        } else {
+            document.getElementById('tabOpRegistro').classList.add('active');
+            document.getElementById('tipoAccesoActual').value = "REGISTRO";
+            document.getElementById('btnAccesoAccion').innerText = "REGISTRAR NUEVA CUENTA";
+        }
     }
 
-    // === Todo tu código JavaScript anterior (funciones, guardar venta, exportar, etc.) ===
+    function ejecutarLoginGoogle() {
+        alert("Abriendo pasarela de autenticación con cuentas de Google...");
+        localStorage.setItem('sesion_activa_promotor', 'true');
+        mostrarInterfazSistema();
+    }
+
+    function procesarAutenticacion(e) {
+        e.preventDefault();
+        const tipo = document.getElementById('tipoAccesoActual').value;
+        const email = document.getElementById('logEmail').value.trim();
+        const pass = document.getElementById('logPass').value;
+
+        let baseUsuarios = JSON.parse(localStorage.getItem('usuarios_registrados_sistema')) || {};
+
+        if(tipo === 'REGISTRO') {
+            if(baseUsuarios[email]) {
+                alert("Este correo electrónico ya está registrado. Elige otro o inicia sesión.");
+                return;
+            }
+            baseUsuarios[email] = pass;
+            localStorage.setItem('usuarios_registrados_sistema', JSON.stringify(baseUsuarios));
+            alert("¡Cuenta registrada exitosamente! Ya puedes ingresar.");
+            alternarFormularioAcceso('LOGIN');
+        } else {
+            if(baseUsuarios[email] && baseUsuarios[email] === pass) {
+                localStorage.setItem('sesion_activa_promotor', 'true');
+                mostrarInterfazSistema();
+            } else if (email === "admin@telcel.com" && pass === "12345") {
+                localStorage.setItem('sesion_activa_promotor', 'true');
+                mostrarInterfazSistema();
+            } else {
+                alert("Correo electrónico o contraseña incorrectos.");
+            }
+        }
+    }
+
+    function mostrarInterfazSistema() {
+        document.getElementById('seccionLogin').classList.add('hidden');
+        document.getElementById('wrapperSistema').classList.remove('hidden');
+        document.getElementById('barAsistenteFloating').classList.remove('hidden');
+    }
+
+    function cerrarSesionSistema() {
+        localStorage.removeItem('sesion_activa_promotor');
+        document.getElementById('seccionLogin').classList.remove('hidden');
+        document.getElementById('wrapperSistema').classList.add('hidden');
+        document.getElementById('barAsistenteFloating').classList.add('hidden');
+        document.getElementById('fAcceso').reset();
+    }
+
+    function cambiarOperador(op) {  
+        document.getElementById('iOperador').value = op;  
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));  
+        const subMenu = document.getElementById('wrapperSubModalidad');  
+        cambiarModalidad('LINEA');  
+        if(op === 'TELCEL') {  
+            document.querySelector('.tab-telcel').classList.add('active');  
+            subMenu.classList.add('hidden');  
+            manejarVisibilidadCampos('TELCEL', 'LINEA');  
+        } else if(op === 'AT&T') {  
+            document.querySelector('.tab-att').classList.add('active');  
+            subMenu.classList.remove('hidden');  
+            manejarVisibilidadCampos('AT&T', 'LINEA');  
+        } else if(op === 'BAIT') {  
+            document.querySelector('.tab-bait').classList.add('active');  
+            subMenu.classList.remove('hidden');  
+            manejarVisibilidadCampos('BAIT', 'LINEA');  
+        }  
+    }  
+  
+    function cambiarModalidad(mod) {  
+        document.getElementById('iModalidadVenta').value = mod;  
+        document.getElementById('subTabLinea').classList.remove('active');  
+        document.getElementById('subTabSoloTelo').classList.remove('active');  
+        if(mod === 'LINEA') document.getElementById('subTabLinea').classList.add('active');  
+        else document.getElementById('subTabSoloTelo').classList.add('active');  
+        manejarVisibilidadCampos(document.getElementById('iOperador').value, mod);  
+    }  
+  
+    function manejarVisibilidadCampos(op, mod) {  
+        const wrapVinculo = document.getElementById('wrapperVinculo');  
+        const wrapPayJoy = document.getElementById('wrapperPayJoy');  
+        const wrapTipo = document.getElementById('wrapperTipo');  
+        const wrapImei = document.getElementById('wrapperImei');  
+        const wrapTel = document.getElementById('wrapperTel');  
+        const wrapIcc = document.getElementById('wrapperIcc');  
+        const inputTel = document.getElementById('iTel');  
+        const inputIcc = document.getElementById('iIcc');  
+  
+        if(mod === 'SOLO_TELO') {  
+            wrapVinculo.classList.add('hidden'); wrapPayJoy.classList.remove('hidden'); wrapTipo.classList.add('hidden'); wrapImei.classList.remove('hidden'); wrapTel.classList.add('hidden'); wrapIcc.classList.add('hidden');  
+            inputTel.removeAttribute('required'); inputIcc.removeAttribute('required');  
+            return;  
+        }  
+        inputTel.setAttribute('required', 'true'); inputIcc.setAttribute('required', 'true');  
+  
+        if(op === 'TELCEL') {  
+            wrapVinculo.classList.remove('hidden'); wrapPayJoy.classList.remove('hidden'); wrapTipo.classList.remove('hidden'); wrapImei.classList.remove('hidden'); wrapTel.classList.remove('hidden'); wrapIcc.classList.remove('hidden');  
+        } else if(op === 'AT&T') {  
+            wrapVinculo.classList.add('hidden'); wrapPayJoy.classList.remove('hidden'); wrapTipo.classList.add('hidden'); wrapImei.classList.remove('hidden'); wrapTel.classList.remove('hidden'); wrapIcc.classList.remove('hidden');  
+        } else if(op === 'BAIT') {  
+            wrapVinculo.classList.add('hidden'); wrapPayJoy.classList.add('hidden'); wrapTipo.classList.add('hidden'); wrapImei.classList.add('hidden'); wrapTel.classList.remove('hidden'); wrapIcc.classList.remove('hidden');  
+        }  
+    }  
+  
+    function guardarVentaLocal(e) {  
+        e.preventDefault();  
+        const btn = document.getElementById('btnGuardar');  
+        const opActual = document.getElementById('iOperador').value;  
+        const modActual = document.getElementById('iModalidadVenta').value;  
+        const fUsuario = document.getElementById('iFec').value;  
+          
+        let fechaFormateada = "";  
+        if(fUsuario) {  
+            const partes = fUsuario.split("-");  
+            fechaFormateada = `\( {partes[2]}/ \){partes[1]}/${partes[0]}`;  
+        }  
+  
+        let numCelular = document.getElementById('iTel').value;  
+        let iccidChip = document.getElementById('iIcc').value;  
+        let tipoVenta = opActual === 'TELCEL' ? document.getElementById('iTipo').value : "N/A";  
+  
+        if(modActual === 'SOLO_TELO') { numCelular = "N/A"; iccidChip = "N/A"; tipoVenta = "SOLO EQUIPO"; }  
+        let imeiFinal = "N/A";  
+        if(modActual === 'SOLO_TELO') imeiFinal = document.getElementById('iIme').value || "N/A";  
+        else imeiFinal = opActual !== 'BAIT' ? (document.getElementById('iIme').value || "N/A") : "N/A";  
+  
+        const v = {  
+            id: Date.now(), "OPERADOR": opActual, "NUM. CELULAR": numCelular, "IMEI": imeiFinal, "ICCID": iccidChip, "Renuevate/ Kit/Chip/Porta": tipoVenta,  
+            "#TIENDA / Determinante": document.getElementById('iTiendaNum').value, "SOLO NOMBRE DE LA CADENA": document.getElementById('iCadena').value, "SOLO NOMBRE DE TIENDA SIN CADENA": document.getElementById('iTiendaNombre').value,  
+            "NOMBRE COMPLETO PROMOTOR": document.getElementById('iProm').value, "FECHA DE ACTIVACION": fechaFormateada, "MARCA": document.getElementById('iMarca').value, "MODELO": document.getElementById('iMod').value, "UPC": document.getElementById('iUpc').value || "N/A"  
+        };  
+  
+        listaVentasGlobal.unshift(v);  
+        localStorage.setItem('omar_ventas_locales', JSON.stringify(listaVentasGlobal));  
+          
+        e.target.reset(); actualizarFechasInputs(); cambiarOperador(opActual); renderizarVentas();  
+  
+        btn.innerText = "¡VENTA GUARDADA!"; btn.style.background = "#00b4d8";  
+        setTimeout(() => { btn.innerText = "GUARDAR VENTA LOCALMENTE"; btn.style.background = "#ffc300"; }, 1500);  
+    }  
+  
+    function eliminarVentaLocal(idLocal) {  
+        if(!confirm("¿Eliminar este registro?")) return;  
+        listaVentasGlobal = listaVentasGlobal.filter(x => x.id !== idLocal);  
+        localStorage.setItem('omar_ventas_locales', JSON.stringify(listaVentasGlobal));  
+        renderizarVentas();  
+    }  
+  
+    function renderizarVentas() {  
+        let tTelcel = 0, tAtt = 0, tBait = 0;  
+        document.getElementById('bodyVentas').innerHTML = listaVentasGlobal.map(v => {  
+            if(v.OPERADOR === 'TELCEL') tTelcel++; if(v.OPERADOR === 'AT&T') tAtt++; if(v.OPERADOR === 'BAIT') tBait++;  
+            return `<tr><td><b>\( {v.OPERADOR}</b></td><td> \){v["NUM. CELULAR"]}</td><td>\( {v.IMEI}</td><td> \){v.ICCID}</td><td><b>\( {v["Renuevate/ Kit/Chip/Porta"]}</b></td><td> \){v["#TIENDA / Determinante"]}</td><td>\( {v["SOLO NOMBRE DE LA CADENA"]}</td><td> \){v["SOLO NOMBRE DE TIENDA SIN CADENA"]}</td><td>\( {v["NOMBRE COMPLETO PROMOTOR"]}</td><td> \){v["FECHA DE ACTIVACION"]}</td><td>\( {v.MARCA}</td><td> \){v.MODELO}</td><td style="text-align:center"><i class="fa fa-trash" style="color:red;cursor:pointer" onclick="eliminarVentaLocal(${v.id})"></i></td></tr>`;  
+        }).join("");  
+  
+        document.getElementById('lblTelcel').innerText = tTelcel; document.getElementById('lblAtt').innerText = tAtt; document.getElementById('lblBait').innerText = tBait;  
+        let totalMax = Math.max(tTelcel, tAtt, tBait, 1);  
+        document.getElementById('barTelcel').style.width = `\( {(tTelcel / totalMax) * 100}%`; document.getElementById('barAtt').style.width = ` \){(tAtt / totalMax) * 100}%`; document.getElementById('barBait').style.width = `${(tBait / totalMax) * 100}%`;  
+    }  
+  
+    function guardarPendienteLocal(e) {  
+        e.preventDefault();  
+        const fPendiente = document.getElementById('pFec').value;  
+        let fechaPendienteFormateada = ""; if(fPendiente) { const partes = fPendiente.split("-"); fechaPendienteFormateada = `\( {partes[2]}/ \){partes[1]}/${partes[0]}`; }  
+        const p = { id: Date.now(), "FECHA": fechaPendienteFormateada, "MARCA": document.getElementById('pMarca').value, "MODELO": document.getElementById('pMod').value, "IMEI": document.getElementById('pImei').value, "ICCID": document.getElementById('pIccid').value, "NUMERO": document.getElementById('pNum').value };  
+        listaPendientesGlobal.unshift(p); localStorage.setItem('omar_pendientes_locales', JSON.stringify(listaPendientesGlobal));  
+        document.getElementById('fPendientes').reset(); actualizarFechasInputs(); renderizarPendientes();  
+    }  
+  
+    function eliminarPendienteLocal(idLocal) {  
+        if(!confirm("¿Remover de pendientes?")) return;  
+        listaPendientesGlobal = listaPendientesGlobal.filter(x => x.id !== idLocal);  
+        localStorage.setItem('omar_pendientes_locales', JSON.stringify(listaPendientesGlobal));  
+        renderizarPendientes();  
+    }  
+  
+    function renderizarPendientes() {  
+        document.getElementById('bodyPendientes').innerHTML = listaPendientesGlobal.map(p => `<tr><td><b>\( {p.FECHA}</b></td><td> \){p.MARCA}</td><td>\( {p.MODELO}</td><td> \){p.IMEI}</td><td>\( {p.ICCID}</td><td><b> \){p.NUMERO}</b></td><td style="text-align:center"><i class="fa fa-check-circle" style="color:#1f7a3f;font-size:16px;cursor:pointer" onclick="eliminarPendienteLocal(${p.id})"></i></td></tr>`).join("");  
+    }  
+  
+    function cargarDatosLocales() {  
+        const vLocales = localStorage.getItem('omar_ventas_locales'); if(vLocales) { listaVentasGlobal = JSON.parse(vLocales); renderizarVentas(); }  
+        const pLocales = localStorage.getItem('omar_pendientes_locales'); if(pLocales) { listaPendientesGlobal = JSON.parse(pLocales); renderizarPendientes(); }  
+    }  
+  
+    function exportarExcelGeneral() {  
+        if(listaVentasGlobal.length === 0) return alert("No hay datos.");  
+        const ws = XLSX.utils.json_to_sheet(listaVentasGlobal.map(({id, ...r}) => r)); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "General_Ventas"); aplicarEstiloExcel(ws); XLSX.writeFile(wb, `Reporte_Ventas.xlsx`);  
+    }  
+  
+    function exportarExcelTelcel() {
+        const vt = listaVentasGlobal.filter(v => v.OPERADOR === 'TELCEL');
+        if (vt.length === 0) return alert("Sin datos de Telcel.");
+
+        const data = vt.map(v => ({
+            "NUM. CELULA R": v["NUM. CELULAR"],
+            "IMEI": v.IMEI,
+            "ICCID": v.ICCID,
+            "Renuevate/ Kit/Chip/ Porta": v["Renuevate/ Kit/Chip/Porta"],
+            "#TIENDA / Determinant e": v["#TIENDA / Determinante"],
+            "SOLO NOMBRE DE LA CADEN A": v["SOLO NOMBRE DE LA CADENA"],
+            "SOLO NOMBRE DE TIENDA SIN CADENA": v["SOLO NOMBRE DE TIENDA SIN CADENA"],
+            "NOMBRE COMPLETO PROMOTOR": v["NOMBRE COMPLETO PROMOTOR"],
+            "FECHA DE ACTIVACIO N": v["FECHA DE ACTIVACION"],
+            "MARCA": v.MARCA,
+            "MODELO": v.MODELO,
+            "REGISTRO": ""
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(data);
+
+        ws['!cols'] = [
+            { wch: 14 }, { wch: 18 }, { wch: 22 }, { wch: 18 },
+            { wch: 18 }, { wch: 14 }, { wch: 30 }, { wch: 26 },
+            { wch: 16 }, { wch: 14 }, { wch: 16 }, { wch: 12 }
+        ];
+
+        const headerStyle = {
+            fill: { fgColor: { rgb: "000000" } },
+            font: { color: { rgb: "FFFFFF" }, bold: true },
+            alignment: { textRotation: 90, vertical: "center", horizontal: "center", wrapText: true }
+        };
+
+        for (let C = 0; C < 12; C++) {
+            const cellRef = XLSX.utils.encode_cell({ r: 0, c: C });
+            if (ws[cellRef]) ws[cellRef].s = headerStyle;
+        }
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Hoja1");
+
+        const fechaHoy = new Date().toISOString().slice(0, 10);
+        XLSX.writeFile(wb, `comisiones_diarias_Omar_Telcel_${fechaHoy}.xlsx`);
+    }  
+  
+    function aplicarEstiloExcel(ws) {  
+        const rango = XLSX.utils.decode_range(ws['!ref']);  
+        for (let R = rango.s.r; R <= rango.e.r; ++R) {  
+            for (let C = rango.s.c; C <= rango.e.c; ++C) {  
+                const ref = XLSX.utils.encode_cell({ r: R, c: C }); if (!ws[ref]) continue;  
+                ws[ref].s = (R === 0) ? { fill: { fgColor: { rgb: "000000" } }, font: { color: { rgb: "FFFFFF" }, bold: true } } : { font: { color: { rgb: "000000" } } };  
+            }  
+        }  
+    }  
+  
+    function exportarPDF() {  
+        if(listaVentasGlobal.length === 0) return alert("Sin datos.");  
+        const div = document.createElement('div'); div.style.padding = "15px"; const tab = document.getElementById('tablaVentasReal').cloneNode(true); div.appendChild(tab);  
+        html2pdf().set({ margin: 8, filename: 'Reporte.pdf', jsPDF: { orientation: 'landscape' } }).from(div).save();  
+    }  
+
+    function evaluarEnterAsistente(e) { if(e.key === 'Enter') consultarAsistenteIA(); }
+    function cerrarAsistenteDropdown() { document.getElementById('aiDropdown').style.display = 'none'; }
+    function consultarAsistenteIA() {
+        const query = document.getElementById('aiInputText').value.trim().toLowerCase(); if(!query) return;
+        const dropdown = document.getElementById('aiDropdown'); const resp = document.getElementById('aiResponseText');
+        dropdown.style.display = 'block'; resp.innerHTML = `Analizando registros...`;
+        setTimeout(() => {
+            let res = "";
+            if(query.includes("promo") || query.includes("porta") || query.includes("recarga")) {
+                res = "<b>[TELCEL COMERCIAL]</b>\n• Porta Chip: Beneficio Triple de saldo por 12 meses en recargas desde $100.\n• Amigo Kit: Doble de Gigas durante los primeros 6 meses al activar paquete.";
+            } else {
+                let fv = listaVentasGlobal.filter(v => (v["IMEI"] && v["IMEI"].includes(query)) || (v["ICCID"] && v["ICCID"].includes(query)) || (v["NUM. CELULAR"] && v["NUM. CELULAR"].includes(query)) || (v.MARCA && v.MARCA.toLowerCase().includes(query)) || (v.MODELO && v.MODELO.toLowerCase().includes(query)));
+                if(fv.length > 0) {
+                    res = `<b>Coincidencias encontradas (${fv.length}):</b>\n`;
+                    fv.forEach(v => res += `• ${v.OPERADOR} | Cel: ${v["NUM. CELULAR"]} | ${v.MARCA} ${v.MODELO} | IMEI: ${v.IMEI}\n`);
+                } else { res = "No se encontraron coincidencias locales."; }
+            }
+            resp.innerHTML = res;
+        }, 500);
+    }
 </script>  
 </body>  
 </html>
