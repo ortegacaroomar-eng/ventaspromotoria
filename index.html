@@ -439,7 +439,7 @@
     }
 
     function obtenerNombreCalle(lat, lon) {  
-        fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`)  
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=\( {lat}&lon= \){lon}`)  
             .then(res => res.json())  
             .then(data => {  
                 if (data && data.address) {  
@@ -459,8 +459,8 @@
         const d = String(hoy.getDate()).padStart(2, '0');  
         const m = String(hoy.getMonth() + 1).padStart(2, '0');  
         const y = hoy.getFullYear();  
-        document.getElementById('iFec').value = `${y}-${m}-${d}`;  
-        document.getElementById('pFec').value = `${y}-${m}-${d}`;  
+        document.getElementById('iFec').value = `\( {y}- \){m}-${d}`;  
+        document.getElementById('pFec').value = `\( {y}- \){m}-${d}`;  
     }  
   
     function cambiarOperador(op) {  
@@ -528,7 +528,7 @@
         let fechaFormateada = "";  
         if(fUsuario) {  
             const partes = fUsuario.split("-");  
-            fechaFormateada = `${partes[2]}/${partes[1]}/${partes[0]}`;  
+            fechaFormateada = `\( {partes[2]}/ \){partes[1]}/${partes[0]}`;  
         }  
   
         let numCelular = document.getElementById('iTel').value;  
@@ -566,18 +566,18 @@
         let tTelcel = 0, tAtt = 0, tBait = 0;  
         document.getElementById('bodyVentas').innerHTML = listaVentasGlobal.map(v => {  
             if(v.OPERADOR === 'TELCEL') tTelcel++; if(v.OPERADOR === 'AT&T') tAtt++; if(v.OPERADOR === 'BAIT') tBait++;  
-            return `<tr><td><b>${v.OPERADOR}</b></td><td>${v["NUM. CELULAR"]}</td><td>${v.IMEI}</td><td>${v.ICCID}</td><td><b>${v["Renuevate/ Kit/Chip/Porta"]}</b></td><td>${v["#TIENDA / Determinante"]}</td><td>${v["SOLO NOMBRE DE LA CADENA"]}</td><td>${v["SOLO NOMBRE DE TIENDA SIN CADENA"]}</td><td>${v["NOMBRE COMPLETO PROMOTOR"]}</td><td>${v["FECHA DE ACTIVACION"]}</td><td>${v.MARCA}</td><td>${v.MODELO}</td><td style="text-align:center"><i class="fa fa-trash" style="color:red;cursor:pointer" onclick="eliminarVentaLocal(${v.id})"></i></td></tr>`;  
+            return `<tr><td><b>\( {v.OPERADOR}</b></td><td> \){v["NUM. CELULAR"]}</td><td>\( {v.IMEI}</td><td> \){v.ICCID}</td><td><b>\( {v["Renuevate/ Kit/Chip/Porta"]}</b></td><td> \){v["#TIENDA / Determinante"]}</td><td>\( {v["SOLO NOMBRE DE LA CADENA"]}</td><td> \){v["SOLO NOMBRE DE TIENDA SIN CADENA"]}</td><td>\( {v["NOMBRE COMPLETO PROMOTOR"]}</td><td> \){v["FECHA DE ACTIVACION"]}</td><td>\( {v.MARCA}</td><td> \){v.MODELO}</td><td style="text-align:center"><i class="fa fa-trash" style="color:red;cursor:pointer" onclick="eliminarVentaLocal(${v.id})"></i></td></tr>`;  
         }).join("");  
   
         document.getElementById('lblTelcel').innerText = tTelcel; document.getElementById('lblAtt').innerText = tAtt; document.getElementById('lblBait').innerText = tBait;  
         let totalMax = Math.max(tTelcel, tAtt, tBait, 1);  
-        document.getElementById('barTelcel').style.width = `${(tTelcel / totalMax) * 100}%`; document.getElementById('barAtt').style.width = `${(tAtt / totalMax) * 100}%`; document.getElementById('barBait').style.width = `${(tBait / totalMax) * 100}%`;  
+        document.getElementById('barTelcel').style.width = `\( {(tTelcel / totalMax) * 100}%`; document.getElementById('barAtt').style.width = ` \){(tAtt / totalMax) * 100}%`; document.getElementById('barBait').style.width = `${(tBait / totalMax) * 100}%`;  
     }  
   
     function guardarPendienteLocal(e) {  
         e.preventDefault();  
         const fPendiente = document.getElementById('pFec').value;  
-        let fechaPendienteFormateada = ""; if(fPendiente) { const partes = fPendiente.split("-"); fechaPendienteFormateada = `${partes[2]}/${partes[1]}/${partes[0]}`; }  
+        let fechaPendienteFormateada = ""; if(fPendiente) { const partes = fPendiente.split("-"); fechaPendienteFormateada = `\( {partes[2]}/ \){partes[1]}/${partes[0]}`; }  
         const p = { id: Date.now(), "FECHA": fechaPendienteFormateada, "MARCA": document.getElementById('pMarca').value, "MODELO": document.getElementById('pMod').value, "IMEI": document.getElementById('pImei').value, "ICCID": document.getElementById('pIccid').value, "NUMERO": document.getElementById('pNum').value };  
         listaPendientesGlobal.unshift(p); localStorage.setItem('omar_pendientes_locales', JSON.stringify(listaPendientesGlobal));  
         document.getElementById('fPendientes').reset(); actualizarFechasInputs(); renderizarPendientes();  
@@ -591,7 +591,7 @@
     }  
   
     function renderizarPendientes() {  
-        document.getElementById('bodyPendientes').innerHTML = listaPendientesGlobal.map(p => `<tr><td><b>${p.FECHA}</b></td><td>${p.MARCA}</td><td>${p.MODELO}</td><td>${p.IMEI}</td><td>${p.ICCID}</td><td><b>${p.NUMERO}</b></td><td style="text-align:center"><i class="fa fa-check-circle" style="color:#1f7a3f;font-size:16px;cursor:pointer" onclick="eliminarPendienteLocal(${p.id})"></i></td></tr>`).join("");  
+        document.getElementById('bodyPendientes').innerHTML = listaPendientesGlobal.map(p => `<tr><td><b>\( {p.FECHA}</b></td><td> \){p.MARCA}</td><td>\( {p.MODELO}</td><td> \){p.IMEI}</td><td>\( {p.ICCID}</td><td><b> \){p.NUMERO}</b></td><td style="text-align:center"><i class="fa fa-check-circle" style="color:#1f7a3f;font-size:16px;cursor:pointer" onclick="eliminarPendienteLocal(${p.id})"></i></td></tr>`).join("");  
     }  
   
     function cargarDatosLocales() {  
@@ -605,9 +605,29 @@
     }  
   
     function exportarExcelTelcel() {  
-        const vt = listaVentasGlobal.filter(v => v.OPERADOR === 'TELCEL'); if(vt.length === 0) return alert("Sin datos de Telcel.");  
-        const ws = XLSX.utils.json_to_sheet(vt.map(v => ({ "NUM. CELULAR": v["NUM. CELULAR"], "IMEI": v.IMEI, "ICCID": v.ICCID, "Renuevate/ Kit/Chip/Porta": v["Renuevate/ Kit/Chip/Porta"], "#TIENDA / Determinante": v["#TIENDA / Determinante"], "SOLO NOMBRE DE LA CADENA": v["SOLO NOMBRE DE LA CADENA"], "SOLO NOMBRE DE TIENDA SIN CADENA": v["SOLO NOMBRE DE TIENDA SIN CADENA"], "NOMBRE COMPLETO PROMOTOR": v["NOMBRE COMPLETO PROMOTOR"], "FECHA DE ACTIVACION": v["FECHA DE ACTIVACION"], "MARCA": v.MARCA, "MODELO": v.MODELO, "REGISTRO": "" })));  
-        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Hoja1"); aplicarEstiloExcel(ws); XLSX.writeFile(wb, `comíciones marzo omar 2026_Telcel.xlsx`);  
+        const vt = listaVentasGlobal.filter(v => v.OPERADOR === 'TELCEL');
+        if(vt.length === 0) return alert("Sin datos de Telcel.");
+
+        const ws = XLSX.utils.json_to_sheet(vt.map(v => ({
+            "NUM. CELULAR": v["NUM. CELULAR"],
+            "IMEI": v.IMEI,
+            "ICCID": v.ICCID,
+            "Renuevate/ Kit/Chip/Porta": v["Renuevate/ Kit/Chip/Porta"],
+            "#TIENDA / Determinante": v["#TIENDA / Determinante"],
+            "SOLO NOMBRE DE LA CADENA": v["SOLO NOMBRE DE LA CADENA"],
+            "SOLO NOMBRE DE TIENDA SIN CADENA": v["SOLO NOMBRE DE TIENDA SIN CADENA"],
+            "NOMBRE COMPLETO PROMOTOR": v["NOMBRE COMPLETO PROMOTOR"],
+            "FECHA DE ACTIVACION": v["FECHA DE ACTIVACION"],
+            "MARCA": v.MARCA,
+            "MODELO": v.MODELO
+        })));
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Hoja1");
+        aplicarEstiloExcel(ws);
+
+        const fechaHoy = new Date().toISOString().slice(0,10);
+        XLSX.writeFile(wb, `comisiones_diarias_Omar_Telcel_${fechaHoy}.xlsx`);
     }  
   
     function aplicarEstiloExcel(ws) {  
