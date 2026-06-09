@@ -1,6 +1,13 @@
 <!DOCTYPE html>  
 <html lang="es">  
 <head>  
+<!-- === PWA CONFIG === -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#001d3d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Comisiones Omar">
+<link rel="apple-touch-icon" href="icon-192.png">
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0">  
     <title>SISTEMA VENTAS CON IA</title>  
@@ -642,6 +649,14 @@
             resp.innerHTML = res;
         }, 500);
     }
+// === Registrar PWA ===
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js')
+      .then(() => console.log('✅ PWA instalada correctamente'))
+      .catch(err => console.log('Error PWA:', err));
+  });
+}
 </script>  
 </body>  
 </html>
