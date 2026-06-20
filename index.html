@@ -1,26 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#001226">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Comisiones Omar">
-<link rel="apple-touch-icon" href="icon-192.png">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Comisiones Omar · Control de Ventas</title>
-
-<!-- Firebase SDK (compat, vía CDN — funciona como archivo único sin build) -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-
-<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<title>Comisiones Omar · Login modernizado</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
   :root{
@@ -35,11 +21,8 @@
     --bait:#9d4edd;
     --ok:#2dd4a7;
     --error:#ff5c7a;
-    --vidrio:rgba(255,255,255,.06);
     --vidrio-borde:rgba(255,255,255,.10);
     --texto-tenue:rgba(255,255,255,.55);
-    --radio:16px;
-    --radio-sm:10px;
     --fuente-display:'Space Grotesk',sans-serif;
     --fuente-cuerpo:'Inter',sans-serif;
     --fuente-mono:'JetBrains Mono',monospace;
@@ -49,234 +32,208 @@
 
   body{
     margin:0;
-    font-family:var(--fuente-cuerpo);
-    background:
-      radial-gradient(circle at 15% 0%, rgba(0,180,216,.10), transparent 45%),
-      radial-gradient(circle at 85% 15%, rgba(255,195,0,.06), transparent 40%),
-      linear-gradient(160deg,var(--azul-950) 0%, var(--azul-900) 45%, #000814 100%);
     min-height:100vh;
+    font-family:var(--fuente-cuerpo);
+    background:var(--azul-950);
     color:#f4f6fa;
-    padding-bottom:96px;
     -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
   }
 
   @media (prefers-reduced-motion: reduce){
     *{animation-duration:.001s !important; transition-duration:.001s !important;}
   }
 
-  .app{max-width:1100px;margin:auto;padding:18px;}
-
-  /* ---------- LOGIN ---------- */
+  /* ---------- FONDO VIVO ---------- */
   .login-overlay{
-    position:fixed;inset:0;background:
-      radial-gradient(circle at 50% 0%, rgba(0,180,216,.14), transparent 50%),
-      var(--azul-950);
-    z-index:20000;display:flex;align-items:center;justify-content:center;
+    position:fixed;inset:0;
+    display:flex;align-items:center;justify-content:center;
     padding:20px;
+    background:
+      radial-gradient(circle at 18% 8%, rgba(0,180,216,.16), transparent 42%),
+      radial-gradient(circle at 88% 22%, rgba(255,195,0,.10), transparent 38%),
+      radial-gradient(circle at 50% 100%, rgba(157,78,221,.08), transparent 45%),
+      linear-gradient(165deg,var(--azul-950) 0%, var(--azul-900) 45%, #00040c 100%);
   }
+
+  /* Líneas tipo "ticket de venta" flotando muy sutil, conecta con el rubro: comisiones/ventas */
+  .malla-ticket{
+    position:absolute;inset:0;pointer-events:none;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0px, rgba(255,255,255,.025) 1px, transparent 1px, transparent 34px);
+    mask-image:radial-gradient(circle at 50% 35%, rgba(0,0,0,.9), transparent 70%);
+    animation:derivaTicket 26s linear infinite;
+  }
+  @keyframes derivaTicket{from{background-position:0 0;}to{background-position:0 340px;}}
+
+  .orbe{
+    position:absolute;border-radius:50%;filter:blur(60px);opacity:.35;pointer-events:none;
+    animation:flotar 11s ease-in-out infinite;
+  }
+  .orbe-1{width:260px;height:260px;background:var(--telcel);top:8%;left:8%;animation-delay:0s;}
+  .orbe-2{width:220px;height:220px;background:var(--dorado);bottom:10%;right:10%;animation-delay:-4s;}
+  @keyframes flotar{
+    0%,100%{transform:translate(0,0) scale(1);}
+    50%{transform:translate(18px,-22px) scale(1.08);}
+  }
+
+  /* ---------- CAJA DE LOGIN ---------- */
   .login-box{
-    background:rgba(255,255,255,.05);
-    backdrop-filter:blur(24px);
+    position:relative;
+    z-index:2;
+    width:100%;max-width:420px;
+    padding:38px 32px;
+    border-radius:26px;
+    background:linear-gradient(180deg, rgba(255,255,255,.085), rgba(255,255,255,.035));
     border:1px solid var(--vidrio-borde);
-    border-radius:24px;width:100%;max-width:420px;padding:34px 30px;
-    box-shadow:0 25px 60px rgba(0,0,0,.55);
+    backdrop-filter:blur(28px) saturate(160%);
+    -webkit-backdrop-filter:blur(28px) saturate(160%);
+    box-shadow:
+      0 30px 70px rgba(0,0,0,.55),
+      inset 0 1px 0 rgba(255,255,255,.18),
+      0 0 0 1px rgba(0,180,216,.06);
     text-align:center;
-    animation:subirEntrada .5s cubic-bezier(.16,1,.3,1);
+    animation:entradaCaja .6s cubic-bezier(.16,1,.3,1);
+    overflow:hidden;
   }
-  @keyframes subirEntrada{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+  .login-box::before{
+    content:"";
+    position:absolute;top:-2px;left:-2px;right:-2px;height:3px;
+    background:linear-gradient(90deg,var(--telcel),var(--dorado),var(--bait),var(--telcel));
+    background-size:200% 100%;
+    animation:correrBorde 6s linear infinite;
+  }
+  @keyframes correrBorde{to{background-position:200% 0;}}
+  @keyframes entradaCaja{from{opacity:0;transform:translateY(18px) scale(.98);}to{opacity:1;transform:translateY(0) scale(1);}}
+
   .login-mark{
-    width:52px;height:52px;border-radius:14px;margin:0 auto 16px;
+    width:54px;height:54px;border-radius:15px;margin:0 auto 18px;
     background:linear-gradient(135deg,var(--dorado),var(--telcel));
     display:flex;align-items:center;justify-content:center;
-    font-family:var(--fuente-display);font-weight:700;color:var(--azul-950);font-size:20px;
+    font-family:var(--fuente-display);font-weight:700;color:var(--azul-950);font-size:21px;
+    box-shadow:0 8px 22px rgba(255,195,0,.3);
+    position:relative;
   }
-  .login-box h2{margin:0 0 4px;font-family:var(--fuente-display);font-weight:700;font-size:21px;letter-spacing:.2px;}
-  .login-box p{font-size:12.5px;color:var(--texto-tenue);margin:0 0 26px;}
-  .login-tabs{display:flex;background:rgba(0,0,0,.35);padding:4px;border-radius:12px;margin-bottom:20px;border:1px solid var(--vidrio-borde);}
-  .login-tab-btn{flex:1;padding:10px;background:transparent;border:none;color:var(--texto-tenue);font-weight:600;font-size:13px;cursor:pointer;border-radius:9px;transition:.25s;font-family:inherit;}
-  .login-tab-btn.active{background:var(--dorado);color:var(--azul-950);}
+  .login-mark::after{
+    content:"";position:absolute;inset:-6px;border-radius:19px;
+    border:1px solid rgba(255,195,0,.3);
+    animation:pulsoAnillo 2.6s ease-out infinite;
+  }
+  @keyframes pulsoAnillo{
+    0%{transform:scale(.92);opacity:.9;}
+    100%{transform:scale(1.18);opacity:0;}
+  }
+
+  .login-box h2{margin:0 0 5px;font-family:var(--fuente-display);font-weight:700;font-size:22px;letter-spacing:.2px;}
+  .login-box p{font-size:12.5px;color:var(--texto-tenue);margin:0 0 28px;line-height:1.5;}
+
+  .login-tabs{
+    display:flex;background:rgba(0,0,0,.32);padding:4px;border-radius:13px;margin-bottom:22px;
+    border:1px solid var(--vidrio-borde);position:relative;
+  }
+  .login-tab-btn{
+    flex:1;padding:11px;background:transparent;border:none;color:var(--texto-tenue);font-weight:600;
+    font-size:13px;cursor:pointer;border-radius:10px;transition:color .25s, transform .15s;font-family:inherit;
+    position:relative;z-index:1;
+  }
+  .login-tab-btn.active{color:var(--azul-950);}
+  .login-tab-btn:active{transform:scale(.97);}
+  .tab-deslizante{
+    position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);
+    background:var(--dorado);border-radius:10px;
+    box-shadow:0 4px 14px rgba(255,195,0,.35);
+    transition:transform .3s cubic-bezier(.16,1,.3,1);
+  }
+  .login-tab-btn[data-tab="REGISTRO"].active ~ .tab-deslizante,
+  .login-tabs.modo-registro .tab-deslizante{transform:translateX(100%);}
+
   .btn-google{
-    background:#fff;color:#1f1f1f;width:100%;padding:13px;border:none;border-radius:12px;
+    background:#fff;color:#1f1f1f;width:100%;padding:14px;border:none;border-radius:13px;
     font-weight:600;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;
-    gap:10px;box-shadow:0 6px 16px rgba(0,0,0,.25);transition:.25s;margin-bottom:20px;
+    gap:10px;box-shadow:0 8px 20px rgba(0,0,0,.28);transition:transform .2s, box-shadow .2s;margin-bottom:22px;
+    position:relative;overflow:hidden;
   }
-  .btn-google:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(0,0,0,.3);}
+  .btn-google::after{
+    content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;
+    background:linear-gradient(120deg, transparent, rgba(0,0,0,.06), transparent);
+    transform:skewX(-20deg);
+  }
+  .btn-google:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(0,0,0,.34);}
   .btn-google:active{transform:translateY(0) scale(.98);}
-  .separator{display:flex;align-items:center;text-align:center;color:#5b6577;font-size:10.5px;margin-bottom:20px;text-transform:uppercase;font-weight:600;letter-spacing:.06em;}
+
+  .separator{
+    display:flex;align-items:center;text-align:center;color:#5b6577;font-size:10.5px;margin-bottom:22px;
+    text-transform:uppercase;font-weight:600;letter-spacing:.06em;
+  }
   .separator::before,.separator::after{content:"";flex:1;border-bottom:1px solid rgba(255,255,255,.12);}
   .separator:not(:empty)::before{margin-right:.75em;}
   .separator:not(:empty)::after{margin-left:.75em;}
+
   .campo-error{
     background:rgba(255,92,122,.12);border:1px solid rgba(255,92,122,.4);color:#ffb3c0;
-    font-size:12px;padding:10px 12px;border-radius:10px;margin-bottom:14px;text-align:left;
-    display:none;align-items:flex-start;gap:8px;
+    font-size:12px;padding:11px 13px;border-radius:11px;margin-bottom:16px;text-align:left;
+    display:none;align-items:flex-start;gap:9px;animation:sacudir .35s;
   }
   .campo-error.visible{display:flex;}
-  .login-footer-link{font-size:12px;color:var(--telcel);background:none;border:none;cursor:pointer;margin-top:14px;font-family:inherit;text-decoration:underline;}
-
-  /* ---------- TOP BAR ---------- */
-  .top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:10px;}
-  .gps-card{
-    background:rgba(0,0,0,.35);border:1px solid rgba(0,180,216,.4);padding:9px 14px;border-radius:13px;
-    color:var(--telcel);font-size:11.5px;display:flex;align-items:center;max-width:56%;
-    backdrop-filter:blur(8px);
+  @keyframes sacudir{
+    0%,100%{transform:translateX(0);}
+    25%{transform:translateX(-5px);}
+    75%{transform:translateX(5px);}
   }
-  .gps-card i{margin-right:9px;font-size:16px;color:var(--dorado);min-width:18px;}
-  .gps-card b{color:#fff;font-size:11px;}
-  .perfil-y-reloj{display:flex;align-items:center;gap:12px;}
-  .reloj-digital{font-family:var(--fuente-mono);font-size:19px;color:var(--dorado);font-weight:600;letter-spacing:.5px;}
-  .avatar-usuario{
-    width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid var(--dorado);
-    background:var(--azul-800);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;
+
+  .grupo-campo{position:relative;margin-bottom:16px;text-align:left;}
+  .grupo-campo i{
+    position:absolute;left:14px;top:50%;transform:translateY(-50%);
+    color:var(--texto-tenue);font-size:14px;transition:color .2s;
   }
-  .btn-logout{
-    background:rgba(255,92,122,.14);border:1px solid var(--error);color:var(--error);padding:7px 12px;
-    border-radius:9px;font-size:11.5px;cursor:pointer;font-weight:600;transition:.25s;font-family:inherit;
+  .grupo-campo input{
+    width:100%;padding:14px 14px 14px 40px;border-radius:12px;border:1px solid transparent;
+    background:rgba(255,255,255,.07);color:#fff;box-sizing:border-box;outline:none;
+    font-family:inherit;font-size:14px;transition:background .2s, border-color .2s;
   }
-  .btn-logout:hover{background:var(--error);color:#fff;}
+  .grupo-campo input::placeholder{color:rgba(255,255,255,.35);}
+  .grupo-campo input:focus{background:rgba(255,255,255,.11);border-color:var(--dorado);}
+  .grupo-campo input:focus ~ i{color:var(--dorado);}
+  .grupo-campo input.campo-invalido{border-color:var(--error) !important;}
 
-  /* ---------- NAV ---------- */
-  .main-nav{display:flex;gap:8px;margin-bottom:18px;background:rgba(0,0,0,.4);padding:6px;border-radius:14px;border:1px solid var(--vidrio-borde);flex-wrap:wrap;}
-  .nav-tab-btn{
-    flex:1;min-width:130px;padding:12px;text-align:center;border-radius:10px;font-weight:600;cursor:pointer;
-    border:none;background:transparent;color:#cfd6e4;transition:.25s;display:flex;align-items:center;
-    justify-content:center;gap:7px;font-size:12.5px;text-transform:uppercase;letter-spacing:.03em;font-family:inherit;
+  .btn-save{
+    background:var(--dorado);color:var(--azul-950);width:100%;padding:16px;border:none;border-radius:13px;
+    font-weight:700;cursor:pointer;font-size:15.5px;transition:background .2s, transform .15s, box-shadow .2s;
+    font-family:var(--fuente-display);letter-spacing:.02em;box-shadow:0 10px 24px rgba(255,195,0,.22);
   }
-  .nav-tab-btn.active{background:var(--dorado);color:var(--azul-950);box-shadow:0 0 20px rgba(255,195,0,.35);}
-
-  .menu-operadores{display:flex;gap:8px;margin-bottom:10px;background:var(--vidrio);padding:6px;border-radius:14px;border:1px solid var(--vidrio-borde);}
-  .tab-btn{flex:1;padding:12px;text-align:center;border-radius:10px;font-weight:600;cursor:pointer;border:none;transition:.25s;color:#fff;display:flex;align-items:center;justify-content:center;gap:7px;font-size:13px;font-family:inherit;}
-  .tab-telcel{background:rgba(0,180,216,.15);border:1px solid var(--telcel);}
-  .tab-telcel.active{background:var(--telcel);color:#001226;box-shadow:0 0 18px rgba(0,180,216,.4);}
-  .tab-att{background:rgba(255,122,26,.15);border:1px solid var(--att);}
-  .tab-att.active{background:var(--att);color:#fff;box-shadow:0 0 18px rgba(255,122,26,.4);}
-  .tab-bait{background:rgba(157,78,221,.15);border:1px solid var(--bait);}
-  .tab-bait.active{background:var(--bait);color:#fff;box-shadow:0 0 18px rgba(157,78,221,.4);}
-
-  .sub-menu-modalidad{display:flex;gap:8px;margin-bottom:18px;background:rgba(0,0,0,.3);padding:5px;border-radius:11px;border:1px solid var(--vidrio-borde);}
-  .sub-tab-btn{flex:1;padding:9px;text-align:center;border-radius:8px;font-size:11.5px;font-weight:600;cursor:pointer;border:none;transition:.2s;color:#9aa3b5;background:transparent;font-family:inherit;}
-  .sub-tab-btn.active{background:var(--dorado);color:var(--azul-950);box-shadow:0 0 10px rgba(255,195,0,.3);}
-
-  /* ---------- PANEL AVANCE ---------- */
-  .panel-avance{background:var(--vidrio);border:1px solid var(--vidrio-borde);border-radius:var(--radio);padding:16px;margin-bottom:16px;}
-  .panel-avance h4{margin:0 0 12px;font-size:12.5px;color:var(--dorado);text-transform:uppercase;letter-spacing:.05em;font-family:var(--fuente-display);font-weight:600;display:flex;align-items:center;gap:8px;}
-  .contenedor-graficas{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:13px;}
-  .barra-progreso-item{background:rgba(0,0,0,.28);padding:11px 12px;border-radius:11px;border-left:3px solid #fff;}
-  .info-progreso{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px;font-weight:600;color:#e4e8f0;}
-  .info-progreso span:last-child{font-family:var(--fuente-mono);}
-  .w-barra{background:rgba(255,255,255,.08);height:8px;border-radius:5px;overflow:hidden;}
-  .w-relleno{height:100%;width:0%;border-radius:5px;transition:width .6s cubic-bezier(.16,1,.3,1);}
-
-  /* ---------- CARDS / FORM ---------- */
-  .card{background:var(--vidrio);backdrop-filter:blur(10px);border-radius:var(--radio);padding:18px;margin-bottom:14px;border:1px solid var(--vidrio-borde);}
-  .card h3{margin:0 0 14px;font-size:14px;color:var(--dorado);border-bottom:1px solid var(--vidrio-borde);padding-bottom:9px;display:flex;align-items:center;gap:8px;font-family:var(--fuente-display);font-weight:600;}
-  label{font-size:10.5px;font-weight:600;color:var(--dorado);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:6px;}
-  input,select,textarea{
-    width:100%;padding:11px 12px;margin-bottom:12px;border-radius:10px;border:1px solid transparent;
-    background:rgba(255,255,255,.07);color:#fff;box-sizing:border-box;outline:none;font-family:inherit;font-size:14px;
-    transition:.2s;
-  }
-  input::placeholder{color:rgba(255,255,255,.35);}
-  input:focus,select:focus,textarea:focus{background:rgba(255,255,255,.1);border-color:var(--dorado);}
-  input.campo-invalido{border-color:var(--error) !important;}
-  input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(1);cursor:pointer;}
-
-  .btn-save{background:var(--dorado);color:var(--azul-950);width:100%;padding:16px;border:none;border-radius:13px;font-weight:700;cursor:pointer;font-size:15.5px;transition:.25s;font-family:var(--fuente-display);letter-spacing:.02em;}
-  .btn-save:hover{background:var(--dorado-soft);}
+  .btn-save:hover{background:var(--dorado-soft);box-shadow:0 14px 30px rgba(255,195,0,.3);transform:translateY(-1px);}
   .btn-save:active{transform:scale(.98);}
-  .btn-save:disabled{opacity:.55;cursor:wait;}
-
-  .btn-vinculo,.btn-payjoy{
-    color:#fff;width:100%;padding:13px;border:none;border-radius:11px;font-weight:600;cursor:pointer;
-    margin-top:4px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px;
-    transition:.25s;text-decoration:none;font-size:13.5px;
-  }
-  .btn-vinculo{background:linear-gradient(135deg,var(--telcel),#0096b8);}
-  .btn-payjoy{background:linear-gradient(135deg,#5b1fd4,#3d00b0);}
-  .btn-vinculo:hover,.btn-payjoy:hover{filter:brightness(1.1);}
-
-  .descargas-container{display:flex;gap:12px;margin-top:18px;flex-wrap:wrap;}
-  .btn-excel,.btn-excel-telcel,.btn-pdf{
-    flex:1;min-width:170px;color:#fff;padding:14px;border:none;border-radius:12px;font-weight:600;
-    cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;font-size:13px;transition:.25s;
-  }
-  .btn-excel{background:linear-gradient(135deg,#1f9d57,#16703d);}
-  .btn-excel-telcel{background:linear-gradient(135deg,#0077c2,#004f8a);}
-  .btn-pdf{background:linear-gradient(135deg,#d4145a,#960f3f);}
-  .btn-excel:hover,.btn-excel-telcel:hover,.btn-pdf:hover{filter:brightness(1.12);}
-
-  .table-container{overflow-x:auto;background:#fff;border-radius:13px;margin-top:18px;margin-bottom:28px;}
-  table{width:100%;border-collapse:collapse;color:#2b2f38;font-size:11px;min-width:1100px;}
-  th{background:#0a0e16 !important;color:#fff !important;padding:11px;text-align:left;text-transform:uppercase;font-weight:600;border:1px solid #2a2f3a;font-size:10px;letter-spacing:.03em;}
-  td{padding:9px 11px;border:1px solid #e6e8eb;}
-  tr:nth-child(even){background:#f7f8fa;}
-  tr:hover{background:#fff7e0;}
-  .btn-borrar-fila{background:var(--error);color:#fff;border:none;border-radius:6px;padding:5px 9px;cursor:pointer;font-size:11px;}
-
-  .hidden{display:none !important;}
-
-  .estado-vacio{text-align:center;padding:40px 20px;color:var(--texto-tenue);}
-  .estado-vacio i{font-size:34px;margin-bottom:12px;display:block;color:rgba(255,195,0,.4);}
-
-  .toast{
-    position:fixed;top:18px;left:50%;transform:translateX(-50%) translateY(-20px);
-    background:var(--azul-900);border:1px solid var(--ok);color:#fff;padding:13px 20px;border-radius:12px;
-    font-size:13px;font-weight:600;z-index:30000;display:flex;align-items:center;gap:10px;opacity:0;
-    transition:.35s cubic-bezier(.16,1,.3,1);box-shadow:0 10px 30px rgba(0,0,0,.4);pointer-events:none;
-  }
-  .toast.mostrar{opacity:1;transform:translateX(-50%) translateY(0);}
-  .toast.error{border-color:var(--error);}
-  .toast i{font-size:15px;color:var(--ok);}
-  .toast.error i{color:var(--error);}
-
-  /* ---------- AI / ASSISTANT BAR ---------- */
-  .google-ai-assistant{
-    position:fixed;bottom:0;left:0;right:0;background:rgba(0,10,22,.92);border-top:1px solid rgba(255,195,0,.3);
-    backdrop-filter:blur(18px);padding:12px 18px;z-index:10000;box-shadow:0 -8px 30px rgba(0,0,0,.5);
-  }
-  .ai-bar-layout{display:flex;align-items:center;gap:11px;max-width:1100px;margin:auto;}
-  .ai-logo-container{
-    width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,var(--dorado),var(--telcel));
-    display:flex;align-items:center;justify-content:center;flex-shrink:0;
-  }
-  .ai-logo-container i{color:var(--azul-950);font-size:15px;}
-  .ai-input-wrapper{flex-grow:1;position:relative;display:flex;align-items:center;}
-  .ai-input-wrapper input{width:100%;padding:12px 50px 12px 15px;margin:0;background:rgba(255,255,255,.07);border:1px solid var(--vidrio-borde);border-radius:14px;color:#fff;font-size:13.5px;outline:none;}
-  .ai-send-btn{position:absolute;right:6px;background:var(--dorado);color:var(--azul-950);border:none;width:34px;height:34px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;}
-  .ai-response-dropdown{
-    position:absolute;bottom:74px;left:18px;right:18px;max-width:1064px;margin:auto;background:var(--azul-900);
-    border:1px solid var(--dorado);border-radius:14px;max-height:340px;overflow-y:auto;padding:16px;
-    box-shadow:0 -10px 35px rgba(0,0,0,.6);display:none;
-  }
-  .ai-response-dropdown h4{margin:0 0 10px;font-size:12.5px;color:var(--dorado);display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--vidrio-borde);padding-bottom:8px;font-family:var(--fuente-display);}
-  .ai-response-text{font-size:13px;line-height:1.6;color:#dde2ec;white-space:pre-line;}
-  .close-ai-dropdown{float:right;cursor:pointer;color:var(--error);font-size:15px;background:none;border:none;}
-  .ai-sugerencias{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap;}
-  .ai-chip{background:rgba(255,255,255,.07);border:1px solid var(--vidrio-borde);color:#cfd6e4;font-size:11px;padding:6px 11px;border-radius:20px;cursor:pointer;font-family:inherit;}
-  .ai-chip:hover{background:rgba(255,195,0,.15);border-color:var(--dorado);color:var(--dorado);}
+  .btn-save:disabled{opacity:.55;cursor:wait;transform:none;}
 
   .spinner{
-    display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);
+    display:inline-block;width:16px;height:16px;border:2px solid rgba(0,0,0,.25);
     border-top-color:#001226;border-radius:50%;animation:girar .7s linear infinite;
   }
   @keyframes girar{to{transform:rotate(360deg);}}
 
-  ::-webkit-scrollbar{width:8px;height:8px;}
-  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:8px;}
-  ::-webkit-scrollbar-track{background:transparent;}
+  .login-footer-link{
+    font-size:12px;color:var(--telcel);background:none;border:none;cursor:pointer;margin-top:16px;
+    font-family:inherit;text-decoration:underline;transition:color .2s;
+  }
+  .login-footer-link:hover{color:var(--dorado-soft);}
 </style>
 </head>
 <body>
 
 <div class="login-overlay" id="seccionLogin">
+  <div class="malla-ticket"></div>
+  <div class="orbe orbe-1"></div>
+  <div class="orbe orbe-2"></div>
+
   <div class="login-box">
     <div class="login-mark">CO</div>
     <h2>Comisiones Omar</h2>
     <p>Inicia sesión para acceder a tus ventas, sincronizadas en la nube</p>
 
-    <div class="login-tabs">
-      <button id="tabOpLogin" class="login-tab-btn active" onclick="alternarFormularioAcceso('LOGIN')" type="button">Entrar</button>
-      <button id="tabOpRegistro" class="login-tab-btn" onclick="alternarFormularioAcceso('REGISTRO')" type="button">Crear cuenta</button>
+    <div class="login-tabs" id="tabsAcceso">
+      <button id="tabOpLogin" class="login-tab-btn active" data-tab="LOGIN" onclick="alternarFormularioAcceso('LOGIN')" type="button">Entrar</button>
+      <button id="tabOpRegistro" class="login-tab-btn" data-tab="REGISTRO" onclick="alternarFormularioAcceso('REGISTRO')" type="button">Crear cuenta</button>
+      <div class="tab-deslizante"></div>
     </div>
 
     <button class="btn-google" onclick="ejecutarLoginGoogle()" type="button" id="btnGoogleLogin">
@@ -289,9 +246,18 @@
 
     <form id="fAcceso" onsubmit="procesarAutenticacion(event)">
       <input type="hidden" id="tipoAccesoActual" value="LOGIN">
-      <input type="email" id="logEmail" placeholder="Correo electrónico" required autocomplete="email">
-      <input type="password" id="logPass" placeholder="Contraseña (mínimo 6 caracteres)" required autocomplete="current-password" minlength="6">
-      <button type="submit" id="btnAccesoAccion" class="btn-save" style="padding:13px;font-size:14px;">
+
+      <div class="grupo-campo">
+        <input type="email" id="logEmail" placeholder="Correo electrónico" required autocomplete="email">
+        <i class="fa-solid fa-envelope"></i>
+      </div>
+
+      <div class="grupo-campo">
+        <input type="password" id="logPass" placeholder="Contraseña (mínimo 6 caracteres)" required autocomplete="current-password" minlength="6">
+        <i class="fa-solid fa-lock"></i>
+      </div>
+
+      <button type="submit" id="btnAccesoAccion" class="btn-save">
         <span id="btnAccesoTexto">INGRESAR AL PANEL</span>
       </button>
     </form>
@@ -299,158 +265,48 @@
   </div>
 </div>
 
-<div class="app hidden" id="wrapperSistema">
+<script>
+  function alternarFormularioAcceso(tipo){
+    document.getElementById('tipoAccesoActual').value = tipo;
+    document.getElementById('tabOpLogin').classList.toggle('active', tipo === 'LOGIN');
+    document.getElementById('tabOpRegistro').classList.toggle('active', tipo === 'REGISTRO');
+    document.getElementById('tabsAcceso').classList.toggle('modo-registro', tipo === 'REGISTRO');
+    document.getElementById('btnAccesoTexto').textContent = tipo === 'LOGIN' ? 'INGRESAR AL PANEL' : 'CREAR CUENTA';
+    document.getElementById('btnOlvidoPass').classList.toggle('hidden', tipo !== 'LOGIN');
+    ocultarError();
+  }
 
-  <div class="top-bar">
-    <div class="gps-card">
-      <i class="fa-solid fa-location-dot"></i>
-      <div><b>UBICACIÓN ACTUAL</b><br><span id="txtGps">Localizando...</span></div>
-    </div>
-    <div class="perfil-y-reloj">
-      <span class="reloj-digital" id="txtReloj">00:00:00</span>
-      <div class="avatar-usuario" id="avatarUsuario">?</div>
-      <button class="btn-logout" onclick="cerrarSesionSistema()" type="button"><i class="fa-solid fa-power-off"></i></button>
-    </div>
-  </div>
+  function ocultarError(){
+    document.getElementById('errorLogin').classList.remove('visible');
+  }
 
-  <div class="main-nav">
-    <button id="navVentas" class="nav-tab-btn active" onclick="cambiarSeccionPrincipal('VENTAS')" type="button"><i class="fa-solid fa-cash-register"></i> Panel Ventas</button>
-    <button id="navHistorial" class="nav-tab-btn" onclick="cambiarSeccionPrincipal('HISTORIAL')" type="button"><i class="fa-solid fa-table-list"></i> Historial</button>
-  </div>
+  function mostrarError(msg){
+    document.getElementById('errorLoginTexto').textContent = msg;
+    document.getElementById('errorLogin').classList.add('visible');
+  }
 
-  <!-- ===================== SECCIÓN VENTAS ===================== -->
-  <div id="seccionVentas">
+  function procesarAutenticacion(e){
+    e.preventDefault();
+    const boton = document.getElementById('btnAccesoAccion');
+    const original = document.getElementById('btnAccesoTexto').innerHTML;
+    boton.disabled = true;
+    document.getElementById('btnAccesoTexto').innerHTML = '<span class="spinner"></span> Procesando...';
+    // Aquí se conectaría con Firebase Auth real
+    setTimeout(()=>{
+      boton.disabled = false;
+      document.getElementById('btnAccesoTexto').innerHTML = original;
+      mostrarError('Demo: conecta esto a tu lógica de Firebase Auth.');
+    }, 1200);
+  }
 
-    <div class="panel-avance">
-      <h4><i class="fa-solid fa-chart-line"></i> Avance de ventas de hoy</h4>
-      <div class="contenedor-graficas">
-        <div class="barra-progreso-item" style="border-left-color:#00b4d8;">
-          <div class="info-progreso"><span>TELCEL</span><span id="lblTelcel">0</span></div>
-          <div class="w-barra"><div id="barTelcel" class="w-relleno" style="background:#00b4d8;"></div></div>
-        </div>
-        <div class="barra-progreso-item" style="border-left-color:#ff7a1a;">
-          <div class="info-progreso"><span>AT&amp;T</span><span id="lblAtt">0</span></div>
-          <div class="w-barra"><div id="barAtt" class="w-relleno" style="background:#ff7a1a;"></div></div>
-        </div>
-        <div class="barra-progreso-item" style="border-left-color:#9d4edd;">
-          <div class="info-progreso"><span>BAIT</span><span id="lblBait">0</span></div>
-          <div class="w-barra"><div id="barBait" class="w-relleno" style="background:#9d4edd;"></div></div>
-        </div>
-      </div>
-    </div>
+  function ejecutarLoginGoogle(){
+    mostrarError('Demo: aquí se dispara el popup de Google.');
+  }
 
-    <div class="menu-operadores">
-      <button class="tab-btn tab-telcel active" onclick="cambiarOperador('TELCEL')" type="button"><i class="fa-solid fa-phone"></i> TELCEL</button>
-      <button class="tab-btn tab-att" onclick="cambiarOperador('AT&T')" type="button"><i class="fa-solid fa-signal"></i> AT&amp;T</button>
-      <button class="tab-btn tab-bait" onclick="cambiarOperador('BAIT')" type="button"><i class="fa-solid fa-bolt"></i> BAIT</button>
-    </div>
+  function recuperarPassword(){
+    mostrarError('Demo: aquí se envía el correo de recuperación.');
+  }
+</script>
 
-    <div id="wrapperSubModalidad" class="sub-menu-modalidad">
-      <button id="subTabLinea" class="sub-tab-btn active" onclick="cambiarModalidad('LINEA')" type="button"><i class="fa-solid fa-sim-card"></i> LÍNEA CON EQUIPO</button>
-      <button id="subTabSoloTelo" class="sub-tab-btn" onclick="cambiarModalidad('SOLO_TELO')" type="button"><i class="fa-solid fa-mobile-screen"></i> SOLO TELÉFONO</button>
-    </div>
-
-    <form id="fReg" onsubmit="guardarVentaLocal(event)">
-      <input type="hidden" id="iOperador" value="TELCEL">
-      <input type="hidden" id="iModalidadVenta" value="LINEA">
-
-      <div class="card">
-        <h3><i class="fa-solid fa-link"></i> Vinculación</h3>
-        <div id="wrapperVinculo">
-          <label>Vinculación obligatoria</label>
-          <a href="https://registro.telcel.com/vinculatulinea/#/" target="_blank" rel="noopener" class="btn-vinculo">
-            <i class="fa-solid fa-link"></i> Abrir registro / Vincula tu línea
-          </a>
-        </div>
-        <div id="wrapperPayJoy">
-          <label>Financiamiento de equipos</label>
-          <a href="https://app.payjoy.com/accounts/login?afterLogin=https://app.payjoy.com/merchant3?merchantId=199557" target="_blank" rel="noopener" class="btn-payjoy">
-            <i class="fa-solid fa-hand-holding-dollar"></i> Plataforma PayJoy
-          </a>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3><i class="fa-solid fa-clipboard-list"></i> Datos de la venta</h3>
-        <div id="wrapperTipo">
-          <label>Renuévate / Kit / Chip / Porta</label>
-          <select id="iTipo">
-            <option value="KIT">KIT</option>
-            <option value="CHIP">CHIP</option>
-            <option value="PORTA">PORTA</option>
-            <option value="RENUEVATE">RENUÉVATE</option>
-          </select>
-        </div>
-        <label>Fecha de activación / venta</label>
-        <input id="iFec" type="date" required style="color:var(--dorado);">
-        <div id="wrapperTel">
-          <label>Número celular (10 dígitos)</label>
-          <input id="iTel" type="tel" required maxlength="10" placeholder="Ej. 5512345678" inputmode="numeric">
-        </div>
-        <div id="wrapperIcc">
-          <label>ICCID (últimos dígitos)</label>
-          <input id="iIcc" required placeholder="Ingresa el ICCID">
-        </div>
-      </div>
-
-      <div class="card">
-        <h3><i class="fa-solid fa-mobile-screen-button"></i> Equipo</h3>
-        <div id="wrapperImei"><label>IMEI</label><input id="iIme" placeholder="IMEI del equipo"></div>
-        <label>Marca</label><input id="iMarca" required placeholder="Ej. Samsung">
-        <label>Modelo</label><input id="iMod" required placeholder="Ej. Galaxy A54">
-        <label>UPC / código de barras (opcional)</label><input id="iUpc" placeholder="Código de barras del equipo">
-      </div>
-
-      <div class="card">
-        <h3><i class="fa-solid fa-store"></i> Punto de venta</h3>
-        <label>Número de tienda / determinante</label><input id="iTiendaNum" required placeholder="Número de tienda">
-        <label>Cadena</label><input id="iCadena" required placeholder="Ej. Coppel / Elektra">
-        <label>Nombre de tienda (sin cadena)</label><input id="iTiendaNombre" required placeholder="Ej. Plaza Aragón">
-        <label>Nombre completo del promotor</label><input id="iProm" required placeholder="Tu nombre">
-      </div>
-
-      <button type="submit" id="btnGuardar" class="btn-save">
-        <span id="btnGuardarTexto"><i class="fa-solid fa-cloud-arrow-up"></i> GUARDAR VENTA EN LA NUBE</span>
-      </button>
-    </form>
-
-    <div class="descargas-container">
-      <button class="btn-excel" onclick="exportarExcelGeneral()" type="button"><i class="fa-solid fa-file-excel"></i> Reporte general (todos)</button>
-      <button class="btn-excel-telcel" onclick="exportarExcelTelcel()" type="button"><i class="fa-solid fa-file-excel"></i> Excel solo Telcel</button>
-      <button class="btn-pdf" onclick="exportarPDF()" type="button"><i class="fa-solid fa-file-pdf"></i> Exportar PDF</button>
-    </div>
-  </div>
-
-  <!-- ===================== SECCIÓN HISTORIAL ===================== -->
-  <div id="seccionHistorial" class="hidden">
-    <div class="card">
-      <h3><i class="fa-solid fa-table-list"></i> Historial de ventas</h3>
-      <div id="contenedorTablaHistorial">
-        <div class="estado-vacio"><i class="fa-solid fa-inbox"></i>Cargando ventas...</div>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<div class="toast" id="toast"><i class="fa-solid fa-circle-check"></i><span id="toastTexto"></span></div>
-
-<div class="google-ai-assistant hidden" id="barraAsistente">
-  <div class="ai-response-dropdown" id="aiDropdown">
-    <button class="close-ai-dropdown" onclick="cerrarRespuestaAsistente()" type="button"><i class="fa-solid fa-xmark"></i></button>
-    <h4><i class="fa-solid fa-wand-magic-sparkles"></i> Asistente de ventas</h4>
-    <div class="ai-response-text" id="aiTextoRespuesta"></div>
-    <div class="ai-sugerencias" id="aiSugerencias"></div>
-  </div>
-  <div class="ai-bar-layout">
-    <div class="ai-logo-container"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
-    <div class="ai-input-wrapper">
-      <input type="text" id="inputAsistente" placeholder="Pregunta sobre tus ventas: ej. '¿cuántas Telcel hoy?'" onkeydown="if(event.key==='Enter'){preguntarAsistente();}">
-      <button class="ai-send-btn" onclick="preguntarAsistente()" type="button"><i class="fa-solid fa-arrow-up"></i></button>
-    </div>
-  </div>
-</div>
-
-<script src="app.js"></script>
 </body>
 </html>
