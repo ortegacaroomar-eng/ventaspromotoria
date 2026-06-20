@@ -8,6 +8,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
+<!-- Firebase SDK (compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
 <style>
   :root{
     --azul-950:#001226;
@@ -216,6 +221,8 @@
     font-family:inherit;text-decoration:underline;transition:color .2s;
   }
   .login-footer-link:hover{color:var(--dorado-soft);}
+
+  .hidden{display:none !important;}
 </style>
 </head>
 <body>
@@ -262,10 +269,43 @@
       </button>
     </form>
     <button class="login-footer-link hidden" id="btnOlvidoPass" onclick="recuperarPassword()" type="button">¿Olvidaste tu contraseña?</button>
+
+    <div class="login-footer-link" style="margin-top:18px;opacity:.5;font-size:10.5px;text-decoration:none;cursor:default;">
+    Conectado a Firebase · proyecto ventastelcel4029
+  </div>
+</div>
+
+<div class="hidden" id="wrapperSistema" style="position:fixed;inset:0;background:var(--azul-950);display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--fuente-display);text-align:center;padding:20px;">
+  <div>
+    <i class="fa-solid fa-circle-check" style="font-size:40px;color:var(--ok);margin-bottom:14px;display:block;"></i>
+    <h2 style="margin:0 0 8px;">Sesión iniciada</h2>
+    <p style="font-family:var(--fuente-cuerpo);color:var(--texto-tenue);margin:0 0 22px;font-size:13px;" id="txtUsuarioActivo"></p>
+    <button class="btn-logout" onclick="cerrarSesionSistema()" type="button" style="font-family:var(--fuente-cuerpo);">
+      <i class="fa-solid fa-power-off"></i> Cerrar sesión
+    </button>
   </div>
 </div>
 
 <script>
+  // ---------- CONFIGURACIÓN DE FIREBASE ----------
+  const firebaseConfig = {
+    apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
+    authDomain: "ventastelcel4029.firebaseapp.com",
+    databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com",
+    projectId: "ventastelcel4029",
+    storageBucket: "ventastelcel4029.firebasestorage.app",
+    messagingSenderId: "480758010888",
+    appId: "1:480758010888:web:e948c54f0217536aa9adbd"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  // Mantiene la sesión iniciada entre recargas/cierres del navegador
+  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+  // ---------- UI: cambio de pestaña Entrar / Crear cuenta ----------
   function alternarFormularioAcceso(tipo){
     document.getElementById('tipoAccesoActual').value = tipo;
     document.getElementById('tabOpLogin').classList.toggle('active', tipo === 'LOGIN');
@@ -285,26 +325,141 @@
     document.getElementById('errorLogin').classList.add('visible');
   }
 
+  // Traduce los códigos de error de Firebase a mensajes claros en español
+  function traducirErrorFirebase(codigo){
+    const mapa = {
+      'auth/invalid-email': 'El correo no tiene un formato válido.',
+      'auth/user-disabled': 'Esta cuenta fue deshabilitada.',
+      'auth/user-not-found': 'No existe una cuenta con ese correo.',
+      'auth/wrong-password': 'Contraseña incorrecta.',
+      'auth/invalid-credential': 'Correo o contraseña incorrectos.',
+      'auth/email-already-in-use': 'Ya existe una cuenta con ese correo.',
+      'auth/weak-password': 'La contraseña debe tener al menos 6 caracteres.',
+      'auth/network-request-failed': 'Sin conexión a internet. Intenta de nuevo.',
+      'auth/too-many-requests': 'Demasiados intentos. Espera un momento e intenta otra vez.',
+      'auth/popup-closed-by-user': 'Cerraste la ventana de Google antes de terminar.'
+    };
+    return mapa[codigo] || 'Ocurrió un error. Intenta de nuevo.';
+  }
+
+  // ---------- LOGIN / REGISTRO con correo y contraseña ----------
   function procesarAutenticacion(e){
     e.preventDefault();
+    ocultarError();
+
+    const tipo = document.getElementById('tipoAccesoActual').value;
+    const correo = document.getElementById('logEmail').value.trim();
+    const clave = document.getElementById('logPass').value;
     const boton = document.getElementById('btnAccesoAccion');
-    const original = document.getElementById('btnAccesoTexto').innerHTML;
+    const textoBoton = document.getElementById('btnAccesoTexto');
+    const original = textoBoton.innerHTML;
+
     boton.disabled = true;
-    document.getElementById('btnAccesoTexto').innerHTML = '<span class="spinner"></span> Procesando...';
-    // Aquí se conectaría con Firebase Auth real
-    setTimeout(()=>{
+    textoBoton.innerHTML = '<span class="spinner"></span> Procesando...';
+
+    const restaurarBoton = () => {
       boton.disabled = false;
-      document.getElementById('btnAccesoTexto').innerHTML = original;
-      mostrarError('Demo: conecta esto a tu lógica de Firebase Auth.');
-    }, 1200);
+      textoBoton.innerHTML = original;
+    };
+
+    if(tipo === 'LOGIN'){
+      auth.signInWithEmailAndPassword(correo, clave)
+        .then((credencial) => {
+          // Login exitoso: Firebase ya guardó la sesión localmente (persistence LOCAL)
+          mostrarPanelPrincipal(credencial.user);
+        })
+        .catch((err) => {
+          mostrarError(traducirErrorFirebase(err.code));
+        })
+        .finally(restaurarBoton);
+    } else {
+      auth.createUserWithEmailAndPassword(correo, clave)
+        .then((credencial) => {
+          // Crea el documento de perfil del vendedor en Firestore
+          return db.collection('usuarios').doc(credencial.user.uid).set({
+            correo: credencial.user.email,
+            creadoEn: firebase.firestore.FieldValue.serverTimestamp()
+          }).then(() => credencial.user);
+        })
+        .then((user) => {
+          mostrarPanelPrincipal(user);
+        })
+        .catch((err) => {
+          mostrarError(traducirErrorFirebase(err.code));
+        })
+        .finally(restaurarBoton);
+    }
   }
 
+  // ---------- LOGIN con Google ----------
   function ejecutarLoginGoogle(){
-    mostrarError('Demo: aquí se dispara el popup de Google.');
+    ocultarError();
+    const proveedor = new firebase.auth.GoogleAuthProvider();
+    const btn = document.getElementById('btnGoogleLogin');
+    btn.disabled = true;
+
+    auth.signInWithPopup(proveedor)
+      .then((resultado) => {
+        const user = resultado.user;
+        // Crea el perfil en Firestore solo si es la primera vez que entra
+        return db.collection('usuarios').doc(user.uid).set({
+          correo: user.email,
+          nombre: user.displayName || '',
+          foto: user.photoURL || '',
+          creadoEn: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true }).then(() => user);
+      })
+      .then((user) => {
+        mostrarPanelPrincipal(user);
+      })
+      .catch((err) => {
+        if(err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request'){
+          mostrarError(traducirErrorFirebase(err.code));
+        }
+      })
+      .finally(() => { btn.disabled = false; });
   }
 
+  // ---------- Recuperar contraseña ----------
   function recuperarPassword(){
-    mostrarError('Demo: aquí se envía el correo de recuperación.');
+    ocultarError();
+    const correo = document.getElementById('logEmail').value.trim();
+    if(!correo){
+      mostrarError('Escribe tu correo arriba primero, y luego toca "¿Olvidaste tu contraseña?".');
+      return;
+    }
+    auth.sendPasswordResetEmail(correo)
+      .then(() => {
+        mostrarError('Listo: te enviamos un correo para restablecer tu contraseña.');
+        document.getElementById('errorLogin').style.borderColor = 'var(--ok)';
+        document.getElementById('errorLogin').style.color = '#bdf5e6';
+      })
+      .catch((err) => {
+        mostrarError(traducirErrorFirebase(err.code));
+      });
+  }
+
+  // ---------- Mantener la sesión activa al recargar la página ----------
+  // Si el usuario ya inició sesión antes, Firebase lo detecta solo, sin pedir login otra vez.
+  auth.onAuthStateChanged((user) => {
+    if(user){
+      mostrarPanelPrincipal(user);
+    }
+  });
+
+  function mostrarPanelPrincipal(user){
+    // Aquí se oculta el login y se muestra el panel real de la app (#wrapperSistema en tu archivo completo)
+    document.getElementById('seccionLogin').classList.add('hidden');
+    document.getElementById('wrapperSistema').classList.remove('hidden');
+    document.getElementById('txtUsuarioActivo').textContent = user.email;
+    console.log('Sesión activa:', user.email);
+  }
+
+  function cerrarSesionSistema(){
+    auth.signOut().then(() => {
+      document.getElementById('wrapperSistema').classList.add('hidden');
+      document.getElementById('seccionLogin').classList.remove('hidden');
+    });
   }
 </script>
 
