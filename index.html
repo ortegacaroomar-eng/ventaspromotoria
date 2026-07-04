@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Comisiones Omar · Login modernizado</title>
+<title>Comisiones Omar · Login e Inventario</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -12,6 +12,9 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<!-- Librería para lectura de códigos de barra mediante cámara -->
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
 <style>
   :root{
@@ -45,10 +48,6 @@
     overflow-x:hidden;
   }
 
-  @media (prefers-reduced-motion: reduce){
-    *{animation-duration:.001s !important; transition-duration:.001s !important;}
-  }
-
   /* ---------- FONDO VIVO ---------- */
   .login-overlay{
     position:fixed;inset:0;
@@ -74,7 +73,7 @@
     position:absolute;border-radius:50%;filter:blur(60px);opacity:.35;pointer-events:none;
     animation:flotar 11s ease-in-out infinite;
   }
-  .orbe-1{width:260px;height:260px;background:var(--telcel);top:8%;left:8%;animation-delay:0s;}
+  .orbe-1{width:260px;height:260px;background:var(--telcel);top:8%;left:8%;}
   .orbe-2{width:220px;height:220px;background:var(--dorado);bottom:10%;right:10%;animation-delay:-4s;}
   @keyframes flotar{
     0%,100%{transform:translate(0,0) scale(1);}
@@ -83,158 +82,71 @@
 
   /* ---------- CAJA DE LOGIN ---------- */
   .login-box{
-    position:relative;
-    z-index:2;
-    width:100%;max-width:420px;
-    padding:38px 32px;
-    border-radius:26px;
+    position:relative; z-index:2; width:100%; max-width:420px; padding:38px 32px; border-radius:26px;
     background:linear-gradient(180deg, rgba(255,255,255,.085), rgba(255,255,255,.035));
-    border:1px solid var(--vidrio-borde);
-    backdrop-filter:blur(28px) saturate(160%);
-    -webkit-backdrop-filter:blur(28px) saturate(160%);
-    box-shadow:
-      0 30px 70px rgba(0,0,0,.55),
-      inset 0 1px 0 rgba(255,255,255,.18),
-      0 0 0 1px rgba(0,180,216,.06);
-    text-align:center;
-    animation:entradaCaja .6s cubic-bezier(.16,1,.3,1);
-    overflow:hidden;
+    border:1px solid var(--vidrio-borde); backdrop-filter:blur(28px) saturate(160%); -webkit-backdrop-filter:blur(28px) saturate(160%);
+    box-shadow: 0 30px 70px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.18); text-align:center;
   }
   .login-box::before{
-    content:"";
-    position:absolute;top:-2px;left:-2px;right:-2px;height:3px;
-    background:linear-gradient(90deg,var(--telcel),var(--dorado),var(--bait),var(--telcel));
-    background-size:200% 100%;
-    animation:correrBorde 6s linear infinite;
+    content:""; position:absolute; top:-2px; left:-2px; right:-2px; height:3px;
+    background:linear-gradient(90deg,var(--telcel),var(--dorado),var(--bait),var(--telcel)); background-size:200% 100%; animation:correrBorde 6s linear infinite;
   }
   @keyframes correrBorde{to{background-position:200% 0;}}
-  @keyframes entradaCaja{from{opacity:0;transform:translateY(18px) scale(.98);}to{opacity:1;transform:translateY(0) scale(1);}}
 
   .login-mark{
-    width:54px;height:54px;border-radius:15px;margin:0 auto 18px;
-    background:linear-gradient(135deg,var(--dorado),var(--telcel));
-    display:flex;align-items:center;justify-content:center;
-    font-family:var(--fuente-display);font-weight:700;color:var(--azul-950);font-size:21px;
-    box-shadow:0 8px 22px rgba(255,195,0,.3);
-    position:relative;
-  }
-  .login-mark::after{
-    content:"";position:absolute;inset:-6px;border-radius:19px;
-    border:1px solid rgba(255,195,0,.3);
-    animation:pulsoAnillo 2.6s ease-out infinite;
-  }
-  @keyframes pulsoAnillo{
-    0%{transform:scale(.92);opacity:.9;}
-    100%{transform:scale(1.18);opacity:0;}
+    width:54px; height:54px; border-radius:15px; margin:0 auto 18px; background:linear-gradient(135deg,var(--dorado),var(--telcel));
+    display:flex; align-items:center; justify-content:center; font-family:var(--fuente-display); font-weight:700; color:var(--azul-950); font-size:21px; position:relative;
   }
 
-  .login-box h2{margin:0 0 5px;font-family:var(--fuente-display);font-weight:700;font-size:22px;letter-spacing:.2px;}
-  .login-box p{font-size:12.5px;color:var(--texto-tenue);margin:0 0 28px;line-height:1.5;}
+  .login-box h2{margin:0 0 5px; font-family:var(--fuente-display); font-weight:700; font-size:22px;}
+  .login-box p{font-size:12.5px; color:var(--texto-tenue); margin:0 0 28px;}
 
-  .login-tabs{
-    display:flex;background:rgba(0,0,0,.32);padding:4px;border-radius:13px;margin-bottom:22px;
-    border:1px solid var(--vidrio-borde);position:relative;
-  }
-  .login-tab-btn{
-    flex:1;padding:11px;background:transparent;border:none;color:var(--texto-tenue);font-weight:600;
-    font-size:13px;cursor:pointer;border-radius:10px;transition:color .25s, transform .15s;font-family:inherit;
-    position:relative;z-index:1;
-  }
+  .login-tabs{ display:flex; background:rgba(0,0,0,.32); padding:4px; border-radius:13px; margin-bottom:22px; border:1px solid var(--vidrio-borde); position:relative; }
+  .login-tab-btn{ flex:1; padding:11px; background:transparent; border:none; color:var(--texto-tenue); font-weight:600; font-size:13px; cursor:pointer; border-radius:10px; position:relative; z-index:1; font-family:inherit; }
   .login-tab-btn.active{color:var(--azul-950);}
-  .login-tab-btn:active{transform:scale(.97);}
-  .tab-deslizante{
-    position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);
-    background:var(--dorado);border-radius:10px;
-    box-shadow:0 4px 14px rgba(255,195,0,.35);
-    transition:transform .3s cubic-bezier(.16,1,.3,1);
-  }
-  .login-tab-btn[data-tab="REGISTRO"].active ~ .tab-deslizante,
+  .tab-deslizante{ position:absolute; top:4px; bottom:4px; left:4px; width:calc(50% - 4px); background:var(--dorado); border-radius:10px; transition:transform .3s cubic-bezier(.16,1,.3,1); }
   .login-tabs.modo-registro .tab-deslizante{transform:translateX(100%);}
 
-  .btn-google{
-    background:#fff;color:#1f1f1f;width:100%;padding:14px;border:none;border-radius:13px;
-    font-weight:600;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;
-    gap:10px;box-shadow:0 8px 20px rgba(0,0,0,.28);transition:transform .2s, box-shadow .2s;margin-bottom:22px;
-    position:relative;overflow:hidden;
-  }
-  .btn-google:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(0,0,0,.34);}
-  .btn-google:active{transform:translateY(0) scale(.98);}
+  .btn-google{ background:#fff; color:#1f1f1f; width:100%; padding:14px; border:none; border-radius:13px; font-weight:600; font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:22px; }
+  .separator{ display:flex; align-items:center; text-align:center; color:#5b6577; font-size:10.5px; margin-bottom:22px; text-transform:uppercase; font-weight:600; }
+  .separator::before,.separator::after{content:""; flex:1; border-bottom:1px solid rgba(255,255,255,.12);}
+  .separator:not(:empty)::before{margin-right:.75em;} .separator:not(:empty)::after{margin-left:.75em;}
 
-  .separator{
-    display:flex;align-items:center;text-align:center;color:#5b6577;font-size:10.5px;margin-bottom:22px;
-    text-transform:uppercase;font-weight:600;letter-spacing:.06em;
-  }
-  .separator::before,.separator::after{content:"";flex:1;border-bottom:1px solid rgba(255,255,255,.12);}
-  .separator:not(:empty)::before{margin-right:.75em;}
-  .separator:not(:empty)::after{margin-left:.75em;}
-
-  .campo-error{
-    background:rgba(255,92,122,.12);border:1px solid rgba(255,92,122,.4);color:#ffb3c0;
-    font-size:12px;padding:11px 13px;border-radius:11px;margin-bottom:16px;text-align:left;
-    display:none;align-items:flex-start;gap:9px;animation:sacudir .35s;
-  }
+  .campo-error{ background:rgba(255,92,122,.12); border:1px solid rgba(255,92,122,.4); color:#ffb3c0; font-size:12px; padding:11px 13px; border-radius:11px; margin-bottom:16px; text-align:left; display:none; align-items:flex-start; gap:9px; }
   .campo-error.visible{display:flex;}
-  @keyframes sacudir{
-    0%,100%{transform:translateX(0);}
-    25%{transform:translateX(-5px);}
-    75%{transform:translateX(5px);}
-  }
 
-  .grupo-campo{position:relative;margin-bottom:16px;text-align:left;}
-  .grupo-campo i{
-    position:absolute;left:14px;top:50%;transform:translateY(-50%);
-    color:var(--texto-tenue);font-size:14px;transition:color .2s;
-  }
-  .grupo-campo input{
-    width:100%;padding:14px 14px 14px 40px;border-radius:12px;border:1px solid transparent;
-    background:rgba(255,255,255,.07);color:#fff;box-sizing:border-box;outline:none;
-    font-family:inherit;font-size:14px;transition:background .2s, border-color .2s;
-  }
-  .grupo-campo input::placeholder{color:rgba(255,255,255,.35);}
-  .grupo-campo input:focus{background:rgba(255,255,255,.11);border-color:var(--dorado);}
-  .grupo-campo input:focus ~ i{color:var(--dorado);}
+  .grupo-campo{position:relative; margin-bottom:16px; text-align:left;}
+  .grupo-campo i{ position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--texto-tenue); font-size:14px; }
+  .grupo-campo input{ width:100%; padding:14px 14px 14px 40px; border-radius:12px; border:1px solid transparent; background:rgba(255,255,255,.07); color:#fff; font-size:14px; outline:none; font-family:inherit; }
+  .grupo-campo input:focus{border-color:var(--dorado);}
 
-  .btn-save{
-    background:var(--dorado);color:var(--azul-950);width:100%;padding:16px;border:none;border-radius:13px;
-    font-weight:700;cursor:pointer;font-size:15.5px;transition:background .2s, transform .15s, box-shadow .2s;
-    font-family:var(--fuente-display);letter-spacing:.02em;box-shadow:0 10px 24px rgba(255,195,0,.22);
-  }
-  .btn-save:hover{background:var(--dorado-soft);box-shadow:0 14px 30px rgba(255,195,0,.3);transform:translateY(-1px);}
-  .btn-save:active{transform:scale(.98);}
-  .btn-save:disabled{opacity:.55;cursor:wait;transform:none;}
+  /* Adaptación de campo para incluir el botón de escáner a la derecha */
+  .grupo-campo.con-accion input { padding-right: 50px; }
+  .btn-accion-campo { position:absolute; right:10px; top:50%; transform:translateY(-50%); background:transparent; border:none; color:var(--telcel); font-size:18px; cursor:pointer; padding:6px; transition:color .2s; }
+  .btn-accion-campo:hover { color:var(--dorado); }
 
-  .spinner{
-    display:inline-block;width:16px;height:16px;border:2px solid rgba(0,0,0,.25);
-    border-top-color:#001226;border-radius:50%;animation:girar .7s linear infinite;
-  }
+  .btn-save{ background:var(--dorado); color:var(--azul-950); width:100%; padding:16px; border:none; border-radius:13px; font-weight:700; cursor:pointer; font-size:15.5px; font-family:var(--fuente-display); }
+  .login-footer-link{ display:inline-block; font-size:12px; color:var(--telcel); background:none; border:none; cursor:pointer; margin-top:16px; font-family:inherit; text-decoration:underline; }
+
+  /* ---------- DISEÑO DEL PANEL DEL SISTEMA / FORMULARIO VENTAS ---------- */
+  .panel-container { width: 100%; max-width: 600px; padding: 24px; background: rgba(255,255,255,0.03); border: 1px solid var(--vidrio-borde); border-radius: 24px; backdrop-filter: blur(20px); }
+  .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid var(--vidrio-borde); padding-bottom: 14px; }
+  .btn-logout { background: rgba(255, 92, 122, 0.15); color: #ff5c7a; border: 1px solid rgba(255, 92, 122, 0.3); padding: 8px 16px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 13px; }
+
+  /* ---------- MODAL DEL ESCÁNER DE BARRAS ---------- */
+  .modal-scanner { position: fixed; inset: 0; background: rgba(0,18,38,0.92); z-index: 999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .modal-scanner-content { background: var(--azul-900); border: 1px solid var(--vidrio-borde); width: 100%; max-width: 450px; border-radius: 20px; padding: 20px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.6); }
+  .scanner-preview { width: 100%; background: #000; border-radius: 12px; overflow: hidden; margin-top: 15px; border: 2px solid var(--telcel); position: relative; }
+  .btn-cerrar-modal { background: var(--error); color: #fff; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; margin-top: 15px; width: 100%; }
+
+  .spinner{ display:inline-block; width:16px; height:16px; border:2px solid rgba(0,0,0,.25); border-top-color:#001226; border-radius:50%; animation:girar .7s linear infinite; }
   @keyframes girar{to{transform:rotate(360deg);}}
-
-  .login-footer-link{
-    display:inline-block;font-size:12px;color:var(--telcel);background:none;border:none;cursor:pointer;margin-top:16px;
-    font-family:inherit;text-decoration:underline;transition:color .2s;
-  }
-  .login-footer-link:hover{color:var(--dorado-soft);}
-
-  .btn-logout {
-    background: rgba(255, 92, 122, 0.15);
-    color: #ff5c7a;
-    border: 1px solid rgba(255, 92, 122, 0.3);
-    padding: 12px 24px;
-    border-radius: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .btn-logout:hover {
-    background: rgba(255, 92, 122, 0.25);
-    transform: translateY(-1px);
-  }
-
   .hidden{display:none !important;}
 </style>
 </head>
 <body>
 
+<!-- SECCIÓN ACCESO (LOGIN) -->
 <div class="login-overlay" id="seccionLogin">
   <div class="malla-ticket"></div>
   <div class="orbe orbe-1"></div>
@@ -261,39 +173,69 @@
 
     <form id="fAcceso" onsubmit="procesarAutenticacion(event)">
       <input type="hidden" id="tipoAccesoActual" value="LOGIN">
-
       <div class="grupo-campo">
         <input type="email" id="logEmail" placeholder="Correo electrónico" required autocomplete="email">
         <i class="fa-solid fa-envelope"></i>
       </div>
-
       <div class="grupo-campo">
-        <input type="password" id="logPass" placeholder="Contraseña (mínimo 6 caracteres)" required autocomplete="current-password" minlength="6">
+        <input type="password" id="logPass" placeholder="Contraseña" required autocomplete="current-password" minlength="6">
         <i class="fa-solid fa-lock"></i>
       </div>
-
       <button type="submit" id="btnAccesoAccion" class="btn-save">
         <span id="btnAccesoTexto">INGRESAR AL PANEL</span>
       </button>
     </form>
     
-    <!-- Se eliminó la clase hidden para que sea accesible de manera intuitiva -->
     <button class="login-footer-link" id="btnOlvidoPass" onclick="recuperarPassword()" type="button">¿Olvidaste tu contraseña?</button>
-
-    <div class="login-footer-link" style="margin-top:18px;opacity:.5;font-size:10.5px;text-decoration:none;cursor:default;">
-      Conectado a Firebase · proyecto ventastelcel4029
-    </div>
   </div>
 </div>
 
-<div class="hidden" id="wrapperSistema" style="position:fixed;inset:0;background:var(--azul-950);display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--fuente-display);text-align:center;padding:20px;">
-  <div>
-    <i class="fa-solid fa-circle-check" style="font-size:40px;color:var(--ok);margin-bottom:14px;display:block;"></i>
-    <h2 style="margin:0 0 8px;">Sesión iniciada</h2>
-    <p style="font-family:var(--fuente-cuerpo);color:var(--texto-tenue);margin:0 0 22px;font-size:13px;" id="txtUsuarioActivo"></p>
-    <button class="btn-logout" onclick="cerrarSesionSistema()" type="button" style="font-family:var(--fuente-cuerpo);">
-      <i class="fa-solid fa-power-off"></i> Cerrar sesión
+<!-- SECCIÓN PRINCIPAL DEL SISTEMA (PANEL DE VENTAS) -->
+<div class="hidden" id="wrapperSistema" style="position:fixed; inset:0; background:var(--azul-950); display:flex; align-items:center; justify-content:center; padding:20px; overflow-y:auto;">
+  <div class="panel-container">
+    <div class="panel-header">
+      <div>
+        <h3 style="margin:0; font-family:var(--fuente-display); font-size:18px;" id="txtUsuarioActivo"></h3>
+        <span style="font-size:11px; color:var(--texto-tenue);">Panel Sistema Ventas 4029</span>
+      </div>
+      <button class="btn-logout" onclick="cerrarSesionSistema()" type="button">
+        <i class="fa-solid fa-power-off"></i> Salir
+      </button>
+    </div>
+
+    <!-- Formulario demo para guardar el registro local/nube e ingresar código de barras -->
+    <h2 style="font-family:var(--fuente-display); font-size:20px; margin:0 0 16px 0; color:var(--dorado);">Registrar Venta / Artículo</h2>
+    
+    <div class="grupo-campo con-accion">
+      <input type="text" id="codigoArticulo" placeholder="Código de barras (IMEI / ICCID / SKU)">
+      <i class="fa-solid fa-barcode"></i>
+      <!-- Botón activador del lector de cámara -->
+      <button type="button" class="btn-accion-campo" onclick="abrirLectorBarras()" title="Escanear con cámara">
+        <i class="fa-solid fa-camera"></i>
+      </button>
+    </div>
+
+    <div class="grupo-campo">
+      <input type="text" id="nombreArticulo" placeholder="Nombre del producto o descripción">
+      <i class="fa-solid fa-box"></i>
+    </div>
+
+    <button type="button" class="btn-save" style="margin-top:10px;" onclick="guardarRegistroVenta()">
+      <i class="fa-solid fa-floppy-disk"></i> GUARDAR LOCALMENTE (EXCEL FORMAT)
     </button>
+  </div>
+</div>
+
+<!-- MODAL CÁMARA (LECTOR DE BARRAS INTERACTIVO) -->
+<div id="modalScanner" class="modal-scanner hidden">
+  <div class="modal-scanner-content">
+    <h3 style="margin:0 0 5px 0; font-family:var(--fuente-display);">Escanear Código de Barras</h3>
+    <p style="font-size:12px; color:var(--texto-tenue); margin:0 0 15px 0;">Apunta con la cámara trasera hacia el código de barras del producto</p>
+    
+    <!-- Contenedor donde se dibuja el visor de la cámara -->
+    <div id="lectorCamara" class="scanner-preview"></div>
+    
+    <button type="button" class="btn-cerrar-modal" onclick="cerrarLectorBarras()">Cancelar Escaneo</button>
   </div>
 </div>
 
@@ -312,10 +254,103 @@
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db = firebase.firestore();
+  let html5QrcodeScanner = null;
 
   auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
-  // ---------- UI: cambio de pestaña Entrar / Crear cuenta ----------
+  // ---------- CONTROL DEL ESCÁNER DE BARRAS (Html5Qrcode) ----------
+  function abrirLectorBarras() {
+    document.getElementById('modalScanner').classList.remove('hidden');
+    
+    // Instancia el lector apuntando al div contenedor
+    html5QrcodeScanner = new Html5Qrcode("lectorCamara");
+    
+    const configuracion = { 
+      fps: 15, 
+      qrbox: { width: 300, height: 150 }, // Caja extendida horizontal perfecta para códigos de barras largos
+      aspectRatio: 1.777778 // Forzar formato panorámico 16:9 común en smartphones
+    };
+
+    // Inicializa la cámara utilizando por defecto la cámara trasera ('environment')
+    html5QrcodeScanner.start(
+      { facingMode: "environment" }, 
+      configuracion,
+      onEscaneoExitoso,
+      onEscaneoFallo
+    ).catch(err => {
+      alert("Error al iniciar cámara: " + err);
+      cerrarLectorBarras();
+    });
+  }
+
+  function onEscaneoExitoso(textoCodigo, resultadoObjeto) {
+    // Al detectar un código válido, lo inyecta en el input y limpia la cámara
+    document.getElementById('codigoArticulo').value = textoCodigo;
+    
+    // Pequeño feedback sonoro nativo si el celular lo permite
+    if(window.navigator && window.navigator.vibrate) {
+       window.navigator.vibrate(100);
+    }
+    
+    cerrarLectorBarras();
+  }
+
+  function onEscaneoFallo(error) {
+    // Se ejecuta de manera continua buscando el código. No es necesario alertar errores aquí.
+    console.log("Buscando código...");
+  }
+
+  function cerrarLectorBarras() {
+    if (html5QrcodeScanner) {
+      html5QrcodeScanner.stop().then(() => {
+        html5QrcodeScanner = null;
+        document.getElementById('modalScanner').classList.add('hidden');
+      }).catch(err => {
+        console.error("Error apagando la cámara:", err);
+        document.getElementById('modalScanner').classList.add('hidden');
+      });
+    } else {
+      document.getElementById('modalScanner').classList.add('hidden');
+    }
+  }
+
+  // ---------- SISTEMA DE ALMACENAMIENTO DE VENTAS LOCALES ----------
+  function guardarRegistroVenta() {
+    const cod = document.getElementById('codigoArticulo').value.trim();
+    const nom = document.getElementById('nombreArticulo').value.trim();
+    
+    if(!cod){
+      alert("Por favor ingresa o escanea un código primero.");
+      return;
+    }
+
+    // Obtención de fecha con formato estricto DD/MM/YYYY solicitado
+    const hoy = new Date();
+    const dd = String(hoy.getDate()).padStart(2, '0');
+    const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+    const yyyy = hoy.getFullYear();
+    const fechaFormateada = `${dd}/${mm}/${yyyy}`;
+
+    const nuevaVenta = {
+      fecha: fechaFormateada,
+      codigo: cod,
+      descripcion: nom || "Producto General",
+      timestamp: new Date().getTime()
+    };
+
+    // Guardado en arreglo local respetando el historial del dispositivo
+    let historial = JSON.parse(localStorage.getItem('ventas_locales_excel')) || [];
+    historial.push(nuevaVenta);
+    localStorage.setItem('ventas_locales_excel', JSON.stringify(historial));
+
+    alert(`¡Guardado localmente!\nFecha: ${fechaFormateada}\nCódigo: ${cod}\nListo para exportación tipo Excel.`);
+    
+    // Limpieza de campos
+    document.getElementById('codigoArticulo').value = "";
+    document.getElementById('nombreArticulo').value = "";
+  }
+
+  // ---------- UI: LOGIN Y MANTENIMIENTO ----------
   function alternarFormularioAcceso(tipo){
     document.getElementById('tipoAccesoActual').value = tipo;
     document.getElementById('tabOpLogin').classList.toggle('active', tipo === 'LOGIN');
@@ -337,7 +372,6 @@
   function mostrarError(msg, esExito = false){
     const errBox = document.getElementById('errorLogin');
     document.getElementById('errorLoginTexto').textContent = msg;
-    
     if (esExito) {
       errBox.style.borderColor = 'var(--ok)';
       errBox.style.color = '#bdf5e6';
@@ -355,26 +389,12 @@
       'auth/invalid-credential': 'Correo o contraseña incorrectos.',
       'auth/email-already-in-use': 'Ya existe una cuenta con ese correo.',
       'auth/weak-password': 'La contraseña debe tener al menos 6 caracteres.',
-      'auth/network-request-failed': 'Sin conexión a internet. Intenta de nuevo.',
-      'auth/too-many-requests': 'Demasiados intentos. Espera un momento.',
-      'auth/popup-closed-by-user': 'Cerraste la ventana de Google antes de terminar.'
+      'auth/network-request-failed': 'Sin conexión a internet.',
+      'auth/too-many-requests': 'Demasiados intentos. Espera un momento.'
     };
     return mapa[codigo] || 'Ocurrió un error. Intenta de nuevo.';
   }
 
-  // ---------- PERSISTENCIA EN LOCALSTORAGE PARA REGISTRO ----------
-  function respaldarRegistroLocal(uid, datos) {
-    try {
-      localStorage.setItem(`registro_${uid}`, JSON.stringify({
-        ...datos,
-        fechaLocal: new Date().toISOString()
-      }));
-    } catch (e) {
-      console.warn("No se pudo escribir en localStorage:", e);
-    }
-  }
-
-  // ---------- LOGIN / REGISTRO con correo y contraseña ----------
   function procesarAutenticacion(e){
     e.preventDefault();
     ocultarError();
@@ -389,107 +409,53 @@
     boton.disabled = true;
     textoBoton.innerHTML = '<span class="spinner"></span> Procesando...';
 
-    const restaurarBoton = () => {
-      boton.disabled = false;
-      textoBoton.innerHTML = original;
-    };
-
     if(tipo === 'LOGIN'){
       auth.signInWithEmailAndPassword(correo, clave)
-        .then((credencial) => {
-          mostrarPanelPrincipal(credencial.user);
-        })
-        .catch((err) => {
-          mostrarError(traducirErrorFirebase(err.code));
-        })
-        .finally(restaurarBoton);
+        .then((credencial) => { mostrarPanelPrincipal(credencial.user); })
+        .catch((err) => { mostrarError(traducirErrorFirebase(err.code)); })
+        .finally(() => { boton.disabled = false; textoBoton.innerHTML = original; });
     } else {
       auth.createUserWithEmailAndPassword(correo, clave)
         .then((credencial) => {
-          const infoUsuario = {
-            correo: credencial.user.email,
-            creadoEn: new Date().getTime()
-          };
-          
-          // Almacenamiento Local de seguridad
-          respaldarRegistroLocal(credencial.user.uid, infoUsuario);
-
-          // Sincronización en Cloud Firestore
+          localStorage.setItem(`registro_${credencial.user.uid}`, JSON.stringify({correo: credencial.user.email, creadoEn: new Date().getTime()}));
           return db.collection('usuarios').doc(credencial.user.uid).set({
-            correo: infoUsuario.correo,
-            creadoEn: firebase.firestore.FieldValue.serverTimestamp()
+            correo: credencial.user.email, creadoEn: firebase.firestore.FieldValue.serverTimestamp()
           }).then(() => credencial.user);
         })
-        .then((user) => {
-          mostrarPanelPrincipal(user);
-        })
-        .catch((err) => {
-          mostrarError(traducirErrorFirebase(err.code));
-        })
-        .finally(restaurarBoton);
+        .then((user) => { mostrarPanelPrincipal(user); })
+        .catch((err) => { mostrarError(traducirErrorFirebase(err.code)); })
+        .finally(() => { boton.disabled = false; textoBoton.innerHTML = original; });
     }
   }
 
-  // ---------- LOGIN con Google ----------
   function ejecutarLoginGoogle(){
     ocultarError();
     const proveedor = new firebase.auth.GoogleAuthProvider();
-    const btn = document.getElementById('btnGoogleLogin');
-    btn.disabled = true;
-
     auth.signInWithPopup(proveedor)
       .then((resultado) => {
         const user = resultado.user;
-        const infoUsuario = {
-          correo: user.email,
-          nombre: user.displayName || '',
-          foto: user.photoURL || '',
-          creadoEn: new Date().getTime()
-        };
-
-        respaldarRegistroLocal(user.uid, infoUsuario);
-
+        localStorage.setItem(`registro_${user.uid}`, JSON.stringify({correo: user.email, creadoEn: new Date().getTime()}));
         return db.collection('usuarios').doc(user.uid).set({
-          correo: infoUsuario.correo,
-          nombre: infoUsuario.nombre,
-          foto: infoUsuario.foto,
-          creadoEn: firebase.firestore.FieldValue.serverTimestamp()
+          correo: user.email, nombre: user.displayName || '', creadoEn: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true }).then(() => user);
       })
-      .then((user) => {
-        mostrarPanelPrincipal(user);
-      })
-      .catch((err) => {
-        if(err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request'){
-          mostrarError(traducirErrorFirebase(err.code));
-        }
-      })
-      .finally(() => { btn.disabled = false; });
+      .then((user) => { mostrarPanelPrincipal(user); })
+      .catch((err) => { if(err.code !== 'auth/popup-closed-by-user') mostrarError(traducirErrorFirebase(err.code)); });
   }
 
-  // ---------- Recuperar contraseña ----------
   function recuperarPassword(){
     ocultarError();
     const correo = document.getElementById('logEmail').value.trim();
     if(!correo){
-      mostrarError('Escribe tu correo arriba primero, y luego toca "¿Olvidaste tu contraseña?".');
+      mostrarError('Escribe tu correo arriba primero para restablecer.');
       return;
     }
     auth.sendPasswordResetEmail(correo)
-      .then(() => {
-        mostrarError('Listo: te enviamos un correo para restablecer tu contraseña.', true);
-      })
-      .catch((err) => {
-        mostrarError(traducirErrorFirebase(err.code));
-      });
+      .then(() => { mostrarError('Te enviamos un correo para restablecer tu contraseña.', true); })
+      .catch((err) => { mostrarError(traducirErrorFirebase(err.code)); });
   }
 
-  // ---------- Estado de la Sesión ----------
-  auth.onAuthStateChanged((user) => {
-    if(user){
-      mostrarPanelPrincipal(user);
-    }
-  });
+  auth.onAuthStateChanged((user) => { if(user){ mostrarPanelPrincipal(user); } });
 
   function mostrarPanelPrincipal(user){
     document.getElementById('seccionLogin').classList.add('hidden');
