@@ -61,7 +61,6 @@
       linear-gradient(165deg,var(--azul-950) 0%, var(--azul-900) 45%, #00040c 100%);
   }
 
-  /* Líneas tipo "ticket de venta" flotando muy sutil, conecta con el rubro: comisiones/ventas */
   .malla-ticket{
     position:absolute;inset:0;pointer-events:none;
     background-image:
@@ -158,11 +157,6 @@
     gap:10px;box-shadow:0 8px 20px rgba(0,0,0,.28);transition:transform .2s, box-shadow .2s;margin-bottom:22px;
     position:relative;overflow:hidden;
   }
-  .btn-google::after{
-    content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;
-    background:linear-gradient(120deg, transparent, rgba(0,0,0,.06), transparent);
-    transform:skewX(-20deg);
-  }
   .btn-google:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(0,0,0,.34);}
   .btn-google:active{transform:translateY(0) scale(.98);}
 
@@ -199,7 +193,6 @@
   .grupo-campo input::placeholder{color:rgba(255,255,255,.35);}
   .grupo-campo input:focus{background:rgba(255,255,255,.11);border-color:var(--dorado);}
   .grupo-campo input:focus ~ i{color:var(--dorado);}
-  .grupo-campo input.campo-invalido{border-color:var(--error) !important;}
 
   .btn-save{
     background:var(--dorado);color:var(--azul-950);width:100%;padding:16px;border:none;border-radius:13px;
@@ -217,10 +210,25 @@
   @keyframes girar{to{transform:rotate(360deg);}}
 
   .login-footer-link{
-    font-size:12px;color:var(--telcel);background:none;border:none;cursor:pointer;margin-top:16px;
+    display:inline-block;font-size:12px;color:var(--telcel);background:none;border:none;cursor:pointer;margin-top:16px;
     font-family:inherit;text-decoration:underline;transition:color .2s;
   }
   .login-footer-link:hover{color:var(--dorado-soft);}
+
+  .btn-logout {
+    background: rgba(255, 92, 122, 0.15);
+    color: #ff5c7a;
+    border: 1px solid rgba(255, 92, 122, 0.3);
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-logout:hover {
+    background: rgba(255, 92, 122, 0.25);
+    transform: translateY(-1px);
+  }
 
   .hidden{display:none !important;}
 </style>
@@ -268,10 +276,13 @@
         <span id="btnAccesoTexto">INGRESAR AL PANEL</span>
       </button>
     </form>
-    <button class="login-footer-link hidden" id="btnOlvidoPass" onclick="recuperarPassword()" type="button">¿Olvidaste tu contraseña?</button>
+    
+    <!-- Se eliminó la clase hidden para que sea accesible de manera intuitiva -->
+    <button class="login-footer-link" id="btnOlvidoPass" onclick="recuperarPassword()" type="button">¿Olvidaste tu contraseña?</button>
 
     <div class="login-footer-link" style="margin-top:18px;opacity:.5;font-size:10.5px;text-decoration:none;cursor:default;">
-    Conectado a Firebase · proyecto ventastelcel4029
+      Conectado a Firebase · proyecto ventastelcel4029
+    </div>
   </div>
 </div>
 
@@ -302,7 +313,6 @@
   const auth = firebase.auth();
   const db = firebase.firestore();
 
-  // Mantiene la sesión iniciada entre recargas/cierres del navegador
   auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
   // ---------- UI: cambio de pestaña Entrar / Crear cuenta ----------
@@ -317,15 +327,25 @@
   }
 
   function ocultarError(){
-    document.getElementById('errorLogin').classList.remove('visible');
+    const errBox = document.getElementById('errorLogin');
+    errBox.classList.remove('visible');
+    errBox.style.borderColor = 'rgba(255,92,122,.4)';
+    errBox.style.color = '#ffb3c0';
+    errBox.style.background = 'rgba(255,92,122,.12)';
   }
 
-  function mostrarError(msg){
+  function mostrarError(msg, esExito = false){
+    const errBox = document.getElementById('errorLogin');
     document.getElementById('errorLoginTexto').textContent = msg;
-    document.getElementById('errorLogin').classList.add('visible');
+    
+    if (esExito) {
+      errBox.style.borderColor = 'var(--ok)';
+      errBox.style.color = '#bdf5e6';
+      errBox.style.background = 'rgba(45,212,167,.12)';
+    }
+    errBox.classList.add('visible');
   }
 
-  // Traduce los códigos de error de Firebase a mensajes claros en español
   function traducirErrorFirebase(codigo){
     const mapa = {
       'auth/invalid-email': 'El correo no tiene un formato válido.',
@@ -336,10 +356,22 @@
       'auth/email-already-in-use': 'Ya existe una cuenta con ese correo.',
       'auth/weak-password': 'La contraseña debe tener al menos 6 caracteres.',
       'auth/network-request-failed': 'Sin conexión a internet. Intenta de nuevo.',
-      'auth/too-many-requests': 'Demasiados intentos. Espera un momento e intenta otra vez.',
+      'auth/too-many-requests': 'Demasiados intentos. Espera un momento.',
       'auth/popup-closed-by-user': 'Cerraste la ventana de Google antes de terminar.'
     };
     return mapa[codigo] || 'Ocurrió un error. Intenta de nuevo.';
+  }
+
+  // ---------- PERSISTENCIA EN LOCALSTORAGE PARA REGISTRO ----------
+  function respaldarRegistroLocal(uid, datos) {
+    try {
+      localStorage.setItem(`registro_${uid}`, JSON.stringify({
+        ...datos,
+        fechaLocal: new Date().toISOString()
+      }));
+    } catch (e) {
+      console.warn("No se pudo escribir en localStorage:", e);
+    }
   }
 
   // ---------- LOGIN / REGISTRO con correo y contraseña ----------
@@ -365,7 +397,6 @@
     if(tipo === 'LOGIN'){
       auth.signInWithEmailAndPassword(correo, clave)
         .then((credencial) => {
-          // Login exitoso: Firebase ya guardó la sesión localmente (persistence LOCAL)
           mostrarPanelPrincipal(credencial.user);
         })
         .catch((err) => {
@@ -375,9 +406,17 @@
     } else {
       auth.createUserWithEmailAndPassword(correo, clave)
         .then((credencial) => {
-          // Crea el documento de perfil del vendedor en Firestore
-          return db.collection('usuarios').doc(credencial.user.uid).set({
+          const infoUsuario = {
             correo: credencial.user.email,
+            creadoEn: new Date().getTime()
+          };
+          
+          // Almacenamiento Local de seguridad
+          respaldarRegistroLocal(credencial.user.uid, infoUsuario);
+
+          // Sincronización en Cloud Firestore
+          return db.collection('usuarios').doc(credencial.user.uid).set({
+            correo: infoUsuario.correo,
             creadoEn: firebase.firestore.FieldValue.serverTimestamp()
           }).then(() => credencial.user);
         })
@@ -401,11 +440,19 @@
     auth.signInWithPopup(proveedor)
       .then((resultado) => {
         const user = resultado.user;
-        // Crea el perfil en Firestore solo si es la primera vez que entra
-        return db.collection('usuarios').doc(user.uid).set({
+        const infoUsuario = {
           correo: user.email,
           nombre: user.displayName || '',
           foto: user.photoURL || '',
+          creadoEn: new Date().getTime()
+        };
+
+        respaldarRegistroLocal(user.uid, infoUsuario);
+
+        return db.collection('usuarios').doc(user.uid).set({
+          correo: infoUsuario.correo,
+          nombre: infoUsuario.nombre,
+          foto: infoUsuario.foto,
           creadoEn: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true }).then(() => user);
       })
@@ -430,17 +477,14 @@
     }
     auth.sendPasswordResetEmail(correo)
       .then(() => {
-        mostrarError('Listo: te enviamos un correo para restablecer tu contraseña.');
-        document.getElementById('errorLogin').style.borderColor = 'var(--ok)';
-        document.getElementById('errorLogin').style.color = '#bdf5e6';
+        mostrarError('Listo: te enviamos un correo para restablecer tu contraseña.', true);
       })
       .catch((err) => {
         mostrarError(traducirErrorFirebase(err.code));
       });
   }
 
-  // ---------- Mantener la sesión activa al recargar la página ----------
-  // Si el usuario ya inició sesión antes, Firebase lo detecta solo, sin pedir login otra vez.
+  // ---------- Estado de la Sesión ----------
   auth.onAuthStateChanged((user) => {
     if(user){
       mostrarPanelPrincipal(user);
@@ -448,11 +492,9 @@
   });
 
   function mostrarPanelPrincipal(user){
-    // Aquí se oculta el login y se muestra el panel real de la app (#wrapperSistema en tu archivo completo)
     document.getElementById('seccionLogin').classList.add('hidden');
     document.getElementById('wrapperSistema').classList.remove('hidden');
     document.getElementById('txtUsuarioActivo').textContent = user.email;
-    console.log('Sesión activa:', user.email);
   }
 
   function cerrarSesionSistema(){
