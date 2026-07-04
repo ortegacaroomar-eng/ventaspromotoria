@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Comisiones Omar · Login modernizado</title>
+<title>Comisiones Omar · Panel Moderno</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -12,6 +12,9 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<!-- Librería para el Lector de Códigos de Barras -->
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
 <style>
   :root{
@@ -45,70 +48,47 @@
     overflow-x:hidden;
   }
 
-  @media (prefers-reduced-motion: reduce){
-    *{animation-duration:.001s !important; transition-duration:.001s !important;}
-  }
-
   /* ---------- FONDO VIVO ---------- */
-  .login-overlay{
+  .login-overlay, .sistema-overlay{
     position:fixed;inset:0;
     display:flex;align-items:center;justify-content:center;
     padding:20px;
     background:
-      radial-gradient(circle at 18% 8%, rgba(0,180,216,.16), transparent 42%),
-      radial-gradient(circle at 88% 22%, rgba(255,195,0,.10), transparent 38%),
-      radial-gradient(circle at 50% 100%, rgba(157,78,221,.08), transparent 45%),
+      radial-gradient(circle at 18% 8%, rgba(0,180,216,.14), transparent 42%),
+      radial-gradient(circle at 88% 22%, rgba(255,195,0,.08), transparent 38%),
+      radial-gradient(circle at 50% 100%, rgba(157,78,221,.06), transparent 45%),
       linear-gradient(165deg,var(--azul-950) 0%, var(--azul-900) 45%, #00040c 100%);
   }
 
   .malla-ticket{
     position:absolute;inset:0;pointer-events:none;
     background-image:
-      repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0px, rgba(255,255,255,.025) 1px, transparent 1px, transparent 34px);
+      repeating-linear-gradient(0deg, rgba(255,255,255,.02) 0px, rgba(255,255,255,.02) 1px, transparent 1px, transparent 34px);
     mask-image:radial-gradient(circle at 50% 35%, rgba(0,0,0,.9), transparent 70%);
-    animation:derivaTicket 26s linear infinite;
-  }
-  @keyframes derivaTicket{from{background-position:0 0;}to{background-position:0 340px;}}
-
-  .orbe{
-    position:absolute;border-radius:50%;filter:blur(60px);opacity:.35;pointer-events:none;
-    animation:flotar 11s ease-in-out infinite;
-  }
-  .orbe-1{width:260px;height:260px;background:var(--telcel);top:8%;left:8%;animation-delay:0s;}
-  .orbe-2{width:220px;height:220px;background:var(--dorado);bottom:10%;right:10%;animation-delay:-4s;}
-  @keyframes flotar{
-    0%,100%{transform:translate(0,0) scale(1);}
-    50%{transform:translate(18px,-22px) scale(1.08);}
   }
 
-  /* ---------- CAJA DE LOGIN ---------- */
-  .login-box{
+  /* ---------- COMPONENTES DE CAJA (LOGIN / PANEL) ---------- */
+  .login-box, .panel-box{
     position:relative;
     z-index:2;
-    width:100%;max-width:420px;
-    padding:38px 32px;
+    width:100%;
     border-radius:26px;
-    background:linear-gradient(180deg, rgba(255,255,255,.085), rgba(255,255,255,.035));
+    background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
     border:1px solid var(--vidrio-borde);
     backdrop-filter:blur(28px) saturate(160%);
     -webkit-backdrop-filter:blur(28px) saturate(160%);
-    box-shadow:
-      0 30px 70px rgba(0,0,0,.55),
-      inset 0 1px 0 rgba(255,255,255,.18),
-      0 0 0 1px rgba(0,180,216,.06);
-    text-align:center;
-    animation:entradaCaja .6s cubic-bezier(.16,1,.3,1);
+    box-shadow: 0 30px 70px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.15);
     overflow:hidden;
   }
-  .login-box::before{
-    content:"";
-    position:absolute;top:-2px;left:-2px;right:-2px;height:3px;
+  .login-box { max-width:420px; padding:38px 32px; text-align:center; }
+  .panel-box { max-width:650px; padding:28px; }
+
+  .login-box::before, .panel-box::before{
+    content:""; position:absolute; top:-2px; left:-2px; right:-2px; height:3px;
     background:linear-gradient(90deg,var(--telcel),var(--dorado),var(--bait),var(--telcel));
-    background-size:200% 100%;
-    animation:correrBorde 6s linear infinite;
+    background-size:200% 100%; animation:correrBorde 6s linear infinite;
   }
   @keyframes correrBorde{to{background-position:200% 0;}}
-  @keyframes entradaCaja{from{opacity:0;transform:translateY(18px) scale(.98);}to{opacity:1;transform:translateY(0) scale(1);}}
 
   .login-mark{
     width:54px;height:54px;border-radius:15px;margin:0 auto 18px;
@@ -116,139 +96,118 @@
     display:flex;align-items:center;justify-content:center;
     font-family:var(--fuente-display);font-weight:700;color:var(--azul-950);font-size:21px;
     box-shadow:0 8px 22px rgba(255,195,0,.3);
-    position:relative;
-  }
-  .login-mark::after{
-    content:"";position:absolute;inset:-6px;border-radius:19px;
-    border:1px solid rgba(255,195,0,.3);
-    animation:pulsoAnillo 2.6s ease-out infinite;
-  }
-  @keyframes pulsoAnillo{
-    0%{transform:scale(.92);opacity:.9;}
-    100%{transform:scale(1.18);opacity:0;}
   }
 
-  .login-box h2{margin:0 0 5px;font-family:var(--fuente-display);font-weight:700;font-size:22px;letter-spacing:.2px;}
-  .login-box p{font-size:12.5px;color:var(--texto-tenue);margin:0 0 28px;line-height:1.5;}
+  h2{margin:0 0 5px;font-family:var(--fuente-display);font-weight:700;font-size:22px;letter-spacing:.2px;}
+  p{font-size:12.5px;color:var(--texto-tenue);margin:0 0 28px;line-height:1.5;}
 
-  .login-tabs{
+  /* ---------- TABS / BOTONES ---------- */
+  .custom-tabs{
     display:flex;background:rgba(0,0,0,.32);padding:4px;border-radius:13px;margin-bottom:22px;
     border:1px solid var(--vidrio-borde);position:relative;
   }
-  .login-tab-btn{
+  .tab-btn{
     flex:1;padding:11px;background:transparent;border:none;color:var(--texto-tenue);font-weight:600;
-    font-size:13px;cursor:pointer;border-radius:10px;transition:color .25s, transform .15s;font-family:inherit;
+    font-size:13px;cursor:pointer;border-radius:10px;transition:color .25s;font-family:inherit;
     position:relative;z-index:1;
   }
-  .login-tab-btn.active{color:var(--azul-950);}
-  .login-tab-btn:active{transform:scale(.97);}
-  .tab-deslizante{
+  .tab-btn.active{color:var(--azul-950);}
+  .slider-deslizante{
     position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);
     background:var(--dorado);border-radius:10px;
     box-shadow:0 4px 14px rgba(255,195,0,.35);
     transition:transform .3s cubic-bezier(.16,1,.3,1);
   }
-  .login-tab-btn[data-tab="REGISTRO"].active ~ .tab-deslizante,
-  .login-tabs.modo-registro .tab-deslizante{transform:translateX(100%);}
+  .custom-tabs.modo-alterno .slider-deslizante{transform:translateX(100%);}
 
   .btn-google{
     background:#fff;color:#1f1f1f;width:100%;padding:14px;border:none;border-radius:13px;
     font-weight:600;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;
-    gap:10px;box-shadow:0 8px 20px rgba(0,0,0,.28);transition:transform .2s, box-shadow .2s;margin-bottom:22px;
-    position:relative;overflow:hidden;
+    gap:10px;box-shadow:0 8px 20px rgba(0,0,0,.28);margin-bottom:22px;
   }
-  .btn-google:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(0,0,0,.34);}
-  .btn-google:active{transform:translateY(0) scale(.98);}
-
   .separator{
     display:flex;align-items:center;text-align:center;color:#5b6577;font-size:10.5px;margin-bottom:22px;
     text-transform:uppercase;font-weight:600;letter-spacing:.06em;
   }
   .separator::before,.separator::after{content:"";flex:1;border-bottom:1px solid rgba(255,255,255,.12);}
-  .separator:not(:empty)::before{margin-right:.75em;}
-  .separator:not(:empty)::after{margin-left:.75em;}
+  .separator:not(:empty)::before{margin-right:.75em;} .separator:not(:empty)::after{margin-left:.75em;}
 
   .campo-error{
     background:rgba(255,92,122,.12);border:1px solid rgba(255,92,122,.4);color:#ffb3c0;
     font-size:12px;padding:11px 13px;border-radius:11px;margin-bottom:16px;text-align:left;
-    display:none;align-items:flex-start;gap:9px;animation:sacudir .35s;
+    display:none;align-items:flex-start;gap:9px;
   }
   .campo-error.visible{display:flex;}
-  @keyframes sacudir{
-    0%,100%{transform:translateX(0);}
-    25%{transform:translateX(-5px);}
-    75%{transform:translateX(5px);}
-  }
 
+  /* ---------- CAMPOS DE ENTRADA ---------- */
   .grupo-campo{position:relative;margin-bottom:16px;text-align:left;}
-  .grupo-campo i{
+  .grupo-campo i.icon-principal{
     position:absolute;left:14px;top:50%;transform:translateY(-50%);
-    color:var(--texto-tenue);font-size:14px;transition:color .2s;
+    color:var(--texto-tenue);font-size:14px;
   }
   .grupo-campo input{
     width:100%;padding:14px 14px 14px 40px;border-radius:12px;border:1px solid transparent;
     background:rgba(255,255,255,.07);color:#fff;box-sizing:border-box;outline:none;
     font-family:inherit;font-size:14px;transition:background .2s, border-color .2s;
   }
-  .grupo-campo input::placeholder{color:rgba(255,255,255,.35);}
   .grupo-campo input:focus{background:rgba(255,255,255,.11);border-color:var(--dorado);}
-  .grupo-campo input:focus ~ i{color:var(--dorado);}
+  .grupo-campo.con-accion input{ padding-right:52px; }
+
+  .btn-accion-input{
+    position:absolute;right:8px;top:50%;transform:translateY(-50%);
+    background:rgba(0,180,216,0.15);color:var(--telcel);border:1px solid rgba(0,180,216,0.3);
+    border-radius:9px;padding:8px 10px;cursor:pointer;font-size:14px;transition:all 0.2s;
+  }
+  .btn-accion-input:hover{background:var(--dorado);color:var(--azul-950);border-color:var(--dorado);}
 
   .btn-save{
     background:var(--dorado);color:var(--azul-950);width:100%;padding:16px;border:none;border-radius:13px;
-    font-weight:700;cursor:pointer;font-size:15.5px;transition:background .2s, transform .15s, box-shadow .2s;
-    font-family:var(--fuente-display);letter-spacing:.02em;box-shadow:0 10px 24px rgba(255,195,0,.22);
+    font-weight:700;cursor:pointer;font-size:15.5px;font-family:var(--fuente-display);
+    letter-spacing:.02em;box-shadow:0 10px 24px rgba(255,195,0,.22);
   }
-  .btn-save:hover{background:var(--dorado-soft);box-shadow:0 14px 30px rgba(255,195,0,.3);transform:translateY(-1px);}
-  .btn-save:active{transform:scale(.98);}
-  .btn-save:disabled{opacity:.55;cursor:wait;transform:none;}
+  .btn-save:hover{background:var(--dorado-soft);transform:translateY(-1px);}
 
-  .spinner{
-    display:inline-block;width:16px;height:16px;border:2px solid rgba(0,0,0,.25);
-    border-top-color:#001226;border-radius:50%;animation:girar .7s linear infinite;
+  .btn-logout{
+    background:rgba(255,92,122,.12);color:var(--error);border:1px solid rgba(255,92,122,.2);
+    padding:8px 14px;border-radius:10px;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;
   }
+  .btn-logout:hover{background:rgba(255,92,122,.2);}
+
+  /* ---------- REPRODUCTOR TIPO YOUTUBE ---------- */
+  .yt-container {
+    background: rgba(0,0,0,0.4); border-radius: 16px; padding: 16px; border: 1px solid var(--vidrio-borde);
+  }
+  .video-wrapper {
+    position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; background: #000;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.05);
+  }
+  .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+  
+  /* ---------- MODAL ESCÁNER CAMARA ---------- */
+  .modal-scanner{ position:fixed; inset:0; background:rgba(0,18,38,0.95); z-index:999; display:flex; align-items:center; justify-content:center; padding:20px; }
+  .modal-scanner-content{ background:var(--azul-900); border:1px solid var(--vidrio-borde); width:100%; max-width:450px; border-radius:24px; padding:22px; text-align:center; }
+  .scanner-view{ width:100%; background:#000; border-radius:14px; overflow:hidden; margin-top:15px; border:2px solid var(--telcel); }
+  .btn-cancelar-scan{ background:var(--error); color:#fff; border:none; padding:13px; border-radius:11px; cursor:pointer; font-weight:600; margin-top:15px; width:100%; font-family:inherit; }
+
+  .spinner{ display:inline-block;width:16px;height:16px;border:2px solid rgba(0,0,0,.25);border-top-color:#001226;border-radius:50%;animation:girar .7s linear infinite; }
   @keyframes girar{to{transform:rotate(360deg);}}
-
-  .login-footer-link{
-    display:inline-block;font-size:12px;color:var(--telcel);background:none;border:none;cursor:pointer;margin-top:16px;
-    font-family:inherit;text-decoration:underline;transition:color .2s;
-  }
-  .login-footer-link:hover{color:var(--dorado-soft);}
-
-  .btn-logout {
-    background: rgba(255, 92, 122, 0.15);
-    color: #ff5c7a;
-    border: 1px solid rgba(255, 92, 122, 0.3);
-    padding: 12px 24px;
-    border-radius: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .btn-logout:hover {
-    background: rgba(255, 92, 122, 0.25);
-    transform: translateY(-1px);
-  }
-
   .hidden{display:none !important;}
 </style>
 </head>
 <body>
 
+<!-- INTERFAZ DE AUTENTICACIÓN (LOGIN) -->
 <div class="login-overlay" id="seccionLogin">
   <div class="malla-ticket"></div>
-  <div class="orbe orbe-1"></div>
-  <div class="orbe orbe-2"></div>
-
   <div class="login-box">
     <div class="login-mark">CO</div>
     <h2>Comisiones Omar</h2>
     <p>Inicia sesión para acceder a tus ventas, sincronizadas en la nube</p>
 
-    <div class="login-tabs" id="tabsAcceso">
-      <button id="tabOpLogin" class="login-tab-btn active" data-tab="LOGIN" onclick="alternarFormularioAcceso('LOGIN')" type="button">Entrar</button>
-      <button id="tabOpRegistro" class="login-tab-btn" data-tab="REGISTRO" onclick="alternarFormularioAcceso('REGISTRO')" type="button">Crear cuenta</button>
-      <div class="tab-deslizante"></div>
+    <div class="custom-tabs" id="tabsAcceso">
+      <button id="tabOpLogin" class="tab-btn active" onclick="alternarFormularioAcceso('LOGIN')" type="button">Entrar</button>
+      <button id="tabOpRegistro" class="tab-btn" onclick="alternarFormularioAcceso('REGISTRO')" type="button">Crear cuenta</button>
+      <div class="slider-deslizante"></div>
     </div>
 
     <button class="btn-google" onclick="ejecutarLoginGoogle()" type="button" id="btnGoogleLogin">
@@ -261,39 +220,89 @@
 
     <form id="fAcceso" onsubmit="procesarAutenticacion(event)">
       <input type="hidden" id="tipoAccesoActual" value="LOGIN">
-
       <div class="grupo-campo">
         <input type="email" id="logEmail" placeholder="Correo electrónico" required autocomplete="email">
-        <i class="fa-solid fa-envelope"></i>
+        <i class="fa-solid fa-envelope icon-principal"></i>
       </div>
-
       <div class="grupo-campo">
         <input type="password" id="logPass" placeholder="Contraseña (mínimo 6 caracteres)" required autocomplete="current-password" minlength="6">
-        <i class="fa-solid fa-lock"></i>
+        <i class="fa-solid fa-lock icon-principal"></i>
       </div>
-
       <button type="submit" id="btnAccesoAccion" class="btn-save">
         <span id="btnAccesoTexto">INGRESAR AL PANEL</span>
       </button>
     </form>
-    
-    <!-- Se eliminó la clase hidden para que sea accesible de manera intuitiva -->
-    <button class="login-footer-link" id="btnOlvidoPass" onclick="recuperarPassword()" type="button">¿Olvidaste tu contraseña?</button>
-
-    <div class="login-footer-link" style="margin-top:18px;opacity:.5;font-size:10.5px;text-decoration:none;cursor:default;">
-      Conectado a Firebase · proyecto ventastelcel4029
-    </div>
+    <button class="login-footer-link hidden" id="btnOlvidoPass" onclick="recuperarPassword()" type="button">¿Olvidaste tu contraseña?</button>
   </div>
 </div>
 
-<div class="hidden" id="wrapperSistema" style="position:fixed;inset:0;background:var(--azul-950);display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--fuente-display);text-align:center;padding:20px;">
-  <div>
-    <i class="fa-solid fa-circle-check" style="font-size:40px;color:var(--ok);margin-bottom:14px;display:block;"></i>
-    <h2 style="margin:0 0 8px;">Sesión iniciada</h2>
-    <p style="font-family:var(--fuente-cuerpo);color:var(--texto-tenue);margin:0 0 22px;font-size:13px;" id="txtUsuarioActivo"></p>
-    <button class="btn-logout" onclick="cerrarSesionSistema()" type="button" style="font-family:var(--fuente-cuerpo);">
-      <i class="fa-solid fa-power-off"></i> Cerrar sesión
-    </button>
+<!-- INTERFAZ PRINCIPAL DEL SISTEMA -->
+<div class="sistema-overlay hidden" id="wrapperSistema">
+  <div class="malla-ticket"></div>
+  <div class="panel-box">
+    
+    <!-- Encabezado de Usuario -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:12px; border-bottom:1px solid var(--vidrio-borde);">
+      <div>
+        <h4 style="margin:0; font-family:var(--fuente-display); font-size:15px; color:var(--dorado);" id="txtUsuarioActivo"></h4>
+        <span style="font-size:11px; color:var(--texto-tenue);">Sistema Ventas 4029</span>
+      </div>
+      <button class="btn-logout" onclick="cerrarSesionSistema()"><i class="fa-solid fa-power-off"></i> Salir</button>
+    </div>
+
+    <!-- Pestañas del Sistema Modificado -->
+    <div class="custom-tabs" id="tabsSistema">
+      <button id="tabSisVentas" class="tab-btn active" onclick="cambiarModuloSistema('VENTAS')">Módulo Ventas</button>
+      <button id="tabSisMedia" class="tab-btn" onclick="cambiarModuloSistema('MEDIA')">Media Player</button>
+      <div class="slider-deslizante"></div>
+    </div>
+
+    <!-- MÓDULO: VENTAS E INVENTARIO -->
+    <div id="moduloVentas">
+      <h3 style="font-family:var(--fuente-display); font-size:18px; margin:0 0 14px 0;">Registro de Terminales / Códigos</h3>
+      
+      <div class="grupo-campo con-accion">
+        <input type="text" id="codigoScanner" placeholder="Escanear o ingresar IMEI / UPC / ICCID">
+        <i class="fa-solid fa-barcode icon-principal"></i>
+        <button type="button" class="btn-accion-input" onclick="activarCamaraEscaneo()"><i class="fa-solid fa-camera"></i></button>
+      </div>
+
+      <div class="grupo-campo">
+        <input type="text" id="detalleProducto" placeholder="Descripción del artículo (Ej: Moto G34, Amigo Kit)">
+        <i class="fa-solid fa-box icon-principal"></i>
+      </div>
+
+      <button type="button" class="btn-save" onclick="guardarRegistroLocalExcel()">
+        <i class="fa-solid fa-file-excel"></i> GUARDAR VENTA LOCALMENTE
+      </button>
+    </div>
+
+    <!-- MÓDULO: REPRODUCTOR MULTIMEDIA MULTIFUNCIONAL -->
+    <div id="moduloMedia" class="hidden">
+      <h3 style="font-family:var(--fuente-display); font-size:18px; margin:0 0 14px 0;">Capacitaciones & Media Player</h3>
+      <div class="yt-container">
+        <div class="video-wrapper">
+          <!-- Iframe inicializado con video interactivo -->
+          <iframe id="reproductorYoutube" src="https://www.youtube.com/embed/dQw4w9WgXcQ?enablejsapi=1" allowfullscreen></iframe>
+        </div>
+        <div class="grupo-campo con-accion" style="margin-top:15px; margin-bottom:0;">
+          <input type="text" id="ytVideoId" placeholder="Pegar ID del video de YouTube (Ej: jNQXAC9IVRw)">
+          <i class="fa-brands fa-youtube icon-principal" style="color:var(--error);"></i>
+          <button type="button" class="btn-accion-input" onclick="cargarNuevoVideoYoutube()">Cargar</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- CAPA EMULADORA MODAL ESCÁNER CÁMARA -->
+<div id="modalScanner" class="modal-scanner hidden">
+  <div class="modal-scanner-content">
+    <h3 style="margin:0 0 4px 0; font-family:var(--fuente-display);">Lector de Códigos Láser Celular</h3>
+    <p style="font-size:12px; color:var(--texto-tenue); margin:0 0 16px 0;">Ubica el IMEI, código UPC o chip frente a la línea de enfoque</p>
+    <div id="interactiveScanner" class="scanner-view"></div>
+    <button type="button" class="btn-cancelar-scan" onclick="desactivarCamaraEscaneo()">Cerrar Cámara</button>
   </div>
 </div>
 
@@ -312,10 +321,115 @@
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db = firebase.firestore();
+  let scannerInstancia = null;
 
   auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
-  // ---------- UI: cambio de pestaña Entrar / Crear cuenta ----------
+  // ---------- CONTROL CAMBIO MÓDULOS SISTEMA ----------
+  function cambiarModuloSistema(modulo) {
+    const isMedia = modulo === 'MEDIA';
+    document.getElementById('tabsSistema').classList.toggle('modo-alterno', isMedia);
+    document.getElementById('tabSisVentas').classList.toggle('active', !isMedia);
+    document.getElementById('tabSisMedia').classList.toggle('active', isMedia);
+    document.getElementById('moduloVentas').classList.toggle('hidden', isMedia);
+    document.getElementById('moduloMedia').classList.toggle('hidden', !isMedia);
+    
+    // Pausa el video si cambia de pestaña reconstruyendo el src
+    if(!isMedia) {
+      const iframe = document.getElementById('reproductorYoutube');
+      const currentSrc = iframe.src;
+      iframe.src = currentSrc;
+    }
+  }
+
+  // ---------- CONTROL DEL REPRODUCTOR YOUTUBE ----------
+  function cargarNuevoVideoYoutube() {
+    const idInput = document.getElementById('ytVideoId').value.trim();
+    if(!idInput) { alert("Ingresa un ID de video de YouTube válido."); return; }
+    
+    // Filtra si el usuario ingresó la URL completa en lugar de solo el ID
+    let finalId = idInput;
+    if(idInput.includes("v=")) {
+      finalId = idInput.split("v=")[1].split("&")[0];
+    } else if(idInput.includes("youtu.be/")) {
+      finalId = idInput.split("youtu.be/")[1].split("?")[0];
+    }
+    
+    document.getElementById('reproductorYoutube').src = `https://www.youtube.com/embed/${finalId}?enablejsapi=1`;
+    document.getElementById('ytVideoId').value = "";
+  }
+
+  // ---------- LECTOR INTEGRADO PARA IMEI / ICCID / UPC ----------
+  function activarCamaraEscaneo() {
+    document.getElementById('modalScanner').classList.remove('hidden');
+    scannerInstancia = new Html5Qrcode("interactiveScanner");
+    
+    // Configuración optimizada horizontalmente para códigos de barras y cadenas largas (IMEI)
+    const opcionesConfig = {
+      fps: 20,
+      qrbox: { width: 320, height: 140 },
+      aspectRatio: 1.777778
+    };
+
+    scannerInstancia.start(
+      { facingMode: "environment" },
+      opcionesConfig,
+      (textoDetectado) => {
+        document.getElementById('codigoScanner').value = textoDetectado;
+        if(navigator.vibrate) navigator.vibrate(120);
+        desactivarCamaraEscaneo();
+      },
+      () => { /* Buscando de manera continua... */ }
+    ).catch(err => {
+      alert("Error al inicializar cámara: " + err);
+      desactivarCamaraEscaneo();
+    });
+  }
+
+  function desactivarCamaraEscaneo() {
+    if(scannerInstancia) {
+      scannerInstancia.stop().then(() => {
+        scannerInstancia = null;
+        document.getElementById('modalScanner').classList.add('hidden');
+      }).catch(() => {
+        document.getElementById('modalScanner').classList.add('hidden');
+      });
+    } else {
+      document.getElementById('modalScanner').classList.add('hidden');
+    }
+  }
+
+  // ---------- ALMACENAMIENTO DE VENTAS (EXCEL COMPATIBLE) ----------
+  function guardarRegistroLocalExcel() {
+    const code = document.getElementById('codigoScanner').value.trim();
+    const desc = document.getElementById('detalleProducto').value.trim();
+
+    if(!code) { alert("Escanea o escribe un código válido."); return; }
+
+    // Generación del formato de fecha obligatorio DD/MM/YYYY
+    const hoy = new Date();
+    const d = String(hoy.getDate()).padStart(2, '0');
+    const m = String(hoy.getMonth() + 1).padStart(2, '0');
+    const y = hoy.getFullYear();
+    const fechaEstricta = `${d}/${m}/${y}`;
+
+    const nuevaFilaVenta = {
+      Fecha: fechaEstricta,
+      Codigo: code,
+      Descripcion: desc || "Artículo General",
+      IdTransaccion: new Date().getTime()
+    };
+
+    let baseVentas = JSON.parse(localStorage.getItem('historial_ventas_local')) || [];
+    baseVentas.push(nuevaFilaVenta);
+    localStorage.setItem('historial_ventas_local', JSON.stringify(baseVentas));
+
+    alert(`¡Venta guardada localmente!\nFormato Excel respetado (${fechaEstricta}).`);
+    document.getElementById('codigoScanner').value = "";
+    document.getElementById('detalleProducto').value = "";
+  }
+
+  // ---------- LÓGICA DE CONTROL ACCESO & LOCALSTORAGE ----------
   function alternarFormularioAcceso(tipo){
     document.getElementById('tipoAccesoActual').value = tipo;
     document.getElementById('tabOpLogin').classList.toggle('active', tipo === 'LOGIN');
@@ -326,55 +440,25 @@
     ocultarError();
   }
 
-  function ocultarError(){
-    const errBox = document.getElementById('errorLogin');
-    errBox.classList.remove('visible');
-    errBox.style.borderColor = 'rgba(255,92,122,.4)';
-    errBox.style.color = '#ffb3c0';
-    errBox.style.background = 'rgba(255,92,122,.12)';
-  }
-
-  function mostrarError(msg, esExito = false){
-    const errBox = document.getElementById('errorLogin');
+  function ocultarError(){ document.getElementById('errorLogin').classList.remove('visible'); }
+  
+  function mostrarError(msg){
     document.getElementById('errorLoginTexto').textContent = msg;
-    
-    if (esExito) {
-      errBox.style.borderColor = 'var(--ok)';
-      errBox.style.color = '#bdf5e6';
-      errBox.style.background = 'rgba(45,212,167,.12)';
-    }
-    errBox.classList.add('visible');
+    document.getElementById('errorLogin').classList.add('visible');
   }
 
   function traducirErrorFirebase(codigo){
     const mapa = {
       'auth/invalid-email': 'El correo no tiene un formato válido.',
-      'auth/user-disabled': 'Esta cuenta fue deshabilitada.',
       'auth/user-not-found': 'No existe una cuenta con ese correo.',
       'auth/wrong-password': 'Contraseña incorrecta.',
-      'auth/invalid-credential': 'Correo o contraseña incorrectos.',
-      'auth/email-already-in-use': 'Ya existe una cuenta con ese correo.',
-      'auth/weak-password': 'La contraseña debe tener al menos 6 caracteres.',
-      'auth/network-request-failed': 'Sin conexión a internet. Intenta de nuevo.',
-      'auth/too-many-requests': 'Demasiados intentos. Espera un momento.',
-      'auth/popup-closed-by-user': 'Cerraste la ventana de Google antes de terminar.'
+      'auth/invalid-credential': 'Credenciales incorrectas.',
+      'auth/email-already-in-use': 'El correo ya se encuentra registrado.',
+      'auth/weak-password': 'La contraseña debe ser de mínimo 6 caracteres.'
     };
-    return mapa[codigo] || 'Ocurrió un error. Intenta de nuevo.';
+    return mapa[codigo] || 'Error de conexión. Intente de nuevo.';
   }
 
-  // ---------- PERSISTENCIA EN LOCALSTORAGE PARA REGISTRO ----------
-  function respaldarRegistroLocal(uid, datos) {
-    try {
-      localStorage.setItem(`registro_${uid}`, JSON.stringify({
-        ...datos,
-        fechaLocal: new Date().toISOString()
-      }));
-    } catch (e) {
-      console.warn("No se pudo escribir en localStorage:", e);
-    }
-  }
-
-  // ---------- LOGIN / REGISTRO con correo y contraseña ----------
   function procesarAutenticacion(e){
     e.preventDefault();
     ocultarError();
@@ -389,107 +473,49 @@
     boton.disabled = true;
     textoBoton.innerHTML = '<span class="spinner"></span> Procesando...';
 
-    const restaurarBoton = () => {
-      boton.disabled = false;
-      textoBoton.innerHTML = original;
-    };
-
     if(tipo === 'LOGIN'){
       auth.signInWithEmailAndPassword(correo, clave)
-        .then((credencial) => {
-          mostrarPanelPrincipal(credencial.user);
-        })
-        .catch((err) => {
-          mostrarError(traducirErrorFirebase(err.code));
-        })
-        .finally(restaurarBoton);
+        .then((credencial) => { mostrarPanelPrincipal(credencial.user); })
+        .catch((err) => { mostrarError(traducirErrorFirebase(err.code)); })
+        .finally(() => { boton.disabled = false; textoBoton.innerHTML = original; });
     } else {
       auth.createUserWithEmailAndPassword(correo, clave)
         .then((credencial) => {
-          const infoUsuario = {
-            correo: credencial.user.email,
-            creadoEn: new Date().getTime()
-          };
-          
-          // Almacenamiento Local de seguridad
-          respaldarRegistroLocal(credencial.user.uid, infoUsuario);
-
-          // Sincronización en Cloud Firestore
+          localStorage.setItem(`registro_usuario_${credencial.user.uid}`, JSON.stringify({correo: credencial.user.email, timestamp: new Date().getTime()}));
           return db.collection('usuarios').doc(credencial.user.uid).set({
-            correo: infoUsuario.correo,
-            creadoEn: firebase.firestore.FieldValue.serverTimestamp()
+            correo: credencial.user.email, creadoEn: firebase.firestore.FieldValue.serverTimestamp()
           }).then(() => credencial.user);
         })
-        .then((user) => {
-          mostrarPanelPrincipal(user);
-        })
-        .catch((err) => {
-          mostrarError(traducirErrorFirebase(err.code));
-        })
-        .finally(restaurarBoton);
+        .then((user) => { mostrarPanelPrincipal(user); })
+        .catch((err) => { mostrarError(traducirErrorFirebase(err.code)); })
+        .finally(() => { boton.disabled = false; textoBoton.innerHTML = original; });
     }
   }
 
-  // ---------- LOGIN con Google ----------
   function ejecutarLoginGoogle(){
     ocultarError();
     const proveedor = new firebase.auth.GoogleAuthProvider();
-    const btn = document.getElementById('btnGoogleLogin');
-    btn.disabled = true;
-
     auth.signInWithPopup(proveedor)
       .then((resultado) => {
-        const user = resultado.user;
-        const infoUsuario = {
-          correo: user.email,
-          nombre: user.displayName || '',
-          foto: user.photoURL || '',
-          creadoEn: new Date().getTime()
-        };
-
-        respaldarRegistroLocal(user.uid, infoUsuario);
-
-        return db.collection('usuarios').doc(user.uid).set({
-          correo: infoUsuario.correo,
-          nombre: infoUsuario.nombre,
-          foto: infoUsuario.foto,
-          creadoEn: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true }).then(() => user);
+        localStorage.setItem(`registro_usuario_${resultado.user.uid}`, JSON.stringify({correo: resultado.user.email, timestamp: new Date().getTime()}));
+        return db.collection('usuarios').doc(resultado.user.uid).set({
+          correo: resultado.user.email, nombre: resultado.user.displayName || '', creadoEn: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true }).then(() => resultado.user);
       })
-      .then((user) => {
-        mostrarPanelPrincipal(user);
-      })
-      .catch((err) => {
-        if(err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request'){
-          mostrarError(traducirErrorFirebase(err.code));
-        }
-      })
-      .finally(() => { btn.disabled = false; });
+      .then((user) => { mostrarPanelPrincipal(user); })
+      .catch((err) => { if(err.code !== 'auth/popup-closed-by-user') mostrarError(traducirErrorFirebase(err.code)); });
   }
 
-  // ---------- Recuperar contraseña ----------
   function recuperarPassword(){
     ocultarError();
     const correo = document.getElementById('logEmail').value.trim();
-    if(!correo){
-      mostrarError('Escribe tu correo arriba primero, y luego toca "¿Olvidaste tu contraseña?".');
-      return;
-    }
+    if(!correo){ alert("Escribe tu correo primero en la casilla de arriba."); return; }
     auth.sendPasswordResetEmail(correo)
-      .then(() => {
-        mostrarError('Listo: te enviamos un correo para restablecer tu contraseña.', true);
-      })
-      .catch((err) => {
-        mostrarError(traducirErrorFirebase(err.code));
-      });
+      .then(() => { alert("Te hemos enviado un enlace de recuperación a tu bandeja."); })
+      .catch((err) => { mostrarError(traducirErrorFirebase(err.code)); });
   }
 
-  // ---------- Estado de la Sesión ----------
-  auth.onAuthStateChanged((user) => {
-    if(user){
-      mostrarPanelPrincipal(user);
-    }
-  });
+  auth.onAuthStateChanged((user) => { if(user){ mostrarPanelPrincipal(user); } });
 
   function mostrarPanelPrincipal(user){
     document.getElementById('seccionLogin').classList.add('hidden');
