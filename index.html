@@ -1,535 +1,237 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Comisiones Omar · Panel Moderno</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-<!-- Firebase SDK (compat) -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-
-<!-- Librería para el Lector de Códigos de Barras -->
-<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-
-<style>
-  :root{
-    --azul-950:#001226;
-    --azul-900:#001d3d;
-    --azul-800:#003566;
-    --azul-700:#0a4a85;
-    --dorado:#ffc300;
-    --dorado-soft:#ffd84d;
-    --telcel:#00b4d8;
-    --att:#ff7a1a;
-    --bait:#9d4edd;
-    --ok:#2dd4a7;
-    --error:#ff5c7a;
-    --vidrio-borde:rgba(255,255,255,.10);
-    --texto-tenue:rgba(255,255,255,.55);
-    --fuente-display:'Space Grotesk',sans-serif;
-    --fuente-cuerpo:'Inter',sans-serif;
-    --fuente-mono:'JetBrains Mono',monospace;
-  }
-
-  *{box-sizing:border-box;}
-
-  body{
-    margin:0;
-    min-height:100vh;
-    font-family:var(--fuente-cuerpo);
-    background:var(--azul-950);
-    color:#f4f6fa;
-    -webkit-font-smoothing:antialiased;
-    overflow-x:hidden;
-  }
-
-  /* ---------- FONDO VIVO ---------- */
-  .login-overlay, .sistema-overlay{
-    position:fixed;inset:0;
-    display:flex;align-items:center;justify-content:center;
-    padding:20px;
-    background:
-      radial-gradient(circle at 18% 8%, rgba(0,180,216,.14), transparent 42%),
-      radial-gradient(circle at 88% 22%, rgba(255,195,0,.08), transparent 38%),
-      radial-gradient(circle at 50% 100%, rgba(157,78,221,.06), transparent 45%),
-      linear-gradient(165deg,var(--azul-950) 0%, var(--azul-900) 45%, #00040c 100%);
-  }
-
-  .malla-ticket{
-    position:absolute;inset:0;pointer-events:none;
-    background-image:
-      repeating-linear-gradient(0deg, rgba(255,255,255,.02) 0px, rgba(255,255,255,.02) 1px, transparent 1px, transparent 34px);
-    mask-image:radial-gradient(circle at 50% 35%, rgba(0,0,0,.9), transparent 70%);
-  }
-
-  /* ---------- COMPONENTES DE CAJA (LOGIN / PANEL) ---------- */
-  .login-box, .panel-box{
-    position:relative;
-    z-index:2;
-    width:100%;
-    border-radius:26px;
-    background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
-    border:1px solid var(--vidrio-borde);
-    backdrop-filter:blur(28px) saturate(160%);
-    -webkit-backdrop-filter:blur(28px) saturate(160%);
-    box-shadow: 0 30px 70px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.15);
-    overflow:hidden;
-  }
-  .login-box { max-width:420px; padding:38px 32px; text-align:center; }
-  .panel-box { max-width:650px; padding:28px; }
-
-  .login-box::before, .panel-box::before{
-    content:""; position:absolute; top:-2px; left:-2px; right:-2px; height:3px;
-    background:linear-gradient(90deg,var(--telcel),var(--dorado),var(--bait),var(--telcel));
-    background-size:200% 100%; animation:correrBorde 6s linear infinite;
-  }
-  @keyframes correrBorde{to{background-position:200% 0;}}
-
-  .login-mark{
-    width:54px;height:54px;border-radius:15px;margin:0 auto 18px;
-    background:linear-gradient(135deg,var(--dorado),var(--telcel));
-    display:flex;align-items:center;justify-content:center;
-    font-family:var(--fuente-display);font-weight:700;color:var(--azul-950);font-size:21px;
-    box-shadow:0 8px 22px rgba(255,195,0,.3);
-  }
-
-  h2{margin:0 0 5px;font-family:var(--fuente-display);font-weight:700;font-size:22px;letter-spacing:.2px;}
-  p{font-size:12.5px;color:var(--texto-tenue);margin:0 0 28px;line-height:1.5;}
-
-  /* ---------- TABS / BOTONES ---------- */
-  .custom-tabs{
-    display:flex;background:rgba(0,0,0,.32);padding:4px;border-radius:13px;margin-bottom:22px;
-    border:1px solid var(--vidrio-borde);position:relative;
-  }
-  .tab-btn{
-    flex:1;padding:11px;background:transparent;border:none;color:var(--texto-tenue);font-weight:600;
-    font-size:13px;cursor:pointer;border-radius:10px;transition:color .25s;font-family:inherit;
-    position:relative;z-index:1;
-  }
-  .tab-btn.active{color:var(--azul-950);}
-  .slider-deslizante{
-    position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);
-    background:var(--dorado);border-radius:10px;
-    box-shadow:0 4px 14px rgba(255,195,0,.35);
-    transition:transform .3s cubic-bezier(.16,1,.3,1);
-  }
-  .custom-tabs.modo-alterno .slider-deslizante{transform:translateX(100%);}
-
-  .btn-google{
-    background:#fff;color:#1f1f1f;width:100%;padding:14px;border:none;border-radius:13px;
-    font-weight:600;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;
-    gap:10px;box-shadow:0 8px 20px rgba(0,0,0,.28);margin-bottom:22px;
-  }
-  .separator{
-    display:flex;align-items:center;text-align:center;color:#5b6577;font-size:10.5px;margin-bottom:22px;
-    text-transform:uppercase;font-weight:600;letter-spacing:.06em;
-  }
-  .separator::before,.separator::after{content:"";flex:1;border-bottom:1px solid rgba(255,255,255,.12);}
-  .separator:not(:empty)::before{margin-right:.75em;} .separator:not(:empty)::after{margin-left:.75em;}
-
-  .campo-error{
-    background:rgba(255,92,122,.12);border:1px solid rgba(255,92,122,.4);color:#ffb3c0;
-    font-size:12px;padding:11px 13px;border-radius:11px;margin-bottom:16px;text-align:left;
-    display:none;align-items:flex-start;gap:9px;
-  }
-  .campo-error.visible{display:flex;}
-
-  /* ---------- CAMPOS DE ENTRADA ---------- */
-  .grupo-campo{position:relative;margin-bottom:16px;text-align:left;}
-  .grupo-campo i.icon-principal{
-    position:absolute;left:14px;top:50%;transform:translateY(-50%);
-    color:var(--texto-tenue);font-size:14px;
-  }
-  .grupo-campo input{
-    width:100%;padding:14px 14px 14px 40px;border-radius:12px;border:1px solid transparent;
-    background:rgba(255,255,255,.07);color:#fff;box-sizing:border-box;outline:none;
-    font-family:inherit;font-size:14px;transition:background .2s, border-color .2s;
-  }
-  .grupo-campo input:focus{background:rgba(255,255,255,.11);border-color:var(--dorado);}
-  .grupo-campo.con-accion input{ padding-right:52px; }
-
-  .btn-accion-input{
-    position:absolute;right:8px;top:50%;transform:translateY(-50%);
-    background:rgba(0,180,216,0.15);color:var(--telcel);border:1px solid rgba(0,180,216,0.3);
-    border-radius:9px;padding:8px 10px;cursor:pointer;font-size:14px;transition:all 0.2s;
-  }
-  .btn-accion-input:hover{background:var(--dorado);color:var(--azul-950);border-color:var(--dorado);}
-
-  .btn-save{
-    background:var(--dorado);color:var(--azul-950);width:100%;padding:16px;border:none;border-radius:13px;
-    font-weight:700;cursor:pointer;font-size:15.5px;font-family:var(--fuente-display);
-    letter-spacing:.02em;box-shadow:0 10px 24px rgba(255,195,0,.22);
-  }
-  .btn-save:hover{background:var(--dorado-soft);transform:translateY(-1px);}
-
-  .btn-logout{
-    background:rgba(255,92,122,.12);color:var(--error);border:1px solid rgba(255,92,122,.2);
-    padding:8px 14px;border-radius:10px;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;
-  }
-  .btn-logout:hover{background:rgba(255,92,122,.2);}
-
-  /* ---------- REPRODUCTOR TIPO YOUTUBE ---------- */
-  .yt-container {
-    background: rgba(0,0,0,0.4); border-radius: 16px; padding: 16px; border: 1px solid var(--vidrio-borde);
-  }
-  .video-wrapper {
-    position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; background: #000;
-    box-shadow: 0 12px 30px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.05);
-  }
-  .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
-  
-  /* ---------- MODAL ESCÁNER CAMARA ---------- */
-  .modal-scanner{ position:fixed; inset:0; background:rgba(0,18,38,0.95); z-index:999; display:flex; align-items:center; justify-content:center; padding:20px; }
-  .modal-scanner-content{ background:var(--azul-900); border:1px solid var(--vidrio-borde); width:100%; max-width:450px; border-radius:24px; padding:22px; text-align:center; }
-  .scanner-view{ width:100%; background:#000; border-radius:14px; overflow:hidden; margin-top:15px; border:2px solid var(--telcel); }
-  .btn-cancelar-scan{ background:var(--error); color:#fff; border:none; padding:13px; border-radius:11px; cursor:pointer; font-weight:600; margin-top:15px; width:100%; font-family:inherit; }
-
-  .spinner{ display:inline-block;width:16px;height:16px;border:2px solid rgba(0,0,0,.25);border-top-color:#001226;border-radius:50%;animation:girar .7s linear infinite; }
-  @keyframes girar{to{transform:rotate(360deg);}}
-  .hidden{display:none !important;}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Ventas Telcel Pro</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body { margin:0; font-family:'Segoe UI',system-ui; background:linear-gradient(135deg,#001d3d,#003566,#000814); min-height:100vh; color:white; }
+        .app { max-width:480px; margin:auto; padding:20px; position: relative; }
+        .card { background:rgba(255,255,255,.08); backdrop-filter:blur(12px); border-radius:18px; padding:18px; margin-bottom:16px; box-shadow:0 10px 25px rgba(0,0,0,.3); border:1px solid rgba(255,255,255,0.1); }
+        .header { text-align:center; font-size:20px; font-weight:bold; color:#ffc300; margin-bottom:20px; }
+        label { font-size:11px; font-weight:600; color:#ffc300; }
+        input, select { width:100%; padding:12px; margin-top:4px; margin-bottom:12px; border-radius:10px; border:none; background:rgba(255,255,255,.12); color:white; box-sizing: border-box; }
+        button { width:100%; padding:14px; border:none; border-radius:12px; font-weight:bold; cursor:pointer; transition:.2s; margin-bottom: 10px; }
+        .btn-main { background:#ffc300; color:#003566; }
+        .btn-excel { background:#1f7a3f; color:white; width: 100%; }
+        .btn-logout { position: absolute; top: 20px; right: 20px; background: #ff4d4d; color: white; padding: 8px 12px; border-radius: 8px; font-size: 12px; z-index: 10; width: auto; border:none; cursor:pointer; }
+        .login { max-width:350px; margin:100px auto; background:white; color:black; padding:30px; border-radius:18px; text-align:center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .hidden { display:none !important; }
+        .venta-item { background: rgba(255,255,255,0.07); padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 5px solid #ffc300; font-size: 11px; position: relative; }
+        .status-icon { position: absolute; top: 15px; right: 45px; font-size: 14px; }
+        .btn-del { position: absolute; top: 12px; right: 12px; color: #ff4d4d; cursor: pointer; font-size: 18px; padding: 5px; }
+        .grid-datos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; }
+        .dato b { color: #ffc300; display: block; font-size: 9px; text-transform: uppercase; }
+    </style>
 </head>
-<body>
+<body onload="inicio()">
 
-<!-- INTERFAZ DE AUTENTICACIÓN (LOGIN) -->
-<div class="login-overlay" id="seccionLogin">
-  <div class="malla-ticket"></div>
-  <div class="login-box">
-    <div class="login-mark">CO</div>
-    <h2>Comisiones Omar</h2>
-    <p>Inicia sesión para acceder a tus ventas, sincronizadas en la nube</p>
-
-    <div class="custom-tabs" id="tabsAcceso">
-      <button id="tabOpLogin" class="tab-btn active" onclick="alternarFormularioAcceso('LOGIN')" type="button">Entrar</button>
-      <button id="tabOpRegistro" class="tab-btn" onclick="alternarFormularioAcceso('REGISTRO')" type="button">Crear cuenta</button>
-      <div class="slider-deslizante"></div>
+    <div id="loginBox" class="login">
+        <h2 id="tituloAuth" style="margin-top:0">Acceso Sistema</h2>
+        <input id="u" placeholder="Correo Electrónico">
+        <input id="p" type="password" placeholder="Contraseña">
+        <button class="btn-main" onclick="entrar()">ENTRAR</button>
+        <button style="background:none; color:#003566; font-size:12px; margin-top:10px; cursor:pointer;" onclick="toggleRegistro()" id="btnT">¿No tienes cuenta? Regístrate</button>
     </div>
 
-    <button class="btn-google" onclick="ejecutarLoginGoogle()" type="button" id="btnGoogleLogin">
-      <i class="fa-brands fa-google" style="color:#4285F4;"></i> Continuar con Google
-    </button>
+    <div id="appBox" class="app hidden">
+        <button class="btn-logout" onclick="salir()"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
+        <div class="header">REGISTRO DE VENTAS</div>
+        
+        <form id="fReg">
+            <div class="card">
+                <label>TIPO DE PRODUCTO</label>
+                <select id="iTipo" required onchange="ajustarCampos()">
+                    <option value="">Seleccionar</option>
+                    <option value="KIT">KIT</option>
+                    <option value="CHIP">CHIP</option>
+                    <option value="PORTA">PORTA</option>
+                    <option value="RENUEVATE">RENUEVATE</option>
+                </select>
+                <label>FECHA DE ACTIVACION (DD/MM/YYYY)</label>
+                <input id="iFec" required>
+                <label>NUM. CELULAR</label>
+                <input id="iTel" type="tel" required maxlength="10">
+                <label>ICCID</label>
+                <input id="iIcc" required>
+            </div>
 
-    <div class="separator">O con tu correo</div>
+            <div id="seccionEquipo" class="card">
+                <label>IMEI</label><input id="iIme">
+                <label>MARCA</label><input id="iMarca">
+                <label>MODELO</label><input id="iMod">
+            </div>
 
-    <div class="campo-error" id="errorLogin"><i class="fa-solid fa-triangle-exclamation"></i><span id="errorLoginTexto"></span></div>
+            <div class="card">
+                <label># TIENDA / Determinante</label><input id="iTiendaNum" required>
+                <label>SOLO NOMBRE DE LA CADENA</label><input id="iCadena" required>
+                <label>SOLO NOMBRE DE TIENDA</label><input id="iTiendaNombre" required>
+                <label>NOMBRE COMPLETO PROMOTOR</label><input id="iProm" required>
+            </div>
+            <button type="submit" class="btn-main">GUARDAR VENTA</button>
+        </form>
 
-    <form id="fAcceso" onsubmit="procesarAutenticacion(event)">
-      <input type="hidden" id="tipoAccesoActual" value="LOGIN">
-      <div class="grupo-campo">
-        <input type="email" id="logEmail" placeholder="Correo electrónico" required autocomplete="email">
-        <i class="fa-solid fa-envelope icon-principal"></i>
-      </div>
-      <div class="grupo-campo">
-        <input type="password" id="logPass" placeholder="Contraseña (mínimo 6 caracteres)" required autocomplete="current-password" minlength="6">
-        <i class="fa-solid fa-lock icon-principal"></i>
-      </div>
-      <button type="submit" id="btnAccesoAccion" class="btn-save">
-        <span id="btnAccesoTexto">INGRESAR AL PANEL</span>
-      </button>
-    </form>
-    <button class="login-footer-link hidden" id="btnOlvidoPass" onclick="recuperarPassword()" type="button">¿Olvidaste tu contraseña?</button>
-  </div>
-</div>
+        <button class="btn-excel" onclick="exportarExcel()">
+            <i class="fa-solid fa-file-excel"></i> DESCARGAR EXCEL (.xlsx)
+        </button>
 
-<!-- INTERFAZ PRINCIPAL DEL SISTEMA -->
-<div class="sistema-overlay hidden" id="wrapperSistema">
-  <div class="malla-ticket"></div>
-  <div class="panel-box">
-    
-    <!-- Encabezado de Usuario -->
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:12px; border-bottom:1px solid var(--vidrio-borde);">
-      <div>
-        <h4 style="margin:0; font-family:var(--fuente-display); font-size:15px; color:var(--dorado);" id="txtUsuarioActivo"></h4>
-        <span style="font-size:11px; color:var(--texto-tenue);">Sistema Ventas 4029</span>
-      </div>
-      <button class="btn-logout" onclick="cerrarSesionSistema()"><i class="fa-solid fa-power-off"></i> Salir</button>
+        <div class="header" style="font-size: 16px; margin-top: 25px;">HISTORIAL LOCAL</div>
+        <div id="listaLocal"></div>
     </div>
-
-    <!-- Pestañas del Sistema Modificado -->
-    <div class="custom-tabs" id="tabsSistema">
-      <button id="tabSisVentas" class="tab-btn active" onclick="cambiarModuloSistema('VENTAS')">Módulo Ventas</button>
-      <button id="tabSisMedia" class="tab-btn" onclick="cambiarModuloSistema('MEDIA')">Media Player</button>
-      <div class="slider-deslizante"></div>
-    </div>
-
-    <!-- MÓDULO: VENTAS E INVENTARIO -->
-    <div id="moduloVentas">
-      <h3 style="font-family:var(--fuente-display); font-size:18px; margin:0 0 14px 0;">Registro de Terminales / Códigos</h3>
-      
-      <div class="grupo-campo con-accion">
-        <input type="text" id="codigoScanner" placeholder="Escanear o ingresar IMEI / UPC / ICCID">
-        <i class="fa-solid fa-barcode icon-principal"></i>
-        <button type="button" class="btn-accion-input" onclick="activarCamaraEscaneo()"><i class="fa-solid fa-camera"></i></button>
-      </div>
-
-      <div class="grupo-campo">
-        <input type="text" id="detalleProducto" placeholder="Descripción del artículo (Ej: Moto G34, Amigo Kit)">
-        <i class="fa-solid fa-box icon-principal"></i>
-      </div>
-
-      <button type="button" class="btn-save" onclick="guardarRegistroLocalExcel()">
-        <i class="fa-solid fa-file-excel"></i> GUARDAR VENTA LOCALMENTE
-      </button>
-    </div>
-
-    <!-- MÓDULO: REPRODUCTOR MULTIMEDIA MULTIFUNCIONAL -->
-    <div id="moduloMedia" class="hidden">
-      <h3 style="font-family:var(--fuente-display); font-size:18px; margin:0 0 14px 0;">Capacitaciones & Media Player</h3>
-      <div class="yt-container">
-        <div class="video-wrapper">
-          <!-- Iframe inicializado con video interactivo -->
-          <iframe id="reproductorYoutube" src="https://www.youtube.com/embed/dQw4w9WgXcQ?enablejsapi=1" allowfullscreen></iframe>
-        </div>
-        <div class="grupo-campo con-accion" style="margin-top:15px; margin-bottom:0;">
-          <input type="text" id="ytVideoId" placeholder="Pegar ID del video de YouTube (Ej: jNQXAC9IVRw)">
-          <i class="fa-brands fa-youtube icon-principal" style="color:var(--error);"></i>
-          <button type="button" class="btn-accion-input" onclick="cargarNuevoVideoYoutube()">Cargar</button>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- CAPA EMULADORA MODAL ESCÁNER CÁMARA -->
-<div id="modalScanner" class="modal-scanner hidden">
-  <div class="modal-scanner-content">
-    <h3 style="margin:0 0 4px 0; font-family:var(--fuente-display);">Lector de Códigos Láser Celular</h3>
-    <p style="font-size:12px; color:var(--texto-tenue); margin:0 0 16px 0;">Ubica el IMEI, código UPC o chip frente a la línea de enfoque</p>
-    <div id="interactiveScanner" class="scanner-view"></div>
-    <button type="button" class="btn-cancelar-scan" onclick="desactivarCamaraEscaneo()">Cerrar Cámara</button>
-  </div>
-</div>
 
 <script>
-  // ---------- CONFIGURACIÓN DE FIREBASE ----------
-  const firebaseConfig = {
-    apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
-    authDomain: "ventastelcel4029.firebaseapp.com",
-    databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com",
-    projectId: "ventastelcel4029",
-    storageBucket: "ventastelcel4029.firebasestorage.app",
-    messagingSenderId: "480758010888",
-    appId: "1:480758010888:web:e948c54f0217536aa9adbd"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-  let scannerInstancia = null;
-
-  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-
-  // ---------- CONTROL CAMBIO MÓDULOS SISTEMA ----------
-  function cambiarModuloSistema(modulo) {
-    const isMedia = modulo === 'MEDIA';
-    document.getElementById('tabsSistema').classList.toggle('modo-alterno', isMedia);
-    document.getElementById('tabSisVentas').classList.toggle('active', !isMedia);
-    document.getElementById('tabSisMedia').classList.toggle('active', isMedia);
-    document.getElementById('moduloVentas').classList.toggle('hidden', isMedia);
-    document.getElementById('moduloMedia').classList.toggle('hidden', !isMedia);
-    
-    // Pausa el video si cambia de pestaña reconstruyendo el src
-    if(!isMedia) {
-      const iframe = document.getElementById('reproductorYoutube');
-      const currentSrc = iframe.src;
-      iframe.src = currentSrc;
-    }
-  }
-
-  // ---------- CONTROL DEL REPRODUCTOR YOUTUBE ----------
-  function cargarNuevoVideoYoutube() {
-    const idInput = document.getElementById('ytVideoId').value.trim();
-    if(!idInput) { alert("Ingresa un ID de video de YouTube válido."); return; }
-    
-    // Filtra si el usuario ingresó la URL completa en lugar de solo el ID
-    let finalId = idInput;
-    if(idInput.includes("v=")) {
-      finalId = idInput.split("v=")[1].split("&")[0];
-    } else if(idInput.includes("youtu.be/")) {
-      finalId = idInput.split("youtu.be/")[1].split("?")[0];
-    }
-    
-    document.getElementById('reproductorYoutube').src = `https://www.youtube.com/embed/${finalId}?enablejsapi=1`;
-    document.getElementById('ytVideoId').value = "";
-  }
-
-  // ---------- LECTOR INTEGRADO PARA IMEI / ICCID / UPC ----------
-  function activarCamaraEscaneo() {
-    document.getElementById('modalScanner').classList.remove('hidden');
-    scannerInstancia = new Html5Qrcode("interactiveScanner");
-    
-    // Configuración optimizada horizontalmente para códigos de barras y cadenas largas (IMEI)
-    const opcionesConfig = {
-      fps: 20,
-      qrbox: { width: 320, height: 140 },
-      aspectRatio: 1.777778
+    // CONFIGURACIÓN FINAL CORREGIDA DESDE TU CONSOLA
+    const firebaseConfig = {
+        apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc", 
+        authDomain: "ventastelcel4029.firebaseapp.com",
+        databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com",
+        projectId: "ventastelcel4029",
+        storageBucket: "ventastelcel4029.firebasestorage.app",
+        messagingSenderId: "480758010888",
+        appId: "1:480758010888:web:e948c54f0217536aa9adbd"
     };
 
-    scannerInstancia.start(
-      { facingMode: "environment" },
-      opcionesConfig,
-      (textoDetectado) => {
-        document.getElementById('codigoScanner').value = textoDetectado;
-        if(navigator.vibrate) navigator.vibrate(120);
-        desactivarCamaraEscaneo();
-      },
-      () => { /* Buscando de manera continua... */ }
-    ).catch(err => {
-      alert("Error al inicializar cámara: " + err);
-      desactivarCamaraEscaneo();
-    });
-  }
+    let uA = "", db, auth, modoReg = false;
 
-  function desactivarCamaraEscaneo() {
-    if(scannerInstancia) {
-      scannerInstancia.stop().then(() => {
-        scannerInstancia = null;
-        document.getElementById('modalScanner').classList.add('hidden');
-      }).catch(() => {
-        document.getElementById('modalScanner').classList.add('hidden');
-      });
-    } else {
-      document.getElementById('modalScanner').classList.add('hidden');
+    function inicio() {
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        db = firebase.database();
+        auth = firebase.auth();
+        
+        const hoy = new Date();
+        iFec.value = hoy.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        
+        auth.onAuthStateChanged(user => {
+            if(user) {
+                uA = user.email;
+                mostrarApp();
+            } else {
+                loginBox.classList.remove("hidden");
+                appBox.classList.add("hidden");
+            }
+        });
     }
-  }
 
-  // ---------- ALMACENAMIENTO DE VENTAS (EXCEL COMPATIBLE) ----------
-  function guardarRegistroLocalExcel() {
-    const code = document.getElementById('codigoScanner').value.trim();
-    const desc = document.getElementById('detalleProducto').value.trim();
-
-    if(!code) { alert("Escanea o escribe un código válido."); return; }
-
-    // Generación del formato de fecha obligatorio DD/MM/YYYY
-    const hoy = new Date();
-    const d = String(hoy.getDate()).padStart(2, '0');
-    const m = String(hoy.getMonth() + 1).padStart(2, '0');
-    const y = hoy.getFullYear();
-    const fechaEstricta = `${d}/${m}/${y}`;
-
-    const nuevaFilaVenta = {
-      Fecha: fechaEstricta,
-      Codigo: code,
-      Descripcion: desc || "Artículo General",
-      IdTransaccion: new Date().getTime()
-    };
-
-    let baseVentas = JSON.parse(localStorage.getItem('historial_ventas_local')) || [];
-    baseVentas.push(nuevaFilaVenta);
-    localStorage.setItem('historial_ventas_local', JSON.stringify(baseVentas));
-
-    alert(`¡Venta guardada localmente!\nFormato Excel respetado (${fechaEstricta}).`);
-    document.getElementById('codigoScanner').value = "";
-    document.getElementById('detalleProducto').value = "";
-  }
-
-  // ---------- LÓGICA DE CONTROL ACCESO & LOCALSTORAGE ----------
-  function alternarFormularioAcceso(tipo){
-    document.getElementById('tipoAccesoActual').value = tipo;
-    document.getElementById('tabOpLogin').classList.toggle('active', tipo === 'LOGIN');
-    document.getElementById('tabOpRegistro').classList.toggle('active', tipo === 'REGISTRO');
-    document.getElementById('tabsAcceso').classList.toggle('modo-registro', tipo === 'REGISTRO');
-    document.getElementById('btnAccesoTexto').textContent = tipo === 'LOGIN' ? 'INGRESAR AL PANEL' : 'CREAR CUENTA';
-    document.getElementById('btnOlvidoPass').classList.toggle('hidden', tipo !== 'LOGIN');
-    ocultarError();
-  }
-
-  function ocultarError(){ document.getElementById('errorLogin').classList.remove('visible'); }
-  
-  function mostrarError(msg){
-    document.getElementById('errorLoginTexto').textContent = msg;
-    document.getElementById('errorLogin').classList.add('visible');
-  }
-
-  function traducirErrorFirebase(codigo){
-    const mapa = {
-      'auth/invalid-email': 'El correo no tiene un formato válido.',
-      'auth/user-not-found': 'No existe una cuenta con ese correo.',
-      'auth/wrong-password': 'Contraseña incorrecta.',
-      'auth/invalid-credential': 'Credenciales incorrectas.',
-      'auth/email-already-in-use': 'El correo ya se encuentra registrado.',
-      'auth/weak-password': 'La contraseña debe ser de mínimo 6 caracteres.'
-    };
-    return mapa[codigo] || 'Error de conexión. Intente de nuevo.';
-  }
-
-  function procesarAutenticacion(e){
-    e.preventDefault();
-    ocultarError();
-
-    const tipo = document.getElementById('tipoAccesoActual').value;
-    const correo = document.getElementById('logEmail').value.trim();
-    const clave = document.getElementById('logPass').value;
-    const boton = document.getElementById('btnAccesoAccion');
-    const textoBoton = document.getElementById('btnAccesoTexto');
-    const original = textoBoton.innerHTML;
-
-    boton.disabled = true;
-    textoBoton.innerHTML = '<span class="spinner"></span> Procesando...';
-
-    if(tipo === 'LOGIN'){
-      auth.signInWithEmailAndPassword(correo, clave)
-        .then((credencial) => { mostrarPanelPrincipal(credencial.user); })
-        .catch((err) => { mostrarError(traducirErrorFirebase(err.code)); })
-        .finally(() => { boton.disabled = false; textoBoton.innerHTML = original; });
-    } else {
-      auth.createUserWithEmailAndPassword(correo, clave)
-        .then((credencial) => {
-          localStorage.setItem(`registro_usuario_${credencial.user.uid}`, JSON.stringify({correo: credencial.user.email, timestamp: new Date().getTime()}));
-          return db.collection('usuarios').doc(credencial.user.uid).set({
-            correo: credencial.user.email, creadoEn: firebase.firestore.FieldValue.serverTimestamp()
-          }).then(() => credencial.user);
-        })
-        .then((user) => { mostrarPanelPrincipal(user); })
-        .catch((err) => { mostrarError(traducirErrorFirebase(err.code)); })
-        .finally(() => { boton.disabled = false; textoBoton.innerHTML = original; });
+    function toggleRegistro() {
+        modoReg = !modoReg;
+        tituloAuth.innerText = modoReg ? "Crear Usuario" : "Acceso Sistema";
+        btnT.innerText = modoReg ? "Ya tengo cuenta, entrar" : "¿No tienes cuenta? Regístrate";
     }
-  }
 
-  function ejecutarLoginGoogle(){
-    ocultarError();
-    const proveedor = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(proveedor)
-      .then((resultado) => {
-        localStorage.setItem(`registro_usuario_${resultado.user.uid}`, JSON.stringify({correo: resultado.user.email, timestamp: new Date().getTime()}));
-        return db.collection('usuarios').doc(resultado.user.uid).set({
-          correo: resultado.user.email, nombre: resultado.user.displayName || '', creadoEn: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true }).then(() => resultado.user);
-      })
-      .then((user) => { mostrarPanelPrincipal(user); })
-      .catch((err) => { if(err.code !== 'auth/popup-closed-by-user') mostrarError(traducirErrorFirebase(err.code)); });
-  }
+    function entrar() {
+        let userEmail = u.value.trim();
+        let pass = p.value.trim();
+        if(!userEmail || !pass) return alert("Por favor llena todos los campos");
+        
+        if(modoReg) {
+            auth.createUserWithEmailAndPassword(userEmail, pass)
+            .then(() => { alert("Usuario registrado"); toggleRegistro(); })
+            .catch(e => alert("Error: " + e.message));
+        } else {
+            auth.signInWithEmailAndPassword(userEmail, pass)
+            .catch(e => alert("Acceso denegado: " + e.message));
+        }
+    }
 
-  function recuperarPassword(){
-    ocultarError();
-    const correo = document.getElementById('logEmail').value.trim();
-    if(!correo){ alert("Escribe tu correo primero en la casilla de arriba."); return; }
-    auth.sendPasswordResetEmail(correo)
-      .then(() => { alert("Te hemos enviado un enlace de recuperación a tu bandeja."); })
-      .catch((err) => { mostrarError(traducirErrorFirebase(err.code)); });
-  }
+    function mostrarApp() {
+        loginBox.classList.add("hidden");
+        appBox.classList.remove("hidden");
+        cargarVentasLocales();
+    }
 
-  auth.onAuthStateChanged((user) => { if(user){ mostrarPanelPrincipal(user); } });
+    function salir() { auth.signOut(); }
 
-  function mostrarPanelPrincipal(user){
-    document.getElementById('seccionLogin').classList.add('hidden');
-    document.getElementById('wrapperSistema').classList.remove('hidden');
-    document.getElementById('txtUsuarioActivo').textContent = user.email;
-  }
+    function ajustarCampos() {
+        const t = iTipo.value;
+        if(t === "CHIP" || t === "PORTA") { seccionEquipo.classList.add("hidden"); } 
+        else { seccionEquipo.classList.remove("hidden"); }
+    }
 
-  function cerrarSesionSistema(){
-    auth.signOut().then(() => {
-      document.getElementById('wrapperSistema').classList.add('hidden');
-      document.getElementById('seccionLogin').classList.remove('hidden');
-    });
-  }
+    fReg.onsubmit = e => {
+        e.preventDefault();
+        const v = {
+            id: Date.now(),
+            sincronizado: false,
+            "NUM. CELULAR": iTel.value,
+            "IMEI": iIme.value || "-",
+            "ICCID": iIcc.value,
+            "Renuevate / Kit / Chip / Porta": iTipo.value,
+            "# TIENDA / Determinante": iTiendaNum.value,
+            "SOLO NOMBRE DE LA CADENA": iCadena.value,
+            "SOLO NOMBRE DE TIENDA SIN CADENA": iTiendaNombre.value,
+            "NOMBRE COMPLETO PROMOTOR": iProm.value,
+            "FECHA DE ACTIVACION": iFec.value,
+            "MARCA": iMarca.value || "-",
+            "MODELO": iMod.value || "-"
+        };
+
+        let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
+        local.unshift(v);
+        localStorage.setItem("ventas_save", JSON.stringify(local));
+
+        if(auth.currentUser) {
+            db.ref('ventas/' + auth.currentUser.uid).push(v).then(() => {
+                marcarSincronizado(v.id);
+            });
+        }
+
+        fReg.reset();
+        ajustarCampos();
+        iFec.value = new Date().toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        cargarVentasLocales();
+        alert("Venta guardada localmente");
+    }
+
+    function eliminarVenta(id) {
+        if(confirm("¿Borrar venta local?")) {
+            let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
+            localStorage.setItem("ventas_save", JSON.stringify(local.filter(v => v.id !== id)));
+            cargarVentasLocales();
+        }
+    }
+
+    function marcarSincronizado(id) {
+        let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
+        let item = local.find(x => x.id === id);
+        if(item) {
+            item.sincronizado = true;
+            localStorage.setItem("ventas_save", JSON.stringify(local));
+            cargarVentasLocales();
+        }
+    }
+
+    function cargarVentasLocales() {
+        const div = document.getElementById("listaLocal");
+        let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
+        div.innerHTML = local.length === 0 ? "<p style='text-align:center; opacity:0.5;'>Sin registros.</p>" : 
+        local.map(v => `
+            <div class="venta-item">
+                <div class="status-icon">${v.sincronizado ? '☁️' : '⏳'}</div>
+                <div class="btn-del" onclick="eliminarVenta(${v.id})"><i class="fa-solid fa-trash-can"></i></div>
+                <div style="color:#ffc300; font-weight:bold; font-size:14px;">${v["NUM. CELULAR"]}</div>
+                <div style="opacity:0.8; margin-bottom:5px;">${v["Renuevate / Kit / Chip / Porta"]} - ${v["FECHA DE ACTIVACION"]}</div>
+                <div class="grid-datos">
+                    <div class="dato"><b>ICCID</b>${v.ICCID}</div>
+                    <div class="dato"><b>TIENDA</b>${v["SOLO NOMBRE DE TIENDA SIN CADENA"]}</div>
+                </div>
+            </div>
+        `).join("");
+    }
+
+    function exportarExcel() {
+        let local = JSON.parse(localStorage.getItem("ventas_save") || "[]");
+        if(local.length === 0) return alert("No hay datos");
+        const paraExcel = local.map(({id, sincronizado, ...resto}) => resto);
+        const ws = XLSX.utils.json_to_sheet(paraExcel);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Registro");
+        XLSX.writeFile(wb, "comisiones_2026_teledata.xlsx");
+    }
 </script>
-
 </body>
 </html>
