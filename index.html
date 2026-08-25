@@ -2,9 +2,8 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta name="theme-color" content="#003566">
-<meta name="description" content="Sistema profesional de registro de ventas Telcel">
 
 <title>Sistema Ventas Telcel Pro</title>
 
@@ -12,25 +11,25 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+
 <link rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
+
 *{
     box-sizing:border-box;
 }
 
 body{
     margin:0;
-    font-family:'Segoe UI',system-ui,sans-serif;
-    background:
-        radial-gradient(circle at top,#00509d 0,#003566 35%,#000814 100%);
+    font-family:Segoe UI,system-ui,sans-serif;
+    background:linear-gradient(135deg,#001d3d,#003566,#000814);
     min-height:100vh;
     color:white;
 }
 
 .app{
-    width:100%;
     max-width:520px;
     margin:auto;
     padding:20px;
@@ -47,8 +46,8 @@ body{
     border-radius:18px;
     padding:18px;
     margin-bottom:16px;
-    box-shadow:0 10px 30px rgba(0,0,0,.30);
     border:1px solid rgba(255,255,255,.12);
+    box-shadow:0 10px 30px rgba(0,0,0,.3);
 }
 
 .header{
@@ -59,40 +58,31 @@ body{
     margin:10px 0 20px;
 }
 
-.subheader{
-    text-align:center;
-    opacity:.7;
-    font-size:12px;
-    margin-top:-15px;
-    margin-bottom:20px;
+.section-title{
+    color:#ffc300;
+    font-weight:800;
+    font-size:13px;
+    margin-bottom:12px;
 }
 
 label{
     display:block;
+    color:#ffc300;
     font-size:11px;
     font-weight:700;
-    color:#ffc300;
-    margin-top:4px;
+    margin-top:5px;
 }
 
-input,
-select{
+input,select{
     width:100%;
     padding:13px;
     margin-top:5px;
-    margin-bottom:13px;
+    margin-bottom:12px;
+    border:none;
     border-radius:10px;
-    border:1px solid rgba(255,255,255,.1);
-    background:rgba(255,255,255,.11);
+    background:rgba(255,255,255,.12);
     color:white;
     outline:none;
-    font-size:14px;
-}
-
-input:focus,
-select:focus{
-    border-color:#ffc300;
-    box-shadow:0 0 0 2px rgba(255,195,0,.15);
 }
 
 select option{
@@ -102,16 +92,11 @@ select option{
 button{
     width:100%;
     padding:14px;
-    border:none;
+    border:0;
     border-radius:12px;
     font-weight:800;
     cursor:pointer;
-    transition:.2s;
     margin-bottom:10px;
-}
-
-button:active{
-    transform:scale(.98);
 }
 
 .btn-main{
@@ -119,179 +104,129 @@ button:active{
     color:#003566;
 }
 
-.btn-main:hover{
-    background:#ffd23f;
-}
-
-.btn-excel{
-    background:#1f7a3f;
-    color:white;
-}
-
-.btn-sync{
+.btn-blue{
     background:#0077b6;
     color:white;
 }
 
-.btn-danger{
+.btn-green{
+    background:#1f7a3f;
+    color:white;
+}
+
+.btn-red{
     background:#d62828;
+    color:white;
+}
+
+.btn-dark{
+    background:#172a3a;
     color:white;
 }
 
 .btn-logout{
     position:absolute;
-    top:20px;
     right:20px;
+    top:20px;
+    width:auto;
+    padding:8px 12px;
     background:#ff4d4d;
     color:white;
-    padding:8px 12px;
-    border-radius:8px;
     font-size:12px;
-    width:auto;
 }
 
 .login{
     max-width:370px;
     margin:90px auto;
+    padding:30px;
     background:white;
     color:#111;
-    padding:30px;
     border-radius:20px;
     text-align:center;
-    box-shadow:0 15px 40px rgba(0,0,0,.5);
-}
-
-.login h2{
-    color:#003566;
 }
 
 .login input{
     color:#111;
-    background:#f1f1f1;
-}
-
-.login input::placeholder{
-    color:#777;
-}
-
-.status-bar{
-    display:flex;
-    gap:8px;
-    margin-bottom:16px;
-}
-
-.stat{
-    flex:1;
-    background:rgba(255,255,255,.08);
-    border-radius:14px;
-    padding:12px 6px;
-    text-align:center;
-}
-
-.stat-number{
-    font-size:20px;
-    font-weight:800;
-    color:#ffc300;
-}
-
-.stat-label{
-    font-size:9px;
-    opacity:.7;
-    text-transform:uppercase;
+    background:#eee;
 }
 
 .connection{
     text-align:center;
-    font-size:11px;
     padding:7px;
     border-radius:8px;
-    margin-bottom:15px;
+    font-size:11px;
+    margin-bottom:12px;
 }
 
 .online{
-    background:rgba(0,180,80,.18);
+    background:rgba(0,200,100,.15);
     color:#6dffad;
 }
 
 .offline{
-    background:rgba(255,70,70,.18);
-    color:#ff9292;
+    background:rgba(255,60,60,.15);
+    color:#ff9696;
 }
 
-.usuario{
-    text-align:center;
-    font-size:11px;
-    opacity:.6;
+.statbar{
+    display:flex;
+    gap:8px;
     margin-bottom:15px;
 }
 
-.venta-item{
-    background:rgba(255,255,255,.07);
-    padding:15px;
-    border-radius:14px;
-    margin-bottom:12px;
-    border-left:5px solid #ffc300;
-    font-size:11px;
-    position:relative;
+.stat{
+    flex:1;
+    text-align:center;
+    background:rgba(255,255,255,.08);
+    border-radius:12px;
+    padding:10px;
 }
 
-.venta-tel{
+.stat strong{
+    display:block;
     color:#ffc300;
-    font-weight:800;
+    font-size:20px;
+}
+
+.stat span{
+    font-size:9px;
+    opacity:.7;
+}
+
+.venta{
+    background:rgba(255,255,255,.07);
+    border-left:5px solid #ffc300;
+    padding:15px;
+    border-radius:12px;
+    margin-bottom:12px;
+    position:relative;
+    font-size:11px;
+}
+
+.venta strong{
+    color:#ffc300;
     font-size:15px;
-    padding-right:60px;
 }
 
-.venta-tipo{
-    opacity:.75;
-    margin:4px 0 8px;
-}
-
-.status-icon{
+.del{
     position:absolute;
-    top:15px;
-    right:45px;
-    font-size:15px;
-}
-
-.btn-del{
-    position:absolute;
-    top:10px;
-    right:10px;
+    right:12px;
+    top:12px;
     color:#ff5c5c;
     cursor:pointer;
-    font-size:17px;
-    padding:5px;
 }
 
-.grid-datos{
+.grid{
     display:grid;
     grid-template-columns:1fr 1fr;
     gap:8px;
-    border-top:1px solid rgba(255,255,255,.1);
-    padding-top:10px;
+    margin-top:10px;
 }
 
-.dato{
-    word-break:break-word;
-}
-
-.dato b{
-    color:#ffc300;
+.grid b{
     display:block;
+    color:#ffc300;
     font-size:9px;
-    text-transform:uppercase;
-    margin-bottom:2px;
-}
-
-.search{
-    margin-bottom:12px;
-}
-
-.empty{
-    text-align:center;
-    opacity:.5;
-    padding:25px 5px;
 }
 
 .toast{
@@ -303,1517 +238,2069 @@ button:active{
     color:white;
     padding:12px 18px;
     border-radius:12px;
-    font-size:12px;
     z-index:9999;
-    box-shadow:0 8px 25px rgba(0,0,0,.4);
-    animation:entrada .2s ease;
 }
 
-@keyframes entrada{
-    from{
-        opacity:0;
-        transform:translate(-50%,10px);
-    }
-    to{
-        opacity:1;
-        transform:translate(-50%,0);
-    }
-}
+/* =========================
+   EDITOR
+========================= */
 
-.section-title{
-    color:#ffc300;
-    font-size:13px;
-    font-weight:800;
-    margin-bottom:12px;
-}
-
-.small{
-    font-size:10px;
-    opacity:.6;
-}
-
-hr{
-    border:0;
-    border-top:1px solid rgba(255,255,255,.1);
+#canvasWrapper{
+    width:100%;
+    display:flex;
+    justify-content:center;
     margin:15px 0;
 }
+
+#collageCanvas{
+    width:100%;
+    max-width:460px;
+    aspect-ratio:1/1;
+    background:#111;
+    border-radius:15px;
+    touch-action:none;
+    box-shadow:0 10px 30px rgba(0,0,0,.5);
+}
+
+.fotos{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:8px;
+    margin-top:10px;
+}
+
+.fotoItem{
+    position:relative;
+    aspect-ratio:1;
+    border-radius:10px;
+    overflow:hidden;
+    background:#111;
+}
+
+.fotoItem img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.fotoItem button{
+    position:absolute;
+    width:25px;
+    height:25px;
+    padding:0;
+    right:4px;
+    top:4px;
+    border-radius:50%;
+    background:#d62828;
+    color:white;
+    margin:0;
+}
+
+.toolgrid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+}
+
+.toolgrid button{
+    margin:0;
+}
+
+.templategrid{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:5px;
+}
+
+.templategrid button{
+    margin:0;
+    padding:10px 3px;
+    font-size:11px;
+    background:#172a3a;
+    color:white;
+}
+
+.templategrid button.active{
+    background:#ffc300;
+    color:#003566;
+}
+
+.colorrow{
+    display:flex;
+    gap:8px;
+}
+
+.colorrow button{
+    flex:1;
+    margin:0;
+    height:40px;
+    padding:0;
+}
+
 </style>
 </head>
 
 <body>
 
+<!-- ================= LOGIN ================= -->
+
 <div id="loginBox" class="login">
 
-    <h2 id="tituloAuth">Acceso Sistema</h2>
+<h2 id="tituloAuth">Acceso Sistema</h2>
 
-    <p style="font-size:12px;color:#666;">
-        Sistema de ventas Telcel
-    </p>
+<p style="font-size:12px;color:#666">
+Sistema de ventas Telcel
+</p>
 
-    <input id="u"
-           type="email"
-           placeholder="Correo electrónico"
-           autocomplete="email">
+<input id="u" type="email" placeholder="Correo electrónico">
 
-    <input id="p"
-           type="password"
-           placeholder="Contraseña"
-           autocomplete="current-password">
+<input id="p" type="password" placeholder="Contraseña">
 
-    <button class="btn-main" onclick="entrar()">
-        <i class="fa-solid fa-right-to-bracket"></i>
-        ENTRAR
-    </button>
+<button class="btn-main" onclick="entrar()">
+<i class="fa-solid fa-right-to-bracket"></i>
+ENTRAR
+</button>
 
-    <button
-        style="background:none;color:#003566;font-size:12px;"
-        onclick="toggleRegistro()"
-        id="btnT">
-        ¿No tienes cuenta? Regístrate
-    </button>
+<button
+style="background:none;color:#003566;font-size:12px"
+onclick="toggleRegistro()"
+id="btnT">
+¿No tienes cuenta? Regístrate
+</button>
 
 </div>
 
 
+<!-- ================= APP ================= -->
+
 <div id="appBox" class="app hidden">
 
-    <button class="btn-logout" onclick="salir()">
-        <i class="fa-solid fa-right-from-bracket"></i>
-        Salir
-    </button>
+<button class="btn-logout" onclick="salir()">
+<i class="fa-solid fa-right-from-bracket"></i>
+Salir
+</button>
 
-    <div class="header">
-        REGISTRO DE VENTAS
-    </div>
+<div class="header">
+REGISTRO DE VENTAS
+</div>
 
-    <div id="conexion" class="connection online">
-        <i class="fa-solid fa-wifi"></i>
-        Conectado
-    </div>
+<div id="conexion" class="connection online">
+<i class="fa-solid fa-wifi"></i>
+Conectado
+</div>
 
-    <div id="usuarioActual" class="usuario"></div>
+<div id="usuarioActual"
+style="text-align:center;font-size:11px;opacity:.6;margin-bottom:15px">
+</div>
 
 
-    <!-- ESTADISTICAS -->
+<div class="statbar">
 
-    <div class="status-bar">
+<div class="stat">
+<strong id="totalVentas">0</strong>
+<span>TOTAL</span>
+</div>
 
-        <div class="stat">
-            <div id="totalVentas" class="stat-number">0</div>
-            <div class="stat-label">Total</div>
-        </div>
+<div class="stat">
+<strong id="ventasSync">0</strong>
+<span>NUBE</span>
+</div>
 
-        <div class="stat">
-            <div id="ventasSync" class="stat-number">0</div>
-            <div class="stat-label">Nube</div>
-        </div>
+<div class="stat">
+<strong id="ventasPend">0</strong>
+<span>PENDIENTES</span>
+</div>
 
-        <div class="stat">
-            <div id="ventasPend" class="stat-number">0</div>
-            <div class="stat-label">Pendientes</div>
-        </div>
+</div>
 
-    </div>
 
+<!-- ================= VENTAS ================= -->
 
-    <!-- FORMULARIO -->
+<form id="fReg">
 
-    <form id="fReg">
+<div class="card">
 
-        <div class="card">
+<div class="section-title">
+<i class="fa-solid fa-sim-card"></i>
+DATOS DE ACTIVACIÓN
+</div>
 
-            <div class="section-title">
-                <i class="fa-solid fa-sim-card"></i>
-                DATOS DE ACTIVACIÓN
-            </div>
+<label>TIPO DE PRODUCTO</label>
 
-            <label>TIPO DE PRODUCTO</label>
+<select id="iTipo" required onchange="ajustarCampos()">
 
-            <select id="iTipo" required onchange="ajustarCampos()">
+<option value="">Seleccionar</option>
+<option value="KIT">KIT</option>
+<option value="CHIP">CHIP</option>
+<option value="PORTA">PORTA</option>
+<option value="RENUEVATE">RENUEVATE</option>
 
-                <option value="">
-                    Seleccionar
-                </option>
+</select>
 
-                <option value="KIT">
-                    KIT
-                </option>
+<label>FECHA DE ACTIVACIÓN</label>
 
-                <option value="CHIP">
-                    CHIP
-                </option>
+<input id="iFec" required maxlength="10">
 
-                <option value="PORTA">
-                    PORTA
-                </option>
+<label>NUM. CELULAR</label>
 
-                <option value="RENUEVATE">
-                    RENUEVATE
-                </option>
+<input
+id="iTel"
+type="tel"
+inputmode="numeric"
+maxlength="10"
+required>
 
-            </select>
+<label>ICCID</label>
 
+<input
+id="iIcc"
+inputmode="numeric"
+required>
 
-            <label>
-                FECHA DE ACTIVACIÓN
-            </label>
+</div>
 
-            <input
-                id="iFec"
-                required
-                maxlength="10"
-                placeholder="DD/MM/YYYY">
 
+<div id="seccionEquipo" class="card">
 
-            <label>
-                NUM. CELULAR
-            </label>
+<div class="section-title">
+<i class="fa-solid fa-mobile-screen"></i>
+DATOS DEL EQUIPO
+</div>
 
-            <input
-                id="iTel"
-                type="tel"
-                inputmode="numeric"
-                maxlength="10"
-                required
-                placeholder="10 dígitos">
+<label>IMEI</label>
+<input id="iIme" inputmode="numeric" maxlength="15">
 
+<label>MARCA</label>
+<input id="iMarca">
 
-            <label>
-                ICCID
-            </label>
+<label>MODELO</label>
+<input id="iMod">
 
-            <input
-                id="iIcc"
-                inputmode="numeric"
-                required
-                placeholder="ICCID">
+</div>
 
-        </div>
 
+<div class="card">
 
-        <!-- EQUIPO -->
+<div class="section-title">
+<i class="fa-solid fa-store"></i>
+DATOS DE TIENDA
+</div>
 
-        <div id="seccionEquipo" class="card">
+<label># TIENDA / DETERMINANTE</label>
+<input id="iTiendaNum" required>
 
-            <div class="section-title">
-                <i class="fa-solid fa-mobile-screen"></i>
-                DATOS DEL EQUIPO
-            </div>
+<label>SOLO NOMBRE DE LA CADENA</label>
+<input id="iCadena" required>
 
-            <label>IMEI</label>
+<label>SOLO NOMBRE DE TIENDA</label>
+<input id="iTiendaNombre" required>
 
-            <input
-                id="iIme"
-                inputmode="numeric"
-                maxlength="15"
-                placeholder="15 dígitos">
+<label>NOMBRE COMPLETO PROMOTOR</label>
+<input id="iProm" required>
 
-            <label>MARCA</label>
+</div>
 
-            <input
-                id="iMarca"
-                placeholder="Ej. Motorola">
 
-            <label>MODELO</label>
+<button type="submit" class="btn-main">
+<i class="fa-solid fa-floppy-disk"></i>
+GUARDAR VENTA
+</button>
 
-            <input
-                id="iMod"
-                placeholder="Ej. Edge 20 Lite">
+</form>
 
-        </div>
 
+<!-- ================= COLLAGE ================= -->
 
-        <!-- TIENDA -->
+<div class="header" style="font-size:18px;margin-top:28px">
 
-        <div class="card">
+📸 EDITOR DE COLLAGE
 
-            <div class="section-title">
-                <i class="fa-solid fa-store"></i>
-                DATOS DE TIENDA
-            </div>
+</div>
 
-            <label>
-                # TIENDA / DETERMINANTE
-            </label>
 
-            <input
-                id="iTiendaNum"
-                required
-                placeholder="Ej. 1234">
+<div class="card">
 
+<div class="section-title">
+<i class="fa-solid fa-images"></i>
+FOTOS
+</div>
 
-            <label>
-                SOLO NOMBRE DE LA CADENA
-            </label>
+<input
+type="file"
+id="imagenesInput"
+accept="image/*"
+multiple
+onchange="cargarFotos(event)">
 
-            <input
-                id="iCadena"
-                required
-                placeholder="Ej. Bodega Aurrerá">
+<div id="fotosPreview" class="fotos"></div>
 
+</div>
 
-            <label>
-                SOLO NOMBRE DE TIENDA
-            </label>
 
-            <input
-                id="iTiendaNombre"
-                required
-                placeholder="Ej. Otumba">
+<div class="card">
 
+<div class="section-title">
+<i class="fa-solid fa-table-cells"></i>
+PLANTILLA
+</div>
 
-            <label>
-                NOMBRE COMPLETO PROMOTOR
-            </label>
+<div class="templategrid">
 
-            <input
-                id="iProm"
-                required
-                placeholder="Nombre completo">
+<button onclick="setTemplate(1)" id="tpl1">1</button>
+<button onclick="setTemplate(2)" id="tpl2">2</button>
+<button onclick="setTemplate(4)" id="tpl4">4</button>
+<button onclick="setTemplate(6)" id="tpl6">6</button>
+<button onclick="setTemplate(9)" id="tpl9">9</button>
 
-        </div>
+</div>
 
+</div>
 
-        <button type="submit" class="btn-main">
 
-            <i class="fa-solid fa-floppy-disk"></i>
+<div id="canvasWrapper">
 
-            GUARDAR VENTA
+<canvas id="collageCanvas"
+width="1200"
+height="1200">
+</canvas>
 
-        </button>
+</div>
 
-    </form>
 
+<div class="card">
 
-    <!-- SINCRONIZACION -->
+<div class="section-title">
+<i class="fa-solid fa-sliders"></i>
+CONFIGURACIÓN
+</div>
 
-    <div class="card">
+<label>TEXT0 PRINCIPAL</label>
 
-        <div class="section-title">
-            <i class="fa-solid fa-cloud"></i>
-            SINCRONIZACIÓN
-        </div>
+<input
+id="textoCollage"
+placeholder="Ej. VENTA TELCEL"
+oninput="dibujarCollage()">
 
-        <button
-            class="btn-sync"
-            onclick="sincronizarPendientes()">
 
-            <i class="fa-solid fa-arrows-rotate"></i>
+<label>SUBTÍTULO</label>
 
-            SINCRONIZAR PENDIENTES
+<input
+id="subTexto"
+placeholder="Ej. Bodega Aurrerá"
+oninput="dibujarCollage()">
 
-        </button>
 
-        <div class="small" style="text-align:center;">
-            Las ventas pendientes se enviarán automáticamente
-            cuando vuelva la conexión.
-        </div>
+<label>FONDO</label>
 
-    </div>
+<div class="colorrow">
 
+<button
+style="background:#000"
+onclick="cambiarFondo('#000000')">
+</button>
 
-    <!-- EXCEL -->
+<button
+style="background:#ffffff"
+onclick="cambiarFondo('#ffffff')">
+</button>
 
-    <button class="btn-excel" onclick="exportarExcel()">
+<button
+style="background:#003566"
+onclick="cambiarFondo('#003566')">
+</button>
 
-        <i class="fa-solid fa-file-excel"></i>
+<button
+style="background:#ffc300"
+onclick="cambiarFondo('#ffc300')">
+</button>
 
-        DESCARGAR EXCEL (.XLSX)
+</div>
 
-    </button>
+</div>
 
 
-    <div class="header" style="font-size:16px;margin-top:25px;">
+<div class="card">
 
-        HISTORIAL DE VENTAS
+<div class="section-title">
+<i class="fa-solid fa-gear"></i>
+CONTROLES DE FOTO
+</div>
 
-    </div>
+<div class="toolgrid">
 
+<button
+class="btn-dark"
+onclick="moverFoto(-20,0)">
+← Izquierda
+</button>
 
-    <input
-        id="buscador"
-        class="search"
-        placeholder="🔎 Buscar celular, ICCID, tienda..."
-        oninput="cargarVentasLocales()">
+<button
+class="btn-dark"
+onclick="moverFoto(20,0)">
+Derecha →
+</button>
 
+<button
+class="btn-dark"
+onclick="moverFoto(0,-20)">
+↑ Arriba
+</button>
 
-    <div id="listaLocal"></div>
+<button
+class="btn-dark"
+onclick="moverFoto(0,20)">
+↓ Abajo
+</button>
+
+<button
+class="btn-dark"
+onclick="zoomFoto(1.1)">
+🔍 Zoom +
+</button>
+
+<button
+class="btn-dark"
+onclick="zoomFoto(.9)">
+🔎 Zoom -
+</button>
+
+</div>
+
+<p style="font-size:10px;opacity:.6;text-align:center">
+Selecciona una fotografía tocándola en el collage
+para moverla o hacer zoom.
+</p>
+
+</div>
+
+
+<div class="card">
+
+<button
+class="btn-main"
+onclick="guardarCollage()">
+
+<i class="fa-solid fa-image"></i>
+
+GUARDAR COLLAGE
+
+</button>
+
+
+<button
+class="btn-blue"
+onclick="compartirCollage()">
+
+<i class="fa-solid fa-share-nodes"></i>
+
+COMPARTIR / GUARDAR EN GALERÍA
+
+</button>
+
+
+<button
+class="btn-green"
+onclick="descargarCollage()">
+
+<i class="fa-solid fa-download"></i>
+
+DESCARGAR IMAGEN
+
+</button>
+
+</div>
+
+
+<!-- ================= SINCRONIZACION ================= -->
+
+<div class="card">
+
+<button
+class="btn-blue"
+onclick="sincronizarPendientes()">
+
+<i class="fa-solid fa-arrows-rotate"></i>
+
+SINCRONIZAR PENDIENTES
+
+</button>
+
+</div>
+
+
+<!-- ================= EXCEL ================= -->
+
+<button
+class="btn-green"
+onclick="exportarExcel()">
+
+<i class="fa-solid fa-file-excel"></i>
+
+DESCARGAR EXCEL
+
+</button>
+
+
+<!-- ================= HISTORIAL ================= -->
+
+<div class="header"
+style="font-size:17px;margin-top:25px">
+
+HISTORIAL DE VENTAS
+
+</div>
+
+<input
+id="buscador"
+placeholder="🔎 Buscar..."
+oninput="cargarVentas()">
+
+<div id="listaLocal"></div>
 
 </div>
 
 
 <script>
 
-/* =========================================================
-   FIREBASE
-========================================================= */
+/* ==========================================================
+FIREBASE
+========================================================== */
 
-const firebaseConfig = {
+const firebaseConfig={
 
-    apiKey:
-        "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
+apiKey:"AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
 
-    authDomain:
-        "ventastelcel4029.firebaseapp.com",
+authDomain:"ventastelcel4029.firebaseapp.com",
 
-    databaseURL:
-        "https://ventastelcel4029-default-rtdb.firebaseio.com",
+databaseURL:
+"https://ventastelcel4029-default-rtdb.firebaseio.com",
 
-    projectId:
-        "ventastelcel4029",
+projectId:"ventastelcel4029",
 
-    storageBucket:
-        "ventastelcel4029.firebasestorage.app",
+storageBucket:
+"ventastelcel4029.firebasestorage.app",
 
-    messagingSenderId:
-        "480758010888",
+messagingSenderId:"480758010888",
 
-    appId:
-        "1:480758010888:web:e948c54f0217536aa9adbd"
+appId:
+"1:480758010888:web:e948c54f0217536aa9adbd"
+
+};
+
+let db;
+let auth;
+let modoReg=false;
+
+
+/* ==========================================================
+EDITOR
+========================================================== */
+
+const canvas=
+document.getElementById("collageCanvas");
+
+const ctx=
+canvas.getContext("2d");
+
+let fotos=[];
+
+let template=4;
+
+let fondo="#000000";
+
+let fotoSeleccionada=0;
+
+
+/*
+Cada foto tendrá:
+
+image
+x
+y
+scale
+*/
+
+function cargarFotos(event){
+
+const archivos=
+Array.from(event.target.files);
+
+if(archivos.length>9){
+
+alert("Máximo 9 fotografías.");
+
+return;
+
+}
+
+fotos=[];
+
+archivos.forEach((archivo,index)=>{
+
+const reader=
+new FileReader();
+
+reader.onload=e=>{
+
+const img=new Image();
+
+img.onload=()=>{
+
+fotos.push({
+
+image:img,
+
+x:0,
+
+y:0,
+
+scale:1
+
+});
+
+renderFotos();
+
+dibujarCollage();
+
+};
+
+img.src=e.target.result;
+
+};
+
+reader.readAsDataURL(archivo);
+
+});
+
+}
+
+
+function renderFotos(){
+
+const div=
+document.getElementById("fotosPreview");
+
+div.innerHTML="";
+
+fotos.forEach((foto,index)=>{
+
+const box=
+document.createElement("div");
+
+box.className="fotoItem";
+
+const img=
+document.createElement("img");
+
+img.src=
+foto.image.src;
+
+const btn=
+document.createElement("button");
+
+btn.innerHTML="×";
+
+btn.onclick=()=>{
+
+fotos.splice(index,1);
+
+if(fotoSeleccionada>=fotos.length){
+
+fotoSeleccionada=
+Math.max(0,fotos.length-1);
+
+}
+
+renderFotos();
+
+dibujarCollage();
+
+};
+
+box.appendChild(img);
+
+box.appendChild(btn);
+
+box.onclick=()=>{
+
+fotoSeleccionada=index;
+
+dibujarCollage();
+
+};
+
+div.appendChild(box);
+
+});
+
+}
+
+
+/* ==========================================================
+PLANTILLAS
+========================================================== */
+
+function setTemplate(numero){
+
+template=numero;
+
+document
+.querySelectorAll(".templategrid button")
+.forEach(b=>b.classList.remove("active"));
+
+const btn=
+document.getElementById("tpl"+numero);
+
+if(btn) btn.classList.add("active");
+
+dibujarCollage();
+
+}
+
+
+/* ==========================================================
+DIBUJAR
+========================================================== */
+
+function dibujarCollage(){
+
+ctx.fillStyle=fondo;
+
+ctx.fillRect(
+0,
+0,
+canvas.width,
+canvas.height
+);
+
+
+if(fotos.length===0){
+
+ctx.fillStyle="#777";
+
+ctx.textAlign="center";
+
+ctx.font="bold 45px Arial";
+
+ctx.fillText(
+"AGREGA FOTOS",
+600,
+600
+);
+
+dibujarTexto();
+
+return;
+
+}
+
+
+const columnas=
+template===1?1:
+template===2?2:
+template===4?2:
+template===6?3:
+3;
+
+const filas=
+template===1?1:
+template===2?1:
+template===4?2:
+template===6?2:
+3;
+
+
+const ancho=
+canvas.width/columnas;
+
+const alto=
+canvas.height/filas;
+
+
+fotos
+.slice(0,template)
+.forEach((foto,index)=>{
+
+const col=
+index%columnas;
+
+const fila=
+Math.floor(index/columnas);
+
+const x=
+col*ancho;
+
+const y=
+fila*alto;
+
+
+dibujarFoto(
+foto,
+x,
+y,
+ancho,
+alto
+);
+
+});
+
+
+dibujarTexto();
+
+}
+
+
+function dibujarFoto(
+foto,
+x,
+y,
+w,
+h
+){
+
+const img=
+foto.image;
+
+const ratio=
+Math.max(
+w/img.width,
+h/img.height
+)
+*foto.scale;
+
+const nw=
+img.width*ratio;
+
+const nh=
+img.height*ratio;
+
+const cx=
+x+(w-nw)/2+foto.x;
+
+const cy=
+y+(h-nh)/2+foto.y;
+
+
+ctx.save();
+
+ctx.beginPath();
+
+ctx.rect(
+x,
+y,
+w,
+h
+);
+
+ctx.clip();
+
+ctx.drawImage(
+img,
+cx,
+cy,
+nw,
+nh
+);
+
+ctx.restore();
+
+}
+
+
+/* ==========================================================
+TEXTO
+========================================================== */
+
+function dibujarTexto(){
+
+const texto=
+document.getElementById("textoCollage").value;
+
+const sub=
+document.getElementById("subTexto").value;
+
+
+if(!texto && !sub) return;
+
+
+ctx.fillStyle=
+"rgba(0,0,0,.65)";
+
+ctx.fillRect(
+0,
+canvas.height-150,
+canvas.width,
+150
+);
+
+
+ctx.textAlign="center";
+
+if(texto){
+
+ctx.fillStyle="#ffc300";
+
+ctx.font="bold 48px Arial";
+
+ctx.fillText(
+texto,
+canvas.width/2,
+canvas.height-90
+);
+
+}
+
+
+if(sub){
+
+ctx.fillStyle="#fff";
+
+ctx.font="28px Arial";
+
+ctx.fillText(
+sub,
+canvas.width/2,
+canvas.height-45
+);
+
+}
+
+}
+
+
+/* ==========================================================
+FONDO
+========================================================== */
+
+function cambiarFondo(color){
+
+fondo=color;
+
+dibujarCollage();
+
+}
+
+
+/* ==========================================================
+MOVIMIENTO
+========================================================== */
+
+function moverFoto(x,y){
+
+if(!fotos[fotoSeleccionada])
+return;
+
+fotos[fotoSeleccionada].x+=x;
+
+fotos[fotoSeleccionada].y+=y;
+
+dibujarCollage();
+
+}
+
+
+function zoomFoto(valor){
+
+if(!fotos[fotoSeleccionada])
+return;
+
+fotos[fotoSeleccionada].scale*=valor;
+
+if(fotos[fotoSeleccionada].scale<.3)
+fotos[fotoSeleccionada].scale=.3;
+
+if(fotos[fotoSeleccionada].scale>4)
+fotos[fotoSeleccionada].scale=4;
+
+dibujarCollage();
+
+}
+
+
+/* ==========================================================
+TOUCH / MOUSE
+========================================================== */
+
+let tocando=false;
+
+let ultimoX=0;
+let ultimoY=0;
+
+
+canvas.addEventListener(
+"pointerdown",
+e=>{
+
+tocando=true;
+
+ultimoX=e.clientX;
+ultimoY=e.clientY;
+
+});
+
+
+canvas.addEventListener(
+"pointermove",
+e=>{
+
+if(!tocando)
+return;
+
+if(!fotos[fotoSeleccionada])
+return;
+
+const dx=
+e.clientX-ultimoX;
+
+const dy=
+e.clientY-ultimoY;
+
+fotos[fotoSeleccionada].x+=
+dx*2;
+
+fotos[fotoSeleccionada].y+=
+dy*2;
+
+ultimoX=e.clientX;
+ultimoY=e.clientY;
+
+dibujarCollage();
+
+});
+
+
+canvas.addEventListener(
+"pointerup",
+()=>tocando=false
+);
+
+canvas.addEventListener(
+"pointercancel",
+()=>tocando=false
+);
+
+
+/* ==========================================================
+GUARDAR COLLAGE LOCAL
+========================================================== */
+
+function guardarCollage(){
+
+if(fotos.length===0){
+
+alert("Primero agrega fotografías.");
+
+return;
+
+}
+
+
+const imagen=
+canvas.toDataURL(
+"image/jpeg",
+.92
+);
+
+
+const collage={
+
+id:
+Date.now().toString(),
+
+fecha:
+Date.now(),
+
+usuario:
+auth.currentUser?
+auth.currentUser.uid:null,
+
+titulo:
+document.getElementById("textoCollage").value,
+
+subtitulo:
+document.getElementById("subTexto").value,
+
+imagen:imagen,
+
+sincronizado:false
 
 };
 
 
-let db;
-let auth;
-let modoReg = false;
+let lista=
+JSON.parse(
+localStorage.getItem(
+"collages_save"
+)||"[]"
+);
+
+lista.unshift(collage);
+
+localStorage.setItem(
+"collages_save",
+JSON.stringify(lista)
+);
 
 
-/* =========================================================
-   INICIO
-========================================================= */
+/*
+Guardamos también un registro
+ligero en Firebase.
+*/
+
+if(
+auth.currentUser &&
+navigator.onLine
+){
+
+db.ref(
+"collages/"
++auth.currentUser.uid+
+"/"+
+collage.id
+).set({
+
+id:collage.id,
+
+fecha:collage.fecha,
+
+titulo:collage.titulo,
+
+subtitulo:collage.subtitulo,
+
+sincronizado:true
+
+}).then(()=>{
+
+marcarCollageSync(
+collage.id
+);
+
+});
+
+}
+
+mostrarToast(
+"Collage guardado correctamente."
+);
+
+}
+
+
+/* ==========================================================
+DESCARGAR
+========================================================== */
+
+function descargarCollage(){
+
+if(fotos.length===0){
+
+alert("Primero agrega fotografías.");
+
+return;
+
+}
+
+
+const link=
+document.createElement("a");
+
+link.download=
+"collage_telcel_"
++Date.now()
++".jpg";
+
+link.href=
+canvas.toDataURL(
+"image/jpeg",
+.95
+);
+
+link.click();
+
+}
+
+
+/* ==========================================================
+COMPARTIR
+========================================================== */
+
+async function compartirCollage(){
+
+if(fotos.length===0){
+
+alert("Primero agrega fotografías.");
+
+return;
+
+}
+
+
+canvas.toBlob(
+async blob=>{
+
+const archivo=
+new File(
+[blob],
+"collage_telcel.jpg",
+{
+type:"image/jpeg"
+}
+);
+
+
+if(
+navigator.share &&
+navigator.canShare &&
+navigator.canShare({
+files:[archivo]
+})
+){
+
+try{
+
+await navigator.share({
+
+title:"Collage Telcel",
+
+text:"Collage de venta Telcel",
+
+files:[archivo]
+
+});
+
+}catch(e){
+
+console.log(e);
+
+}
+
+}else{
+
+descargarCollage();
+
+alert(
+"Tu navegador no permite compartir archivos directamente. La imagen fue preparada para descargar."
+);
+
+}
+
+},
+"image/jpeg",
+.95
+);
+
+}
+
+
+/* ==========================================================
+SYNC COLLAGES
+========================================================== */
+
+function marcarCollageSync(id){
+
+let lista=
+JSON.parse(
+localStorage.getItem(
+"collages_save"
+)||"[]"
+);
+
+const item=
+lista.find(
+x=>x.id===id
+);
+
+if(item){
+
+item.sincronizado=true;
+
+localStorage.setItem(
+"collages_save",
+JSON.stringify(lista)
+);
+
+}
+
+}
+
+
+async function sincronizarCollages(){
+
+if(
+!navigator.onLine ||
+!auth.currentUser
+)return;
+
+
+let lista=
+JSON.parse(
+localStorage.getItem(
+"collages_save"
+)||"[]"
+);
+
+
+for(const collage of lista){
+
+if(collage.sincronizado)
+continue;
+
+
+try{
+
+await db.ref(
+"collages/"
++auth.currentUser.uid+
+"/"+
+collage.id
+).set({
+
+id:collage.id,
+
+fecha:collage.fecha,
+
+titulo:collage.titulo,
+
+subtitulo:collage.subtitulo,
+
+sincronizado:true
+
+});
+
+
+marcarCollageSync(
+collage.id
+);
+
+}catch(e){
+
+console.error(e);
+
+}
+
+}
+
+}
+
+
+/* ==========================================================
+INICIO
+========================================================== */
 
 function inicio(){
 
-    if(!firebase.apps.length){
+if(!firebase.apps.length){
 
-        firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(
+firebaseConfig
+);
 
-    }
+}
 
-    db = firebase.database();
-    auth = firebase.auth();
+db=
+firebase.database();
 
-
-    colocarFecha();
-
-
-    auth.onAuthStateChanged(user => {
-
-        if(user){
-
-            mostrarApp();
-
-        }else{
-
-            loginBox.classList.remove("hidden");
-            appBox.classList.add("hidden");
-
-        }
-
-    });
+auth=
+firebase.auth();
 
 
-    actualizarConexion();
-
-    window.addEventListener(
-        "online",
-        () => {
-
-            actualizarConexion();
-
-            sincronizarPendientes();
-
-        }
-    );
+iFec.value=
+fechaActual();
 
 
-    window.addEventListener(
-        "offline",
-        actualizarConexion
-    );
+auth.onAuthStateChanged(
+user=>{
+
+if(user){
+
+loginBox.classList.add("hidden");
+
+appBox.classList.remove("hidden");
+
+usuarioActual.innerText=
+user.email;
+
+cargarVentas();
+
+sincronizarPendientes();
+
+sincronizarCollages();
+
+}else{
+
+loginBox.classList.remove("hidden");
+
+appBox.classList.add("hidden");
+
+}
+
+});
+
+
+actualizarConexion();
+
+
+window.addEventListener(
+"online",
+()=>{
+
+actualizarConexion();
+
+sincronizarPendientes();
+
+sincronizarCollages();
+
+});
+
+
+window.addEventListener(
+"offline",
+actualizarConexion
+);
 
 }
 
 
-/* =========================================================
-   FECHA
-========================================================= */
-
-function fechaActual(){
-
-    const d = new Date();
-
-    return String(d.getDate()).padStart(2,"0")
-        + "/"
-        + String(d.getMonth()+1).padStart(2,"0")
-        + "/"
-        + d.getFullYear();
-
-}
-
-
-function colocarFecha(){
-
-    iFec.value = fechaActual();
-
-}
-
-
-/* =========================================================
-   LOGIN
-========================================================= */
+/* ==========================================================
+LOGIN
+========================================================== */
 
 function toggleRegistro(){
 
-    modoReg = !modoReg;
+modoReg=!modoReg;
 
-    tituloAuth.innerText =
-        modoReg
-        ? "Crear Usuario"
-        : "Acceso Sistema";
+tituloAuth.innerText=
+modoReg?
+"Crear Usuario":
+"Acceso Sistema";
 
-    btnT.innerText =
-        modoReg
-        ? "Ya tengo cuenta, entrar"
-        : "¿No tienes cuenta? Regístrate";
+btnT.innerText=
+modoReg?
+"Ya tengo cuenta, entrar":
+"¿No tienes cuenta? Regístrate";
 
 }
 
 
 function entrar(){
 
-    const email =
-        u.value.trim();
+const email=
+u.value.trim();
 
-    const password =
-        p.value.trim();
-
-
-    if(!email || !password){
-
-        alert("Por favor llena todos los campos.");
-
-        return;
-
-    }
+const pass=
+p.value.trim();
 
 
-    if(password.length < 6){
+if(!email||!pass){
 
-        alert(
-            "La contraseña debe tener mínimo 6 caracteres."
-        );
+alert("Llena todos los campos.");
 
-        return;
+return;
 
-    }
+}
 
 
-    if(modoReg){
+if(modoReg){
 
-        auth
-        .createUserWithEmailAndPassword(
-            email,
-            password
-        )
-        .then(() => {
+auth
+.createUserWithEmailAndPassword(
+email,
+pass
+)
+.then(()=>{
 
-            mostrarToast(
-                "Usuario creado correctamente."
-            );
+modoReg=false;
 
-            modoReg = false;
+toggleRegistro();
 
-            toggleRegistro();
+})
+.catch(e=>
+alert(e.message)
+);
 
-        })
-        .catch(error => {
+}else{
 
-            alert(
-                "No se pudo crear el usuario:\n\n"
-                + error.message
-            );
+auth
+.signInWithEmailAndPassword(
+email,
+pass
+)
+.catch(e=>
+alert(e.message)
+);
 
-        });
-
-    }else{
-
-        auth
-        .signInWithEmailAndPassword(
-            email,
-            password
-        )
-        .catch(error => {
-
-            alert(
-                "Acceso denegado:\n\n"
-                + error.message
-            );
-
-        });
-
-    }
+}
 
 }
 
 
 function salir(){
 
-    auth.signOut();
+auth.signOut();
 
 }
 
 
-/* =========================================================
-   APP
-========================================================= */
-
-function mostrarApp(){
-
-    loginBox.classList.add("hidden");
-
-    appBox.classList.remove("hidden");
-
-
-    usuarioActual.innerHTML =
-        '<i class="fa-solid fa-user"></i> '
-        + escapar(auth.currentUser.email);
-
-
-    cargarVentasLocales();
-
-    sincronizarPendientes();
-
-}
-
-
-/* =========================================================
-   CONEXION
-========================================================= */
-
-function actualizarConexion(){
-
-    const el =
-        document.getElementById("conexion");
-
-
-    if(navigator.onLine){
-
-        el.className =
-            "connection online";
-
-        el.innerHTML =
-            '<i class="fa-solid fa-wifi"></i> Conectado';
-
-    }else{
-
-        el.className =
-            "connection offline";
-
-        el.innerHTML =
-            '<i class="fa-solid fa-wifi"></i> Sin conexión';
-
-    }
-
-}
-
-
-/* =========================================================
-   CAMPOS DINAMICOS
-========================================================= */
+/* ==========================================================
+VENTAS
+========================================================== */
 
 function ajustarCampos(){
 
-    const tipo =
-        iTipo.value;
-
-
-    if(
-        tipo === "CHIP" ||
-        tipo === "PORTA"
-    ){
-
-        seccionEquipo
-            .classList
-            .add("hidden");
-
-        iIme.value = "";
-        iMarca.value = "";
-        iMod.value = "";
-
-    }else{
-
-        seccionEquipo
-            .classList
-            .remove("hidden");
-
-    }
-
-}
-
-
-/* =========================================================
-   LIMPIEZA / VALIDACION
-========================================================= */
-
-function soloNumeros(valor){
-
-    return String(valor)
-        .replace(/\D/g,"");
-
-}
-
-
-function validarVenta(){
-
-    const telefono =
-        soloNumeros(iTel.value);
-
-    const iccid =
-        soloNumeros(iIcc.value);
-
-    const tipo =
-        iTipo.value;
-
-
-    if(telefono.length !== 10){
-
-        alert(
-            "El número celular debe tener exactamente 10 dígitos."
-        );
-
-        iTel.focus();
-
-        return false;
-
-    }
-
-
-    if(iccid.length < 10){
-
-        alert(
-            "El ICCID parece incompleto."
-        );
-
-        iIcc.focus();
-
-        return false;
-
-    }
-
-
-    if(
-        tipo === "KIT" ||
-        tipo === "RENUEVATE"
-    ){
-
-        const imei =
-            soloNumeros(iIme.value);
-
-
-        if(imei.length !== 15){
-
-            alert(
-                "El IMEI debe tener exactamente 15 dígitos."
-            );
-
-            iIme.focus();
-
-            return false;
-
-        }
-
-    }
-
-
-    return true;
-
-}
-
-
-/* =========================================================
-   GUARDAR VENTA
-========================================================= */
-
-fReg.addEventListener(
-    "submit",
-    async function(e){
-
-        e.preventDefault();
-
-
-        if(!validarVenta()){
-
-            return;
-
-        }
-
-
-        const user =
-            auth.currentUser;
-
-
-        if(!user){
-
-            alert("Tu sesión expiró.");
-
-            return;
-
-        }
-
-
-        const venta = {
-
-            id: crypto.randomUUID
-                ? crypto.randomUUID()
-                : Date.now()
-                  + "_"
-                  + Math.random()
-                      .toString(36)
-                      .substring(2),
-
-            usuarioUID:
-                user.uid,
-
-            usuarioEmail:
-                user.email,
-
-            sincronizado:
-                false,
-
-            "NUM. CELULAR":
-                soloNumeros(iTel.value),
-
-            "IMEI":
-                soloNumeros(iIme.value) || "-",
-
-            "ICCID":
-                soloNumeros(iIcc.value),
-
-            "Renuevate / Kit / Chip / Porta":
-                iTipo.value,
-
-            "# TIENDA / Determinante":
-                iTiendaNum.value.trim(),
-
-            "SOLO NOMBRE DE LA CADENA":
-                iCadena.value.trim(),
-
-            "SOLO NOMBRE DE TIENDA SIN CADENA":
-                iTiendaNombre.value.trim(),
-
-            "NOMBRE COMPLETO PROMOTOR":
-                iProm.value.trim(),
-
-            "FECHA DE ACTIVACION":
-                iFec.value.trim(),
-
-            "MARCA":
-                iMarca.value.trim() || "-",
-
-            "MODELO":
-                iMod.value.trim() || "-",
-
-            fechaCreacion:
-                Date.now()
-
-        };
-
-
-        guardarLocal(venta);
-
-
-        fReg.reset();
-
-        ajustarCampos();
-
-        colocarFecha();
-
-        cargarVentasLocales();
-
-
-        mostrarToast(
-            "Venta guardada correctamente."
-        );
-
-
-        if(navigator.onLine){
-
-            await sincronizarVenta(venta);
-
-        }
-
-    }
+const t=iTipo.value;
+
+if(
+t==="CHIP"||
+t==="PORTA"
+){
+
+seccionEquipo.classList.add(
+"hidden"
 );
 
+}else{
 
-/* =========================================================
-   LOCAL STORAGE
-========================================================= */
+seccionEquipo.classList.remove(
+"hidden"
+);
+
+}
+
+}
+
+
+function fechaActual(){
+
+const d=new Date();
+
+return String(d.getDate()).padStart(2,"0")
++"/"+
+String(d.getMonth()+1).padStart(2,"0")
++"/"+
+d.getFullYear();
+
+}
+
 
 function obtenerVentas(){
 
-    try{
-
-        return JSON.parse(
-            localStorage.getItem(
-                "ventas_save"
-            ) || "[]"
-        );
-
-    }catch(e){
-
-        return [];
-
-    }
+return JSON.parse(
+localStorage.getItem(
+"ventas_save"
+)||"[]"
+);
 
 }
 
 
-function guardarLocal(venta){
+fReg.addEventListener(
+"submit",
+e=>{
 
-    const ventas =
-        obtenerVentas();
-
-
-    ventas.unshift(venta);
+e.preventDefault();
 
 
-    localStorage.setItem(
-        "ventas_save",
-        JSON.stringify(ventas)
-    );
+const tel=
+iTel.value.replace(/\D/g,"");
 
-}
+if(tel.length!==10){
 
+alert(
+"El celular debe tener 10 dígitos."
+);
 
-/* =========================================================
-   SINCRONIZAR UNA VENTA
-========================================================= */
-
-async function sincronizarVenta(venta){
-
-    const user =
-        auth.currentUser;
-
-
-    if(!user || !navigator.onLine){
-
-        return false;
-
-    }
-
-
-    try{
-
-        await db
-            .ref(
-                "ventas/"
-                + user.uid
-                + "/"
-                + venta.id
-            )
-            .set(venta);
-
-
-        marcarSincronizado(
-            venta.id
-        );
-
-
-        return true;
-
-    }catch(error){
-
-        console.error(
-            "Error Firebase:",
-            error
-        );
-
-        return false;
-
-    }
+return;
 
 }
 
 
-/* =========================================================
-   SINCRONIZAR PENDIENTES
-========================================================= */
+const venta={
+
+id:
+Date.now().toString(),
+
+sincronizado:false,
+
+"NUM. CELULAR":tel,
+
+"IMEI":
+iIme.value||"-",
+
+"ICCID":
+iIcc.value,
+
+"Renuevate / Kit / Chip / Porta":
+iTipo.value,
+
+"# TIENDA / Determinante":
+iTiendaNum.value,
+
+"SOLO NOMBRE DE LA CADENA":
+iCadena.value,
+
+"SOLO NOMBRE DE TIENDA SIN CADENA":
+iTiendaNombre.value,
+
+"NOMBRE COMPLETO PROMOTOR":
+iProm.value,
+
+"FECHA DE ACTIVACION":
+iFec.value,
+
+"MARCA":
+iMarca.value||"-",
+
+"MODELO":
+iMod.value||"-",
+
+usuarioUID:
+auth.currentUser.uid,
+
+usuarioEmail:
+auth.currentUser.email
+
+};
+
+
+const lista=
+obtenerVentas();
+
+lista.unshift(venta);
+
+localStorage.setItem(
+"ventas_save",
+JSON.stringify(lista)
+);
+
+
+if(navigator.onLine){
+
+db.ref(
+"ventas/"
++auth.currentUser.uid+
+"/"+
+venta.id
+)
+.set(venta)
+.then(()=>{
+
+venta.sincronizado=true;
+
+localStorage.setItem(
+"ventas_save",
+JSON.stringify(lista)
+);
+
+});
+
+}
+
+
+fReg.reset();
+
+iFec.value=
+fechaActual();
+
+ajustarCampos();
+
+cargarVentas();
+
+mostrarToast(
+"Venta guardada."
+);
+
+});
+
+
+/* ==========================================================
+SYNC VENTAS
+========================================================== */
 
 async function sincronizarPendientes(){
 
-    const user =
-        auth.currentUser;
+if(
+!navigator.onLine||
+!auth.currentUser
+)return;
 
 
-    if(
-        !user ||
-        !navigator.onLine
-    ){
-
-        return;
-
-    }
+const lista=
+obtenerVentas();
 
 
-    const ventas =
-        obtenerVentas();
+for(const venta of lista){
+
+if(venta.sincronizado)
+continue;
 
 
-    const pendientes =
-        ventas.filter(
-            venta =>
-                !venta.sincronizado
-        );
+try{
+
+await db.ref(
+"ventas/"
++auth.currentUser.uid+
+"/"+
+venta.id
+).set(venta);
 
 
-    if(pendientes.length === 0){
+venta.sincronizado=true;
 
-        cargarVentasLocales();
+}catch(e){
 
-        return;
+console.error(e);
 
-    }
-
-
-    mostrarToast(
-        "Sincronizando "
-        + pendientes.length
-        + " venta(s)..."
-    );
-
-
-    for(const venta of pendientes){
-
-        await sincronizarVenta(
-            venta
-        );
-
-    }
-
-
-    cargarVentasLocales();
-
-
-    mostrarToast(
-        "Sincronización terminada."
-    );
+}
 
 }
 
 
-/* =========================================================
-   MARCAR SINCRONIZADO
-========================================================= */
+localStorage.setItem(
+"ventas_save",
+JSON.stringify(lista)
+);
 
-function marcarSincronizado(id){
-
-    const ventas =
-        obtenerVentas();
-
-
-    const venta =
-        ventas.find(
-            x => x.id === id
-        );
-
-
-    if(venta){
-
-        venta.sincronizado =
-            true;
-
-
-        localStorage.setItem(
-            "ventas_save",
-            JSON.stringify(ventas)
-        );
-
-    }
+cargarVentas();
 
 }
 
 
-/* =========================================================
-   ELIMINAR
-========================================================= */
+/* ==========================================================
+HISTORIAL
+========================================================== */
+
+function cargarVentas(){
+
+const div=
+document.getElementById(
+"listaLocal"
+);
+
+let lista=
+obtenerVentas();
+
+const buscar=
+(
+document.getElementById(
+"buscador"
+).value||""
+).toLowerCase();
+
+
+if(buscar){
+
+lista=
+lista.filter(v=>
+Object.values(v)
+.join(" ")
+.toLowerCase()
+.includes(buscar)
+);
+
+}
+
+
+actualizarStats();
+
+
+if(!lista.length){
+
+div.innerHTML=
+"<p style='text-align:center;opacity:.5'>Sin registros.</p>";
+
+return;
+
+}
+
+
+div.innerHTML=
+lista.map(v=>`
+
+<div class="venta">
+
+<div
+class="del"
+onclick="eliminarVenta('${v.id}')">
+
+<i class="fa-solid fa-trash"></i>
+
+</div>
+
+<strong>
+${escapeHTML(v["NUM. CELULAR"])}
+</strong>
+
+<div style="margin-top:4px;opacity:.7">
+
+${escapeHTML(
+v["Renuevate / Kit / Chip / Porta"]
+)}
+
+-
+${escapeHTML(
+v["FECHA DE ACTIVACION"]
+)}
+
+</div>
+
+<div class="grid">
+
+<div>
+<b>ICCID</b>
+${escapeHTML(v["ICCID"])}
+</div>
+
+<div>
+<b>TIENDA</b>
+${escapeHTML(
+v["SOLO NOMBRE DE TIENDA SIN CADENA"]
+)}
+</div>
+
+<div>
+<b>IMEI</b>
+${escapeHTML(v["IMEI"])}
+</div>
+
+<div>
+<b>PROMOTOR</b>
+${escapeHTML(
+v["NOMBRE COMPLETO PROMOTOR"]
+)}
+</div>
+
+</div>
+
+</div>
+
+`).join("");
+
+}
+
+
+function actualizarStats(){
+
+const lista=
+obtenerVentas();
+
+const total=
+lista.length;
+
+const sync=
+lista.filter(
+v=>v.sincronizado
+).length;
+
+totalVentas.innerText=
+total;
+
+ventasSync.innerText=
+sync;
+
+ventasPend.innerText=
+total-sync;
+
+}
+
+
+/* ==========================================================
+ELIMINAR
+========================================================== */
 
 async function eliminarVenta(id){
 
-    if(
-        !confirm(
-            "¿Seguro que quieres eliminar esta venta?"
-        )
-    ){
-
-        return;
-
-    }
+if(!confirm(
+"¿Eliminar esta venta?"
+))
+return;
 
 
-    const user =
-        auth.currentUser;
+let lista=
+obtenerVentas();
+
+lista=
+lista.filter(
+v=>v.id!==id
+);
+
+localStorage.setItem(
+"ventas_save",
+JSON.stringify(lista)
+);
 
 
-    const ventas =
-        obtenerVentas();
+if(
+navigator.onLine&&
+auth.currentUser
+){
 
+try{
 
-    const venta =
-        ventas.find(
-            x => x.id === id
-        );
+await db.ref(
+"ventas/"
++auth.currentUser.uid+
+"/"+
+id
+).remove();
 
+}catch(e){
 
-    const nuevas =
-        ventas.filter(
-            x => x.id !== id
-        );
+console.error(e);
 
-
-    localStorage.setItem(
-        "ventas_save",
-        JSON.stringify(nuevas)
-    );
-
-
-    /*
-       Si estaba sincronizada,
-       también se elimina de Firebase.
-    */
-
-    if(
-        venta &&
-        venta.sincronizado &&
-        user &&
-        navigator.onLine
-    ){
-
-        try{
-
-            await db
-                .ref(
-                    "ventas/"
-                    + user.uid
-                    + "/"
-                    + id
-                )
-                .remove();
-
-        }catch(error){
-
-            console.error(
-                error
-            );
-
-            alert(
-                "Se eliminó localmente, "
-                + "pero no se pudo eliminar de la nube."
-            );
-
-        }
-
-    }
-
-
-    cargarVentasLocales();
-
-    mostrarToast(
-        "Venta eliminada."
-    );
+}
 
 }
 
 
-/* =========================================================
-   MOSTRAR HISTORIAL
-========================================================= */
-
-function cargarVentasLocales(){
-
-    const div =
-        document.getElementById(
-            "listaLocal"
-        );
-
-
-    let ventas =
-        obtenerVentas();
-
-
-    const texto =
-        (
-            buscador.value || ""
-        )
-        .trim()
-        .toLowerCase();
-
-
-    if(texto){
-
-        ventas =
-            ventas.filter(v => {
-
-                return Object
-                    .values(v)
-                    .join(" ")
-                    .toLowerCase()
-                    .includes(texto);
-
-            });
-
-    }
-
-
-    actualizarEstadisticas();
-
-
-    if(ventas.length === 0){
-
-        div.innerHTML =
-            '<div class="empty">'
-            + '<i class="fa-solid fa-folder-open" '
-            + 'style="font-size:28px;"></i>'
-            + '<br><br>'
-            + 'No hay registros.'
-            + '</div>';
-
-        return;
-
-    }
-
-
-    div.innerHTML =
-        ventas.map(v => {
-
-            const estado =
-                v.sincronizado
-                ? "☁️"
-                : "⏳";
-
-
-            return `
-
-            <div class="venta-item">
-
-                <div class="status-icon">
-                    ${estado}
-                </div>
-
-                <div
-                    class="btn-del"
-                    onclick="eliminarVenta('${escaparAtributo(v.id)}')">
-
-                    <i class="fa-solid fa-trash-can"></i>
-
-                </div>
-
-
-                <div class="venta-tel">
-                    ${escapar(v["NUM. CELULAR"])}
-                </div>
-
-
-                <div class="venta-tipo">
-                    ${escapar(v["Renuevate / Kit / Chip / Porta"])}
-                    -
-                    ${escapar(v["FECHA DE ACTIVACION"])}
-                </div>
-
-
-                <div class="grid-datos">
-
-                    <div class="dato">
-
-                        <b>ICCID</b>
-
-                        ${escapar(v["ICCID"])}
-
-                    </div>
-
-
-                    <div class="dato">
-
-                        <b>TIENDA</b>
-
-                        ${escapar(
-                            v["SOLO NOMBRE DE TIENDA SIN CADENA"]
-                        )}
-
-                    </div>
-
-
-                    <div class="dato">
-
-                        <b>IMEI</b>
-
-                        ${escapar(v["IMEI"])}
-
-                    </div>
-
-
-                    <div class="dato">
-
-                        <b>PROMOTOR</b>
-
-                        ${escapar(
-                            v["NOMBRE COMPLETO PROMOTOR"]
-                        )}
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            `;
-
-        })
-        .join("");
+cargarVentas();
 
 }
 
 
-/* =========================================================
-   ESTADISTICAS
-========================================================= */
-
-function actualizarEstadisticas(){
-
-    const ventas =
-        obtenerVentas();
-
-
-    const total =
-        ventas.length;
-
-
-    const sincronizadas =
-        ventas.filter(
-            v => v.sincronizado
-        ).length;
-
-
-    const pendientes =
-        total - sincronizadas;
-
-
-    totalVentas.textContent =
-        total;
-
-    ventasSync.textContent =
-        sincronizadas;
-
-    ventasPend.textContent =
-        pendientes;
-
-}
-
-
-/* =========================================================
-   EXCEL
-========================================================= */
+/* ==========================================================
+EXCEL
+========================================================== */
 
 function exportarExcel(){
 
-    const ventas =
-        obtenerVentas();
+const lista=
+obtenerVentas();
 
+if(!lista.length){
 
-    if(ventas.length === 0){
+alert(
+"No hay ventas."
+);
 
-        alert(
-            "No hay ventas para exportar."
-        );
-
-        return;
-
-    }
-
-
-    const columnas = [
-
-        "Renuevate / Kit / Chip / Porta",
-
-        "FECHA DE ACTIVACION",
-
-        "NUM. CELULAR",
-
-        "ICCID",
-
-        "IMEI",
-
-        "MARCA",
-
-        "MODELO",
-
-        "# TIENDA / Determinante",
-
-        "SOLO NOMBRE DE LA CADENA",
-
-        "SOLO NOMBRE DE TIENDA SIN CADENA",
-
-        "NOMBRE COMPLETO PROMOTOR"
-
-    ];
-
-
-    const datos =
-        ventas.map(v => {
-
-            const fila = {};
-
-            columnas.forEach(
-                columna => {
-
-                    fila[columna] =
-                        v[columna] || "";
-
-                }
-            );
-
-            return fila;
-
-        });
-
-
-    const ws =
-        XLSX.utils.json_to_sheet(
-            datos
-        );
-
-
-    /*
-       Anchos de columnas
-    */
-
-    ws["!cols"] = [
-
-        {wch:22},
-        {wch:18},
-        {wch:16},
-        {wch:22},
-        {wch:18},
-        {wch:15},
-        {wch:20},
-        {wch:22},
-        {wch:28},
-        {wch:32},
-        {wch:32}
-
-    ];
-
-
-    const wb =
-        XLSX.utils.book_new();
-
-
-    XLSX.utils.book_append_sheet(
-        wb,
-        ws,
-        "Registro"
-    );
-
-
-    const fecha =
-        new Date()
-        .toISOString()
-        .slice(0,10);
-
-
-    XLSX.writeFile(
-        wb,
-        "ventas_teledata_" + fecha + ".xlsx"
-    );
-
-
-    mostrarToast(
-        "Excel generado correctamente."
-    );
+return;
 
 }
 
 
-/* =========================================================
-   SEGURIDAD HTML
-========================================================= */
+const columnas=[
 
-function escapar(valor){
+"Renuevate / Kit / Chip / Porta",
+"FECHA DE ACTIVACION",
+"NUM. CELULAR",
+"ICCID",
+"IMEI",
+"MARCA",
+"MODELO",
+"# TIENDA / Determinante",
+"SOLO NOMBRE DE LA CADENA",
+"SOLO NOMBRE DE TIENDA SIN CADENA",
+"NOMBRE COMPLETO PROMOTOR"
 
-    return String(valor ?? "")
-        .replace(/&/g,"&amp;")
-        .replace(/</g,"&lt;")
-        .replace(/>/g,"&gt;")
-        .replace(/"/g,"&quot;")
-        .replace(/'/g,"&#039;");
-
-}
-
-
-function escaparAtributo(valor){
-
-    return String(valor ?? "")
-        .replace(/\\/g,"\\\\")
-        .replace(/'/g,"\\'");
-
-}
+];
 
 
-/* =========================================================
-   TOAST
-========================================================= */
+const datos=
+lista.map(v=>{
 
-function mostrarToast(mensaje){
+const x={};
 
-    const viejo =
-        document.querySelector(
-            ".toast"
-        );
+columnas.forEach(c=>
+x[c]=v[c]||""
+);
 
+return x;
 
-    if(viejo){
-
-        viejo.remove();
-
-    }
+});
 
 
-    const toast =
-        document.createElement(
-            "div"
-        );
+const ws=
+XLSX.utils.json_to_sheet(
+datos
+);
 
+const wb=
+XLSX.utils.book_new();
 
-    toast.className =
-        "toast";
+XLSX.utils.book_append_sheet(
+wb,
+ws,
+"Registro"
+);
 
-
-    toast.textContent =
-        mensaje;
-
-
-    document.body.appendChild(
-        toast
-    );
-
-
-    setTimeout(
-        () => toast.remove(),
-        2800
-    );
+XLSX.writeFile(
+wb,
+"ventas_telcel.xlsx"
+);
 
 }
 
 
-/* =========================================================
-   INICIAR
-========================================================= */
+/* ==========================================================
+UTILIDADES
+========================================================== */
+
+function actualizarConexion(){
+
+const el=
+document.getElementById(
+"conexion"
+);
+
+if(navigator.onLine){
+
+el.className=
+"connection online";
+
+el.innerHTML=
+"🟢 Conectado";
+
+}else{
+
+el.className=
+"connection offline";
+
+el.innerHTML=
+"🔴 Sin conexión";
+
+}
+
+}
+
+
+function escapeHTML(text){
+
+return String(text??"")
+.replace(/&/g,"&amp;")
+.replace(/</g,"&lt;")
+.replace(/>/g,"&gt;")
+.replace(/"/g,"&quot;")
+.replace(/'/g,"&#039;");
+
+}
+
+
+function mostrarToast(text){
+
+const old=
+document.querySelector(".toast");
+
+if(old)old.remove();
+
+const el=
+document.createElement("div");
+
+el.className="toast";
+
+el.innerText=text;
+
+document.body.appendChild(el);
+
+setTimeout(
+()=>el.remove(),
+2500
+);
+
+}
+
 
 window.addEventListener(
-    "load",
-    inicio
+"load",
+inicio
 );
 
 </script>
