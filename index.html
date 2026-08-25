@@ -1,4061 +1,459 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
+<head><style>
+@font-face {
+  font-family: "Optimistic";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Optimistic Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
+}
+:where(html) {
+  font-family: "Optimistic", system-ui, sans-serif;
+}
+:where(code, pre, kbd, samp) {
+  font-family: "Optimistic Mono", ui-monospace, monospace;
+}
+</style>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <meta name="theme-color" content="#003566">
 <meta name="description" content="Sistema profesional de ventas Telcel">
-
-<title>Sistema Ventas Telcel Pro</title>
-
+<title>Sistema Ventas Telcel Pro v2</title>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-
-<link rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
-
-*{
-    box-sizing:border-box;
-}
-
-body{
-    margin:0;
-    font-family:'Segoe UI',system-ui,sans-serif;
-    background:
-        radial-gradient(circle at top,#00509d 0,#003566 40%,#000814 100%);
-    min-height:100vh;
-    color:white;
-}
-
-.app{
-    max-width:520px;
-    margin:auto;
-    padding:20px;
-    position:relative;
-}
-
-.hidden{
-    display:none!important;
-}
-
-.card{
-    background:rgba(255,255,255,.08);
-    backdrop-filter:blur(15px);
-    border-radius:18px;
-    padding:18px;
-    margin-bottom:16px;
-    border:1px solid rgba(255,255,255,.12);
-    box-shadow:0 10px 30px rgba(0,0,0,.30);
-}
-
-.header{
-    text-align:center;
-    font-size:21px;
-    font-weight:800;
-    color:#ffc300;
-    margin:10px 0 20px;
-}
-
-.section-title{
-    color:#ffc300;
-    font-weight:800;
-    font-size:13px;
-    margin-bottom:12px;
-}
-
-label{
-    display:block;
-    color:#ffc300;
-    font-size:11px;
-    font-weight:700;
-    margin-top:5px;
-}
-
-input,
-select{
-    width:100%;
-    padding:13px;
-    margin-top:5px;
-    margin-bottom:12px;
-    border:1px solid rgba(255,255,255,.08);
-    border-radius:10px;
-    background:rgba(255,255,255,.12);
-    color:white;
-    outline:none;
-    font-size:14px;
-}
-
-input:focus,
-select:focus{
-    border-color:#ffc300;
-    box-shadow:0 0 0 2px rgba(255,195,0,.12);
-}
-
-select option{
-    color:#111;
-}
-
-button{
-    width:100%;
-    padding:14px;
-    border:0;
-    border-radius:12px;
-    font-weight:800;
-    cursor:pointer;
-    margin-bottom:10px;
-    transition:.15s;
-}
-
-button:active{
-    transform:scale(.98);
-}
-
-.btn-main{
-    background:#ffc300;
-    color:#003566;
-}
-
-.btn-blue{
-    background:#0077b6;
-    color:white;
-}
-
-.btn-green{
-    background:#1f7a3f;
-    color:white;
-}
-
-.btn-red{
-    background:#d62828;
-    color:white;
-}
-
-.btn-dark{
-    background:#172a3a;
-    color:white;
-}
-
-.btn-logout{
-    position:absolute;
-    right:20px;
-    top:20px;
-    width:auto;
-    padding:8px 12px;
-    background:#ff4d4d;
-    color:white;
-    font-size:12px;
-}
-
-.login{
-    max-width:370px;
-    margin:90px auto;
-    padding:30px;
-    background:white;
-    color:#111;
-    border-radius:20px;
-    text-align:center;
-    box-shadow:0 15px 40px rgba(0,0,0,.5);
-}
-
-.login h2{
-    color:#003566;
-}
-
-.login input{
-    color:#111;
-    background:#eee;
-}
-
-.connection{
-    text-align:center;
-    padding:7px;
-    border-radius:8px;
-    font-size:11px;
-    margin-bottom:12px;
-}
-
-.online{
-    background:rgba(0,200,100,.15);
-    color:#6dffad;
-}
-
-.offline{
-    background:rgba(255,60,60,.15);
-    color:#ff9696;
-}
-
-.usuario{
-    text-align:center;
-    font-size:11px;
-    opacity:.6;
-    margin-bottom:15px;
-}
-
-.statbar{
-    display:flex;
-    gap:8px;
-    margin-bottom:15px;
-}
-
-.stat{
-    flex:1;
-    text-align:center;
-    background:rgba(255,255,255,.08);
-    border-radius:12px;
-    padding:10px;
-}
-
-.stat strong{
-    display:block;
-    color:#ffc300;
-    font-size:20px;
-}
-
-.stat span{
-    font-size:9px;
-    opacity:.7;
-}
-
-.venta{
-    background:rgba(255,255,255,.07);
-    border-left:5px solid #ffc300;
-    padding:15px;
-    border-radius:12px;
-    margin-bottom:12px;
-    position:relative;
-    font-size:11px;
-}
-
-.venta strong{
-    color:#ffc300;
-    font-size:15px;
-}
-
-.del{
-    position:absolute;
-    right:12px;
-    top:12px;
-    color:#ff5c5c;
-    cursor:pointer;
-    font-size:17px;
-}
-
-.grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:8px;
-    margin-top:10px;
-    border-top:1px solid rgba(255,255,255,.1);
-    padding-top:10px;
-}
-
-.grid b{
-    display:block;
-    color:#ffc300;
-    font-size:9px;
-    margin-bottom:2px;
-}
-
-.small{
-    font-size:10px;
-    opacity:.6;
-    text-align:center;
-}
-
-/* =====================================================
-   COLLAGE
-===================================================== */
-
-#canvasWrapper{
-    width:100%;
-    display:flex;
-    justify-content:center;
-    margin:15px 0;
-}
-
-#collageCanvas{
-    width:100%;
-    max-width:480px;
-    aspect-ratio:1/1;
-    background:#111;
-    border-radius:15px;
-    box-shadow:0 10px 30px rgba(0,0,0,.5);
-
-    /*
-       MUY IMPORTANTE PARA CELULAR:
-       Evita que el navegador haga scroll
-       mientras estamos manipulando el collage.
-    */
-    touch-action:none;
-
-    user-select:none;
-    -webkit-user-select:none;
-}
-
-.fotos{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:8px;
-    margin-top:10px;
-}
-
-.fotoItem{
-    position:relative;
-    aspect-ratio:1;
-    border-radius:10px;
-    overflow:hidden;
-    background:#111;
-    border:2px solid transparent;
-}
-
-.fotoItem.selected{
-    border-color:#ffc300;
-    box-shadow:0 0 0 2px rgba(255,195,0,.3);
-}
-
-.fotoItem img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-}
-
-.fotoItem button{
-    position:absolute;
-    width:26px;
-    height:26px;
-    padding:0;
-    right:4px;
-    top:4px;
-    border-radius:50%;
-    background:#d62828;
-    color:white;
-    margin:0;
-}
-
-.templategrid{
-    display:grid;
-    grid-template-columns:repeat(5,1fr);
-    gap:5px;
-}
-
-.templategrid button{
-    margin:0;
-    padding:10px 3px;
-    font-size:11px;
-    background:#172a3a;
-    color:white;
-}
-
-.templategrid button.active{
-    background:#ffc300;
-    color:#003566;
-}
-
-.toolgrid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:8px;
-}
-
-.toolgrid button{
-    margin:0;
-}
-
-.colorrow{
-    display:flex;
-    gap:8px;
-}
-
-.colorrow button{
-    flex:1;
-    margin:0;
-    height:40px;
-    padding:0;
-}
-
-.selected-info{
-    text-align:center;
-    color:#ffc300;
-    font-size:11px;
-    margin-top:8px;
-}
-
-.toast{
-    position:fixed;
-    left:50%;
-    bottom:20px;
-    transform:translateX(-50%);
-    background:#111;
-    color:white;
-    padding:12px 18px;
-    border-radius:12px;
-    z-index:9999;
-    box-shadow:0 8px 25px rgba(0,0,0,.4);
-    font-size:12px;
-}
-
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',system-ui,sans-serif;background:radial-gradient(circle at top,#00509d 0,#003566 40%,#000814 100%);min-height:100vh;color:white;-webkit-tap-highlight-color: transparent;}
+.app{max-width:520px;margin:auto;padding:20px;position:relative}
+.hidden{display:none!important}
+.card{background:rgba(255,255,255,.08);backdrop-filter:blur(15px);border-radius:18px;padding:18px;margin-bottom:16px;border:1px solid rgba(255,255,255,.12);box-shadow:0 10px 30px rgba(0,0,0,.30)}
+.header{text-align:center;font-size:21px;font-weight:800;color:#ffc300;margin:10px 0 20px}
+.section-title{color:#ffc300;font-weight:800;font-size:13px;margin-bottom:12px}
+label{display:block;color:#ffc300;font-size:11px;font-weight:700;margin-top:5px}
+input,select{width:100%;padding:13px;margin-top:5px;margin-bottom:12px;border:1px solid rgba(255,255,255,.08);border-radius:10px;background:rgba(255,255,255,.12);color:white;outline:none;font-size:14px}
+input:focus,select:focus{border-color:#ffc300;box-shadow:0 0 0 2px rgba(255,195,0,.12)}
+select option{color:#111}
+button{width:100%;padding:14px;border:0;border-radius:12px;font-weight:800;cursor:pointer;margin-bottom:10px;transition:.15s}
+button:active{transform:scale(.98)}
+.btn-main{background:#ffc300;color:#003566}
+.btn-blue{background:#0077b6;color:white}
+.btn-green{background:#1f7a3f;color:white}
+.btn-red{background:#d62828;color:white}
+.btn-dark{background:#172a3a;color:white}
+.btn-google{background:white;color:#111;display:flex;align-items:center;justify-content:center;gap:10px}
+.btn-logout{position:absolute;right:20px;top:20px;width:auto;padding:8px 12px;background:#ff4d4d;color:white;font-size:12px}
+.login{max-width:370px;margin:90px auto;padding:30px;background:white;color:#111;border-radius:20px;text-align:center;box-shadow:0 15px 40px rgba(0,0,0,.5)}
+.login h2{color:#003566}
+.login input{color:#111;background:#eee}
+.connection{text-align:center;padding:7px;border-radius:8px;font-size:11px;margin-bottom:12px}
+.online{background:rgba(0,200,100,.15);color:#6dffad}
+.offline{background:rgba(255,60,60,.15);color:#ff9696}
+.usuario{text-align:center;font-size:11px;opacity:.6;margin-bottom:15px}
+.statbar{display:flex;gap:8px;margin-bottom:15px}
+.stat{flex:1;text-align:center;background:rgba(255,255,255,.08);border-radius:12px;padding:10px}
+.stat strong{display:block;color:#ffc300;font-size:20px}
+.stat span{font-size:9px;opacity:.7}
+.venta{background:rgba(255,255,255,.07);border-left:5px solid #ffc300;padding:15px;border-radius:12px;margin-bottom:12px;position:relative;font-size:11px}
+.venta strong{color:#ffc300;font-size:15px}
+.del{position:absolute;right:12px;top:12px;color:#ff5c5c;cursor:pointer;font-size:17px;padding:5px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;border-top:1px solid rgba(255,255,255,.1);padding-top:10px}
+.grid b{display:block;color:#ffc300;font-size:9px;margin-bottom:2px}
+.small{font-size:10px;opacity:.6;text-align:center}
+#canvasWrapper{width:100%;display:flex;justify-content:center;margin:15px 0}
+#collageCanvas{width:100%;max-width:480px;aspect-ratio:1/1;background:#111;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,.5);touch-action:none;user-select:none;-webkit-user-select:none}
+.fotos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.fotoItem{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;background:#111;border:2px solid transparent}
+.fotoItem.selected{border-color:#ffc300;box-shadow:0 0 0 2px rgba(255,195,0,.3)}
+.fotoItem img{width:100%;height:100%;object-fit:cover}
+.fotoItem button{position:absolute;width:26px;height:26px;padding:0;right:4px;top:4px;border-radius:50%;background:#d62828;color:white;margin:0}
+.templategrid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.templategrid button{margin:0;padding:10px 3px;font-size:11px;background:#172a3a;color:white}
+.templategrid button.active{background:#ffc300;color:#003566}
+.toolgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.toolgrid button{margin:0}
+.colorrow{display:flex;gap:8px}
+.colorrow button{flex:1;margin:0;height:40px;padding:0}
+.selected-info{text-align:center;color:#ffc300;font-size:11px;margin-top:8px}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#111;color:white;padding:12px 18px;border-radius:12px;z-index:9999;box-shadow:0 8px 25px rgba(0,0,0,.4);font-size:12px;max-width:90vw;text-align:center}
+.divider{height:1px;background:rgba(0,0,0,.1);margin:15px 0}
 </style>
 </head>
-
 <body>
 
-<!-- =====================================================
-     LOGIN
-===================================================== -->
-
 <div id="loginBox" class="login">
-
-    <h2 id="tituloAuth">
-        Acceso Sistema
-    </h2>
-
-    <p style="font-size:12px;color:#666">
-        Sistema de ventas Telcel
-    </p>
-
-    <input
-        id="u"
-        type="email"
-        placeholder="Correo electrónico"
-        autocomplete="email">
-
-    <input
-        id="p"
-        type="password"
-        placeholder="Contraseña"
-        autocomplete="current-password">
-
-    <button
-        class="btn-main"
-        onclick="entrar()">
-
-        <i class="fa-solid fa-right-to-bracket"></i>
-        ENTRAR
-
-    </button>
-
-    <button
-        style="background:none;color:#003566;font-size:12px"
-        onclick="toggleRegistro()"
-        id="btnT">
-
-        ¿No tienes cuenta? Regístrate
-
-    </button>
-
+    <h2 id="tituloAuth">Acceso Sistema</h2>
+    <p style="font-size:12px;color:#666">Sistema de ventas Telcel</p>
+    <input id="u" type="email" placeholder="Correo electrónico" autocomplete="email">
+    <input id="p" type="password" placeholder="Contraseña" autocomplete="current-password">
+    <button class="btn-main" onclick="entrar()"><i class="fa-solid fa-right-to-bracket"></i> ENTRAR</button>
+    <button class="btn-google" onclick="entrarGoogle()"><i class="fa-brands fa-google" style="color:#EA4335"></i> Continuar con Google</button>
+    <div class="divider"></div>
+    <button style="background:none;color:#003566;font-size:12px" onclick="toggleRegistro()" id="btnT">¿No tienes cuenta? Regístrate</button>
 </div>
-
-
-<!-- =====================================================
-     APP
-===================================================== -->
 
 <div id="appBox" class="app hidden">
-
-    <button
-        class="btn-logout"
-        onclick="salir()">
-
-        <i class="fa-solid fa-right-from-bracket"></i>
-        Salir
-
-    </button>
-
-
-    <div class="header">
-        REGISTRO DE VENTAS
-    </div>
-
-
-    <div
-        id="conexion"
-        class="connection online">
-
-        🟢 Conectado
-
-    </div>
-
-
-    <div
-        id="usuarioActual"
-        class="usuario">
-    </div>
-
-
-    <!-- ESTADISTICAS -->
-
+    <button class="btn-logout" onclick="salir()"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
+    <div class="header">REGISTRO DE VENTAS</div>
+    <div id="conexion" class="connection online">🟢 Conectado</div>
+    <div id="usuarioActual" class="usuario"></div>
     <div class="statbar">
-
-        <div class="stat">
-            <strong id="totalVentas">0</strong>
-            <span>TOTAL</span>
-        </div>
-
-        <div class="stat">
-            <strong id="ventasSync">0</strong>
-            <span>NUBE</span>
-        </div>
-
-        <div class="stat">
-            <strong id="ventasPend">0</strong>
-            <span>PENDIENTES</span>
-        </div>
-
+        <div class="stat"><strong id="totalVentas">0</strong><span>TOTAL</span></div>
+        <div class="stat"><strong id="ventasSync">0</strong><span>NUBE</span></div>
+        <div class="stat"><strong id="ventasPend">0</strong><span>PENDIENTES</span></div>
     </div>
-
-
-    <!-- =================================================
-         REGISTRO DE VENTA
-    ================================================== -->
 
     <form id="fReg">
-
         <div class="card">
-
-            <div class="section-title">
-                <i class="fa-solid fa-sim-card"></i>
-                DATOS DE ACTIVACIÓN
-            </div>
-
-
-            <label>
-                TIPO DE PRODUCTO
-            </label>
-
-            <select
-                id="iTipo"
-                required
-                onchange="ajustarCampos()">
-
-                <option value="">
-                    Seleccionar
-                </option>
-
-                <option value="KIT">
-                    KIT
-                </option>
-
-                <option value="CHIP">
-                    CHIP
-                </option>
-
-                <option value="PORTA">
-                    PORTA
-                </option>
-
-                <option value="RENUEVATE">
-                    RENUEVATE
-                </option>
-
-            </select>
-
-
-            <label>
-                FECHA DE ACTIVACIÓN
-            </label>
-
-            <input
-                id="iFec"
-                required
-                maxlength="10"
-                placeholder="DD/MM/YYYY">
-
-
-            <label>
-                NUM. CELULAR
-            </label>
-
-            <input
-                id="iTel"
-                type="tel"
-                inputmode="numeric"
-                maxlength="10"
-                required
-                placeholder="10 dígitos">
-
-
-            <label>
-                ICCID
-            </label>
-
-            <input
-                id="iIcc"
-                inputmode="numeric"
-                required
-                placeholder="ICCID">
-
+            <div class="section-title"><i class="fa-solid fa-sim-card"></i> DATOS DE ACTIVACIÓN</div>
+            <label>TIPO DE PRODUCTO</label>
+            <select id="iTipo" required onchange="ajustarCampos()"><option value="">Seleccionar</option><option value="KIT">KIT</option><option value="CHIP">CHIP</option><option value="PORTA">PORTA</option><option value="RENUEVATE">RENUEVATE</option></select>
+            <label>FECHA DE ACTIVACIÓN</label>
+            <input id="iFec" required maxlength="10" placeholder="DD/MM/YYYY">
+            <label>NUM. CELULAR</label>
+            <input id="iTel" type="tel" inputmode="numeric" maxlength="10" required placeholder="10 dígitos">
+            <label>ICCID</label>
+            <input id="iIcc" inputmode="numeric" required placeholder="ICCID (19-20 dígitos)">
         </div>
-
-
-        <!-- EQUIPO -->
-
-        <div
-            id="seccionEquipo"
-            class="card">
-
-            <div class="section-title">
-                <i class="fa-solid fa-mobile-screen"></i>
-                DATOS DEL EQUIPO
-            </div>
-
-
-            <label>
-                IMEI
-            </label>
-
-            <input
-                id="iIme"
-                inputmode="numeric"
-                maxlength="15"
-                placeholder="15 dígitos">
-
-
-            <label>
-                MARCA
-            </label>
-
-            <input
-                id="iMarca"
-                placeholder="Ej. Motorola">
-
-
-            <label>
-                MODELO
-            </label>
-
-            <input
-                id="iMod"
-                placeholder="Ej. Edge 20 Lite">
-
+        <div id="seccionEquipo" class="card">
+            <div class="section-title"><i class="fa-solid fa-mobile-screen"></i> DATOS DEL EQUIPO</div>
+            <label>IMEI</label><input id="iIme" inputmode="numeric" maxlength="15" placeholder="15 dígitos">
+            <label>MARCA</label><input id="iMarca" placeholder="Ej. Motorola">
+            <label>MODELO</label><input id="iMod" placeholder="Ej. Edge 20 Lite">
         </div>
-
-
-        <!-- TIENDA -->
-
         <div class="card">
-
-            <div class="section-title">
-                <i class="fa-solid fa-store"></i>
-                DATOS DE TIENDA
-            </div>
-
-
-            <label>
-                # TIENDA / DETERMINANTE
-            </label>
-
-            <input
-                id="iTiendaNum"
-                required
-                placeholder="Ej. 1234">
-
-
-            <label>
-                SOLO NOMBRE DE LA CADENA
-            </label>
-
-            <input
-                id="iCadena"
-                required
-                placeholder="Ej. Bodega Aurrerá">
-
-
-            <label>
-                SOLO NOMBRE DE TIENDA
-            </label>
-
-            <input
-                id="iTiendaNombre"
-                required
-                placeholder="Ej. Otumba">
-
-
-            <label>
-                NOMBRE COMPLETO PROMOTOR
-            </label>
-
-            <input
-                id="iProm"
-                required
-                placeholder="Nombre completo">
-
+            <div class="section-title"><i class="fa-solid fa-store"></i> DATOS DE TIENDA</div>
+            <label># TIENDA / DETERMINANTE</label><input id="iTiendaNum" required placeholder="Ej. 1234">
+            <label>SOLO NOMBRE DE LA CADENA</label><input id="iCadena" required placeholder="Ej. Bodega Aurrerá">
+            <label>SOLO NOMBRE DE TIENDA</label><input id="iTiendaNombre" required placeholder="Ej. Otumba">
+            <label>NOMBRE COMPLETO PROMOTOR</label><input id="iProm" required placeholder="Nombre completo">
         </div>
-
-
-        <button
-            type="submit"
-            class="btn-main">
-
-            <i class="fa-solid fa-floppy-disk"></i>
-
-            GUARDAR VENTA
-
-        </button>
-
+        <button type="submit" class="btn-main"><i class="fa-solid fa-floppy-disk"></i> GUARDAR VENTA</button>
     </form>
 
-
-    <!-- =================================================
-         EDITOR DE COLLAGE
-    ================================================== -->
-
-    <div
-        class="header"
-        style="font-size:18px;margin-top:30px">
-
-        📸 EDITOR DE COLLAGE
-
-    </div>
-
-
-    <!-- FOTOS -->
-
+    <div class="header" style="font-size:18px;margin-top:30px">📸 EDITOR DE COLLAGE</div>
     <div class="card">
-
-        <div class="section-title">
-
-            <i class="fa-solid fa-images"></i>
-
-            AGREGAR FOTOGRAFÍAS
-
-        </div>
-
-
-        <input
-            type="file"
-            id="imagenesInput"
-            accept="image/*"
-            multiple
-            onchange="cargarFotos(event)">
-
-
-        <div
-            id="fotosPreview"
-            class="fotos">
-        </div>
-
-
-        <div
-            id="fotoSeleccionadaInfo"
-            class="selected-info">
-
-            Ninguna foto seleccionada
-
-        </div>
-
+        <div class="section-title"><i class="fa-solid fa-images"></i> AGREGAR FOTOGRAFÍAS</div>
+        <input type="file" id="imagenesInput" accept="image/*" multiple onchange="cargarFotos(event)">
+        <div id="fotosPreview" class="fotos"></div>
+        <div id="fotoSeleccionadaInfo" class="selected-info">Ninguna foto seleccionada</div>
     </div>
-
-
-    <!-- PLANTILLAS -->
-
     <div class="card">
-
-        <div class="section-title">
-
-            <i class="fa-solid fa-table-cells"></i>
-
-            PLANTILLA
-
-        </div>
-
-
+        <div class="section-title"><i class="fa-solid fa-table-cells"></i> PLANTILLA</div>
         <div class="templategrid">
-
-            <button
-                id="tpl1"
-                onclick="setTemplate(1)">
-
-                1
-
-            </button>
-
-            <button
-                id="tpl2"
-                onclick="setTemplate(2)">
-
-                2
-
-            </button>
-
-            <button
-                id="tpl4"
-                class="active"
-                onclick="setTemplate(4)">
-
-                4
-
-            </button>
-
-            <button
-                id="tpl6"
-                onclick="setTemplate(6)">
-
-                6
-
-            </button>
-
-            <button
-                id="tpl9"
-                onclick="setTemplate(9)">
-
-                9
-
-            </button>
-
+            <button id="tpl1" onclick="setTemplate(1)">1</button>
+            <button id="tpl2" onclick="setTemplate(2)">2</button>
+            <button id="tpl4" class="active" onclick="setTemplate(4)">4</button>
+            <button id="tpl6" onclick="setTemplate(6)">6</button>
+            <button id="tpl9" onclick="setTemplate(9)">9</button>
         </div>
-
     </div>
-
-
-    <!-- CANVAS -->
-
-    <div id="canvasWrapper">
-
-        <canvas
-            id="collageCanvas"
-            width="1200"
-            height="1200">
-        </canvas>
-
-    </div>
-
-
-    <!-- TEXTO -->
-
+    <div id="canvasWrapper"><canvas id="collageCanvas" width="1200" height="1200"></canvas></div>
     <div class="card">
-
-        <div class="section-title">
-
-            <i class="fa-solid fa-font"></i>
-
-            TEXTO DEL COLLAGE
-
-        </div>
-
-
-        <label>
-            TEXTO PRINCIPAL
-        </label>
-
-        <input
-            id="textoCollage"
-            placeholder="Ej. VENTA TELCEL"
-            oninput="dibujarCollage()">
-
-
-        <label>
-            SUBTÍTULO
-        </label>
-
-        <input
-            id="subTexto"
-            placeholder="Ej. Bodega Aurrerá"
-            oninput="dibujarCollage()">
-
+        <div class="section-title"><i class="fa-solid fa-font"></i> TEXTO DEL COLLAGE</div>
+        <label>TEXTO PRINCIPAL</label><input id="textoCollage" placeholder="Ej. VENTA TELCEL" oninput="requestDraw()">
+        <label>SUBTÍTULO</label><input id="subTexto" placeholder="Ej. Bodega Aurrerá" oninput="requestDraw()">
     </div>
-
-
-    <!-- FONDO -->
-
     <div class="card">
-
-        <div class="section-title">
-
-            <i class="fa-solid fa-palette"></i>
-
-            FONDO
-
-        </div>
-
-
+        <div class="section-title"><i class="fa-solid fa-palette"></i> FONDO</div>
         <div class="colorrow">
-
-            <button
-                style="background:#000000"
-                onclick="cambiarFondo('#000000')">
-            </button>
-
-            <button
-                style="background:#ffffff"
-                onclick="cambiarFondo('#ffffff')">
-            </button>
-
-            <button
-                style="background:#003566"
-                onclick="cambiarFondo('#003566')">
-            </button>
-
-            <button
-                style="background:#ffc300"
-                onclick="cambiarFondo('#ffc300')">
-            </button>
-
+            <button style="background:#000000" onclick="cambiarFondo('#000000')"></button>
+            <button style="background:#ffffff" onclick="cambiarFondo('#ffffff')"></button>
+            <button style="background:#003566" onclick="cambiarFondo('#003566')"></button>
+            <button style="background:#ffc300" onclick="cambiarFondo('#ffc300')"></button>
         </div>
-
     </div>
-
-
-    <!-- CONTROLES -->
-
     <div class="card">
-
-        <div class="section-title">
-
-            <i class="fa-solid fa-sliders"></i>
-
-            CONTROLES
-
-        </div>
-
-
+        <div class="section-title"><i class="fa-solid fa-sliders"></i> CONTROLES</div>
         <div class="toolgrid">
-
-            <button
-                class="btn-dark"
-                onclick="moverFoto(-30,0)">
-
-                ← Izquierda
-
-            </button>
-
-
-            <button
-                class="btn-dark"
-                onclick="moverFoto(30,0)">
-
-                Derecha →
-
-            </button>
-
-
-            <button
-                class="btn-dark"
-                onclick="moverFoto(0,-30)">
-
-                ↑ Arriba
-
-            </button>
-
-
-            <button
-                class="btn-dark"
-                onclick="moverFoto(0,30)">
-
-                ↓ Abajo
-
-            </button>
-
-
-            <button
-                class="btn-dark"
-                onclick="zoomFoto(1.1)">
-
-                🔍 Zoom +
-
-            </button>
-
-
-            <button
-                class="btn-dark"
-                onclick="zoomFoto(.9)">
-
-                🔎 Zoom -
-
-            </button>
-
+            <button class="btn-dark" onclick="moverFoto(-30,0)">← Izquierda</button>
+            <button class="btn-dark" onclick="moverFoto(30,0)">Derecha →</button>
+            <button class="btn-dark" onclick="moverFoto(0,-30)">↑ Arriba</button>
+            <button class="btn-dark" onclick="moverFoto(0,30)">↓ Abajo</button>
+            <button class="btn-dark" onclick="zoomFoto(1.1)">🔍 Zoom +</button>
+            <button class="btn-dark" onclick="zoomFoto(.9)">🔎 Zoom -</button>
         </div>
-
-
-        <p class="small">
-
-            Toca directamente una foto para seleccionarla.
-            Arrástrala con un dedo.
-            Usa dos dedos para hacer zoom.
-
-        </p>
-
+        <p class="small">Toca una foto para seleccionarla. Arrastra con 1 dedo, zoom con 2.</p>
     </div>
-
-
-    <!-- GUARDAR -->
-
     <div class="card">
-
-        <button
-            class="btn-main"
-            onclick="guardarCollage()">
-
-            <i class="fa-solid fa-image"></i>
-
-            GUARDAR COLLAGE
-
-        </button>
-
-
-        <button
-            class="btn-blue"
-            onclick="compartirCollage()">
-
-            <i class="fa-solid fa-share-nodes"></i>
-
-            COMPARTIR / GUARDAR EN GALERÍA
-
-        </button>
-
-
-        <button
-            class="btn-green"
-            onclick="descargarCollage()">
-
-            <i class="fa-solid fa-download"></i>
-
-            GUARDAR IMAGEN
-
-        </button>
-
+        <button class="btn-main" onclick="guardarCollage()"><i class="fa-solid fa-image"></i> GUARDAR COLLAGE</button>
+        <button class="btn-blue" onclick="compartirCollage()"><i class="fa-solid fa-share-nodes"></i> COMPARTIR</button>
+        <button class="btn-green" onclick="descargarCollage()"><i class="fa-solid fa-download"></i> DESCARGAR</button>
     </div>
-
-
-    <!-- SINCRONIZACIÓN -->
-
     <div class="card">
-
-        <div class="section-title">
-
-            <i class="fa-solid fa-cloud"></i>
-
-            SINCRONIZACIÓN
-
-        </div>
-
-
-        <button
-            class="btn-blue"
-            onclick="sincronizarPendientes()">
-
-            <i class="fa-solid fa-arrows-rotate"></i>
-
-            SINCRONIZAR PENDIENTES
-
-        </button>
-
-
-        <div class="small">
-
-            Las ventas y collages pendientes
-            se sincronizan cuando vuelve Internet.
-
-        </div>
-
+        <div class="section-title"><i class="fa-solid fa-cloud"></i> SINCRONIZACIÓN</div>
+        <button class="btn-blue" onclick="sincronizarPendientes()"><i class="fa-solid fa-arrows-rotate"></i> SINCRONIZAR PENDIENTES</button>
+        <div class="small">Ventas y collages se sincronizan al recuperar internet.</div>
     </div>
-
-
-    <!-- EXCEL -->
-
-    <button
-        class="btn-green"
-        onclick="exportarExcel()">
-
-        <i class="fa-solid fa-file-excel"></i>
-
-        DESCARGAR EXCEL
-
-    </button>
-
-
-    <!-- HISTORIAL -->
-
-    <div
-        class="header"
-        style="font-size:17px;margin-top:25px">
-
-        HISTORIAL DE VENTAS
-
-    </div>
-
-
-    <input
-        id="buscador"
-        placeholder="🔎 Buscar celular, ICCID, tienda..."
-        oninput="cargarVentas()">
-
-
+    <button class="btn-green" onclick="exportarExcel()"><i class="fa-solid fa-file-excel"></i> DESCARGAR EXCEL</button>
+    <div class="header" style="font-size:17px;margin-top:25px">HISTORIAL DE VENTAS</div>
+    <input id="buscador" placeholder="🔎 Buscar celular, ICCID, tienda..." oninput="cargarVentas()">
     <div id="listaLocal"></div>
-
 </div>
 
-
 <script>
-
-/* =========================================================
-   FIREBASE
-========================================================= */
-
 const firebaseConfig = {
-
-    apiKey:
-        "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
-
-    authDomain:
-        "ventastelcel4029.firebaseapp.com",
-
-    databaseURL:
-        "https://ventastelcel4029-default-rtdb.firebaseio.com",
-
-    projectId:
-        "ventastelcel4029",
-
-    storageBucket:
-        "ventastelcel4029.firebasestorage.app",
-
-    messagingSenderId:
-        "480758010888",
-
-    appId:
-        "1:480758010888:web:e948c54f0217536aa9adbd"
-
+    apiKey: "AIzaSyD4UK_j8UxMwOCtrtXlYftBe_wCLE7psMc",
+    authDomain: "ventastelcel4029.firebaseapp.com",
+    databaseURL: "https://ventastelcel4029-default-rtdb.firebaseio.com",
+    projectId: "ventastelcel4029",
+    storageBucket: "ventastelcel4029.firebasestorage.app",
+    messagingSenderId: "480758010888",
+    appId: "1:480758010888:web:e948c54f0217536aa9adbd"
 };
-
-
-let db;
-let auth;
+let db, auth, storage;
 let modoReg=false;
-
-
-/* =========================================================
-   VARIABLES DEL COLLAGE
-========================================================= */
-
-const canvas =
-    document.getElementById(
-        "collageCanvas"
-    );
-
-const ctx =
-    canvas.getContext("2d");
-
-
+const canvas = document.getElementById("collageCanvas");
+const ctx = canvas.getContext("2d");
 let fotos = [];
-
 let template = 4;
-
 let fondo = "#000000";
-
 let fotoSeleccionada = -1;
-
-
-/*
-   Punteros activos.
-
-   Esto permite:
-   1 dedo = mover
-   2 dedos = zoom
-*/
-
 const punteros = new Map();
-
 let distanciaPinchInicial = null;
-
 let escalaPinchInicial = 1;
+let ultimoX = 0, ultimoY = 0;
+let rafId = null;
 
-let ultimoX = 0;
-
-let ultimoY = 0;
-
-
-/* =========================================================
-   INICIO
-========================================================= */
+function requestDraw(){ if(rafId) return; rafId = requestAnimationFrame(()=>{ rafId=null; dibujarCollage(); }); }
 
 function inicio(){
-
-    if(!firebase.apps.length){
-
-        firebase.initializeApp(
-            firebaseConfig
-        );
-
-    }
-
-    db =
-        firebase.database();
-
-    auth =
-        firebase.auth();
-
-
-    iFec.value =
-        fechaActual();
-
-
-    auth.onAuthStateChanged(
-        user => {
-
-            if(user){
-
-                loginBox.classList.add(
-                    "hidden"
-                );
-
-                appBox.classList.remove(
-                    "hidden"
-                );
-
-
-                usuarioActual.innerHTML =
-                    '<i class="fa-solid fa-user"></i> '
-                    +
-                    escapeHTML(
-                        user.email
-                    );
-
-
-                cargarVentas();
-
-                actualizarConexion();
-
-                sincronizarPendientes();
-
-            }else{
-
-                loginBox.classList.remove(
-                    "hidden"
-                );
-
-                appBox.classList.add(
-                    "hidden"
-                );
-
-            }
-
-        }
-    );
-
-
+    if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    db = firebase.database(); auth = firebase.auth(); storage = firebase.storage();
+    iFec.value = fechaActual();
+    auth.onAuthStateChanged(user => {
+        if(user){
+            loginBox.classList.add("hidden"); appBox.classList.remove("hidden");
+            usuarioActual.innerHTML = '<i class="fa-solid fa-user"></i> ' + escapeHTML(user.email);
+            cargarVentas(); actualizarConexion(); sincronizarPendientes();
+        }else{ loginBox.classList.remove("hidden"); appBox.classList.add("hidden"); }
+    });
     actualizarConexion();
-
-
-    window.addEventListener(
-        "online",
-        () => {
-
-            actualizarConexion();
-
-            sincronizarPendientes();
-
-        }
-    );
-
-
-    window.addEventListener(
-        "offline",
-        actualizarConexion
-    );
-
-
+    window.addEventListener("online", ()=>{actualizarConexion(); sincronizarPendientes();});
+    window.addEventListener("offline", actualizarConexion);
+    listaLocal.addEventListener('click', handleListaClick);
     dibujarCollage();
-
 }
-
-
-/* =========================================================
-   FECHA
-========================================================= */
-
-function fechaActual(){
-
-    const d =
-        new Date();
-
-    return (
-        String(d.getDate())
-            .padStart(2,"0")
-        +
-        "/"
-        +
-        String(
-            d.getMonth()+1
-        ).padStart(2,"0")
-        +
-        "/"
-        +
-        d.getFullYear()
-    );
-
-}
-
-
-/* =========================================================
-   LOGIN
-========================================================= */
-
-function toggleRegistro(){
-
-    modoReg = !modoReg;
-
-
-    tituloAuth.innerText =
-        modoReg
-        ? "Crear Usuario"
-        : "Acceso Sistema";
-
-
-    btnT.innerText =
-        modoReg
-        ? "Ya tengo cuenta, entrar"
-        : "¿No tienes cuenta? Regístrate";
-
-}
-
-
+function fechaActual(){ const d=new Date(); return String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0")+"/"+d.getFullYear(); }
+function toggleRegistro(){ modoReg=!modoReg; tituloAuth.innerText=modoReg?"Crear Usuario":"Acceso Sistema"; btnT.innerText=modoReg?"Ya tengo cuenta, entrar":"¿No tienes cuenta? Regístrate"; }
 function entrar(){
-
-    const email =
-        u.value.trim();
-
-    const pass =
-        p.value.trim();
-
-
-    if(!email || !pass){
-
-        alert(
-            "Llena todos los campos."
-        );
-
-        return;
-
-    }
-
-
-    if(pass.length < 6){
-
-        alert(
-            "La contraseña debe tener mínimo 6 caracteres."
-        );
-
-        return;
-
-    }
-
-
-    if(modoReg){
-
-        auth
-        .createUserWithEmailAndPassword(
-            email,
-            pass
-        )
-        .then(() => {
-
-            mostrarToast(
-                "Usuario creado correctamente."
-            );
-
-            modoReg = false;
-
-            tituloAuth.innerText =
-                "Acceso Sistema";
-
-            btnT.innerText =
-                "¿No tienes cuenta? Regístrate";
-
-        })
-        .catch(error => {
-
-            alert(
-                "Error:\n"
-                + error.message
-            );
-
-        });
-
-    }else{
-
-        auth
-        .signInWithEmailAndPassword(
-            email,
-            pass
-        )
-        .catch(error => {
-
-            alert(
-                "Acceso denegado:\n"
-                + error.message
-            );
-
-        });
-
-    }
-
+    const email=u.value.trim(), pass=p.value.trim();
+    if(!email||!pass){ alert("Llena todos los campos."); return; }
+    if(pass.length<6){ alert("Mínimo 6 caracteres."); return; }
+    if(modoReg){ auth.createUserWithEmailAndPassword(email,pass).then(()=>{ mostrarToast("Usuario creado."); modoReg=false; tituloAuth.innerText="Acceso Sistema"; btnT.innerText="¿No tienes cuenta? Regístrate"; }).catch(e=>alert("Error:\n"+e.message)); }
+    else{ auth.signInWithEmailAndPassword(email,pass).catch(e=>alert("Acceso denegado:\n"+e.message)); }
 }
-
-
-function salir(){
-
-    auth.signOut();
-
+function entrarGoogle(){
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).catch(e=>alert("Error Google:\n"+e.message));
 }
-
-
-/* =========================================================
-   CONEXIÓN
-========================================================= */
-
-function actualizarConexion(){
-
-    const el =
-        document.getElementById(
-            "conexion"
-        );
-
-
-    if(navigator.onLine){
-
-        el.className =
-            "connection online";
-
-        el.innerHTML =
-            "🟢 Conectado";
-
-    }else{
-
-        el.className =
-            "connection offline";
-
-        el.innerHTML =
-            "🔴 Sin conexión";
-
-    }
-
-}
-
-
-/* =========================================================
-   CAMPOS DE EQUIPO
-========================================================= */
-
-function ajustarCampos(){
-
-    const tipo =
-        iTipo.value;
-
-
-    if(
-        tipo === "CHIP" ||
-        tipo === "PORTA"
-    ){
-
-        seccionEquipo
-            .classList
-            .add("hidden");
-
-
-        iIme.value = "";
-        iMarca.value = "";
-        iMod.value = "";
-
-    }else{
-
-        seccionEquipo
-            .classList
-            .remove("hidden");
-
-    }
-
-}
-
-
-/* =========================================================
-   OBTENER FOTOS
-========================================================= */
-
+function salir(){ auth.signOut(); }
+function actualizarConexion(){ const el=document.getElementById("conexion"); if(navigator.onLine){ el.className="connection online"; el.innerHTML="🟢 Conectado"; }else{ el.className="connection offline"; el.innerHTML="🔴 Sin conexión"; } }
+function ajustarCampos(){ const tipo=iTipo.value; if(tipo==="CHIP"||tipo==="PORTA"){ seccionEquipo.classList.add("hidden"); iIme.value=""; iMarca.value=""; iMod.value=""; } else seccionEquipo.classList.remove("hidden"); }
 function cargarFotos(event){
-
-    const archivos =
-        Array.from(
-            event.target.files
-        );
-
-
-    if(
-        archivos.length > 9
-    ){
-
-        alert(
-            "Puedes seleccionar máximo 9 fotografías."
-        );
-
-        event.target.value = "";
-
-        return;
-
-    }
-
-
-    fotos = [];
-
-    fotoSeleccionada = -1;
-
-
-    let cargadas = 0;
-
-
-    archivos.forEach(
-        archivo => {
-
-            if(
-                !archivo.type.startsWith(
-                    "image/"
-                )
-            ){
-
-                return;
-
-            }
-
-
-            const reader =
-                new FileReader();
-
-
-            reader.onload =
-                e => {
-
-                    const img =
-                        new Image();
-
-
-                    img.onload =
-                        () => {
-
-                            fotos.push({
-
-                                image: img,
-
-                                x: 0,
-
-                                y: 0,
-
-                                scale: 1
-
-                            });
-
-
-                            cargadas++;
-
-
-                            if(
-                                cargadas ===
-                                archivos.length
-                            ){
-
-                                if(fotos.length){
-
-                                    fotoSeleccionada =
-                                        0;
-
-                                }
-
-
-                                renderFotos();
-
-                                dibujarCollage();
-
-                            }
-
-                        };
-
-
-                    img.src =
-                        e.target.result;
-
-                };
-
-
-            reader.readAsDataURL(
-                archivo
-            );
-
-        }
-    );
-
+    const archivos=Array.from(event.target.files);
+    if(archivos.length>9){ alert("Máximo 9 fotos."); event.target.value=""; return; }
+    fotos=[]; fotoSeleccionada=-1; let cargadas=0;
+    archivos.forEach(archivo=>{
+        if(!archivo.type.startsWith("image/")) return;
+        const reader=new FileReader();
+        reader.onload=e=>{
+            const img=new Image();
+            img.onload=()=>{ fotos.push({image:img,x:0,y:0,scale:1}); cargadas++; if(cargadas===archivos.length){ if(fotos.length) fotoSeleccionada=0; renderFotos(); requestDraw(); } };
+            img.src=e.target.result;
+        }; reader.readAsDataURL(archivo);
+    });
 }
-
-
-/* =========================================================
-   MINIATURAS
-========================================================= */
-
 function renderFotos(){
-
-    const div =
-        document.getElementById(
-            "fotosPreview"
-        );
-
-
-    div.innerHTML = "";
-
-
-    fotos.forEach(
-        (foto,index) => {
-
-            const box =
-                document.createElement(
-                    "div"
-                );
-
-
-            box.className =
-                "fotoItem"
-                +
-                (
-                    index ===
-                    fotoSeleccionada
-                    ? " selected"
-                    : ""
-                );
-
-
-            const img =
-                document.createElement(
-                    "img"
-                );
-
-
-            img.src =
-                foto.image.src;
-
-
-            const btn =
-                document.createElement(
-                    "button"
-                );
-
-
-            btn.innerHTML =
-                "×";
-
-
-            btn.onclick =
-                e => {
-
-                    e.stopPropagation();
-
-                    fotos.splice(
-                        index,
-                        1
-                    );
-
-
-                    if(
-                        fotoSeleccionada >=
-                        fotos.length
-                    ){
-
-                        fotoSeleccionada =
-                            fotos.length - 1;
-
-                    }
-
-
-                    renderFotos();
-
-                    dibujarCollage();
-
-                };
-
-
-            box.onclick =
-                () => {
-
-                    seleccionarFoto(
-                        index
-                    );
-
-                };
-
-
-            box.appendChild(img);
-
-            box.appendChild(btn);
-
-            div.appendChild(box);
-
-        }
-    );
-
-
-    actualizarFotoSeleccionada();
-
-}
-
-
-/* =========================================================
-   SELECCIONAR FOTO
-========================================================= */
-
-function seleccionarFoto(index){
-
-    if(
-        index < 0 ||
-        index >= fotos.length
-    ){
-
-        return;
-
-    }
-
-
-    fotoSeleccionada =
-        index;
-
-
-    renderFotos();
-
-    dibujarCollage();
-
-}
-
-
-/* =========================================================
-   INFORMACIÓN DE FOTO
-========================================================= */
-
-function actualizarFotoSeleccionada(){
-
-    const info =
-        document.getElementById(
-            "fotoSeleccionadaInfo"
-        );
-
-
-    if(
-        fotoSeleccionada >= 0 &&
-        fotos[fotoSeleccionada]
-    ){
-
-        info.innerHTML =
-            "🟡 Foto seleccionada: "
-            +
-            (
-                fotoSeleccionada + 1
-            );
-
-    }else{
-
-        info.innerHTML =
-            "Ninguna foto seleccionada";
-
-    }
-
-}
-
-
-/* =========================================================
-   PLANTILLA
-========================================================= */
-
-function setTemplate(numero){
-
-    template =
-        numero;
-
-
-    document
-    .querySelectorAll(
-        ".templategrid button"
-    )
-    .forEach(
-        b =>
-            b.classList.remove(
-                "active"
-            )
-    );
-
-
-    const boton =
-        document.getElementById(
-            "tpl" + numero
-        );
-
-
-    if(boton){
-
-        boton.classList.add(
-            "active"
-        );
-
-    }
-
-
-    /*
-       Si la foto seleccionada queda
-       fuera de la plantilla,
-       seleccionamos la primera.
-    */
-
-    if(
-        fotoSeleccionada >=
-        Math.min(
-            fotos.length,
-            template
-        )
-    ){
-
-        fotoSeleccionada =
-            fotos.length
-            ? 0
-            : -1;
-
-    }
-
-
-    renderFotos();
-
-    dibujarCollage();
-
-}
-
-
-/* =========================================================
-   CONFIGURACIÓN DE CELDAS
-========================================================= */
-
-function obtenerConfiguracion(){
-
-    const columnas =
-        template === 1 ? 1 :
-        template === 2 ? 2 :
-        template === 4 ? 2 :
-        3;
-
-
-    const filas =
-        template === 1 ? 1 :
-        template === 2 ? 1 :
-        template === 4 ? 2 :
-        template === 6 ? 2 :
-        3;
-
-
-    return {
-        columnas,
-        filas
+    const div=document.getElementById("fotosPreview"); div.innerHTML="";
+    fotos.forEach((foto,index)=>{
+        const box=document.createElement("div"); box.className="fotoItem"+(index===fotoSeleccionada?" selected":""); box.dataset.index=index;
+        const img=document.createElement("img"); img.src=foto.image.src;
+        const btn=document.createElement("button"); btn.innerHTML="×"; btn.dataset.delete=index;
+        box.appendChild(img); box.appendChild(btn); div.appendChild(box);
+    });
+    // delegation for fotoPreview
+    div.onclick=(e)=>{
+        const del=e.target.closest('[data-delete]'); if(del){ e.stopPropagation(); const idx=parseInt(del.dataset.delete); fotos.splice(idx,1); if(fotoSeleccionada>=fotos.length) fotoSeleccionada=fotos.length-1; renderFotos(); requestDraw(); return; }
+        const item=e.target.closest('.fotoItem'); if(item){ seleccionarFoto(parseInt(item.dataset.index)); }
     };
-
+    actualizarFotoSeleccionada();
 }
-
-
-/* =========================================================
-   DIBUJAR COLLAGE
-========================================================= */
-
+function seleccionarFoto(index){ if(index<0||index>=fotos.length) return; fotoSeleccionada=index; renderFotos(); requestDraw(); }
+function actualizarFotoSeleccionada(){ const info=document.getElementById("fotoSeleccionadaInfo"); if(fotoSeleccionada>=0&&fotos[fotoSeleccionada]) info.innerHTML="🟡 Foto seleccionada: "+(fotoSeleccionada+1); else info.innerHTML="Ninguna foto seleccionada"; }
+function setTemplate(numero){ template=numero; document.querySelectorAll(".templategrid button").forEach(b=>b.classList.remove("active")); const boton=document.getElementById("tpl"+numero); if(boton) boton.classList.add("active"); if(fotoSeleccionada>=Math.min(fotos.length,template)) fotoSeleccionada=fotos.length?0:-1; renderFotos(); requestDraw(); }
+function obtenerConfiguracion(){ const columnas=template===1?1:template===2?2:template===4?2:3; const filas=template===1?1:template===2?1:template===4?2:template===6?2:3; return {columnas,filas}; }
 function dibujarCollage(){
-
-    ctx.clearRect(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
-
-
-    ctx.fillStyle =
-        fondo;
-
-
-    ctx.fillRect(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
-
-
-    if(
-        fotos.length === 0
-    ){
-
-        ctx.fillStyle =
-            "#777";
-
-
-        ctx.textAlign =
-            "center";
-
-
-        ctx.textBaseline =
-            "middle";
-
-
-        ctx.font =
-            "bold 45px Arial";
-
-
-        ctx.fillText(
-            "AGREGA FOTOS",
-            canvas.width / 2,
-            canvas.height / 2
-        );
-
-
-        dibujarTexto();
-
-        actualizarFotoSeleccionada();
-
-        return;
-
-    }
-
-
-    const config =
-        obtenerConfiguracion();
-
-
-    const ancho =
-        canvas.width /
-        config.columnas;
-
-
-    const alto =
-        canvas.height /
-        config.filas;
-
-
-    const cantidad =
-        Math.min(
-            fotos.length,
-            template
-        );
-
-
-    for(
-        let i = 0;
-        i < cantidad;
-        i++
-    ){
-
-        const columna =
-            i %
-            config.columnas;
-
-
-        const fila =
-            Math.floor(
-                i /
-                config.columnas
-            );
-
-
-        const x =
-            columna *
-            ancho;
-
-
-        const y =
-            fila *
-            alto;
-
-
-        dibujarFoto(
-            fotos[i],
-            x,
-            y,
-            ancho,
-            alto,
-            i === fotoSeleccionada
-        );
-
-    }
-
-
-    dibujarTexto();
-
-    actualizarFotoSeleccionada();
-
+    ctx.clearRect(0,0,canvas.width,canvas.height); ctx.fillStyle=fondo; ctx.fillRect(0,0,canvas.width,canvas.height);
+    if(fotos.length===0){ ctx.fillStyle="#777"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.font="bold 45px Arial"; ctx.fillText("AGREGA FOTOS",canvas.width/2,canvas.height/2); dibujarTexto(); actualizarFotoSeleccionada(); return; }
+    const config=obtenerConfiguracion(); const ancho=canvas.width/config.columnas; const alto=canvas.height/config.filas; const cantidad=Math.min(fotos.length,template);
+    for(let i=0;i<cantidad;i++){ const col=i%config.columnas; const fila=Math.floor(i/config.columnas); dibujarFoto(fotos[i],col*ancho,fila*alto,ancho,alto,i===fotoSeleccionada); }
+    dibujarTexto(); actualizarFotoSeleccionada();
 }
-
-
-/* =========================================================
-   DIBUJAR FOTO
-========================================================= */
-
-function dibujarFoto(
-    foto,
-    x,
-    y,
-    ancho,
-    alto,
-    seleccionada
-){
-
-    const img =
-        foto.image;
-
-
-    const escalaBase =
-        Math.max(
-            ancho / img.width,
-            alto / img.height
-        );
-
-
-    const escala =
-        escalaBase *
-        foto.scale;
-
-
-    const nuevoAncho =
-        img.width *
-        escala;
-
-
-    const nuevoAlto =
-        img.height *
-        escala;
-
-
-    const destinoX =
-        x +
-        (ancho - nuevoAncho) / 2
-        +
-        foto.x;
-
-
-    const destinoY =
-        y +
-        (alto - nuevoAlto) / 2
-        +
-        foto.y;
-
-
-    ctx.save();
-
-
-    /*
-       Recortar fotografía
-       dentro de su celda.
-    */
-
-    ctx.beginPath();
-
-    ctx.rect(
-        x,
-        y,
-        ancho,
-        alto
-    );
-
-    ctx.clip();
-
-
-    ctx.drawImage(
-        img,
-        destinoX,
-        destinoY,
-        nuevoAncho,
-        nuevoAlto
-    );
-
-
-    ctx.restore();
-
-
-    /*
-       Bordes entre fotografías.
-    */
-
-    ctx.strokeStyle =
-        "rgba(255,255,255,.18)";
-
-    ctx.lineWidth =
-        3;
-
-    ctx.strokeRect(
-        x,
-        y,
-        ancho,
-        alto
-    );
-
-
-    /*
-       Borde amarillo para indicar
-       qué fotografía está seleccionada.
-    */
-
-    if(seleccionada){
-
-        ctx.save();
-
-        ctx.strokeStyle =
-            "#ffc300";
-
-        ctx.lineWidth =
-            10;
-
-        ctx.strokeRect(
-            x + 5,
-            y + 5,
-            ancho - 10,
-            alto - 10
-        );
-
-        ctx.restore();
-
-    }
-
+function dibujarFoto(foto,x,y,ancho,alto,seleccionada){
+    const img=foto.image; const escalaBase=Math.max(ancho/img.width,alto/img.height); const escala=escalaBase*foto.scale;
+    const nuevoAncho=img.width*escala, nuevoAlto=img.height*escala;
+    const destinoX=x+(ancho-nuevoAncho)/2+foto.x, destinoY=y+(alto-nuevoAlto)/2+foto.y;
+    ctx.save(); ctx.beginPath(); ctx.rect(x,y,ancho,alto); ctx.clip(); ctx.drawImage(img,destinoX,destinoY,nuevoAncho,nuevoAlto); ctx.restore();
+    ctx.strokeStyle="rgba(255,255,255,.18)"; ctx.lineWidth=3; ctx.strokeRect(x,y,ancho,alto);
+    if(seleccionada){ ctx.save(); ctx.strokeStyle="#ffc300"; ctx.lineWidth=10; ctx.strokeRect(x+5,y+5,ancho-10,alto-10); ctx.restore(); }
 }
-
-
-/* =========================================================
-   TEXTO
-========================================================= */
-
 function dibujarTexto(){
-
-    const texto =
-        document.getElementById(
-            "textoCollage"
-        ).value.trim();
-
-
-    const subtitulo =
-        document.getElementById(
-            "subTexto"
-        ).value.trim();
-
-
-    if(
-        !texto &&
-        !subtitulo
-    ){
-
-        return;
-
-    }
-
-
-    /*
-       Barra inferior.
-    */
-
-    ctx.fillStyle =
-        "rgba(0,0,0,.68)";
-
-
-    ctx.fillRect(
-        0,
-        canvas.height - 165,
-        canvas.width,
-        165
-    );
-
-
-    ctx.textAlign =
-        "center";
-
-
-    ctx.textBaseline =
-        "alphabetic";
-
-
-    if(texto){
-
-        ctx.fillStyle =
-            "#ffc300";
-
-        ctx.font =
-            "bold 48px Arial";
-
-
-        ctx.fillText(
-            texto,
-            canvas.width / 2,
-            canvas.height - 95
-        );
-
-    }
-
-
-    if(subtitulo){
-
-        ctx.fillStyle =
-            "#ffffff";
-
-        ctx.font =
-            "28px Arial";
-
-
-        ctx.fillText(
-            subtitulo,
-            canvas.width / 2,
-            canvas.height - 48
-        );
-
-    }
-
+    const texto=document.getElementById("textoCollage").value.trim(), subtitulo=document.getElementById("subTexto").value.trim();
+    if(!texto&&!subtitulo) return;
+    ctx.fillStyle="rgba(0,0,0,.68)"; ctx.fillRect(0,canvas.height-165,canvas.width,165);
+    ctx.textAlign="center"; ctx.textBaseline="alphabetic";
+    if(texto){ ctx.fillStyle="#ffc300"; ctx.font="bold 48px Arial"; ctx.fillText(texto,canvas.width/2,canvas.height-95); }
+    if(subtitulo){ ctx.fillStyle="#ffffff"; ctx.font="28px Arial"; ctx.fillText(subtitulo,canvas.width/2,canvas.height-48); }
 }
-
-
-/* =========================================================
-   FONDO
-========================================================= */
-
-function cambiarFondo(color){
-
-    fondo =
-        color;
-
-    dibujarCollage();
-
-}
-
-
-/* =========================================================
-   POSICIÓN DENTRO DEL CANVAS
-========================================================= */
-
-function obtenerPosicionCanvas(e){
-
-    const rect =
-        canvas.getBoundingClientRect();
-
-
-    return {
-
-        x:
-            (e.clientX - rect.left)
-            *
-            (
-                canvas.width /
-                rect.width
-            ),
-
-        y:
-            (e.clientY - rect.top)
-            *
-            (
-                canvas.height /
-                rect.height
-            )
-
-    };
-
-}
-
-
-/* =========================================================
-   DETECTAR QUÉ FOTO TOCÓ EL USUARIO
-========================================================= */
-
-function obtenerFotoTocada(
-    x,
-    y
-){
-
-    if(
-        fotos.length === 0
-    ){
-
-        return -1;
-
-    }
-
-
-    const config =
-        obtenerConfiguracion();
-
-
-    const ancho =
-        canvas.width /
-        config.columnas;
-
-
-    const alto =
-        canvas.height /
-        config.filas;
-
-
-    const cantidad =
-        Math.min(
-            fotos.length,
-            template
-        );
-
-
-    /*
-       Recorremos desde la última
-       para seleccionar correctamente
-       si hubiera superposición.
-    */
-
-    for(
-        let i = cantidad - 1;
-        i >= 0;
-        i--
-    ){
-
-        const columna =
-            i %
-            config.columnas;
-
-
-        const fila =
-            Math.floor(
-                i /
-                config.columnas
-            );
-
-
-        const celdaX =
-            columna *
-            ancho;
-
-
-        const celdaY =
-            fila *
-            alto;
-
-
-        if(
-            x >= celdaX &&
-            x <= celdaX + ancho &&
-            y >= celdaY &&
-            y <= celdaY + alto
-        ){
-
-            return i;
-
-        }
-
-    }
-
-
+function cambiarFondo(color){ fondo=color; requestDraw(); }
+function obtenerPosicionCanvas(e){ const rect=canvas.getBoundingClientRect(); return {x:(e.clientX-rect.left)*(canvas.width/rect.width), y:(e.clientY-rect.top)*(canvas.height/rect.height)}; }
+function obtenerFotoTocada(x,y){
+    if(fotos.length===0) return -1;
+    const config=obtenerConfiguracion(); const ancho=canvas.width/config.columnas, alto=canvas.height/config.filas; const cantidad=Math.min(fotos.length,template);
+    for(let i=cantidad-1;i>=0;i--){ const col=i%config.columnas, fila=Math.floor(i/config.columnas); const celdaX=col*ancho, celdaY=fila*alto; if(x>=celdaX&&x<=celdaX+ancho&&y>=celdaY&&y<=celdaY+alto) return i; }
     return -1;
-
 }
+function moverFoto(x,y){ if(fotoSeleccionada<0||!fotos[fotoSeleccionada]) return; fotos[fotoSeleccionada].x+=x; fotos[fotoSeleccionada].y+=y; requestDraw(); }
+function zoomFoto(cantidad){ if(fotoSeleccionada<0||!fotos[fotoSeleccionada]) return; const foto=fotos[fotoSeleccionada]; foto.scale*=cantidad; foto.scale=Math.max(.3,Math.min(4,foto.scale)); requestDraw(); }
+function distanciaEntrePunteros(){ const valores=Array.from(punteros.values()); if(valores.length<2) return null; const a=valores[0], b=valores[1]; return Math.sqrt(Math.pow(b.x-a.x,2)+Math.pow(b.y-a.y,2)); }
+canvas.addEventListener("pointerdown", function(e){
+    e.preventDefault(); const pos=obtenerPosicionCanvas(e); punteros.set(e.pointerId,pos);
+    if(punteros.size===1){ const indice=obtenerFotoTocada(pos.x,pos.y); if(indice!==-1){ seleccionarFoto(indice); ultimoX=pos.x; ultimoY=pos.y; try{canvas.setPointerCapture(e.pointerId);}catch(error){} } }
+    if(punteros.size===2){ distanciaPinchInicial=distanciaEntrePunteros(); if(distanciaPinchInicial&&fotos[fotoSeleccionada]) escalaPinchInicial=fotos[fotoSeleccionada].scale; }
+},{passive:false});
+canvas.addEventListener("pointermove", function(e){
+    e.preventDefault(); const nuevaPos=obtenerPosicionCanvas(e); punteros.set(e.pointerId,nuevaPos);
+    if(punteros.size>=2){ const distancia=distanciaEntrePunteros(); if(distancia&&distanciaPinchInicial&&fotos[fotoSeleccionada]){ let nuevaEscala=escalaPinchInicial*(distancia/distanciaPinchInicial); nuevaEscala=Math.max(.3,Math.min(4,nuevaEscala)); fotos[fotoSeleccionada].scale=nuevaEscala; requestDraw(); } return; }
+    if(punteros.size===1&&fotos[fotoSeleccionada]){ const dx=nuevaPos.x-ultimoX, dy=nuevaPos.y-ultimoY; fotos[fotoSeleccionada].x+=dx; fotos[fotoSeleccionada].y+=dy; ultimoX=nuevaPos.x; ultimoY=nuevaPos.y; requestDraw(); }
+},{passive:false});
+function liberarPuntero(e){ punteros.delete(e.pointerId); if(punteros.size<2) distanciaPinchInicial=null; try{canvas.releasePointerCapture(e.pointerId);}catch(error){} }
+canvas.addEventListener("pointerup", liberarPuntero); canvas.addEventListener("pointercancel", liberarPuntero);
+canvas.addEventListener("wheel", function(e){ e.preventDefault(); if(!fotos[fotoSeleccionada]) return; if(e.deltaY<0) zoomFoto(1.08); else zoomFoto(.92); },{passive:false});
 
+// COLLAGE SAVE - CORREGIDO
+function generarThumbnail(){ const tmp=document.createElement('canvas'); tmp.width=300; tmp.height=300; const tctx=tmp.getContext('2d'); tctx.drawImage(canvas,0,0,tmp.width,tmp.height); return tmp.toDataURL('image/jpeg',0.5); }
 
-/* =========================================================
-   MOVER FOTO CON BOTONES
-========================================================= */
-
-function moverFoto(
-    x,
-    y
-){
-
-    if(
-        fotoSeleccionada < 0 ||
-        !fotos[fotoSeleccionada]
-    ){
-
-        return;
-
-    }
-
-
-    fotos[
-        fotoSeleccionada
-    ].x += x;
-
-
-    fotos[
-        fotoSeleccionada
-    ].y += y;
-
-
-    dibujarCollage();
-
+async function guardarCollage(){
+    if(fotos.length===0){ alert("Primero agrega fotografías."); return; }
+    const id=Date.now().toString();
+    const thumb=generarThumbnail();
+    const collageMeta={ id, fecha:Date.now(), usuario:auth.currentUser?auth.currentUser.uid:null, usuarioEmail:auth.currentUser?auth.currentUser.email:null, titulo:document.getElementById("textoCollage").value, subtitulo:document.getElementById("subTexto").value, thumbnail:thumb, sincronizado:false, storagePath:null };
+    let lista=JSON.parse(localStorage.getItem("collages_save")||"[]"); lista.unshift(collageMeta); localStorage.setItem("collages_save",JSON.stringify(lista));
+    mostrarToast("Collage guardado local. Subiendo...");
+    if(auth.currentUser&&navigator.onLine){ await sincronizarCollageFull(id); } else { mostrarToast("Collage guardado. Se subirá al tener internet."); }
 }
-
-
-/* =========================================================
-   ZOOM CON BOTONES
-========================================================= */
-
-function zoomFoto(
-    cantidad
-){
-
-    if(
-        fotoSeleccionada < 0 ||
-        !fotos[fotoSeleccionada]
-    ){
-
-        return;
-
-    }
-
-
-    const foto =
-        fotos[
-            fotoSeleccionada
-        ];
-
-
-    foto.scale *=
-        cantidad;
-
-
-    foto.scale =
-        Math.max(
-            .3,
-            Math.min(
-                4,
-                foto.scale
-            )
-        );
-
-
-    dibujarCollage();
-
-}
-
-
-/* =========================================================
-   DISTANCIA ENTRE DOS DEDOS
-========================================================= */
-
-function distanciaEntrePunteros(){
-
-    const valores =
-        Array.from(
-            punteros.values()
-        );
-
-
-    if(
-        valores.length < 2
-    ){
-
-        return null;
-
-    }
-
-
-    const a =
-        valores[0];
-
-    const b =
-        valores[1];
-
-
-    return Math.sqrt(
-
-        Math.pow(
-            b.x - a.x,
-            2
-        )
-
-        +
-
-        Math.pow(
-            b.y - a.y,
-            2
-        )
-
-    );
-
-}
-
-
-/* =========================================================
-   TOUCH / POINTER DOWN
-========================================================= */
-
-canvas.addEventListener(
-    "pointerdown",
-    function(e){
-
-        e.preventDefault();
-
-
-        const pos =
-            obtenerPosicionCanvas(e);
-
-
-        punteros.set(
-            e.pointerId,
-            pos
-        );
-
-
-        /*
-           UN DEDO:
-           detectar automáticamente
-           qué foto se tocó.
-        */
-
-        if(
-            punteros.size === 1
-        ){
-
-            const indice =
-                obtenerFotoTocada(
-                    pos.x,
-                    pos.y
-                );
-
-
-            if(
-                indice !== -1
-            ){
-
-                seleccionarFoto(
-                    indice
-                );
-
-
-                ultimoX =
-                    pos.x;
-
-
-                ultimoY =
-                    pos.y;
-
-
-                try{
-
-                    canvas.setPointerCapture(
-                        e.pointerId
-                    );
-
-                }catch(error){}
-
-            }
-
-        }
-
-
-        /*
-           DOS DEDOS:
-           iniciar pinch zoom.
-        */
-
-        if(
-            punteros.size === 2
-        ){
-
-            distanciaPinchInicial =
-                distanciaEntrePunteros();
-
-
-            if(
-                distanciaPinchInicial &&
-                fotos[fotoSeleccionada]
-            ){
-
-                escalaPinchInicial =
-                    fotos[
-                        fotoSeleccionada
-                    ].scale;
-
-            }
-
-        }
-
-    },
-    {
-        passive:false
-    }
-);
-
-
-/* =========================================================
-   TOUCH / POINTER MOVE
-========================================================= */
-
-canvas.addEventListener(
-    "pointermove",
-    function(e){
-
-        e.preventDefault();
-
-
-        const nuevaPos =
-            obtenerPosicionCanvas(e);
-
-
-        punteros.set(
-            e.pointerId,
-            nuevaPos
-        );
-
-
-        /*
-           DOS DEDOS:
-           ZOOM
-        */
-
-        if(
-            punteros.size >= 2
-        ){
-
-            const distancia =
-                distanciaEntrePunteros();
-
-
-            if(
-                distancia &&
-                distanciaPinchInicial &&
-                fotos[fotoSeleccionada]
-            ){
-
-                let nuevaEscala =
-                    escalaPinchInicial *
-                    (
-                        distancia /
-                        distanciaPinchInicial
-                    );
-
-
-                nuevaEscala =
-                    Math.max(
-                        .3,
-                        Math.min(
-                            4,
-                            nuevaEscala
-                        )
-                    );
-
-
-                fotos[
-                    fotoSeleccionada
-                ].scale =
-                    nuevaEscala;
-
-
-                dibujarCollage();
-
-            }
-
-
-            return;
-
-        }
-
-
-        /*
-           UN DEDO:
-           MOVER FOTO
-        */
-
-        if(
-            punteros.size === 1 &&
-            fotos[fotoSeleccionada]
-        ){
-
-            const dx =
-                nuevaPos.x -
-                ultimoX;
-
-
-            const dy =
-                nuevaPos.y -
-                ultimoY;
-
-
-            fotos[
-                fotoSeleccionada
-            ].x += dx;
-
-
-            fotos[
-                fotoSeleccionada
-            ].y += dy;
-
-
-            ultimoX =
-                nuevaPos.x;
-
-
-            ultimoY =
-                nuevaPos.y;
-
-
-            dibujarCollage();
-
-        }
-
-    },
-    {
-        passive:false
-    }
-);
-
-
-/* =========================================================
-   TOUCH / POINTER UP
-========================================================= */
-
-function liberarPuntero(e){
-
-    punteros.delete(
-        e.pointerId
-    );
-
-
-    if(
-        punteros.size < 2
-    ){
-
-        distanciaPinchInicial =
-            null;
-
-    }
-
-
+async function sincronizarCollageFull(id){
     try{
-
-        canvas.releasePointerCapture(
-            e.pointerId
-        );
-
-    }catch(error){}
-
+        const lista=JSON.parse(localStorage.getItem("collages_save")||"[]");
+        const meta=lista.find(x=>x.id===id); if(!meta) return;
+        const blob=await new Promise(res=>canvas.toBlob(res,'image/jpeg',0.92));
+        const path=`collages/${auth.currentUser.uid}/${id}.jpg`;
+        const ref=storage.ref(path);
+        await ref.put(blob);
+        const url=await ref.getDownloadURL();
+        await db.ref("collages/"+auth.currentUser.uid+"/"+id).set({ id:meta.id, fecha:meta.fecha, titulo:meta.titulo, subtitulo:meta.subtitulo, usuarioEmail:meta.usuarioEmail, imageUrl:url, storagePath:path, sincronizado:true });
+        meta.sincronizado=true; meta.storagePath=path; localStorage.setItem("collages_save",JSON.stringify(lista));
+        mostrarToast("Collage sincronizado a la nube ☁️");
+    }catch(err){ console.error(err); mostrarToast("Error subiendo collage, reintenta."); }
 }
-
-
-canvas.addEventListener(
-    "pointerup",
-    liberarPuntero
-);
-
-
-canvas.addEventListener(
-    "pointercancel",
-    liberarPuntero
-);
-
-
-/* =========================================================
-   RUEDA DE MOUSE
-========================================================= */
-
-canvas.addEventListener(
-    "wheel",
-    function(e){
-
-        e.preventDefault();
-
-
-        if(
-            !fotos[fotoSeleccionada]
-        ){
-
-            return;
-
-        }
-
-
-        if(
-            e.deltaY < 0
-        ){
-
-            zoomFoto(1.08);
-
-        }else{
-
-            zoomFoto(.92);
-
-        }
-
-    },
-    {
-        passive:false
-    }
-);
-
-
-/* =========================================================
-   GUARDAR COLLAGE
-========================================================= */
-
-function guardarCollage(){
-
-    if(
-        fotos.length === 0
-    ){
-
-        alert(
-            "Primero agrega fotografías."
-        );
-
-        return;
-
-    }
-
-
-    const imagen =
-        canvas.toDataURL(
-            "image/jpeg",
-            .92
-        );
-
-
-    const collage = {
-
-        id:
-            Date.now().toString(),
-
-        fecha:
-            Date.now(),
-
-        usuario:
-            auth.currentUser
-            ? auth.currentUser.uid
-            : null,
-
-        usuarioEmail:
-            auth.currentUser
-            ? auth.currentUser.email
-            : null,
-
-        titulo:
-            document
-            .getElementById(
-                "textoCollage"
-            )
-            .value,
-
-        subtitulo:
-            document
-            .getElementById(
-                "subTexto"
-            )
-            .value,
-
-        imagen:
-            imagen,
-
-        sincronizado:
-            false
-
-    };
-
-
-    let lista =
-        JSON.parse(
-            localStorage.getItem(
-                "collages_save"
-            )
-            ||
-            "[]"
-        );
-
-
-    lista.unshift(
-        collage
-    );
-
-
-    localStorage.setItem(
-        "collages_save",
-        JSON.stringify(lista)
-    );
-
-
-    if(
-        auth.currentUser &&
-        navigator.onLine
-    ){
-
-        sincronizarCollage(
-            collage
-        );
-
-    }
-
-
-    mostrarToast(
-        "Collage guardado correctamente."
-    );
-
-}
-
-
-/* =========================================================
-   SINCRONIZAR COLLAGE
-========================================================= */
-
-async function sincronizarCollage(
-    collage
-){
-
-    if(
-        !auth.currentUser ||
-        !navigator.onLine
-    ){
-
-        return;
-
-    }
-
-
-    try{
-
-        /*
-           NO subimos el Base64 a Realtime Database.
-           Guardamos solamente los metadatos.
-
-           Para subir realmente la imagen a la nube
-           necesitamos Firebase Storage.
-        */
-
-        await db
-        .ref(
-            "collages/"
-            +
-            auth.currentUser.uid
-            +
-            "/"
-            +
-            collage.id
-        )
-        .set({
-
-            id:
-                collage.id,
-
-            fecha:
-                collage.fecha,
-
-            titulo:
-                collage.titulo,
-
-            subtitulo:
-                collage.subtitulo,
-
-            usuarioEmail:
-                collage.usuarioEmail,
-
-            sincronizado:
-                true
-
-        });
-
-
-        marcarCollageSincronizado(
-            collage.id
-        );
-
-
-    }catch(error){
-
-        console.error(
-            "Error sincronizando collage:",
-            error
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   SINCRONIZAR TODOS LOS COLLAGES
-========================================================= */
-
-async function sincronizarCollages(){
-
-    if(
-        !auth.currentUser ||
-        !navigator.onLine
-    ){
-
-        return;
-
-    }
-
-
-    const lista =
-        JSON.parse(
-            localStorage.getItem(
-                "collages_save"
-            )
-            ||
-            "[]"
-        );
-
-
-    for(
-        const collage
-        of lista
-    ){
-
-        if(
-            !collage.sincronizado
-        ){
-
-            await sincronizarCollage(
-                collage
-            );
-
-        }
-
-    }
-
-}
-
-
-/* =========================================================
-   MARCAR COLLAGE SINCRONIZADO
-========================================================= */
-
-function marcarCollageSincronizado(
-    id
-){
-
-    const lista =
-        JSON.parse(
-            localStorage.getItem(
-                "collages_save"
-            )
-            ||
-            "[]"
-        );
-
-
-    const item =
-        lista.find(
-            x => x.id === id
-        );
-
-
-    if(item){
-
-        item.sincronizado =
-            true;
-
-
-        localStorage.setItem(
-            "collages_save",
-            JSON.stringify(lista)
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   COMPARTIR COLLAGE
-========================================================= */
-
+async function sincronizarCollage(collage){ await sincronizarCollageFull(collage.id); }
+async function sincronizarCollages(){ if(!auth.currentUser||!navigator.onLine) return; const lista=JSON.parse(localStorage.getItem("collages_save")||"[]"); for(const c of lista){ if(!c.sincronizado) await sincronizarCollageFull(c.id); } }
+function marcarCollageSincronizado(id){ const lista=JSON.parse(localStorage.getItem("collages_save")||"[]"); const item=lista.find(x=>x.id===id); if(item){ item.sincronizado=true; localStorage.setItem("collages_save",JSON.stringify(lista)); } }
 async function compartirCollage(){
-
-    if(
-        fotos.length === 0
-    ){
-
-        alert(
-            "Primero agrega fotografías."
-        );
-
-        return;
-
-    }
-
-
-    canvas.toBlob(
-        async blob => {
-
-            const archivo =
-                new File(
-                    [blob],
-                    "collage_telcel.jpg",
-                    {
-                        type:
-                            "image/jpeg"
-                    }
-                );
-
-
-            if(
-                navigator.share &&
-                navigator.canShare &&
-                navigator.canShare({
-                    files:[archivo]
-                })
-            ){
-
-                try{
-
-                    await navigator.share({
-
-                        title:
-                            "Collage Telcel",
-
-                        text:
-                            "Collage de venta Telcel",
-
-                        files:
-                            [archivo]
-
-                    });
-
-                }catch(error){
-
-                    console.log(
-                        error
-                    );
-
-                }
-
-            }else{
-
-                descargarCollage();
-
-                mostrarToast(
-                    "Imagen preparada para guardar."
-                );
-
-            }
-
-        },
-        "image/jpeg",
-        .95
-    );
-
+    if(fotos.length===0){ alert("Primero agrega fotografías."); return; }
+    canvas.toBlob(async blob=>{
+        const archivo=new File([blob],"collage_telcel.jpg",{type:"image/jpeg"});
+        if(navigator.share&&navigator.canShare&&navigator.canShare({files:[archivo]})){
+            try{ await navigator.share({title:"Collage Telcel", text:"Collage de venta Telcel", files:[archivo]}); }catch(e){ console.log(e); }
+        }else{ descargarCollage(); mostrarToast("Imagen preparada."); }
+    },"image/jpeg",.95);
 }
+function descargarCollage(){ if(fotos.length===0){ alert("Primero agrega fotografías."); return; } const enlace=document.createElement("a"); enlace.download="collage_telcel_"+Date.now()+".jpg"; enlace.href=canvas.toDataURL("image/jpeg",.95); enlace.click(); }
 
-
-/* =========================================================
-   DESCARGAR
-========================================================= */
-
-function descargarCollage(){
-
-    if(
-        fotos.length === 0
-    ){
-
-        alert(
-            "Primero agrega fotografías."
-        );
-
-        return;
-
-    }
-
-
-    const enlace =
-        document.createElement(
-            "a"
-        );
-
-
-    enlace.download =
-        "collage_telcel_"
-        +
-        Date.now()
-        +
-        ".jpg";
-
-
-    enlace.href =
-        canvas.toDataURL(
-            "image/jpeg",
-            .95
-        );
-
-
-    enlace.click();
-
+// VENTAS
+fReg.addEventListener("submit", async function(e){
+    e.preventDefault();
+    const telefono=iTel.value.replace(/\D/g,"");
+    if(telefono.length!==10){ alert("El celular debe tener 10 dígitos."); iTel.focus(); return; }
+    const icc=iIcc.value.trim().replace(/\D/g,"");
+    if(icc.length<19||icc.length>20){ alert("ICCID debe tener 19 o 20 dígitos."); return; }
+    const imeiVal=iIme.value.replace(/\D/g,"");
+    if(imeiVal && imeiVal.length!==15){ alert("IMEI debe tener 15 dígitos o dejarse vacío para CHIP/PORTA."); return; }
+    const user=auth.currentUser; if(!user){ alert("Sesión expirada."); return; }
+    const venta={ id:Date.now().toString(), sincronizado:false, usuarioUID:user.uid, usuarioEmail:user.email, "NUM. CELULAR":telefono, "IMEI":imeiVal||"-", "ICCID":icc, "Renuevate / Kit / Chip / Porta":iTipo.value, "# TIENDA / Determinante":iTiendaNum.value.trim(), "SOLO NOMBRE DE LA CADENA":iCadena.value.trim(), "SOLO NOMBRE DE TIENDA SIN CADENA":iTiendaNombre.value.trim(), "NOMBRE COMPLETO PROMOTOR":iProm.value.trim(), "FECHA DE ACTIVACION":iFec.value.trim(), "MARCA":iMarca.value.trim()||"-", "MODELO":iMod.value.trim()||"-", fechaCreacion:Date.now() };
+    const lista=obtenerVentas(); lista.unshift(venta); localStorage.setItem("ventas_save",JSON.stringify(lista));
+    cargarVentas(); fReg.reset(); iFec.value=fechaActual(); ajustarCampos(); mostrarToast("Venta guardada localmente.");
+    if(navigator.onLine) await sincronizarVenta(venta);
+});
+function obtenerVentas(){ try{ return JSON.parse(localStorage.getItem("ventas_save")||"[]"); }catch(e){ return []; } }
+async function sincronizarVenta(venta){
+    if(!auth.currentUser||!navigator.onLine) return false;
+    try{ await db.ref("ventas/"+auth.currentUser.uid+"/"+venta.id).set(venta); venta.sincronizado=true; actualizarVentaLocal(venta); return true; }catch(error){ console.error(error); return false; }
 }
-
-
-/* =========================================================
-   GUARDAR VENTA
-========================================================= */
-
-fReg.addEventListener(
-    "submit",
-    async function(e){
-
-        e.preventDefault();
-
-
-        const telefono =
-            iTel.value
-            .replace(/\D/g,"");
-
-
-        if(
-            telefono.length !== 10
-        ){
-
-            alert(
-                "El número celular debe tener exactamente 10 dígitos."
-            );
-
-            iTel.focus();
-
-            return;
-
-        }
-
-
-        const user =
-            auth.currentUser;
-
-
-        if(!user){
-
-            alert(
-                "La sesión expiró."
-            );
-
-            return;
-
-        }
-
-
-        const venta = {
-
-            id:
-                Date.now().toString(),
-
-            sincronizado:
-                false,
-
-            usuarioUID:
-                user.uid,
-
-            usuarioEmail:
-                user.email,
-
-            "NUM. CELULAR":
-                telefono,
-
-            "IMEI":
-                iIme.value
-                .replace(/\D/g,"")
-                ||
-                "-",
-
-            "ICCID":
-                iIcc.value
-                .trim(),
-
-            "Renuevate / Kit / Chip / Porta":
-                iTipo.value,
-
-            "# TIENDA / Determinante":
-                iTiendaNum.value
-                .trim(),
-
-            "SOLO NOMBRE DE LA CADENA":
-                iCadena.value
-                .trim(),
-
-            "SOLO NOMBRE DE TIENDA SIN CADENA":
-                iTiendaNombre.value
-                .trim(),
-
-            "NOMBRE COMPLETO PROMOTOR":
-                iProm.value
-                .trim(),
-
-            "FECHA DE ACTIVACION":
-                iFec.value
-                .trim(),
-
-            "MARCA":
-                iMarca.value
-                .trim()
-                ||
-                "-",
-
-            "MODELO":
-                iMod.value
-                .trim()
-                ||
-                "-",
-
-            fechaCreacion:
-                Date.now()
-
-        };
-
-
-        const lista =
-            obtenerVentas();
-
-
-        lista.unshift(
-            venta
-        );
-
-
-        localStorage.setItem(
-            "ventas_save",
-            JSON.stringify(lista)
-        );
-
-
-        cargarVentas();
-
-
-        fReg.reset();
-
-        iFec.value =
-            fechaActual();
-
-        ajustarCampos();
-
-
-        mostrarToast(
-            "Venta guardada localmente."
-        );
-
-
-        if(
-            navigator.onLine
-        ){
-
-            await sincronizarVenta(
-                venta
-            );
-
-        }
-
-    }
-);
-
-
-/* =========================================================
-   OBTENER VENTAS
-========================================================= */
-
-function obtenerVentas(){
-
-    try{
-
-        return JSON.parse(
-            localStorage.getItem(
-                "ventas_save"
-            )
-            ||
-            "[]"
-        );
-
-    }catch(error){
-
-        return [];
-
-    }
-
-}
-
-
-/* =========================================================
-   SINCRONIZAR VENTA
-========================================================= */
-
-async function sincronizarVenta(
-    venta
-){
-
-    if(
-        !auth.currentUser ||
-        !navigator.onLine
-    ){
-
-        return false;
-
-    }
-
-
-    try{
-
-        await db
-        .ref(
-            "ventas/"
-            +
-            auth.currentUser.uid
-            +
-            "/"
-            +
-            venta.id
-        )
-        .set(venta);
-
-
-        venta.sincronizado =
-            true;
-
-
-        actualizarVentaLocal(
-            venta
-        );
-
-
-        return true;
-
-    }catch(error){
-
-        console.error(
-            error
-        );
-
-        return false;
-
-    }
-
-}
-
-
-/* =========================================================
-   ACTUALIZAR VENTA LOCAL
-========================================================= */
-
-function actualizarVentaLocal(
-    venta
-){
-
-    const lista =
-        obtenerVentas();
-
-
-    const indice =
-        lista.findIndex(
-            x =>
-                x.id ===
-                venta.id
-        );
-
-
-    if(
-        indice !== -1
-    ){
-
-        lista[indice] =
-            venta;
-
-
-        localStorage.setItem(
-            "ventas_save",
-            JSON.stringify(lista)
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   SINCRONIZAR PENDIENTES
-========================================================= */
-
+function actualizarVentaLocal(venta){ const lista=obtenerVentas(); const indice=lista.findIndex(x=>x.id===venta.id); if(indice!==-1){ lista[indice]=venta; localStorage.setItem("ventas_save",JSON.stringify(lista)); } }
 async function sincronizarPendientes(){
-
-    if(
-        !auth.currentUser ||
-        !navigator.onLine
-    ){
-
-        return;
-
-    }
-
-
-    const lista =
-        obtenerVentas();
-
-
-    const pendientes =
-        lista.filter(
-            v =>
-                !v.sincronizado
-        );
-
-
-    for(
-        const venta
-        of pendientes
-    ){
-
-        await sincronizarVenta(
-            venta
-        );
-
-    }
-
-
-    await sincronizarCollages();
-
-
-    cargarVentas();
-
+    if(!auth.currentUser||!navigator.onLine){ mostrarToast("Sin conexión."); return; }
+    const lista=obtenerVentas(); const pendientes=lista.filter(v=>!v.sincronizado);
+    let ok=0; for(const venta of pendientes){ if(await sincronizarVenta(venta)) ok++; }
+    await sincronizarCollages(); cargarVentas();
+    if(ok>0) mostrarToast(`Sincronizadas ${ok} ventas.`); else mostrarToast("Todo sincronizado.");
 }
-
-
-/* =========================================================
-   HISTORIAL
-========================================================= */
-
 function cargarVentas(){
-
-    const div =
-        document.getElementById(
-            "listaLocal"
-        );
-
-
-    let lista =
-        obtenerVentas();
-
-
-    const texto =
-        (
-            document
-            .getElementById(
-                "buscador"
-            )
-            .value
-            ||
-            ""
-        )
-        .trim()
-        .toLowerCase();
-
-
-    if(texto){
-
-        lista =
-            lista.filter(
-                venta => {
-
-                    return Object
-                        .values(venta)
-                        .join(" ")
-                        .toLowerCase()
-                        .includes(texto);
-
-                }
-            );
-
-    }
-
-
+    const div=document.getElementById("listaLocal"); let lista=obtenerVentas();
+    const texto=(document.getElementById("buscador").value||"").trim().toLowerCase();
+    if(texto){ lista=lista.filter(venta=>Object.values(venta).join(" ").toLowerCase().includes(texto)); }
     actualizarStats();
-
-
-    if(
-        lista.length === 0
-    ){
-
-        div.innerHTML =
-            "<p style='text-align:center;opacity:.5;padding:20px'>"
-            +
-            "Sin registros."
-            +
-            "</p>";
-
-        return;
-
-    }
-
-
-    div.innerHTML =
-        lista
-        .map(
-            venta => `
-
+    if(lista.length===0){ div.innerHTML="<p style='text-align:center;opacity:.5;padding:20px'>Sin registros.</p>"; return; }
+    div.innerHTML=lista.map(venta=>`
             <div class="venta">
-
-                <div
-                    class="del"
-                    onclick="eliminarVenta('${escapeAttribute(venta.id)}')">
-
-                    <i class="fa-solid fa-trash"></i>
-
-                </div>
-
-
-                <strong>
-
-                    ${escapeHTML(
-                        venta["NUM. CELULAR"]
-                    )}
-
-                </strong>
-
-
-                <div
-                    style="
-                    margin-top:4px;
-                    opacity:.7">
-
-                    ${escapeHTML(
-                        venta[
-                            "Renuevate / Kit / Chip / Porta"
-                        ]
-                    )}
-
-                    -
-
-                    ${escapeHTML(
-                        venta[
-                            "FECHA DE ACTIVACION"
-                        ]
-                    )}
-
-                </div>
-
-
+                <div class="del" data-action="delete" data-id="${escapeHTML(venta.id)}"><i class="fa-solid fa-trash"></i></div>
+                <strong>${escapeHTML(venta["NUM. CELULAR"])}</strong>
+                <div style="margin-top:4px;opacity:.7">${escapeHTML(venta["Renuevate / Kit / Chip / Porta"])} - ${escapeHTML(venta["FECHA DE ACTIVACION"])}</div>
                 <div class="grid">
-
-                    <div>
-
-                        <b>ICCID</b>
-
-                        ${escapeHTML(
-                            venta["ICCID"]
-                        )}
-
-                    </div>
-
-
-                    <div>
-
-                        <b>TIENDA</b>
-
-                        ${escapeHTML(
-                            venta[
-                                "SOLO NOMBRE DE TIENDA SIN CADENA"
-                            ]
-                        )}
-
-                    </div>
-
-
-                    <div>
-
-                        <b>IMEI</b>
-
-                        ${escapeHTML(
-                            venta["IMEI"]
-                        )}
-
-                    </div>
-
-
-                    <div>
-
-                        <b>PROMOTOR</b>
-
-                        ${escapeHTML(
-                            venta[
-                                "NOMBRE COMPLETO PROMOTOR"
-                            ]
-                        )}
-
-                    </div>
-
+                    <div><b>ICCID</b>${escapeHTML(venta["ICCID"])}</div>
+                    <div><b>TIENDA</b>${escapeHTML(venta["SOLO NOMBRE DE TIENDA SIN CADENA"])}</div>
+                    <div><b>IMEI</b>${escapeHTML(venta["IMEI"])}</div>
+                    <div><b>PROMOTOR</b>${escapeHTML(venta["NOMBRE COMPLETO PROMOTOR"])}</div>
                 </div>
-
-
-                <div
-                    style="
-                    margin-top:8px;
-                    opacity:.6">
-
-                    ${
-                        venta.sincronizado
-                        ? "☁️ Sincronizada"
-                        : "⏳ Pendiente"
-                    }
-
-                </div>
-
-            </div>
-
-            `
-        )
-        .join("");
-
+                <div style="margin-top:8px;opacity:.6">${venta.sincronizado?"☁️ Sincronizada":"⏳ Pendiente"}</div>
+            </div>`).join("");
 }
-
-
-/* =========================================================
-   ESTADISTICAS
-========================================================= */
-
-function actualizarStats(){
-
-    const lista =
-        obtenerVentas();
-
-
-    const total =
-        lista.length;
-
-
-    const sincronizadas =
-        lista.filter(
-            x =>
-                x.sincronizado
-        ).length;
-
-
-    totalVentas.innerText =
-        total;
-
-
-    ventasSync.innerText =
-        sincronizadas;
-
-
-    ventasPend.innerText =
-        total -
-        sincronizadas;
-
+function handleListaClick(e){
+    const btn=e.target.closest('[data-action="delete"]'); if(!btn) return;
+    const id=btn.dataset.id; if(id) eliminarVenta(id);
 }
-
-
-/* =========================================================
-   ELIMINAR VENTA
-========================================================= */
-
-async function eliminarVenta(
-    id
-){
-
-    if(
-        !confirm(
-            "¿Seguro que quieres eliminar esta venta?"
-        )
-    ){
-
-        return;
-
+function actualizarStats(){ const lista=obtenerVentas(); const total=lista.length; const sincronizadas=lista.filter(x=>x.sincronizado).length; totalVentas.innerText=total; ventasSync.innerText=sincronizadas; ventasPend.innerText=total-sincronizadas; }
+async function eliminarVenta(id){
+    if(!confirm("¿Seguro que quieres eliminar esta venta?")) return;
+    let lista=obtenerVentas(); const venta=lista.find(x=>x.id===id);
+    lista=lista.filter(x=>x.id!==id); localStorage.setItem("ventas_save",JSON.stringify(lista));
+    if(venta&&venta.sincronizado&&auth.currentUser&&navigator.onLine){
+        try{ await db.ref("ventas/"+auth.currentUser.uid+"/"+id).remove(); }catch(e){ console.error(e); }
     }
-
-
-    let lista =
-        obtenerVentas();
-
-
-    const venta =
-        lista.find(
-            x =>
-                x.id === id
-        );
-
-
-    lista =
-        lista.filter(
-            x =>
-                x.id !== id
-        );
-
-
-    localStorage.setItem(
-        "ventas_save",
-        JSON.stringify(lista)
-    );
-
-
-    if(
-        venta &&
-        venta.sincronizado &&
-        auth.currentUser &&
-        navigator.onLine
-    ){
-
-        try{
-
-            await db
-            .ref(
-                "ventas/"
-                +
-                auth.currentUser.uid
-                +
-                "/"
-                +
-                id
-            )
-            .remove();
-
-        }catch(error){
-
-            console.error(
-                error
-            );
-
-        }
-
-    }
-
-
-    cargarVentas();
-
-
-    mostrarToast(
-        "Venta eliminada."
-    );
-
+    cargarVentas(); mostrarToast("Venta eliminada.");
 }
-
-
-/* =========================================================
-   EXCEL
-========================================================= */
-
 function exportarExcel(){
-
-    const lista =
-        obtenerVentas();
-
-
-    if(
-        lista.length === 0
-    ){
-
-        alert(
-            "No hay ventas para exportar."
-        );
-
-        return;
-
-    }
-
-
-    const columnas = [
-
-        "Renuevate / Kit / Chip / Porta",
-
-        "FECHA DE ACTIVACION",
-
-        "NUM. CELULAR",
-
-        "ICCID",
-
-        "IMEI",
-
-        "MARCA",
-
-        "MODELO",
-
-        "# TIENDA / Determinante",
-
-        "SOLO NOMBRE DE LA CADENA",
-
-        "SOLO NOMBRE DE TIENDA SIN CADENA",
-
-        "NOMBRE COMPLETO PROMOTOR"
-
-    ];
-
-
-    const datos =
-        lista.map(
-            venta => {
-
-                const fila = {};
-
-
-                columnas.forEach(
-                    columna => {
-
-                        fila[columna] =
-                            venta[columna]
-                            ||
-                            "";
-
-                    }
-                );
-
-
-                return fila;
-
-            }
-        );
-
-
-    const ws =
-        XLSX.utils.json_to_sheet(
-            datos
-        );
-
-
-    ws["!cols"] = [
-
-        {wch:24},
-        {wch:20},
-        {wch:18},
-        {wch:23},
-        {wch:18},
-        {wch:16},
-        {wch:20},
-        {wch:24},
-        {wch:28},
-        {wch:32},
-        {wch:32}
-
-    ];
-
-
-    const wb =
-        XLSX.utils.book_new();
-
-
-    XLSX.utils.book_append_sheet(
-        wb,
-        ws,
-        "Registro"
-    );
-
-
-    const fecha =
-        new Date()
-        .toISOString()
-        .slice(0,10);
-
-
-    XLSX.writeFile(
-        wb,
-        "ventas_telcel_"
-        +
-        fecha
-        +
-        ".xlsx"
-    );
-
-
-    mostrarToast(
-        "Excel generado correctamente."
-    );
-
+    const lista=obtenerVentas(); if(lista.length===0){ alert("No hay ventas."); return; }
+    const columnas=["Renuevate / Kit / Chip / Porta","FECHA DE ACTIVACION","NUM. CELULAR","ICCID","IMEI","MARCA","MODELO","# TIENDA / Determinante","SOLO NOMBRE DE LA CADENA","SOLO NOMBRE DE TIENDA SIN CADENA","NOMBRE COMPLETO PROMOTOR"];
+    const datos=lista.map(venta=>{ const fila={}; columnas.forEach(col=>fila[col]=venta[col]||""); return fila; });
+    const ws=XLSX.utils.json_to_sheet(datos); ws["!cols"]=[{wch:24},{wch:20},{wch:18},{wch:23},{wch:18},{wch:16},{wch:20},{wch:24},{wch:28},{wch:32},{wch:32}];
+    const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Registro"); const fecha=new Date().toISOString().slice(0,10); XLSX.writeFile(wb,"ventas_telcel_"+fecha+".xlsx"); mostrarToast("Excel generado.");
 }
-
-
-/* =========================================================
-   SEGURIDAD HTML
-========================================================= */
-
-function escapeHTML(
-    texto
-){
-
-    return String(
-        texto ?? ""
-    )
-    .replace(
-        /&/g,
-        "&amp;"
-    )
-    .replace(
-        /</g,
-        "&lt;"
-    )
-    .replace(
-        />/g,
-        "&gt;"
-    )
-    .replace(
-        /"/g,
-        "&quot;"
-    )
-    .replace(
-        /'/g,
-        "&#039;"
-    );
-
-}
-
-
-function escapeAttribute(
-    texto
-){
-
-    return String(
-        texto ?? ""
-    )
-    .replace(
-        /\\/g,
-        "\\\\"
-    )
-    .replace(
-        /'/g,
-        "\\'"
-    );
-
-}
-
-
-/* =========================================================
-   TOAST
-========================================================= */
-
-function mostrarToast(
-    mensaje
-){
-
-    const anterior =
-        document.querySelector(
-            ".toast"
-        );
-
-
-    if(anterior){
-
-        anterior.remove();
-
-    }
-
-
-    const toast =
-        document.createElement(
-            "div"
-        );
-
-
-    toast.className =
-        "toast";
-
-
-    toast.textContent =
-        mensaje;
-
-
-    document.body.appendChild(
-        toast
-    );
-
-
-    setTimeout(
-        () => {
-
-            toast.remove();
-
-        },
-        2800
-    );
-
-}
-
-
-/* =========================================================
-   ARRANQUE
-========================================================= */
-
-window.addEventListener(
-    "load",
-    inicio
-);
-
+function escapeHTML(texto){ return String(texto??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"); }
+function mostrarToast(mensaje){ const anterior=document.querySelector(".toast"); if(anterior) anterior.remove(); const toast=document.createElement("div"); toast.className="toast"; toast.textContent=mensaje; document.body.appendChild(toast); setTimeout(()=>toast.remove(),2800); }
+window.addEventListener("load", inicio);
 </script>
-
-</body>
+<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
 </html>
