@@ -141,6 +141,15 @@ table.comisiones tbody tr:hover td.row-num{background:#e5e7eb}
 .comisiones-nota{margin-top:14px;background:#f8fafc;border:1px solid #d1d5db;border-radius:8px;padding:13px 14px;font-size:12.5px;line-height:1.6;color:#111;text-align:left}
 .comisiones-nota strong{color:#000}
 .comisiones-count{font-size:12px;color:#374151;text-align:center;margin-top:12px;font-weight:600}
+table.comisiones td.cell{padding:0;height:36px}
+table.comisiones input.cell-input{width:100%;height:36px;min-height:36px;margin:0;padding:7px 9px;border:0;border-radius:0;background:transparent;color:#000;font-size:13px;font-weight:400;font-family:Calibri,"Segoe UI",Arial,sans-serif;box-shadow:none}
+table.comisiones input.cell-input:hover{border:0;background:#f9fafb}
+table.comisiones input.cell-input:focus{background:#fffbe6;border:0;box-shadow:inset 0 0 0 2px #217346;outline:none}
+.excel-actions{display:flex;flex-direction:column;gap:0;margin-top:4px}
+.excel-actions .btn-csv{background:#fff;color:#14532d;border:1.5px solid #217346;box-shadow:none;font-size:13px}
+.save-status{font-size:12.5px;font-weight:700;text-align:center;padding:8px 10px;border-radius:8px;margin:0 0 10px;background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
+.save-status.pending{background:#fefce8;color:#854d0e;border-color:#fde68a}
+.save-status.error{background:#fef2f2;color:#991b1b;border-color:#fecaca}
 @media (max-width:420px){
   .app{padding:22px 16px 36px}
   .header{font-size:24px}
@@ -266,11 +275,16 @@ table.comisiones tbody tr:hover td.row-num{background:#e5e7eb}
 
     <div class="header" style="font-size:17px;margin-top:30px">💰 COMISIONES NOVIEMBRE 2026</div>
     <div class="card card-excel">
-        <div class="section-title"><i class="fa-solid fa-table"></i> COMISIONES NOVIEMBRE 2026 — HOJA1 (A1:L220)</div>
+        <div class="section-title"><i class="fa-solid fa-table"></i> COMISIONES NOVIEMBRE 2026 — HOJA1 (A1:L500)</div>
         <input id="buscadorComisiones" placeholder="🔎 Buscar celular, IMEI, ICCID, marca, modelo..." oninput="cargarComisiones()">
         <label style="margin-top:0">IMPORTAR EL EXCEL DE COMISIONES (OPCIONAL)</label>
         <input type="file" id="importComisiones" accept=".xlsx,.xls" onchange="importarComisiones(event)">
-        <button type="button" class="btn-green" onclick="descargarExcelComisiones()"><i class="fa-solid fa-file-excel"></i> DESCARGAR EXCEL</button>
+        <div id="comisionesSaveStatus" class="save-status hidden">✔ Cambios guardados en tu cuenta</div>
+        <div class="excel-actions">
+            <button type="button" class="btn-green" onclick="descargarExcelComisiones()"><i class="fa-solid fa-file-excel"></i> DESCARGAR EXCEL (500 FILAS)</button>
+            <button type="button" class="btn-dark" style="background:#217346;color:#fff;border-color:#217346" onclick="guardarComisionesManual()"><i class="fa-solid fa-floppy-disk"></i> GUARDAR CAMBIOS</button>
+            <button type="button" class="btn-csv" onclick="descargarCSVComisiones()"><i class="fa-solid fa-file-csv"></i> Si el Excel no descarga, usa el CSV</button>
+        </div>
         <div class="tabla-scroll">
             <table class="comisiones">
                 <thead>
@@ -309,8 +323,8 @@ table.comisiones tbody tr:hover td.row-num{background:#e5e7eb}
             </table>
         </div>
         <div id="comisionesCount" class="comisiones-count"></div>
-        <div class="comisiones-nota"><strong>Contenido del Excel:</strong> se muestran <strong>34 filas con contenido</strong> — 8 ventas (filas 2 a 9) y 26 filas de plantilla (filas 10 a 35), tal cual están en la Hoja1. El Excel tiene además <strong>185 filas totalmente vacías, de la fila 36 a la 220</strong>, que no se muestran aquí para que la tabla quede ordenada y sin amontonar. Al descargar, se regenera el <strong>Excel completo A1:L220</strong> con esas 185 filas vacías incluidas.</div>
-        <p class="small" style="margin-top:10px">Desliza hacia los lados para ver las 12 columnas completas.</p>
+        <div class="comisiones-nota"><strong>Tabla editable de 500 filas:</strong> la hoja va de la <strong>fila 1 (encabezados) a la fila 500</strong> y se carga con los datos guardados en tu cuenta: si ahí ya están tus ventas y tus filas de plantilla, aparecen tal cual, en su fila. Toca cualquier celda para escribir o corregir: los cambios se guardan solos en tu cuenta a los pocos segundos (o usa el botón <strong>GUARDAR CAMBIOS</strong>). Al descargar, obtienes el <strong>Excel completo A1:L500</strong> con todo lo que editaste.</div>
+        <p class="small" style="margin-top:10px">Desliza hacia los lados para ver las 12 columnas completas y hacia abajo para llegar hasta la fila 500.</p>
     </div>
 </div>
 
@@ -573,51 +587,82 @@ async function eliminarVenta(id){
     }
     cargarVentas(); mostrarToast("Venta eliminada.");
 }
+// Descarga robusta: XLSX.writeFile falla en silencio en varios celulares y
+// webviews; en su lugar se genera el archivo como Blob y se descarga con un
+// enlace temporal, con reintento por ventana nueva si el clic no responde.
+function descargarBlob(blob, nombreArchivo){
+    const url=URL.createObjectURL(blob);
+    const enlace=document.createElement("a");
+    enlace.href=url; enlace.download=nombreArchivo;
+    enlace.style.display="none";
+    document.body.appendChild(enlace);
+    enlace.click();
+    setTimeout(()=>{ enlace.remove(); },400);
+    setTimeout(()=>{ URL.revokeObjectURL(url); },4000);
+}
+function descargarWorkbook(wb, nombreArchivo){
+    if(typeof XLSX==="undefined"){ mostrarToast("No se pudo cargar el exportador de Excel. Revisa tu conexión a internet y vuelve a intentarlo.", true); return false; }
+    try{
+        const contenido=XLSX.write(wb,{bookType:"xlsx",type:"array"});
+        const blob=new Blob([contenido],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+        descargarBlob(blob, nombreArchivo);
+        return true;
+    }catch(err){
+        console.error(err);
+        try{ XLSX.writeFile(wb, nombreArchivo); return true; }
+        catch(err2){ console.error(err2); mostrarToast("No se pudo generar el Excel en este dispositivo. Prueba el botón de CSV.", true); return false; }
+    }
+}
 function exportarExcel(){
     const lista=obtenerVentas(); if(lista.length===0){ mostrarToast("No hay ventas para exportar.", true); return; }
-    if(typeof XLSX==="undefined"){ mostrarToast("No se pudo cargar el exportador de Excel. Revisa tu conexión.", true); return; }
     const columnas=["Renuevate / Kit / Chip / Porta","FECHA DE ACTIVACION","NUM. CELULAR","ICCID","IMEI","MARCA","MODELO","# TIENDA / Determinante","SOLO NOMBRE DE LA CADENA","SOLO NOMBRE DE TIENDA SIN CADENA","NOMBRE COMPLETO PROMOTOR"];
     const datos=lista.map(venta=>{ const fila={}; columnas.forEach(col=>fila[col]=venta[col]||""); return fila; });
     const ws=XLSX.utils.json_to_sheet(datos); ws["!cols"]=[{wch:24},{wch:20},{wch:18},{wch:23},{wch:18},{wch:16},{wch:20},{wch:24},{wch:28},{wch:32},{wch:32}];
-    const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Registro"); const fecha=new Date().toISOString().slice(0,10); XLSX.writeFile(wb,"ventas_telcel_"+fecha+".xlsx"); mostrarToast("Excel generado.");
+    const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Registro"); const fecha=new Date().toISOString().slice(0,10);
+    if(descargarWorkbook(wb,"ventas_telcel_"+fecha+".xlsx")) mostrarToast("Excel generado. Revisa tus descargas.");
 }
 // COMISIONES NOVIEMBRE 2026 — los datos viven en Firebase bajo la cuenta del usuario
 // (comisiones/<uid>/noviembre2026) y solo se leen después de iniciar sesión.
-// Hoja1 A1:L220: encabezado + 8 ventas (filas 2 a 9) + 26 filas de plantilla
-// (filas 10 a 35) + 185 filas totalmente vacías (filas 36 a 220).
-// En pantalla solo se muestran las 34 filas con contenido; las 185 vacías no
-// se listan y se regeneran únicamente al descargar el Excel completo.
-const COMISIONES_SEED_FILAS=[
-["5525025778","352855408550102","8952020925493987240","AK","4029","BA","AV NACIONAL","ORTEGA CARO OMAR","07/11/2026","MOTOROLA","G06","SI"],
-["5513534038","","8952020027696681066","CHIP","4029","BA","AV NACIONAL","ORTEGA CARO OMAR","07/11/2026","","","SI"],
-["5561133330","","8952020026499587058","CHIP","4029","BA","AV NACIONAL","ORTEGA CARO OMAR","08/11/2026","","","si"],
-["5574646473","864065073628180","8952020925493987935","AK","4029","BA","AV NACIONAL","ORTEGA CARO OMAR","08/11/2026","ZTE","A35E","si"],
-["5521410590","358817300928582","8952020925493988198","REN","4029","BA","AV NACIONAL","ORTEGA CARO OMAR","08/11/2026","SAMSUNG","A37","si"],
-["5572101147","358372348921769","8952020925493988206","AK","4029","BA","AV NACIONAL","ORTEGA CARO OMAR","08/11/2026","SAMSUNG","A37","si"],
-["","355663158693362","","AK","4029","BA","AV NACIONAL","ORTEGA CARO OMAR","08/11/2026","MOTOROLA","G06","si"],
-["","352855409970531","","AK","4029","BA","AV NACIONAL","ORTEGA CARO OMAR","08/11/2026","IPHONE","15","si"]
-];
+// Hoja1 A1:L500: encabezado (fila 1) + 499 filas de datos (filas 2 a 500).
+// La tabla en pantalla muestra las 499 filas y cada celda es editable;
+// los cambios se guardan automáticamente en Firebase.
+const COMISIONES_FILAS_DATOS=499; // filas 2 a 500
+// Sin datos de clientes precargados en el código: ningún celular, IMEI o
+// ICCID va escrito en esta página, porque el código es visible para
+// cualquiera que la abra. Las ventas de comisiones viven únicamente en
+// Firebase, bajo la cuenta del usuario que inició sesión
+// (comisiones/<uid>/noviembre2026), y solo se leen después de iniciar
+// sesión: lo que la cuenta ya tenga guardado ahí (sus ventas y filas de
+// plantilla) se carga tal cual y nunca se sobrescribe desde el código.
+// Una cuenta sin datos guardados empieza con la hoja en blanco de 500
+// filas y puede llenarla a mano o importar su Excel.
+function filaVaciaComisiones(){ return ["","","","","","","","","","","",""]; }
 function filasInicialesComisiones(){
-    const filas=COMISIONES_SEED_FILAS.map(f=>f.slice());
-    for(let i=0;i<26;i++){ filas.push(["","","","","4029","BA","AV NACIONAL","ORTEGA CARO OMAR","","","",""]); }
+    const filas=[];
+    while(filas.length<COMISIONES_FILAS_DATOS) filas.push(filaVaciaComisiones());
     return filas;
 }
 function normalizarComisionesFilas(filas){
-    if(!Array.isArray(filas)) return filas;
+    if(!Array.isArray(filas)) return filasInicialesComisiones();
     let out=filas.map(f=>{ const fila=Array.isArray(f)?f.slice(0,12):[]; while(fila.length<12) fila.push(""); return fila.map(c=>c==null?"":String(c)); });
-    // Quita las filas totalmente vacías del final (en el Excel son las 36 a 220).
-    while(out.length&&out[out.length-1].every(c=>c==="")) out.pop();
-    // Corrige datos guardados con la versión anterior (211 filas de plantilla):
-    // si desde la fila 9 en adelante todo es la misma fila de plantilla, se deja en 34.
-    const plantilla=["","","","","4029","BA","AV NACIONAL","ORTEGA CARO OMAR","","","",""];
+    // Corrige datos guardados con la versión anterior (cientos de filas de
+    // plantilla repetidas): si desde la fila 9 en adelante todas las filas son
+    // idénticas entre sí, se conservan solo las primeras 34.
     if(out.length>34){
         const resto=out.slice(8);
-        const todoPlantilla=resto.every(f=>f.join("\u0001")===plantilla.join("\u0001"));
-        if(todoPlantilla) out=out.slice(0,34);
+        const primera=resto.length?resto[0].join("\u0001"):"";
+        const todoIgual=resto.length>0&&primera!==""&&resto.every(f=>f.join("\u0001")===primera);
+        if(todoIgual) out=out.slice(0,34);
     }
+    // La hoja siempre tiene 499 filas de datos (filas 2 a 500 del Excel):
+    // se recorta si sobran y se rellena con filas vacías si faltan.
+    out=out.slice(0,COMISIONES_FILAS_DATOS);
+    while(out.length<COMISIONES_FILAS_DATOS) out.push(filaVaciaComisiones());
     return out;
 }
 let comisionesFilas=[];
+let comisionesGuardadoTimer=null;
+let comisionesCargadas=false;
 function cargarComisiones(){
     const tbody=document.getElementById("tbodyComisiones"); if(!tbody) return;
     const count=document.getElementById("comisionesCount");
@@ -627,11 +672,43 @@ function cargarComisiones(){
         return;
     }
     const texto=(document.getElementById("buscadorComisiones").value||"").trim().toLowerCase();
-    const entradas=comisionesFilas.map((fila,idx)=>({fila:fila,rowNum:idx+2}));
+    const entradas=comisionesFilas.map((fila,idx)=>({fila:fila,idx:idx,rowNum:idx+2}));
     const filas=texto?entradas.filter(e=>e.fila.join(" ").toLowerCase().includes(texto)):entradas;
-    tbody.innerHTML=filas.length?filas.map(e=>"<tr><td class=\"row-num\">"+e.rowNum+"</td>"+e.fila.map(celda=>"<td>"+escapeHTML(celda)+"</td>").join("")+"</tr>").join(""):'<tr><td class="row-num"></td><td colspan="12" style="text-align:center;color:#555;padding:18px;background:#fff">Sin resultados para esa búsqueda.</td></tr>';
-    if(count) count.textContent="Mostrando "+filas.length+" de "+comisionesFilas.length+" filas con contenido · Filas 2 a 35 del Excel (8 ventas + 26 de plantilla) · Las filas 36 a 220 están vacías y no se listan";
+    tbody.innerHTML=filas.length?filas.map(e=>"<tr><td class=\"row-num\">"+e.rowNum+"</td>"+e.fila.map((celda,ci)=>"<td class=\"cell\"><input class=\"cell-input\" data-row=\""+e.idx+"\" data-col=\""+ci+"\" value=\""+escapeHTML(celda)+"\" autocomplete=\"off\" spellcheck=\"false\" aria-label=\"Fila "+e.rowNum+", columna "+(ci+1)+"\"></td>").join("")+"</tr>").join(""):'<tr><td class="row-num"></td><td colspan="12" style="text-align:center;color:#555;padding:18px;background:#fff">Sin resultados para esa búsqueda.</td></tr>';
+    const conDatos=comisionesFilas.filter(f=>f.some(c=>c!=="")).length;
+    if(count) count.textContent="Mostrando "+filas.length+" de "+comisionesFilas.length+" filas · Filas 2 a 500 del Excel · "+conDatos+" filas con datos · Toca una celda para editarla";
 }
+function estadoGuardadoComisiones(tipo, mensaje){
+    const el=document.getElementById("comisionesSaveStatus"); if(!el) return;
+    el.classList.remove("hidden","pending","error");
+    if(tipo==="pending") el.classList.add("pending");
+    if(tipo==="error") el.classList.add("error");
+    el.textContent=mensaje;
+}
+function alEditarComision(input){
+    const row=parseInt(input.dataset.row,10), col=parseInt(input.dataset.col,10);
+    if(isNaN(row)||isNaN(col)||!comisionesFilas[row]) return;
+    comisionesFilas[row][col]=input.value;
+    estadoGuardadoComisiones("pending","✏️ Cambios sin guardar… se guardan solos en unos segundos");
+    programarGuardadoComisiones();
+}
+function programarGuardadoComisiones(){
+    if(comisionesGuardadoTimer) clearTimeout(comisionesGuardadoTimer);
+    comisionesGuardadoTimer=setTimeout(()=>{ guardarComisiones(false); },1600);
+}
+async function guardarComisiones(manual){
+    if(!auth||!auth.currentUser){ if(manual) mostrarToast("Inicia sesión para guardar los cambios.", true); return; }
+    try{
+        await db.ref("comisiones/"+auth.currentUser.uid+"/noviembre2026").set({ filasJSON:JSON.stringify(comisionesFilas), actualizado:Date.now(), origen:"edicion-en-pagina" });
+        estadoGuardadoComisiones("ok","✔ Cambios guardados en tu cuenta");
+        if(manual) mostrarToast("Cambios guardados en tu cuenta.");
+    }catch(e){
+        console.error(e);
+        estadoGuardadoComisiones("error","⚠️ No se pudieron guardar los cambios. Revisa tu conexión.");
+        if(manual) mostrarToast("No se pudieron guardar los cambios. Revisa tu conexión.", true);
+    }
+}
+function guardarComisionesManual(){ guardarComisiones(true); }
 async function cargarComisionesFirebase(){
     if(!auth||!auth.currentUser) return;
     try{
@@ -643,13 +720,18 @@ async function cargarComisionesFirebase(){
             try{ const parsed=JSON.parse(datos.filasJSON); if(Array.isArray(parsed)&&parsed.length) filas=parsed; }catch(e){ console.error(e); }
         }
         if(filas){
+            // Hay datos guardados en la cuenta: se usan tal cual; el código
+            // nunca los sobrescribe con datos precargados.
             const normalizadas=normalizarComisionesFilas(filas);
             comisionesFilas=normalizadas;
             if(JSON.stringify(normalizadas)!==JSON.stringify(filas)){
                 try{ await ref.set({ filasJSON:JSON.stringify(comisionesFilas), actualizado:Date.now(), origen:"correccion-34-filas" }); }catch(e){ console.error(e); }
             }
         }else{
-            // Primera vez de esta cuenta: se cargan las 8 ventas + plantilla y se guardan en Firebase.
+            // La cuenta no tiene nada guardado: empieza con la hoja en blanco
+            // (500 filas editables) y se guarda en Firebase como punto de
+            // partida. Los datos reales se capturan en la tabla o se importan
+            // desde el Excel; no viajan escritos en el código de la página.
             comisionesFilas=filasInicialesComisiones();
             cargarComisiones();
             try{ await ref.set({ filasJSON:JSON.stringify(comisionesFilas), actualizado:Date.now(), origen:"carga-inicial" }); }catch(e){ console.error(e); }
@@ -671,10 +753,11 @@ function importarComisiones(event){
             const wb=XLSX.read(new Uint8Array(e.target.result),{type:"array"});
             const ws=wb.Sheets["Hoja1"]||wb.Sheets[wb.SheetNames[0]];
             const aoa=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:"",blankrows:true});
-            // Transcripción tal cual de A1:L220: 1 fila de encabezado + 219 de datos,
+            // Se leen hasta 500 filas (A1:L500): 1 de encabezado + 499 de datos,
             // cada fila recortada/rellenada a 12 columnas y cada celda como texto.
+            // Si el archivo importado trae menos filas, se completa hasta 500.
             const total=[];
-            for(let r=0;r<220;r++){
+            for(let r=0;r<500;r++){
                 const fila=[];
                 for(let c=0;c<12;c++){
                     const v=aoa[r]&&aoa[r][c]!=null?aoa[r][c]:"";
@@ -682,8 +765,6 @@ function importarComisiones(event){
                 }
                 total.push(fila);
             }
-            // Se conservan las filas con contenido; las 185 filas vacías del final
-            // (36 a 220) no se guardan como filas en blanco ni se muestran amontonadas.
             comisionesFilas=normalizarComisionesFilas(total.slice(1));
             cargarComisiones();
             await db.ref("comisiones/"+auth.currentUser.uid+"/noviembre2026").set({ filasJSON:JSON.stringify(comisionesFilas), actualizado:Date.now() });
@@ -693,18 +774,32 @@ function importarComisiones(event){
     };
     reader.readAsArrayBuffer(archivo);
 }
+const COMISIONES_ENCABEZADO=["NUM. CELULAR","IMEI","ICCID","AK/ RENU/ PORTA /CHIP","#TIENDA / Determinante","BA o WM","SOLO NOMBRE DE TIENDA","NOMBRE COMPLETO PROMOTOR (empezando apellidos)","fecha de activación 01/01/2026","MARCA","MODELO","REGISTRO SI/NO"];
 function descargarExcelComisiones(){
     if(comisionesFilas.length===0){ mostrarToast("Todavía no hay datos de comisiones cargados.", true); return; }
-    if(typeof XLSX==="undefined"){ mostrarToast("No se pudo cargar el exportador de Excel. Revisa tu conexión.", true); return; }
-    const encabezado=["NUM. CELULAR","IMEI","ICCID","AK/ RENU/ PORTA /CHIP","#TIENDA / Determinante","BA o WM","SOLO NOMBRE DE TIENDA","NOMBRE COMPLETO PROMOTOR (empezando apellidos)","fecha de activación 01/01/2026","MARCA","MODELO","REGISTRO SI/NO"];
-    // Regenera el Excel completo A1:L220: encabezado + filas con contenido +
-    // filas vacías hasta completar 219 filas de datos (185 vacías si hay 34 con contenido).
+    if(typeof XLSX==="undefined"){ mostrarToast("No se pudo cargar el exportador de Excel. Revisa tu conexión a internet y vuelve a intentarlo, o usa el botón de CSV.", true); return; }
+    // Primero guarda lo editado, para que el Excel lleve los datos más recientes.
+    if(comisionesGuardadoTimer){ clearTimeout(comisionesGuardadoTimer); comisionesGuardadoTimer=null; }
+    guardarComisiones(false);
+    // Excel completo A1:L500: encabezado + las 499 filas de datos tal cual
+    // están en la tabla editable (con las filas en blanco incluidas).
     const filasExport=comisionesFilas.map(f=>f.slice(0,12));
-    while(filasExport.length<219){ filasExport.push(["","","","","","","","","","","",""]); }
-    const ws=XLSX.utils.aoa_to_sheet([encabezado].concat(filasExport.slice(0,219)));
-    ws["!ref"]="A1:L220";
+    while(filasExport.length<COMISIONES_FILAS_DATOS){ filasExport.push(filaVaciaComisiones()); }
+    const ws=XLSX.utils.aoa_to_sheet([COMISIONES_ENCABEZADO].concat(filasExport.slice(0,COMISIONES_FILAS_DATOS)));
+    ws["!ref"]="A1:L500";
+    ws["!cols"]=[{wch:14},{wch:19},{wch:23},{wch:14},{wch:14},{wch:9},{wch:18},{wch:34},{wch:16},{wch:13},{wch:11},{wch:13}];
     const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Hoja1");
-    XLSX.writeFile(wb,"comisiones-noviembre-2026.xlsx"); mostrarToast("Excel de comisiones generado.");
+    if(descargarWorkbook(wb,"comisiones-noviembre-2026.xlsx")) mostrarToast("Excel generado con 500 filas. Revisa tus descargas.");
+}
+function descargarCSVComisiones(){
+    if(comisionesFilas.length===0){ mostrarToast("Todavía no hay datos de comisiones cargados.", true); return; }
+    const esc=v=>{ const s=String(v==null?"":v); return /[",;\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s; };
+    const filasExport=comisionesFilas.map(f=>f.slice(0,12));
+    while(filasExport.length<COMISIONES_FILAS_DATOS){ filasExport.push(filaVaciaComisiones()); }
+    const lineas=[COMISIONES_ENCABEZADO].concat(filasExport).map(f=>f.map(esc).join(","));
+    const blob=new Blob(["\uFEFF"+lineas.join("\r\n")],{type:"text/csv;charset=utf-8"});
+    descargarBlob(blob,"comisiones-noviembre-2026.csv");
+    mostrarToast("CSV generado con 500 filas. Se abre en Excel igual.");
 }
 function escapeHTML(texto){ return String(texto??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"); }
 function mostrarToast(mensaje, esError){
@@ -719,6 +814,14 @@ function pedirConfirmacion(texto, accion){
 }
 function cerrarConfirm(){ accionConfirmada=null; document.getElementById("confirmModal").classList.add("hidden"); }
 function confirmarAccion(){ const accion=accionConfirmada; cerrarConfirm(); if(accion) accion(); }
+(function(){
+    const tbody=document.getElementById("tbodyComisiones");
+    if(tbody){
+        tbody.addEventListener("input", function(e){
+            if(e.target&&e.target.classList&&e.target.classList.contains("cell-input")) alEditarComision(e.target);
+        });
+    }
+})();
 cargarComisiones();
 window.addEventListener("load", inicio);
 </script>
