@@ -1,31 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
-<head><style>
-@font-face {
-  font-family: "Optimistic";
-  font-style: normal;
-  font-weight: 400 600;
-  font-display: swap;
-  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Optimistic Mono";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
-}
-:where(html) {
-  font-family: "Optimistic", system-ui, sans-serif;
-}
-:where(code, pre, kbd, samp) {
-  font-family: "Optimistic Mono", ui-monospace, monospace;
-}
-</style>
+<head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#003566">
 <meta name="description" content="Sistema profesional de ventas Telcel">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="data:,">
 <title>Sistema Ventas Telcel Pro v2</title>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -45,7 +26,7 @@ label{display:block;color:#ffc300;font-size:11px;font-weight:700;margin-top:5px}
 input,select{width:100%;padding:13px;margin-top:5px;margin-bottom:12px;border:1px solid rgba(255,255,255,.08);border-radius:10px;background:rgba(255,255,255,.12);color:white;outline:none;font-size:14px}
 input:focus,select:focus{border-color:#ffc300;box-shadow:0 0 0 2px rgba(255,195,0,.12)}
 select option{color:#111}
-button{width:100%;padding:14px;border:0;border-radius:12px;font-weight:800;cursor:pointer;margin-bottom:10px;transition:.15s}
+button{width:100%;padding:14px;border:0;border-radius:12px;font-weight:800;cursor:pointer;margin-bottom:10px;transition:.15s;font-family:inherit}
 button:active{transform:scale(.98)}
 .btn-main{background:#ffc300;color:#003566}
 .btn-blue{background:#0077b6;color:white}
@@ -53,14 +34,14 @@ button:active{transform:scale(.98)}
 .btn-red{background:#d62828;color:white}
 .btn-dark{background:#172a3a;color:white}
 .btn-google{background:white;color:#111;display:flex;align-items:center;justify-content:center;gap:10px}
-.btn-logout{position:absolute;right:20px;top:20px;width:auto;padding:8px 12px;background:#ff4d4d;color:white;font-size:12px}
-.login{max-width:370px;margin:90px auto;padding:30px;background:white;color:#111;border-radius:20px;text-align:center;box-shadow:0 15px 40px rgba(0,0,0,.5)}
+.btn-logout{position:absolute;right:20px;top:20px;width:auto;padding:8px 12px;background:#ff4d4d;color:white;font-size:12px;z-index:5}
+.login{max-width:370px;margin:90px auto;padding:30px;background:white;color:#111;border-radius:20px;text-align:center;box-shadow:0 15px 40px rgba(0,0,0,.5);width:calc(100% - 32px)}
 .login h2{color:#003566}
 .login input{color:#111;background:#eee}
 .connection{text-align:center;padding:7px;border-radius:8px;font-size:11px;margin-bottom:12px}
 .online{background:rgba(0,200,100,.15);color:#6dffad}
 .offline{background:rgba(255,60,60,.15);color:#ff9696}
-.usuario{text-align:center;font-size:11px;opacity:.6;margin-bottom:15px}
+.usuario{text-align:center;font-size:11px;opacity:.6;margin-bottom:15px;word-break:break-all}
 .statbar{display:flex;gap:8px;margin-bottom:15px}
 .stat{flex:1;text-align:center;background:rgba(255,255,255,.08);border-radius:12px;padding:10px}
 .stat strong{display:block;color:#ffc300;font-size:20px}
@@ -68,7 +49,7 @@ button:active{transform:scale(.98)}
 .venta{background:rgba(255,255,255,.07);border-left:5px solid #ffc300;padding:15px;border-radius:12px;margin-bottom:12px;position:relative;font-size:11px}
 .venta strong{color:#ffc300;font-size:15px}
 .del{position:absolute;right:12px;top:12px;color:#ff5c5c;cursor:pointer;font-size:17px;padding:5px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;border-top:1px solid rgba(255,255,255,.1);padding-top:10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;border-top:1px solid rgba(255,255,255,.1);padding-top:10px;word-break:break-all}
 .grid b{display:block;color:#ffc300;font-size:9px;margin-bottom:2px}
 .small{font-size:10px;opacity:.6;text-align:center}
 #canvasWrapper{width:100%;display:flex;justify-content:center;margin:15px 0}
@@ -87,7 +68,20 @@ button:active{transform:scale(.98)}
 .colorrow button{flex:1;margin:0;height:40px;padding:0}
 .selected-info{text-align:center;color:#ffc300;font-size:11px;margin-top:8px}
 .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#111;color:white;padding:12px 18px;border-radius:12px;z-index:9999;box-shadow:0 8px 25px rgba(0,0,0,.4);font-size:12px;max-width:90vw;text-align:center}
+.toast.error{background:#7a1414}
 .divider{height:1px;background:rgba(0,0,0,.1);margin:15px 0}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:10000;padding:20px}
+.modal-box{background:#0b2239;color:white;border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:22px;max-width:340px;width:100%;text-align:center;box-shadow:0 15px 40px rgba(0,0,0,.5)}
+.modal-box p{font-size:14px;margin:0 0 18px;line-height:1.5}
+.modal-actions{display:flex;gap:8px}
+.modal-actions button{margin:0;flex:1}
+.btn-download{display:block;text-align:center;text-decoration:none;padding:14px;border-radius:12px;font-weight:800;margin-bottom:10px;font-size:14px}
+.tabla-scroll{overflow:auto;max-height:520px;border-radius:12px;border:1px solid rgba(255,255,255,.12);-webkit-overflow-scrolling:touch}
+table.comisiones{border-collapse:collapse;min-width:1500px;width:100%;font-size:11px;background:rgba(0,0,0,.25)}
+table.comisiones th{position:sticky;top:0;background:#003566;color:#ffc300;text-align:left;padding:9px 10px;font-size:10px;white-space:nowrap;border-bottom:2px solid #ffc300;z-index:1}
+table.comisiones td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.07);white-space:nowrap;color:#eef4ff}
+table.comisiones tbody tr:nth-child(even){background:rgba(255,255,255,.04)}
+.comisiones-count{font-size:11px;opacity:.7;text-align:center;margin-top:8px}
 </style>
 </head>
 <body>
@@ -152,11 +146,11 @@ button:active{transform:scale(.98)}
     <div class="card">
         <div class="section-title"><i class="fa-solid fa-table-cells"></i> PLANTILLA</div>
         <div class="templategrid">
-            <button id="tpl1" onclick="setTemplate(1)">1</button>
-            <button id="tpl2" onclick="setTemplate(2)">2</button>
-            <button id="tpl4" class="active" onclick="setTemplate(4)">4</button>
-            <button id="tpl6" onclick="setTemplate(6)">6</button>
-            <button id="tpl9" onclick="setTemplate(9)">9</button>
+            <button type="button" id="tpl1" onclick="setTemplate(1)">1</button>
+            <button type="button" id="tpl2" onclick="setTemplate(2)">2</button>
+            <button type="button" id="tpl4" class="active" onclick="setTemplate(4)">4</button>
+            <button type="button" id="tpl6" onclick="setTemplate(6)">6</button>
+            <button type="button" id="tpl9" onclick="setTemplate(9)">9</button>
         </div>
     </div>
     <div id="canvasWrapper"><canvas id="collageCanvas" width="1200" height="1200"></canvas></div>
@@ -168,38 +162,80 @@ button:active{transform:scale(.98)}
     <div class="card">
         <div class="section-title"><i class="fa-solid fa-palette"></i> FONDO</div>
         <div class="colorrow">
-            <button style="background:#000000" onclick="cambiarFondo('#000000')"></button>
-            <button style="background:#ffffff" onclick="cambiarFondo('#ffffff')"></button>
-            <button style="background:#003566" onclick="cambiarFondo('#003566')"></button>
-            <button style="background:#ffc300" onclick="cambiarFondo('#ffc300')"></button>
+            <button type="button" style="background:#000000" onclick="cambiarFondo('#000000')" aria-label="Fondo negro"></button>
+            <button type="button" style="background:#ffffff" onclick="cambiarFondo('#ffffff')" aria-label="Fondo blanco"></button>
+            <button type="button" style="background:#003566" onclick="cambiarFondo('#003566')" aria-label="Fondo azul"></button>
+            <button type="button" style="background:#ffc300" onclick="cambiarFondo('#ffc300')" aria-label="Fondo amarillo"></button>
         </div>
     </div>
     <div class="card">
         <div class="section-title"><i class="fa-solid fa-sliders"></i> CONTROLES</div>
         <div class="toolgrid">
-            <button class="btn-dark" onclick="moverFoto(-30,0)">← Izquierda</button>
-            <button class="btn-dark" onclick="moverFoto(30,0)">Derecha →</button>
-            <button class="btn-dark" onclick="moverFoto(0,-30)">↑ Arriba</button>
-            <button class="btn-dark" onclick="moverFoto(0,30)">↓ Abajo</button>
-            <button class="btn-dark" onclick="zoomFoto(1.1)">🔍 Zoom +</button>
-            <button class="btn-dark" onclick="zoomFoto(.9)">🔎 Zoom -</button>
+            <button type="button" class="btn-dark" onclick="moverFoto(-30,0)">← Izquierda</button>
+            <button type="button" class="btn-dark" onclick="moverFoto(30,0)">Derecha →</button>
+            <button type="button" class="btn-dark" onclick="moverFoto(0,-30)">↑ Arriba</button>
+            <button type="button" class="btn-dark" onclick="moverFoto(0,30)">↓ Abajo</button>
+            <button type="button" class="btn-dark" onclick="zoomFoto(1.1)">🔍 Zoom +</button>
+            <button type="button" class="btn-dark" onclick="zoomFoto(.9)">🔎 Zoom -</button>
         </div>
         <p class="small">Toca una foto para seleccionarla. Arrastra con 1 dedo, zoom con 2.</p>
     </div>
     <div class="card">
-        <button class="btn-main" onclick="guardarCollage()"><i class="fa-solid fa-image"></i> GUARDAR COLLAGE</button>
-        <button class="btn-blue" onclick="compartirCollage()"><i class="fa-solid fa-share-nodes"></i> COMPARTIR</button>
-        <button class="btn-green" onclick="descargarCollage()"><i class="fa-solid fa-download"></i> DESCARGAR</button>
+        <button type="button" class="btn-main" onclick="guardarCollage()"><i class="fa-solid fa-image"></i> GUARDAR COLLAGE</button>
+        <button type="button" class="btn-blue" onclick="compartirCollage()"><i class="fa-solid fa-share-nodes"></i> COMPARTIR</button>
+        <button type="button" class="btn-green" onclick="descargarCollage()"><i class="fa-solid fa-download"></i> DESCARGAR</button>
     </div>
     <div class="card">
         <div class="section-title"><i class="fa-solid fa-cloud"></i> SINCRONIZACIÓN</div>
-        <button class="btn-blue" onclick="sincronizarPendientes()"><i class="fa-solid fa-arrows-rotate"></i> SINCRONIZAR PENDIENTES</button>
+        <button type="button" class="btn-blue" onclick="sincronizarPendientes()"><i class="fa-solid fa-arrows-rotate"></i> SINCRONIZAR PENDIENTES</button>
         <div class="small">Ventas y collages se sincronizan al recuperar internet.</div>
     </div>
-    <button class="btn-green" onclick="exportarExcel()"><i class="fa-solid fa-file-excel"></i> DESCARGAR EXCEL</button>
+    <button type="button" class="btn-green" onclick="exportarExcel()"><i class="fa-solid fa-file-excel"></i> DESCARGAR EXCEL</button>
     <div class="header" style="font-size:17px;margin-top:25px">HISTORIAL DE VENTAS</div>
     <input id="buscador" placeholder="🔎 Buscar celular, ICCID, tienda..." oninput="cargarVentas()">
     <div id="listaLocal"></div>
+
+    <div class="header" style="font-size:17px;margin-top:30px">💰 COMISIONES NOVIEMBRE 2026</div>
+    <div class="card">
+        <div class="section-title"><i class="fa-solid fa-table"></i> COMISIONES NOVIEMBRE 2026 — HOJA1 (A1:L220)</div>
+        <input id="buscadorComisiones" placeholder="🔎 Buscar celular, IMEI, ICCID, marca, modelo..." oninput="cargarComisiones()">
+        <label style="margin-top:0">IMPORTAR EL EXCEL DE COMISIONES (OPCIONAL)</label>
+        <input type="file" id="importComisiones" accept=".xlsx,.xls" onchange="importarComisiones(event)">
+        <button type="button" class="btn-green" onclick="descargarExcelComisiones()"><i class="fa-solid fa-file-excel"></i> DESCARGAR EXCEL</button>
+        <div class="tabla-scroll">
+            <table class="comisiones">
+                <thead>
+                    <tr>
+                        <th>NUM. CELULAR</th>
+                        <th>IMEI</th>
+                        <th>ICCID</th>
+                        <th>AK/ RENU/ PORTA /CHIP</th>
+                        <th>#TIENDA / Determinante</th>
+                        <th>BA o WM</th>
+                        <th>SOLO NOMBRE DE TIENDA</th>
+                        <th>NOMBRE COMPLETO PROMOTOR (empezando apellidos)</th>
+                        <th>fecha de activación 01/01/2026</th>
+                        <th>MARCA</th>
+                        <th>MODELO</th>
+                        <th>REGISTRO SI/NO</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyComisiones"></tbody>
+            </table>
+        </div>
+        <div id="comisionesCount" class="comisiones-count"></div>
+        <p class="small">La tabla muestra las 220 filas del Excel tal cual, guardadas en tu cuenta. Desliza hacia los lados para ver todas las columnas.</p>
+    </div>
+</div>
+
+<div id="confirmModal" class="modal-overlay hidden">
+    <div class="modal-box">
+        <p id="confirmText">¿Seguro que quieres eliminar esta venta?</p>
+        <div class="modal-actions">
+            <button type="button" class="btn-dark" onclick="cerrarConfirm()">Cancelar</button>
+            <button type="button" class="btn-red" onclick="confirmarAccion()">Eliminar</button>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -225,10 +261,12 @@ let distanciaPinchInicial = null;
 let escalaPinchInicial = 1;
 let ultimoX = 0, ultimoY = 0;
 let rafId = null;
+let accionConfirmada = null;
 
 function requestDraw(){ if(rafId) return; rafId = requestAnimationFrame(()=>{ rafId=null; dibujarCollage(); }); }
 
 function inicio(){
+    if(typeof firebase==="undefined"){ mostrarToast("No se pudo cargar Firebase. Revisa tu conexión.", true); return; }
     if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     db = firebase.database(); auth = firebase.auth(); storage = firebase.storage();
     iFec.value = fechaActual();
@@ -236,41 +274,50 @@ function inicio(){
         if(user){
             loginBox.classList.add("hidden"); appBox.classList.remove("hidden");
             usuarioActual.innerHTML = '<i class="fa-solid fa-user"></i> ' + escapeHTML(user.email);
-            cargarVentas(); actualizarConexion(); sincronizarPendientes();
+            cargarVentas(); cargarComisionesFirebase(); actualizarConexion(); sincronizarPendientes();
         }else{ loginBox.classList.remove("hidden"); appBox.classList.add("hidden"); }
     });
     actualizarConexion();
     window.addEventListener("online", ()=>{actualizarConexion(); sincronizarPendientes();});
     window.addEventListener("offline", actualizarConexion);
     listaLocal.addEventListener('click', handleListaClick);
+    cargarComisiones();
     dibujarCollage();
 }
 function fechaActual(){ const d=new Date(); return String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0")+"/"+d.getFullYear(); }
 function toggleRegistro(){ modoReg=!modoReg; tituloAuth.innerText=modoReg?"Crear Usuario":"Acceso Sistema"; btnT.innerText=modoReg?"Ya tengo cuenta, entrar":"¿No tienes cuenta? Regístrate"; }
 function entrar(){
     const email=u.value.trim(), pass=p.value.trim();
-    if(!email||!pass){ alert("Llena todos los campos."); return; }
-    if(pass.length<6){ alert("Mínimo 6 caracteres."); return; }
-    if(modoReg){ auth.createUserWithEmailAndPassword(email,pass).then(()=>{ mostrarToast("Usuario creado."); modoReg=false; tituloAuth.innerText="Acceso Sistema"; btnT.innerText="¿No tienes cuenta? Regístrate"; }).catch(e=>alert("Error:\n"+e.message)); }
-    else{ auth.signInWithEmailAndPassword(email,pass).catch(e=>alert("Acceso denegado:\n"+e.message)); }
+    if(!email||!pass){ mostrarToast("Llena todos los campos.", true); return; }
+    if(pass.length<6){ mostrarToast("La contraseña debe tener mínimo 6 caracteres.", true); return; }
+    if(modoReg){ auth.createUserWithEmailAndPassword(email,pass).then(()=>{ mostrarToast("Usuario creado."); modoReg=false; tituloAuth.innerText="Acceso Sistema"; btnT.innerText="¿No tienes cuenta? Regístrate"; }).catch(e=>mostrarToast("Error: "+e.message, true)); }
+    else{ auth.signInWithEmailAndPassword(email,pass).catch(e=>mostrarToast("Acceso denegado: "+e.message, true)); }
 }
 function entrarGoogle(){
     const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider).catch(e=>alert("Error Google:\n"+e.message));
+    auth.signInWithPopup(provider).catch(e=>{
+        if(e && (e.code==="auth/popup-blocked" || e.code==="auth/cancelled-popup-request" || e.code==="auth/operation-not-supported-in-this-environment")){
+            auth.signInWithRedirect(provider).catch(err=>mostrarToast("Error Google: "+err.message, true));
+        }else{
+            mostrarToast("Error Google: "+e.message, true);
+        }
+    });
 }
 function salir(){ auth.signOut(); }
 function actualizarConexion(){ const el=document.getElementById("conexion"); if(navigator.onLine){ el.className="connection online"; el.innerHTML="🟢 Conectado"; }else{ el.className="connection offline"; el.innerHTML="🔴 Sin conexión"; } }
 function ajustarCampos(){ const tipo=iTipo.value; if(tipo==="CHIP"||tipo==="PORTA"){ seccionEquipo.classList.add("hidden"); iIme.value=""; iMarca.value=""; iMod.value=""; } else seccionEquipo.classList.remove("hidden"); }
 function cargarFotos(event){
     const archivos=Array.from(event.target.files);
-    if(archivos.length>9){ alert("Máximo 9 fotos."); event.target.value=""; return; }
+    if(archivos.length>9){ mostrarToast("Máximo 9 fotos.", true); event.target.value=""; return; }
+    const validos=archivos.filter(a=>a.type.startsWith("image/"));
     fotos=[]; fotoSeleccionada=-1; let cargadas=0;
-    archivos.forEach(archivo=>{
-        if(!archivo.type.startsWith("image/")) return;
+    if(validos.length===0){ renderFotos(); requestDraw(); return; }
+    validos.forEach(archivo=>{
         const reader=new FileReader();
         reader.onload=e=>{
             const img=new Image();
-            img.onload=()=>{ fotos.push({image:img,x:0,y:0,scale:1}); cargadas++; if(cargadas===archivos.length){ if(fotos.length) fotoSeleccionada=0; renderFotos(); requestDraw(); } };
+            img.onload=()=>{ fotos.push({image:img,x:0,y:0,scale:1}); cargadas++; if(cargadas===validos.length){ if(fotos.length) fotoSeleccionada=0; renderFotos(); requestDraw(); } };
+            img.onerror=()=>{ cargadas++; if(cargadas===validos.length){ if(fotos.length) fotoSeleccionada=0; renderFotos(); requestDraw(); } };
             img.src=e.target.result;
         }; reader.readAsDataURL(archivo);
     });
@@ -279,11 +326,10 @@ function renderFotos(){
     const div=document.getElementById("fotosPreview"); div.innerHTML="";
     fotos.forEach((foto,index)=>{
         const box=document.createElement("div"); box.className="fotoItem"+(index===fotoSeleccionada?" selected":""); box.dataset.index=index;
-        const img=document.createElement("img"); img.src=foto.image.src;
-        const btn=document.createElement("button"); btn.innerHTML="×"; btn.dataset.delete=index;
+        const img=document.createElement("img"); img.src=foto.image.src; img.alt="Foto "+(index+1);
+        const btn=document.createElement("button"); btn.type="button"; btn.innerHTML="×"; btn.dataset.delete=index; btn.setAttribute("aria-label","Quitar foto "+(index+1));
         box.appendChild(img); box.appendChild(btn); div.appendChild(box);
     });
-    // delegation for fotoPreview
     div.onclick=(e)=>{
         const del=e.target.closest('[data-delete]'); if(del){ e.stopPropagation(); const idx=parseInt(del.dataset.delete); fotos.splice(idx,1); if(fotoSeleccionada>=fotos.length) fotoSeleccionada=fotos.length-1; renderFotos(); requestDraw(); return; }
         const item=e.target.closest('.fotoItem'); if(item){ seleccionarFoto(parseInt(item.dataset.index)); }
@@ -342,11 +388,11 @@ function liberarPuntero(e){ punteros.delete(e.pointerId); if(punteros.size<2) di
 canvas.addEventListener("pointerup", liberarPuntero); canvas.addEventListener("pointercancel", liberarPuntero);
 canvas.addEventListener("wheel", function(e){ e.preventDefault(); if(!fotos[fotoSeleccionada]) return; if(e.deltaY<0) zoomFoto(1.08); else zoomFoto(.92); },{passive:false});
 
-// COLLAGE SAVE - CORREGIDO
+// COLLAGE SAVE
 function generarThumbnail(){ const tmp=document.createElement('canvas'); tmp.width=300; tmp.height=300; const tctx=tmp.getContext('2d'); tctx.drawImage(canvas,0,0,tmp.width,tmp.height); return tmp.toDataURL('image/jpeg',0.5); }
 
 async function guardarCollage(){
-    if(fotos.length===0){ alert("Primero agrega fotografías."); return; }
+    if(fotos.length===0){ mostrarToast("Primero agrega fotografías.", true); return; }
     const id=Date.now().toString();
     const thumb=generarThumbnail();
     const collageMeta={ id, fecha:Date.now(), usuario:auth.currentUser?auth.currentUser.uid:null, usuarioEmail:auth.currentUser?auth.currentUser.email:null, titulo:document.getElementById("textoCollage").value, subtitulo:document.getElementById("subTexto").value, thumbnail:thumb, sincronizado:false, storagePath:null };
@@ -359,20 +405,18 @@ async function sincronizarCollageFull(id){
         const lista=JSON.parse(localStorage.getItem("collages_save")||"[]");
         const meta=lista.find(x=>x.id===id); if(!meta) return;
         const blob=await new Promise(res=>canvas.toBlob(res,'image/jpeg',0.92));
-        const path=`collages/${auth.currentUser.uid}/${id}.jpg`;
+        const path="collages/"+auth.currentUser.uid+"/"+id+".jpg";
         const ref=storage.ref(path);
         await ref.put(blob);
         const url=await ref.getDownloadURL();
         await db.ref("collages/"+auth.currentUser.uid+"/"+id).set({ id:meta.id, fecha:meta.fecha, titulo:meta.titulo, subtitulo:meta.subtitulo, usuarioEmail:meta.usuarioEmail, imageUrl:url, storagePath:path, sincronizado:true });
         meta.sincronizado=true; meta.storagePath=path; localStorage.setItem("collages_save",JSON.stringify(lista));
         mostrarToast("Collage sincronizado a la nube ☁️");
-    }catch(err){ console.error(err); mostrarToast("Error subiendo collage, reintenta."); }
+    }catch(err){ console.error(err); mostrarToast("Error subiendo collage, reintenta.", true); }
 }
-async function sincronizarCollage(collage){ await sincronizarCollageFull(collage.id); }
-async function sincronizarCollages(){ if(!auth.currentUser||!navigator.onLine) return; const lista=JSON.parse(localStorage.getItem("collages_save")||"[]"); for(const c of lista){ if(!c.sincronizado) await sincronizarCollageFull(c.id); } }
-function marcarCollageSincronizado(id){ const lista=JSON.parse(localStorage.getItem("collages_save")||"[]"); const item=lista.find(x=>x.id===id); if(item){ item.sincronizado=true; localStorage.setItem("collages_save",JSON.stringify(lista)); } }
+async function sincronizarCollages(){ if(!auth||!auth.currentUser||!navigator.onLine) return; const lista=JSON.parse(localStorage.getItem("collages_save")||"[]"); for(const c of lista){ if(!c.sincronizado) await sincronizarCollageFull(c.id); } }
 async function compartirCollage(){
-    if(fotos.length===0){ alert("Primero agrega fotografías."); return; }
+    if(fotos.length===0){ mostrarToast("Primero agrega fotografías.", true); return; }
     canvas.toBlob(async blob=>{
         const archivo=new File([blob],"collage_telcel.jpg",{type:"image/jpeg"});
         if(navigator.share&&navigator.canShare&&navigator.canShare({files:[archivo]})){
@@ -380,18 +424,18 @@ async function compartirCollage(){
         }else{ descargarCollage(); mostrarToast("Imagen preparada."); }
     },"image/jpeg",.95);
 }
-function descargarCollage(){ if(fotos.length===0){ alert("Primero agrega fotografías."); return; } const enlace=document.createElement("a"); enlace.download="collage_telcel_"+Date.now()+".jpg"; enlace.href=canvas.toDataURL("image/jpeg",.95); enlace.click(); }
+function descargarCollage(){ if(fotos.length===0){ mostrarToast("Primero agrega fotografías.", true); return; } const enlace=document.createElement("a"); enlace.download="collage_telcel_"+Date.now()+".jpg"; enlace.href=canvas.toDataURL("image/jpeg",.95); enlace.click(); }
 
 // VENTAS
 fReg.addEventListener("submit", async function(e){
     e.preventDefault();
     const telefono=iTel.value.replace(/\D/g,"");
-    if(telefono.length!==10){ alert("El celular debe tener 10 dígitos."); iTel.focus(); return; }
+    if(telefono.length!==10){ mostrarToast("El celular debe tener 10 dígitos.", true); iTel.focus(); return; }
     const icc=iIcc.value.trim().replace(/\D/g,"");
-    if(icc.length<19||icc.length>20){ alert("ICCID debe tener 19 o 20 dígitos."); return; }
+    if(icc.length<19||icc.length>20){ mostrarToast("ICCID debe tener 19 o 20 dígitos.", true); return; }
     const imeiVal=iIme.value.replace(/\D/g,"");
-    if(imeiVal && imeiVal.length!==15){ alert("IMEI debe tener 15 dígitos o dejarse vacío para CHIP/PORTA."); return; }
-    const user=auth.currentUser; if(!user){ alert("Sesión expirada."); return; }
+    if(imeiVal && imeiVal.length!==15){ mostrarToast("IMEI debe tener 15 dígitos o dejarse vacío para CHIP/PORTA.", true); return; }
+    const user=auth.currentUser; if(!user){ mostrarToast("Sesión expirada.", true); return; }
     const venta={ id:Date.now().toString(), sincronizado:false, usuarioUID:user.uid, usuarioEmail:user.email, "NUM. CELULAR":telefono, "IMEI":imeiVal||"-", "ICCID":icc, "Renuevate / Kit / Chip / Porta":iTipo.value, "# TIENDA / Determinante":iTiendaNum.value.trim(), "SOLO NOMBRE DE LA CADENA":iCadena.value.trim(), "SOLO NOMBRE DE TIENDA SIN CADENA":iTiendaNombre.value.trim(), "NOMBRE COMPLETO PROMOTOR":iProm.value.trim(), "FECHA DE ACTIVACION":iFec.value.trim(), "MARCA":iMarca.value.trim()||"-", "MODELO":iMod.value.trim()||"-", fechaCreacion:Date.now() };
     const lista=obtenerVentas(); lista.unshift(venta); localStorage.setItem("ventas_save",JSON.stringify(lista));
     cargarVentas(); fReg.reset(); iFec.value=fechaActual(); ajustarCampos(); mostrarToast("Venta guardada localmente.");
@@ -400,15 +444,15 @@ fReg.addEventListener("submit", async function(e){
 function obtenerVentas(){ try{ return JSON.parse(localStorage.getItem("ventas_save")||"[]"); }catch(e){ return []; } }
 async function sincronizarVenta(venta){
     if(!auth.currentUser||!navigator.onLine) return false;
-    try{ await db.ref("ventas/"+auth.currentUser.uid+"/"+venta.id).set(venta); venta.sincronizado=true; actualizarVentaLocal(venta); return true; }catch(error){ console.error(error); return false; }
+    try{ await db.ref("ventas/"+auth.currentUser.uid+"/"+venta.id).set(venta); venta.sincronizado=true; actualizarVentaLocal(venta); cargarVentas(); return true; }catch(error){ console.error(error); return false; }
 }
 function actualizarVentaLocal(venta){ const lista=obtenerVentas(); const indice=lista.findIndex(x=>x.id===venta.id); if(indice!==-1){ lista[indice]=venta; localStorage.setItem("ventas_save",JSON.stringify(lista)); } }
 async function sincronizarPendientes(){
-    if(!auth.currentUser||!navigator.onLine){ mostrarToast("Sin conexión."); return; }
+    if(!auth||!auth.currentUser||!navigator.onLine){ if(auth&&auth.currentUser) mostrarToast("Sin conexión."); return; }
     const lista=obtenerVentas(); const pendientes=lista.filter(v=>!v.sincronizado);
     let ok=0; for(const venta of pendientes){ if(await sincronizarVenta(venta)) ok++; }
     await sincronizarCollages(); cargarVentas();
-    if(ok>0) mostrarToast(`Sincronizadas ${ok} ventas.`); else mostrarToast("Todo sincronizado.");
+    if(ok>0) mostrarToast("Sincronizadas "+ok+" ventas."); else mostrarToast("Todo sincronizado.");
 }
 function cargarVentas(){
     const div=document.getElementById("listaLocal"); let lista=obtenerVentas();
@@ -432,11 +476,10 @@ function cargarVentas(){
 }
 function handleListaClick(e){
     const btn=e.target.closest('[data-action="delete"]'); if(!btn) return;
-    const id=btn.dataset.id; if(id) eliminarVenta(id);
+    const id=btn.dataset.id; if(id) pedirConfirmacion("¿Seguro que quieres eliminar esta venta?", ()=>eliminarVenta(id));
 }
 function actualizarStats(){ const lista=obtenerVentas(); const total=lista.length; const sincronizadas=lista.filter(x=>x.sincronizado).length; totalVentas.innerText=total; ventasSync.innerText=sincronizadas; ventasPend.innerText=total-sincronizadas; }
 async function eliminarVenta(id){
-    if(!confirm("¿Seguro que quieres eliminar esta venta?")) return;
     let lista=obtenerVentas(); const venta=lista.find(x=>x.id===id);
     lista=lista.filter(x=>x.id!==id); localStorage.setItem("ventas_save",JSON.stringify(lista));
     if(venta&&venta.sincronizado&&auth.currentUser&&navigator.onLine){
@@ -445,15 +488,123 @@ async function eliminarVenta(id){
     cargarVentas(); mostrarToast("Venta eliminada.");
 }
 function exportarExcel(){
-    const lista=obtenerVentas(); if(lista.length===0){ alert("No hay ventas."); return; }
+    const lista=obtenerVentas(); if(lista.length===0){ mostrarToast("No hay ventas para exportar.", true); return; }
+    if(typeof XLSX==="undefined"){ mostrarToast("No se pudo cargar el exportador de Excel. Revisa tu conexión.", true); return; }
     const columnas=["Renuevate / Kit / Chip / Porta","FECHA DE ACTIVACION","NUM. CELULAR","ICCID","IMEI","MARCA","MODELO","# TIENDA / Determinante","SOLO NOMBRE DE LA CADENA","SOLO NOMBRE DE TIENDA SIN CADENA","NOMBRE COMPLETO PROMOTOR"];
     const datos=lista.map(venta=>{ const fila={}; columnas.forEach(col=>fila[col]=venta[col]||""); return fila; });
     const ws=XLSX.utils.json_to_sheet(datos); ws["!cols"]=[{wch:24},{wch:20},{wch:18},{wch:23},{wch:18},{wch:16},{wch:20},{wch:24},{wch:28},{wch:32},{wch:32}];
     const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Registro"); const fecha=new Date().toISOString().slice(0,10); XLSX.writeFile(wb,"ventas_telcel_"+fecha+".xlsx"); mostrarToast("Excel generado.");
 }
+// COMISIONES NOVIEMBRE 2026 — los datos viven en Firebase bajo la cuenta del usuario
+// (comisiones/<uid>/noviembre2026) y solo se leen después de iniciar sesión.
+// Carga inicial: 8 ventas del Excel + filas de plantilla (filas 10 a 220).
+const COMISIONES_SEED_FILAS=[
+["5525025778","352855408550102","8952020925493987240","AK","4029","BA","AV NACIONAL","ORTEGA CARO OMAR","07/11/2026","MOTOROLA","G06","SI"],
+["5513534038","","8952020027696681066","CHIP","4029","BA","AV NACIONAL","ORTEGA CARO OMAR","07/11/2026","","","SI"],
+["5561133330","","8952020026499587058","CHIP","4029","BA","AV NACIONAL","ORTEGA CARO OMAR","08/11/2026","","","si"],
+["5574646473","864065073628180","8952020925493987935","AK","4029","BA","AV NACIONAL","ORTEGA CARO OMAR","08/11/2026","ZTE","A35E","si"],
+["5521410590","358817300928582","8952020925493988198","REN","4029","BA","AV NACIONAL","ORTEGA CARO OMAR","08/11/2026","SAMSUNG","A37","si"],
+["5572101147","358372348921769","8952020925493988206","AK","4029","BA","AV NACIONAL","ORTEGA CARO OMAR","08/11/2026","SAMSUNG","A37","si"],
+["","355663158693362","","AK","4029","BA","AV NACIONAL","ORTEGA CARO OMAR","08/11/2026","MOTOROLA","G06","si"],
+["","352855409970531","","AK","4029","BA","AV NACIONAL","ORTEGA CARO OMAR","08/11/2026","IPHONE","15","si"]
+];
+function filasInicialesComisiones(){
+    const filas=COMISIONES_SEED_FILAS.map(f=>f.slice());
+    for(let i=0;i<211;i++){ filas.push(["","","","","4029","BA","AV NACIONAL","ORTEGA CARO OMAR","","","",""]); }
+    return filas;
+}
+let comisionesFilas=[];
+function cargarComisiones(){
+    const tbody=document.getElementById("tbodyComisiones"); if(!tbody) return;
+    const count=document.getElementById("comisionesCount");
+    if(comisionesFilas.length===0){
+        tbody.innerHTML='<tr><td colspan="12" style="text-align:center;opacity:.6;padding:18px">Cargando comisiones de noviembre 2026…</td></tr>';
+        if(count) count.textContent="";
+        return;
+    }
+    const texto=(document.getElementById("buscadorComisiones").value||"").trim().toLowerCase();
+    const filas=texto?comisionesFilas.filter(fila=>fila.join(" ").toLowerCase().includes(texto)):comisionesFilas;
+    tbody.innerHTML=filas.map(fila=>"<tr>"+fila.map(celda=>"<td>"+escapeHTML(celda)+"</td>").join("")+"</tr>").join("");
+    if(count) count.textContent="Mostrando "+filas.length+" de "+comisionesFilas.length+" filas de datos (220 filas con encabezado)";
+}
+async function cargarComisionesFirebase(){
+    if(!auth||!auth.currentUser) return;
+    try{
+        const ref=db.ref("comisiones/"+auth.currentUser.uid+"/noviembre2026");
+        const snap=await ref.once("value");
+        const datos=snap.val();
+        let filas=null;
+        if(datos&&datos.filasJSON){
+            try{ const parsed=JSON.parse(datos.filasJSON); if(Array.isArray(parsed)&&parsed.length) filas=parsed; }catch(e){ console.error(e); }
+        }
+        if(filas){
+            comisionesFilas=filas;
+        }else{
+            // Primera vez de esta cuenta: se cargan las 8 ventas + plantilla y se guardan en Firebase.
+            comisionesFilas=filasInicialesComisiones();
+            cargarComisiones();
+            try{ await ref.set({ filasJSON:JSON.stringify(comisionesFilas), actualizado:Date.now(), origen:"carga-inicial" }); }catch(e){ console.error(e); }
+        }
+    }catch(e){
+        console.error(e);
+        if(comisionesFilas.length===0) comisionesFilas=filasInicialesComisiones();
+    }
+    cargarComisiones();
+}
+function importarComisiones(event){
+    const archivo=event.target.files&&event.target.files[0];
+    if(!archivo) return;
+    if(!auth||!auth.currentUser){ mostrarToast("Inicia sesión para importar el Excel.", true); event.target.value=""; return; }
+    if(typeof XLSX==="undefined"){ mostrarToast("No se pudo cargar el lector de Excel. Revisa tu conexión.", true); event.target.value=""; return; }
+    const reader=new FileReader();
+    reader.onload=async function(e){
+        try{
+            const wb=XLSX.read(new Uint8Array(e.target.result),{type:"array"});
+            const ws=wb.Sheets["Hoja1"]||wb.Sheets[wb.SheetNames[0]];
+            const aoa=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:"",blankrows:true});
+            // Transcripción tal cual de A1:L220: 1 fila de encabezado + 219 de datos,
+            // cada fila recortada/rellenada a 12 columnas y cada celda como texto.
+            const total=[];
+            for(let r=0;r<220;r++){
+                const fila=[];
+                for(let c=0;c<12;c++){
+                    const v=aoa[r]&&aoa[r][c]!=null?aoa[r][c]:"";
+                    fila.push(v===""?"":String(v));
+                }
+                total.push(fila);
+            }
+            comisionesFilas=total.slice(1);
+            cargarComisiones();
+            await db.ref("comisiones/"+auth.currentUser.uid+"/noviembre2026").set({ filasJSON:JSON.stringify(comisionesFilas), actualizado:Date.now() });
+            mostrarToast("Excel de comisiones importado y guardado en tu cuenta.");
+        }catch(err){ console.error(err); mostrarToast("No se pudo importar el Excel.", true); }
+        event.target.value="";
+    };
+    reader.readAsArrayBuffer(archivo);
+}
+function descargarExcelComisiones(){
+    if(comisionesFilas.length===0){ mostrarToast("Todavía no hay datos de comisiones cargados.", true); return; }
+    if(typeof XLSX==="undefined"){ mostrarToast("No se pudo cargar el exportador de Excel. Revisa tu conexión.", true); return; }
+    const encabezado=["NUM. CELULAR","IMEI","ICCID","AK/ RENU/ PORTA /CHIP","#TIENDA / Determinante","BA o WM","SOLO NOMBRE DE TIENDA","NOMBRE COMPLETO PROMOTOR (empezando apellidos)","fecha de activación 01/01/2026","MARCA","MODELO","REGISTRO SI/NO"];
+    const ws=XLSX.utils.aoa_to_sheet([encabezado].concat(comisionesFilas));
+    const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Hoja1");
+    XLSX.writeFile(wb,"comisiones-noviembre-2026.xlsx"); mostrarToast("Excel de comisiones generado.");
+}
 function escapeHTML(texto){ return String(texto??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"); }
-function mostrarToast(mensaje){ const anterior=document.querySelector(".toast"); if(anterior) anterior.remove(); const toast=document.createElement("div"); toast.className="toast"; toast.textContent=mensaje; document.body.appendChild(toast); setTimeout(()=>toast.remove(),2800); }
+function mostrarToast(mensaje, esError){
+    const anterior=document.querySelector(".toast"); if(anterior) anterior.remove();
+    const toast=document.createElement("div"); toast.className="toast"+(esError?" error":""); toast.textContent=mensaje; document.body.appendChild(toast);
+    setTimeout(()=>toast.remove(), esError?4500:2800);
+}
+function pedirConfirmacion(texto, accion){
+    document.getElementById("confirmText").textContent=texto;
+    accionConfirmada=accion;
+    document.getElementById("confirmModal").classList.remove("hidden");
+}
+function cerrarConfirm(){ accionConfirmada=null; document.getElementById("confirmModal").classList.add("hidden"); }
+function confirmarAccion(){ const accion=accionConfirmada; cerrarConfirm(); if(accion) accion(); }
+cargarComisiones();
 window.addEventListener("load", inicio);
 </script>
-<script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body>
+</body>
 </html>
